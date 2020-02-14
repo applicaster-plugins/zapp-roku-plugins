@@ -1,0 +1,144 @@
+import "pkg:/source/lib/ZBaseClass.bs"
+import "pkg:/source/plugin-support/BasePlugin.bs"
+import "pkg:/source/plugin-support/PluginManager.bs"
+import "./SegmentAnalyticsConnector.brs"
+
+namespace SegmentAM
+class SegmentAnalyticsManager extends ZBaseClass
+
+public isEnabled = false
+public isIdentified = false
+
+public function new()
+  m.super("SegmentAnalyticsManager")
+  
+  pluginProvider = new PluginManager(m.getInstance("plugins"))
+  plugin = pluginProvider.getPluginById("segment_analytics")
+  m.isEnabled = plugin.isValid
+  
+  if m.isEnabled
+    m.segmentTask = createObject("roSGNode", "SegmentAnalyticsTask")
+    m.segmentTask.id = "segmentAnalyticsTask"
+    constants = m.getInstance("constants")
+    m.applicasterDeviceId = constants.applicasterDeviceId
+    
+    m.library = SegmentAnalyticsConnector(m.segmentTask)
+    
+    config = {
+      "writeKey": plugin.getStringValue("write_key", "")
+      "debug": true
+      "queueSize": 3
+      "retryLimit": 0
+    }
+    
+    m.library.init(config)
+  else
+    m.logInfo("SegmentAnalytics plugin is not configured for this app - segment analytics is unavailable")
+  end if
+end function
+
+public function identify(plugin = "gygia", traits = {}, options = {})
+  m.logInfo("identify", plugin)
+  
+  m.defaultOptions = m.getDefaultOptions()
+  m.defaultProperties = m.getDefaultProperties()
+  if m.isEnabled and not m.isIdentified
+    
+    accountInfo = m.getLocalStoreValue("account_info", plugin, true)
+    
+    if accountInfo <> invalid 
+      m.logInfo("identifying analytics with the userId", accountInfo.uid, "for plugin:", plugin)
+      m.library.identify(accountInfo.uid, traits, options)
+      m.isIdentified = true
+    else
+      m.logInfo("idenitfy called; but there is no logged in user")
+    end if
+  end if 
+end function
+
+public function unidentify(plugin = "gygia")
+  m.isIdentified = false
+  m.defaultOptions = m.getDefaultOptions()
+  m.defaultProperties = m.getDefaultProperties()
+  m.library.identify("anonymous", m.defaultOptions, m.defaultProperties)
+end function
+
+public function track(eventName, actionName = invalid, properties = {}, options = {})
+  
+  if actionName <> invalid
+    properties.name = eventName
+    properties.action_name = actionName
+  end if
+  
+  if m.isEnabled
+    options.append(m.defaultOptions)
+    properties.append(m.defaultProperties)
+    
+    m.logInfo("TRACK OPTINS ", options)
+    m.library.track(eventName, properties, options)
+  end if
+  
+end function
+
+public function screen(eventName, category, properties = {}, options = {})
+  
+  if m.isEnabled
+    options.append(m.defaultOptions)
+    properties.append(m.defaultProperties)
+    m.library.screen(name, category, properties, options)
+  end if
+  
+end function
+
+public function group(eventName, groupId, traits = {}, options = {})
+  
+  if m.isEnabled
+    options.append(m.defaultOptions)
+    properties.append(m.defaultProperties)
+    m.library.group(userId, groupId, traits, options)
+  end if
+  
+end function
+
+public function getDefaultOptions()
+  
+  accountInfo = m.getLocalStoreValue("account_info", "gygia", true)
+  
+  options = {}
+  if accountInfo <> invalid 
+    options["userId"] = accountInfo.uid
+  else
+    options["anonymousId"] = m.applicasterDeviceId
+  end if
+  
+  return options
+end function
+
+public function getDefaultProperties()
+  
+  accountInfo = m.getLocalStoreValue("account_info", "gygia", true)
+  properties = {
+    user_email: "anonymous"
+    user_name: "anonymous"
+    applicaster_device_id: m.applicasterDeviceId
+    platform: "roku"
+    
+  }
+  
+  if accountInfo <> invalid 
+    properties.user_gygia_id = accountInfo.uid
+  else
+    properties.user_gygia_id = "anonymous"
+  end if
+  
+  primetimeAccountInfo = m.getLocalStoreValue("account_info", "adobe_primetime", true)
+  if primetimeAccountInfo <> invalid 
+    properties.user_adobe_id = primetimeAccountInfo.uid
+  else
+    properties.user_adobe_id = "anonymous"
+  end if
+  
+  return properties
+end function
+
+end namespace

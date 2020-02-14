@@ -1,0 +1,316 @@
+'@TestSuite SVAPT SegmenetVideoAnalyticsPlutinTests
+
+namespace SVAPT
+
+'@BeforeEach
+function beforeEach()
+  m.constants = {
+    "deviceInfo": { "videoMode": "1080p" }
+  }
+  m.analyticsManager = { id: "#am" }
+  
+  m.modelLocator = { 
+    "constants" : m.constants
+    "segmentAnalyticsManager" : m.analyticsManager
+  }
+  
+  TU.setModelLocator(m.modelLocator)
+  
+  m.plugin = new SegmentVideoAnalyticsPlugin(json)
+end function
+
+'@AfterEach
+function afterEach()
+  TU.unsetModelLocator()
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests constructor
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test
+function constructor()
+  m.assertEqual(m.plugin.segmentManager, m.analyticsManager)
+  m.assertEqual(m.plugin.deviceInfo, m.constants.deviceInfo)
+  m.assertEqual(m.plugin.videoHeight, "1080")
+  m.assertEqual(m.plugin.videoResolution, "1920x1080")
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests getVideoResolution
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test
+'@Params["1080", "1920x1080"]
+'@Params["2160", "3840x2160"]
+'@Params["720", "1280x720"]
+'@Params["480", "640x480"]
+'@Params["800", "unknown"]
+function getVideoResolution(height, expected)
+  m.assertEqual(m.plugin.getVideoResolution(height), expected)
+end function
+
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests videoStart
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test
+function videoStart()
+  videoNode = { id: "videoPlayer", position: 100 }
+  contentNode = { id: "content", length: 1000 }
+  
+  m.expectOnce(m.plugin, "postSegmentEvent", ["Video Content Started"])
+  
+  m.plugin.videoStart(videoNode, contentNode)
+  
+  m.assertEqual(m.plugin.videoNode, videoNode)
+  m.assertEqual(m.plugin.contentNode, contentNode)
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests videoEnd
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test
+function videoEnd()
+  m.plugin.videoNode = { id: "videoPlayer", position: 100 }
+  m.plugin.contentNode = { id: "content", length: 1000 }
+  
+  
+  m.expectOnce(m.plugin, "postSegmentEvent", ["Video Completed"])
+  
+  m.plugin.videoEnd()
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests videoPause
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test
+function videoPause()
+  
+  m.expectOnce(m.plugin, "postSegmentEvent", ["Video Paused"])
+  
+  m.plugin.videoPause()
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests videoResume
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test
+function videoResume()
+  
+  m.expectOnce(m.plugin, "postSegmentEvent", ["Video Playback Resume"])
+  
+  m.plugin.videoResume()
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests videoHeartbeat
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test
+'@Params[true, "Video Ad Playing (Heartbeat)"]
+'@Params[false, "Video Heartbeat"]
+function videoHeartbeat(isInAdBreak, expectedEventName)
+  m.plugin.isInAdBreak = isInAdBreak
+  
+  m.expectOnce(m.plugin, "postSegmentEvent", [expectedEventName])
+  
+  m.plugin.videoHeartbeat()
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests adBreakStart
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test
+function adBreakStart()
+  
+  m.expectOnce(m.plugin, "postSegmentEvent", ["Video Ad Play"])
+  
+  m.plugin.adBreakStart()
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests adBreakEnd
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test
+function adBreakEnd()
+  
+  m.expectOnce(m.plugin, "postSegmentEvent", ["Video Ad Completed"])
+  
+  m.plugin.adBreakEnd()
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests onSubtitleChange
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test
+function onSubtitleChange()
+  
+  m.expectOnce(m.plugin, "postSegmentEvent", ["Subtitle Languge Changed"])
+  
+  m.plugin.onSubtitleChange()
+  
+end function
+
+'@Test
+function onAudioChange()
+  
+  m.expectOnce(m.plugin, "postSegmentEvent", ["Audio Language Selected"])
+  
+  m.plugin.onAudioChange()
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests getAudioLanguage
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test known
+'@Params["1", "cor", "kw"]
+'@Params["2", "cos", "co"]
+'@Params["3", "cre", "cr"]
+function getAudioLanguage_known(currentTrack, trackLanguage, countryCode)
+  m.plugin.videoNode = {
+    "currentAudioTrack": currentTrack,
+    "availableAudioTracks": [
+      { "Track": "1", "Language": "cor" }
+      { "Track": "2", "Language": "cos" }
+      { "Track": "3", "Language": "cre" }
+    ]
+  }
+  
+  m.assertEqual(m.plugin.getAudioLanguage(), countryCode)
+end function
+
+'@Test unknown
+function getAudioLanguage_unknown()
+  m.plugin.videoNode = {
+    "currentAudioTrack": "unknown",
+    "availableAudioTracks": [
+      { "Track": "1", "Language": "cog" }
+      { "Track": "2", "Language": "cod" }
+      { "Track": "3", "Language": "cok" }
+    ]
+  }
+  
+  m.assertEqual(m.plugin.getAudioLanguage(), "en")
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests getSubtitleLanguage
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test
+'@Params["1", "cor", "kw"]
+'@Params["2", "cos", "co"]
+'@Params["3", "cre", "cr"]
+function getSubtitleLanguage_known(currentTrack, trackLanguage, countryCode)
+  m.plugin.videoNode = {
+    "currentSubtitleTrack": currentTrack,
+    "availableSubtitleTracks": [
+      { "TrackName": "1", "Language": "cor" }
+      { "TrackName": "2", "Language": "cos" }
+      { "TrackName": "3", "Language": "cre" }
+    ]
+  }
+  
+  m.assertEqual(m.plugin.getSubtitleLanguage(), countryCode)
+end function
+
+'@Test
+function getSubtitleLanguage_unknown()
+  m.plugin.videoNode = {
+    "currentSubtitleTrack": "unknown",
+    "availableSubtitleTracks": [
+      { "TrackName": "1", "Language": "cog" }
+      { "TrackName": "2", "Language": "cod" }
+      { "TrackName": "3", "Language": "cok" }
+    ]
+  }
+  
+  m.assertEqual(m.plugin.getSubtitleLanguage(), "EN")
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests getProperties
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test
+'@Params["#action1"]
+'@Params["#action2"]
+'@Params[invalid]
+function getProperties(action)
+  contentNode = {
+    "LIVE": true
+    length: 100
+    title: "#title"
+    "id": "#id"
+    "streamInfo": { "measureBitrate": 1000 }
+  }
+  
+  m.plugin.videoNode = {
+    position: 50
+    height: 1080
+    width: 1920
+  }
+  
+  m.plugin.videoResolution = "1920x1080"
+  m.expectOnce(m.plugin, "getAudioLanguage", invalid, "fr")
+  m.expectOnce(m.plugin, "getSubtitleLanguage", invalid, "es")
+  
+  
+  properties = m.plugin.getProperties(contentNode, action)
+  
+  m.assertEqual(properties.height, "1080")
+  m.assertEqual(properties.width, "1920")
+  m.assertEqual(properties.content_title, "#title")
+  m.assertEqual(properties.cms_content_id, "#id")
+  m.assertEqual(properties.video_length, "100")
+  m.assertEqual(properties.video_progress, "50%")
+  m.assertEqual(properties.resolution, "1920x1080")
+  m.assertEqual(properties.audio_language, "fr")
+  m.assertEqual(properties.subtitle_language, "es")
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests postSegementEvent
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test
+'@Params["event1"]
+'@Params["event2"]
+'@Params["event3"]
+function postSegementEvent(eventName)
+  m.plugin.videoNode = { id: "videoPlayer", position: 100 }
+  m.plugin.contentNode = { id: "content", length: 1000 }
+  
+  props = { "id": "props" }
+  m.expectOnce(m.plugin, "getProperties", [m.plugin.contentNode], props)
+  
+  matcher = { "matcher": function(value)
+      return value.name = m.eventName
+    end function
+    "eventName": eventName 
+  }
+
+  m.expectOnce(m.plugin.segmentManager, "callFunc", ["track", eventName, matcher])
+  
+  m.plugin.postSegmentEvent(eventName)
+  
+end function
+
+end namespace
