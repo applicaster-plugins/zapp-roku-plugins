@@ -1,0 +1,114 @@
+'@TestSuite [YVAM] YouboraVideoAnalytics
+
+namespace YVAMTests
+
+'@BeforeEach
+function setUp()
+  m.constants = {
+    youboraTaskComponentName: "Node"
+  }
+  m.config = {
+    accountCode: "testAccount"
+    expectAds: true
+  }
+  m.modelLocator = { constants: m.constants }
+  TU.setModelLocator(m.modelLocator)
+  
+  m.plugin = new YouboraVideoAnalytics(m.config)
+end function
+
+'@AfterEach
+function afterEach()
+  TU.unsetModelLocator()
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests videoStart
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test no task
+'@Params[{ "id" : "content", title: "t1"}, false]
+'@Params[{ "id" : "content", title: "t2"}, false]
+'@Params[{ "id" : "content", title: "t2", LIVE: false}, false]
+'@Params[{ "id" : "content", title: "t2", LIVE: invalid}, false]
+'@Params[{ "id" : "content", title: "t2", LIVE: true}, true]
+function videoStart_no_task(content, expectedLive)
+  videoNode = { "id" : "videoNode" }
+  task = { "id" : "task" }
+  m.plugin.config = { "isConfigSet": true }
+  
+  m.expectOnce(m.plugin, "getInstance", ["youboraAnalyticsTask"], invalid)
+  m.expectOnce(m.plugin, "createInstance", [m.constants.youboraTaskComponentName, videoNode, "youboraAnalyticsTask"], task)
+  m.expectOnce(m.plugin, "setInstance", ["youboraAnalyticsTask", task])
+  
+  m.plugin.videoStart(videoNode, content)
+  
+  m.assertEqual(m.plugin.youboraTask, task)
+  m.assertEqual(task.videoplayer, videoNode)
+  m.assertEqual(task.control, "RUN")
+  m.assertEqual(task.event, { handler: "play" }) 
+  m.assertEqual(task.event, { handler: "play" })
+  m.assertEqual(task.options.content.isLive, expectedLive)
+  m.assertEqual(task.options.content.title, content.title)
+  m.assertTrue(task.options.isConfigSet)
+end function
+
+'@Test task previously existed
+'@Params[{ "id" : "content", title: "t1"}, false]
+'@Params[{ "id" : "content", title: "t2"}, false]
+'@Params[{ "id" : "content", title: "t2", LIVE: false}, false]
+'@Params[{ "id" : "content", title: "t2", LIVE: invalid}, false]
+'@Params[{ "id" : "content", title: "t2", LIVE: true}, true]
+function videoStart_task_previously_existed(content, expectedLive)
+  videoNode = { "id" : "videoNode" }
+  task = { "id" : "task" }
+  m.plugin.config = { "isConfigSet": true }
+  m.expectOnce(m.plugin, "getInstance", ["youboraAnalyticsTask"], task)
+  m.expectNone(m.plugin, "createInstance")
+  m.expectNone(m.plugin, "setInstance")
+  
+  m.plugin.videoStart(videoNode, content)
+  
+  m.assertEqual(m.plugin.youboraTask, task)
+  m.assertEqual(task.event, { handler: "play" })
+  m.assertEqual(task.options.content.isLive, expectedLive)
+  m.assertEqual(task.options.content.title, content.title)
+  m.assertTrue(task.options.isConfigSet)
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests videoEnd
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test invalid task does not crash
+function videoEnd_noTask()
+  m.plugin.videoEnd()
+end function
+
+'@Test stopevent called on end
+function videoEnd_task()
+  m.plugin.youboraTask = { "id" : "task" }
+  
+  m.plugin.videoEnd()
+  
+  m.assertEqual(m.plugin.youboraTask.event, { handler: "stop" })
+  m.assertEqual(m.plugin.youboraTask.taskState, "stop")
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests adTrackingEvent
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test no task
+function adTrackingEvent_noTask()
+  m.plugin.adTrackingEvent("end", {})
+end function
+
+'@Test task
+function adTrackingEvent_task()
+  m.plugin.youboraTask = { "id" : "task" }
+  m.plugin.adTrackingEvent("end", { "id": "raf" })
+  m.assertEqual(m.plugin.youboraTask.adevent, { "id": "raf" })
+end function
+
+end namespace

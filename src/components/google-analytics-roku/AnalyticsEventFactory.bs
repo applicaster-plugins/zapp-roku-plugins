@@ -1,0 +1,11 @@
+import "pkg:/source/rLog/rLogMixin.brs"
+import "pkg:/source/google-analytics-roku/AnalyticsEventFactory.bs"
+
+function init()
+  registerLogger("Analytics", true)
+  m.factory = new AnalyticsEventFactory()
+end function
+
+function getAnalyticsEvent(eventName, arg1 = invalid, arg2 = invalid, arg3 = invalid, arg4 = invalid)
+  return m.factory.getAnalyticsEvent(eventName, arg1, arg2, arg3, arg4)
+end function
