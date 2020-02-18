@@ -3,7 +3,7 @@
 namespace AEFT
 
 '@SetUp
-function AMT_SetUp()
+function setUp()
   m.analytics = new AnalyticsEventFactory()
   m.testItem = CreateObject("roSGNode", "GridContent")
   m.testItem.id = "12345"
@@ -30,7 +30,7 @@ end function
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 '@Test
-function AMT_booleanString()
+function booleanString()
   m.AssertEqual(m.analytics.booleanString(true), "True")
   m.AssertEqual(m.analytics.booleanString(false), "False")
 end function
