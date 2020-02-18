@@ -1,0 +1,11 @@
+<rss
+    version="2.0"
+    xmlns:media="http://search.yahoo.com/mrss/">
+  <channel>
+    <title>{REQUESTOR_ID}</title>
+    <item>
+      <title>{ASSET_NAME}</title>
+      <guid>{ASSET_ID}</guid>
+    </item>
+  </channel>
+</rss>

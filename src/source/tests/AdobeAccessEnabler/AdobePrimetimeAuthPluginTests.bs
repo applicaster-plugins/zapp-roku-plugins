@@ -1,0 +1,366 @@
+
+'@Ignore - FIXME these tests need updating for latest auth manager
+'@TestSuite [APMAT] APMATTests
+namespace APMATTests
+
+function testHelper_mockRequest(mockResponse, httpResponseCode)
+  ' Since Adobe Primetime is stateful on the server side, it makes it
+  ' difficult to do arbitrary calls for API integration testing.
+  mockRequest = RequestModule()
+  mockRequest.origCreateRequest = mockRequest.createRequest
+  mockRequest.mockResponse = formatJson(mockResponse)
+  mockRequest.mockHttpResponseCode = httpResponseCode
+  mockRequest.createRequest = function(url, options)
+    request = m.origCreateRequest(url, options)
+    request.mockResponse = m.mockResponse ' tunnel from module to request object
+    request.response = {
+      code: m.mockHttpResponseCode
+    }
+    request.start = function(sync)
+      ' actual mock response here
+      return m.mockResponse
+    end function
+    return request
+  end function
+  return mockRequest
+end function
+
+'@SetUp
+function SetUp()
+  m.mockRequestHelper = APMATTests.testHelper_mockRequest
+  
+  m.constants = GetConstants()
+  m.pluginConfig = {
+    publicKey: "abcdef"
+    secret: "123456"
+    requestorID: "sampleRequestorId"
+    resourceID: "sampleResourceId"
+    base_url: "#base_url"
+  }
+  m.modelLocator = createObject("roSGnode", "ModelLocator")
+
+  m.adobe = new AdobePrimetimeAuthPlugin(RequestModule(), UriModule(), m.constants, m.pluginConfig, m.modelLocator)
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests login
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test
+function login()
+  login = m.adobe.login()
+  m.assertInvalid(login.jwt)
+  m.assertEqual(login.state, "error")
+  m.assertTrue(login.code = -1)
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests verify
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test
+function verify()
+  mockResponse = {
+    "mvpd": "sampleMvpdId",
+    "resource": "sampleResourceId",
+    "requestor": "sampleRequestorId",
+    "expires": "1348148289000"
+  }
+  mockRequest = m.mockRequestHelper(mockResponse, 200)
+  adobe = new AdobePrimetimeAuthPlugin(mockRequest, UriModule(), m.constants, m.pluginConfig, m.modelLocator)
+  ' token is ignored by verification code except to see if "expires" exists
+  token = {
+    "expires": "1348148289000"
+  }
+  response = adobe.verify(FormatJSON(token))
+  m.assertNotInvalid(response)
+  m.assertNotInvalid(response.token)
+  m.assertEqual(response.state, "valid")
+  
+end function
+
+'@Test unauthenticated
+function verify_unauthenticated()
+  mockResponse = {
+    "status": 403,
+    "message": "User not Authenticated"
+  }
+  mockRequest = m.mockRequestHelper(mockResponse, 403)
+  adobe = new AdobePrimetimeAuthPlugin(mockRequest, UriModule(), m.constants, m.pluginConfig, m.modelLocator)
+  ' token is ignored by verification code except to see if "expires" exists
+  token = {
+    "expires": "1348148289000"
+  }
+  response = adobe.verify(FormatJSON(token))
+  m.assertNotInvalid(response)
+  m.assertInvalid(response.jwt)
+  m.assertInvalid(response.token)
+  m.assertEqual(response.state, "error")
+end function
+
+'@Test bad token
+function verify_badToken()
+  response = m.adobe.verify("badToken")
+  m.assertNotInvalid(response)
+  m.assertInvalid(response.jwt)
+  m.assertInvalid(response.token)
+  m.assertEqual(response.state, "error")
+  
+end function
+
+'@Test invalid token
+function verify_invalidToken()
+  response = m.adobe.verify(invalid)
+  m.assertNotInvalid(response)
+  m.assertInvalid(response.jwt)
+  m.assertInvalid(response.token)
+  m.assertEqual(response.state, "error")
+  
+end function
+
+'@Test failed request
+function verify_failedRequest()
+  mockResponse = {
+    "status": 403,
+    "message": "User not Authenticated"
+  }
+  mockRequest = m.mockRequestHelper(mockResponse, - 1)
+  adobe = new AdobePrimetimeAuthPlugin(mockRequest, UriModule(), m.constants, m.pluginConfig, m.modelLocator)
+  ' token is ignored by verification code except to see if "expires" exists
+  token = {
+    "expires": "1348148289000"
+  }
+  response = adobe.verify(FormatJSON(token))
+  m.assertNotInvalid(response)
+  m.assertInvalid(response.jwt)
+  m.assertInvalid(response.token)
+  m.assertEqual(response.state, "error")
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests regcode
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test
+function regcode()
+  ' gathered from an actual regcode API response
+  mockResponse = {
+    "id": "0c0166e1-9596-4826-a6a4-85a19692d2f4"
+    "code": "JHXGWRH"
+    "requestor": "sampleRequestorId"
+    "mvpd": "CenturyLink"
+    "generated": 1531575566023
+    "expires": 1531577366023
+    "info": {
+      "deviceId": "MzA5YzI5YzUyNDc4YTc1MWY0NDI3NTU2YTJlZTFhYjQzNWI1YzUzMg=="
+      "deviceType": invalid
+      "deviceUser": invalid
+      "appId": invalid
+      "appVersion": invalid
+      "registrationURL": invalid
+      "deviceInfo": "eyJ0eXBlIjoiVW5rbm93biIsIm1vZGVsIjpudWxsLCJ2ZXJzaW9uIjp7Im1ham9yIjowLCJtaW5vciI6MCwicGF0Y2giOjAsInByb2ZpbGUiOiIifSwiaGFyZHdhcmUiOnsibmFtZSI6bnVsbCwidmVuZG9yIjpudWxsLCJ2ZXJzaW9uIjp7Im1ham9yIjowLCJtaW5vciI6MCwicGF0Y2giOjAsInByb2ZpbGUiOiIifSwibWFudWZhY3R1cmVyIjpudWxsfSwib3BlcmF0aW5nU3lzdGVtIjp7Im5hbWUiOm51bGwsImZhbWlseSI6bnVsbCwidmVuZG9yIjpudWxsLCJ2ZXJzaW9uIjp7Im1ham9yIjowLCJtaW5vciI6MCwicGF0Y2giOjAsInByb2ZpbGUiOiIifX0sImJyb3dzZXIiOnsibmFtZSI6bnVsbCwidmVuZG9yIjpudWxsLCJ2ZXJzaW9uIjp7Im1ham9yIjowLCJtaW5vciI6MCwicGF0Y2giOjAsInByb2ZpbGUiOiIifSwidXNlckFnZW50IjoiY3VybC83LjU0LjAiLCJvcmlnaW5hbFVzZXJBZ2VudCI6ImN1cmwvNy41NC4wIn0sImRpc3BsYXkiOnsid2lkdGgiOjAsImhlaWdodCI6MCwicHBpIjowLCJuYW1lIjoiRElTUExBWSIsInZlbmRvciI6bnVsbCwidmVyc2lvbiI6bnVsbCwiZGlhZ29uYWxTaXplIjpudWxsfX0="
+      "userAgent": "Roku/DVP"
+      "connectionInfo": "eyJpcEFkZHJlc3MiOiI2OC4yMzMuMTkwLjE3OSIsInNlY3VyZU5ldHdvcmsiOmZhbHNlLCJuZXR3b3JrVHlwZSI6bnVsbH0="
+    }
+  }
+  mockRequest = m.mockRequestHelper(mockResponse, 201)
+  adobe = new AdobePrimetimeAuthPlugin(mockRequest, UriModule(), m.constants, m.pluginConfig, m.modelLocator)
+  regcode = adobe.regcode()
+  m.assertNotInvalid(regcode)
+  m.assertNotInvalid(regcode.regcode)
+  m.assertEqual(regcode.state, "none")
+  
+end function
+
+'@Test unauthorized
+function regcode_unauthorized()
+  ' gathered from an actual regcode API response
+  mockResponse = {}
+  mockRequest = m.mockRequestHelper(mockResponse, 401)
+  adobe = new AdobePrimetimeAuthPlugin(mockRequest, UriModule(), m.constants, m.pluginConfig, m.modelLocator)
+  regcode = adobe.regcode()
+  m.assertNotInvalid(regcode)
+  m.assertInvalid(regcode.regcode)
+  m.assertNotInvalid(regcode.code)
+  m.assertTrue(regcode.code = -1)
+  m.assertEqual(regcode.state, "error")
+  
+end function
+
+'@Test failed request
+function regcode_failedRequest()
+  ' gathered from an actual regcode API response
+  mockResponse = {}
+  mockRequest = m.mockRequestHelper(invalid, - 1)
+  adobe = new AdobePrimetimeAuthPlugin(mockRequest, UriModule(), m.constants, m.pluginConfig, m.modelLocator)
+  regcode = adobe.regcode()
+  m.assertNotInvalid(regcode)
+  m.assertInvalid(regcode.regcode)
+  m.assertNotInvalid(regcode.code)
+  m.assertTrue(regcode.code = -1)
+  m.assertEqual(regcode.state, "error")
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests poll
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test 
+function poll()
+  ' poll makes 2 calls on success, AuthN and AuthZ.  Their responses
+  ' are nearly identical and use the same dictionary of fields so
+  ' we mock with a single superset of expected fields.
+  mockResponse = {
+    "mvpd": "sampleMvpdId",
+    "userId": "sampleUserId",
+    "resource": "sampleResourceId",
+    "requestor": "sampleRequestorId",
+    "expires": "1348148289000"
+  }
+  ' 404 is expected when the 2nd screen hasn't completed
+  mockRequest = m.mockRequestHelper(mockResponse, 200)
+  adobe = new AdobePrimetimeAuthPlugin(mockRequest, UriModule(), m.constants, m.pluginConfig, m.modelLocator)
+  token = adobe.poll("")
+  m.assertNotInvalid(token)
+  m.assertNotInvalid(token.token)
+  m.assertEqual(token.state, "valid")
+  
+end function
+
+'@Test not found
+function poll_notFound()
+  mockResponse = {
+    "status": 404
+    "message": "Not Found"
+  }
+  ' 404 is expected when the 2nd screen hasn't completed
+  mockRequest = m.mockRequestHelper(mockResponse, 404)
+  adobe = new AdobePrimetimeAuthPlugin(mockRequest, UriModule(), m.constants, m.pluginConfig, m.modelLocator)
+  token = adobe.poll("regcode") ' regcode is not used by Adobe Primetime poll
+  m.assertNotInvalid(token)
+  m.assertNotInvalid(token.code)
+  m.assertEqual(token.state, "error")
+  
+end function
+
+'@Test expired
+function poll_expired()
+  mockResponse = {
+    "status": 410
+    "message": "Gone"
+  }
+  mockRequest = m.mockRequestHelper(mockResponse, 410)
+  adobe = new AdobePrimetimeAuthPlugin(mockRequest, UriModule(), m.constants, m.pluginConfig, m.modelLocator)
+  token = adobe.poll("regcode") ' regcode is not used by Adobe Primetime poll
+  m.assertNotInvalid(token)
+  m.assertNotInvalid(token.code)
+  m.assertEqual(token.state, "error")
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests logout
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test
+function logout()
+  ' actual response from Adobe is empty, 0 bytes
+  mockResponse = {}
+  mockRequest = m.mockRequestHelper(mockResponse, 204)
+  adobe = new AdobePrimetimeAuthPlugin(mockRequest, UriModule(), m.constants, m.pluginConfig, m.modelLocator)
+  ' adobe doesn't need a token to clear its server state
+  token = adobe.logout("faketoken")
+  m.assertNotInvalid(token)
+  m.assertInvalid(token.jwt)
+  m.assertInvalid(token.token)
+  m.assertEqual(token.state, "none")
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests singRequest
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test
+function signRequest()
+  testTimestamp = 1531234280
+  testNonce = "8bab0b10-3cf6-4a95-94b6-0a0b14d19a33"
+  signatureToMatch = "er0qdLzoW0BkIh79hetfrQiWi3I="
+  headerToMatch = "POST requestor_id=sampleRequestorId, "
+  headerToMatch += "nonce=8bab0b10-3cf6-4a95-94b6-0a0b14d19a33, "
+  headerToMatch += "signature_method=HMAC-SHA1, request_time=1531234280000, "
+  headerToMatch += "request_uri=/path, public_key=abcdef, "
+  headerToMatch += "signature=VUv1xliLJUMIozvXaGzKYR6MjZY="
+  authHeader = m.adobe.signRequest("POST", "/path", testNonce, testTimestamp)
+  m.assertNotInvalid(authHeader)
+  m.assertEqual(authHeader, headerToMatch)
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests that the base_url is driven by the plugin
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test
+'@Params["url1"]
+'@Params["url2"]
+function setsbase_url(url)
+  m.pluginConfig = {
+    publicKey: "abcdef"
+    secret: "123456"
+    requestorID: "sampleRequestorId"
+    resourceID: "sampleResourceId"
+    base_url: url
+  }
+  m.adobe = new AdobePrimetimeAuthPlugin(RequestModule(), UriModule(), m.constants, m.pluginConfig, m.modelLocator)
+  
+  m.assertEqual(m.adobe.config.base_url, url)
+  
+end function
+
+'@Test no url set results in default
+'@Params[invalid]
+'@Params[""]
+function setsbase_url_invalid(url)
+  m.pluginConfig = {
+    publicKey: "abcdef"
+    secret: "123456"
+    requestorID: "sampleRequestorId"
+    resourceID: "sampleResourceId"
+    base_url: url
+  }
+  m.adobe = new AdobePrimetimeAuthPlugin(RequestModule(), UriModule(), m.constants, m.pluginConfig, m.modelLocator)
+  
+  m.assertEqual(m.adobe.config.base_url, "https://api.auth.adobe.com")
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests getResourceText
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test loads template text
+function getResourceText_loadsText()
+  m.assertNotEmpty(m.adobe.getResourceText(invalid))
+  
+end function
+
+'@Test replaces fields
+function getResourceText_replacesText()
+  m.pluginConfig = {
+    publicKey: "abcdef"
+    secret: "123456"
+    requestorID: "sampleRequestorId"
+    resourceID: "sampleResourceId"
+    base_url: "#url"
+  }
+  m.adobe = new AdobePrimetimeAuthPlugin(RequestModule(), UriModule(), m.constants, m.pluginConfig, m.modelLocator)
+  
+  text = m.adobe.getResourceText(invalid)
+  
+end function
+
+end namespace

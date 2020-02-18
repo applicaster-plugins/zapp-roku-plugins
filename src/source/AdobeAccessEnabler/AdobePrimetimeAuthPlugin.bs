@@ -1,0 +1,297 @@
+'@Ignore - this suite of tests has to be updated for the new AuthManager pattern
+import "pkg:/source/authorization/BaseAuthPlugin.bs" 
+import "pkg:/source/lib/request.bs" 
+import "pkg:/source/lib/uri.bs" 
+import "pkg:/source/authorization/JWTUtil.bs"
+
+namespace APAM
+class AdobePrimetimeAuthPlugin extends BaseAuthPlugin
+
+private resourceID = ""
+private requestorID = ""
+private secret = ""
+private publicKey = ""
+private base_url = ""
+
+public function new(plugin)
+  m.super("AdobePrimetime", plugin) 
+  
+  m.request = m.getClassInstance("RequestModule")
+  m.JWTUtil = m.getClassInstance("JWTUtilModule")
+  m.uri = m.getClassInstance("URIModule")
+
+  m.resourceID = plugin.getStringValue("resourceID", "")
+  m.requestorID = plugin.getStringValue("requestorID", "")
+  m.secret = plugin.getStringValue("secret", "")
+  m.publicKey = plugin.getStringValue("publicKey", "")
+  m.base_url = plugin.getStringValue("base_url", "")
+  
+  if m.base_url = invalid or m.base_url.trim() = ""
+    m.base_url = "https://api.auth.adobe.com"
+  end if
+  
+  m.constants = m.getInstance("constants")
+  m.request = request
+  m.uri = uri
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ overridden
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+override public function _verify()
+  ' We don't need the token for the AuthZ calls, but we
+  ' do a simple local verification just to make sure AuthN completed
+  if m.authData <> invalid and MU.isString(m.authData.token)
+    parsed = ParseJSON(m.authData.token)
+
+    if parsed <> invalid and parsed.expires <> invalid and parsed.expires <> ""
+      return m.getAuthorization()
+    end if
+
+  end if
+  ' Here if the local token is invalid.  Don't treat it as an error,
+  ' rather just as if there was not a valid token
+  return m.createErrorResult("Invalid token for verification")
+end function
+
+override public function _regcode()
+  m.logMethod("regCode_")
+  ' <REGGIE_FQDN>/reggie/v1/{requestorId}/regcode
+  requestPath = "/reggie/v1/" + m.requestorID + "/regcode"
+  postData = "deviceId=" + m.constants.applicasterDeviceId
+  method = "POST"
+  options = {
+    body: postData
+    headers: {
+      "Accept": "application/json"
+      "Authorization": m.signRequest(method, requestPath)
+    }
+    method: method
+  }
+  
+  url = m.base_url + requestPath
+  request = m.request.createRequest(url, options)
+  result = request.start(true)
+  m.logInfo("result is ", result)
+  if result <> invalid and result <> "" then
+    parsed = ParseJSON(result)
+    if parsed <> invalid and parsed.code <> invalid and parsed.code <> ""
+      result = {
+        "regcode": parsed.code
+        "state": "none"
+        "code": 0
+        "message": ""
+      }
+      if type(request.urlevent) = "roUrlEvent"
+        result.code = request.urlevent.getResponseCode()
+      end if
+      return result
+    end if
+  end if
+  request.print("ERROR: regcode")
+  return m.createErrorResult("Unknown error")
+end function
+
+override public function _poll()
+  m.logMethod("poll_")
+  ' <SP_FQDN>/api/v1/tokens/authn
+  requestPath = "/api/v1/tokens/authn"
+  method = "GET"
+  options = {
+    headers: {
+      "Accept": "application/json"
+      "Authorization": m.signRequest(method, requestPath)
+    }
+    method: method
+  }
+  params = {
+    "requestor": m.requestorID
+    "deviceId": m.constants.applicasterDeviceId
+  }
+  
+  url = m.base_url + requestPath + "?" + m.uri.encodeParams(params)
+  m.logInfo("params are", params)
+  m.logInfo("url is ", url)
+  request = m.request.createRequest(url, options)
+  result = request.start(true)
+  m.logInfo("result is:", result)
+  if result <> invalid and result <> "" then
+    parsed = ParseJSON(result)
+    '
+    if parsed <> invalid and parsed.userId <> invalid and parsed.userId <> ""
+      m.logInfo("valid userId getting authorization: ", parsed.userId)
+      return m.getAuthorization()
+    else
+      m.logInfo("invalid userId ignoring")
+    end if
+  end if
+  request.print("ERROR: poll")
+  state = "error"
+  if request.response <> invalid
+    if request.response.code = 404
+      state = "none"
+    else if request.response.code = 410
+      ' 410 is expected if the authn token (i.e. reg code) has expired.  We take
+      ' a strategic approach not to introduce a new auth state and raise it to
+      ' the UI.  If it truly is expired, the 2nd screen will show that error
+      ' message and the user can just refresh to get a new code.
+      state = "none"
+    end if
+  end if
+  return m.createErrorResult("Unknown error")
+end function
+
+override public function _logOut()
+  ' <SP_FQDN>/api/v1/logout
+  requestPath = "/api/v1/logout"
+  method = "DELETE"
+  options = {
+    headers: {
+      "Accept": "application/json"
+      "Authorization": m.signRequest(method, requestPath)
+    }
+    method: method
+  }
+  params = {
+    "deviceId": m.constants.applicasterDeviceId
+  }
+  
+  url = m.base_url + requestPath + "?" + m.uri.encodeParams(params)
+  request = m.request.createRequest(url, options)
+  result = request.start(true)
+  if request.response = invalid or request.response.code = invalid or request.response.code <> 204
+    request.print("ERROR: logout")
+  end if
+  return {
+    "jwt": invalid
+    "token": invalid
+    "state": "none"
+    "code": 0
+    "message": ""
+  }
+end function
+
+
+override public function configureAuthenticationFlow(flow)
+  m.logMethod("configureAuthenticationFlow")
+  flow.isPreSelectionRequiredBeforeRegister = true
+  flow.flowType = "regcode"
+end function
+
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ private impl
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+''''''''''''''''''
+' getAuthorization
+'
+'
+private function getAuthorization()
+  m.logMethod("getAuthorization")
+  ' <SP_FQDN>/api/v1/authorize
+  requestPath = "/api/v1/authorize"
+  method = "GET"
+  options = {
+    headers: {
+      "Accept": "application/json"
+      "Authorization": m.signRequest(method, requestPath)
+    }
+    method: method
+  }
+  params = {
+    "requestor": m.requestorID
+    "deviceId": m.constants.applicasterDeviceId
+    "resource": m.getResourceText()
+  }
+  
+  url = m.base_url + requestPath + "?" + m.uri.encodeParams(params)
+  
+  m.logInfo("params are", params)
+  m.logInfo("url is ", url)
+  
+  request = m.request.createRequest(url, options)
+  result = request.start(true)
+  m.logInfo("result: ", result)
+  if result <> invalid and result <> "" then
+    parsed = ParseJSON(result)
+    '
+    if parsed <> invalid and parsed.expires <> invalid and parsed.expires <> ""
+      token = {
+        "jwt": invalid
+        "token": result ' string persistable in the registry
+        "state": "valid"
+        "code": 0
+        "message": ""
+      }
+      if type(request.urlevent) = "roUrlEvent"
+        token.code = request.urlevent.getResponseCode()
+      end if
+      return token
+    end if
+  end if
+  request.print("ERROR: getAuthorization")
+  state = "error"
+  if request.response <> invalid
+    if request.response.code = 403
+      state = "none"
+    end if
+  end if
+  return m.createErrorResult("Unknown error")
+end function
+
+
+private function signRequest(method, path, nonce = invalid, timestamp = 0)
+  di = CreateObject("roDeviceInfo")
+  if nonce = invalid
+    nonce = di.GetRandomUUID()
+  end if
+  if timestamp = 0
+    timestamp = CreateObject("roDateTime").AsSeconds()
+  end if
+  timeString = stri(timestamp, 10) + "000"
+  stringToSign = method
+  stringToSign += " requestor_id=" + m.requestorID
+  stringToSign += ", nonce=" + nonce
+  stringToSign += ", signature_method=HMAC-SHA1"
+  stringToSign += ", request_time=" + timeString
+  stringToSign += ", request_uri=" + path
+  byteArray = CreateObject("roByteArray")
+  byteArray.FromAsciiString(stringToSign)
+  digest = CreateObject("roHMAC")
+  privateKey = CreateObject("roByteArray")
+  privateKey.fromAsciiString(m.secret)
+  if digest.setup("sha1", privateKey) <> 0
+    m.logError("signRequest: failed to set up HMAC digest")
+    return invalid
+  end if
+  signature = digest.process(byteArray)
+  signatureBase64 = signature.toBase64String()
+  header = stringToSign
+  header += ", public_key=" + m.publicKey
+  header += ", signature=" + signatureBase64
+  return header
+end function
+
+private function getResourceText(content = invalid)
+  if content = invalid
+    content = m.getInstance("selectedContentItem")
+    m.logInfo(">>>> using content", content)
+  end if
+  
+  if content <> invalid
+    template = ReadAsciiFile("pkg:/source/authorization/adobeAuthorizationTemplate.xml")
+    template = template.replace("{REQUESTOR_ID}", m.requestorID)
+    template = template.replace("{ASSET_ID}", content.id)
+    template = template.replace("{ASSET_NAME}", content.title)
+    return template
+  else 
+    return m.requestorID
+  end if
+end function
+
+end class
+
+end namespace

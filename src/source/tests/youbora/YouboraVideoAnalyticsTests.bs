@@ -3,7 +3,7 @@
 namespace YVAMTests
 
 '@BeforeEach
-function setUp()
+function beforeEach()
   m.constants = {
     youboraTaskComponentName: "Node"
   }
