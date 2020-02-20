@@ -33,6 +33,10 @@ override public function start()
   }
 
   m.library.init(config)
+
+  'we only support hardocded support for gygia right now
+  'TODO add other account types
+  m.identify("gygia")
 end function
 
 override public function identify(plugin = "gygia", traits = {}, options = {})

@@ -63,7 +63,7 @@ private function onSDKLoadStatusChange(status)
     m.bindNodeField(m.player, m.playerFields.CURRENT_TIME, "onPlayerCurrentTimeChange", bindingProperties)
     ' m.bindNodeField(m.playerFields.SEEK, "onPlayerSeek", bindingProperties)
     ' m.bindNodeField(m.playerFields.SEEKED, "onPlayerSeeked", bindingProperties)
-    m.bitmovinPlayer.callFunc(m.playerFunctions.SETUP, {
+    m.player.callFunc(m.playerFunctions.SETUP, {
       key: m.licenseKey
     })
     m.isValid = true
@@ -79,11 +79,11 @@ public function playItem(item)
   
   m.currentItem = item
   m.state = "playing"
-  playerData = m.getPlayerData(m.currentItem, result.data)
+  playerData = m.getPlayerData(m.currentItem)
   m.player.callFunc(m.playerFunctions.LOAD, playerData)
 end function
 
-public function getPlayerData(item, url)
+public function getPlayerData(item)
   
   'TODO - ascertain media type; but that's TBD and I need DSP entries to look at first
   'TODO if there is a hardcoded url, use that; but I need to know the media types for that too.
