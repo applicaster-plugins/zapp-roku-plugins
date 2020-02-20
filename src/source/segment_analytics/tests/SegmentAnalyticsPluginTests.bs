@@ -52,6 +52,7 @@ function start()
     "queueSize": 3
     "retryLimit": 0
   }])
+  m.expectOnce(m.plugin, "identify", ["gygia"])
 
   m.plugin.start()
 end function

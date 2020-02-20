@@ -87,7 +87,7 @@ function constructor_validPlugin()
     "override_video_url": "#override"
   }
   
-  m.modelLocator.plugins = [PPMT_CreatePluginJson("tva-bitmovin-player-plugin-roku", pluginJson)] 
+  m.modelLocator.plugins = [PPMT_CreatePluginJson("bitmovin-player-roku", pluginJson)] 
   
   m.vm = new ZBitMovinPlayerVM(m.view)
   
@@ -124,13 +124,17 @@ end function
 function onLoadSDKStatusChange_ready()
   
   properties = MOM.createBindingProperties(false)
-  
+  m.vm.licenseKey = "#key"
   m.expectOnce(m.vm.view, "createChild", ["BitmovinPlayerSDK:BitmovinPlayer"], m.player)
   m.expectOnce(m.vm, "bindNodeField", [m.player, "playerState", "onPlayerStateChange", properties], m.player)
   m.expectOnce(m.vm, "bindNodeField", [m.player, "error", "onPlayerVideoError", properties])
   m.expectOnce(m.vm, "bindNodeField", [m.player, "currentTime", "onPlayerCurrentTimeChange", properties])
   
-  m.vm.onSDKLoadSTatusChange("ready") 
+  m.expectOnce(m.player, "callFunc", [m.player.BitmovinFunctions.SETUP, {
+    key:"#key"
+  }])
+  
+  m.vm.onSDKLoadStatusChange("ready") 
   
   m.assertEqual(m.vm.state, "ready")
   m.assertEqual(m.vm.player, m.player)
@@ -224,10 +228,12 @@ end function
 '@Test
 function playItem()
   item = { "id": "a" }
+  playerData = { "id" : "playerData" }
+  
   m.vm.state = "ready"
   m.vm.player = m.player
   m.vm.playerFunctions = m.player.BitmovinFunctions
-  m.expectOnce(m.vm, "getPlayerData", [m.vm.currentItem, "url"], playerData)
+  m.expectOnce(m.vm, "getPlayerData", [item], playerData)
   m.expectOnce(m.vm.player, "callFunc", [m.player.BitmovinFunctions.LOAD, playerData])
   
   m.vm.playItem(item)

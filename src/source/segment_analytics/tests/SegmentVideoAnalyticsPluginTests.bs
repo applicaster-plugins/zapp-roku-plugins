@@ -11,7 +11,7 @@ function beforeEach()
   
   m.modelLocator = { 
     "constants" : m.constants
-    "SegmentAnalyticsPlugin" : m.analyticsManager
+    "analyticsManager" : m.analyticsManager
   }
   
   TU.setModelLocator(m.modelLocator)
@@ -30,7 +30,7 @@ end function
 
 '@Test
 function constructor()
-  m.assertEqual(m.plugin.segmentManager, m.analyticsManager)
+  m.assertEqual(m.plugin.analyticsManager, m.analyticsManager)
   m.assertEqual(m.plugin.deviceInfo, m.constants.deviceInfo)
   m.assertEqual(m.plugin.videoHeight, "1080")
   m.assertEqual(m.plugin.videoResolution, "1920x1080")
@@ -307,7 +307,7 @@ function postSegementEvent(eventName)
     "eventName": eventName 
   }
 
-  m.expectOnce(m.plugin.segmentManager, "callFunc", ["track", eventName, matcher])
+  m.expectOnce(m.plugin.analyticsManager, "callFunc", ["track", eventName, matcher])
   
   m.plugin.postSegmentEvent(eventName)
   
