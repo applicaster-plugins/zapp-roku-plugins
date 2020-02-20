@@ -12,7 +12,7 @@ private contentNode = invalid
 
 public function new(pluginJson)
   m.super("SegmentVideoAnalyticsPlugin")
-  m.segmentManager = m.getInstance("segmentAnalyticsManager")
+  m.analyticsManager = m.getInstance("AnalyticsManager")
   m.heartbeatInterval = 15
   constants = m.getInstance("constants")
   m.deviceInfo = constants.deviceInfo
@@ -415,7 +415,7 @@ end function
 public function postSegmentEvent(eventName)
   properties = m.getProperties(m.contentNode)
   properties.name = eventName
-  m.segmentManager.callFunc("track", eventName, properties)
+  m.analyticsManager@.track(eventName, AnalyticsManager)
 end function
 
 end class

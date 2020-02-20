@@ -1,43 +1,41 @@
-import "pkg:/source/lib/ZBaseClass.bs"
 import "pkg:/source/plugin-support/BasePlugin.bs"
 import "pkg:/source/plugin-support/PluginManager.bs"
 import "./SegmentAnalyticsConnector.brs"
+import "pkg:/source/analytics/BaseAnalyticsPlugin"
 
 namespace SegmentAM
-class SegmentAnalyticsManager extends ZBaseClass
+class SegmentAnalyticsPlugin extends BaseAnalyticsPlugin
 
-public isEnabled = false
 public isIdentified = false
+private writeKey = ""
+private isDebug = false
 
-public function new()
-  m.super("SegmentAnalyticsManager")
+public function new(plugin)
+  m.super("SegmentAnalyticsPlugin", plugin)
   
-  pluginProvider = new PluginManager(m.getInstance("plugins"))
-  plugin = pluginProvider.getPluginById("segment_analytics")
-  m.isEnabled = plugin.isValid
+  m.segmentTask = createObject("roSGNode", "SegmentAnalyticsTask")
+  m.segmentTask.id = "segmentAnalyticsTask"
   
-  if m.isEnabled
-    m.segmentTask = createObject("roSGNode", "SegmentAnalyticsTask")
-    m.segmentTask.id = "segmentAnalyticsTask"
-    constants = m.getInstance("constants")
-    m.applicasterDeviceId = constants.applicasterDeviceId
-    
-    m.library = SegmentAnalyticsConnector(m.segmentTask)
-    
-    config = {
-      "writeKey": plugin.getStringValue("write_key", "")
-      "debug": true
-      "queueSize": 3
-      "retryLimit": 0
-    }
-    
-    m.library.init(config)
-  else
-    m.logInfo("SegmentAnalytics plugin is not configured for this app - segment analytics is unavailable")
-  end if
+  constants = m.getInstance("constants")
+  m.applicasterDeviceId = constants.applicasterDeviceId
+  m.writeKey = plugin.getStringValue("write_key")
+  m.isDebug = plugin.getBoolValue("is_debug")
+  
+  m.library = SegmentAnalyticsConnector(m.segmentTask)
 end function
 
-public function identify(plugin = "gygia", traits = {}, options = {})
+override public function start()
+  config = {
+    "writeKey": m.writeKey
+    "debug": true
+    "queueSize": 3
+    "retryLimit": 0
+  }
+
+  m.library.init(config)
+end function
+
+override public function identify(plugin = "gygia", traits = {}, options = {})
   m.logInfo("identify", plugin)
   
   m.defaultOptions = m.getDefaultOptions()
@@ -56,14 +54,18 @@ public function identify(plugin = "gygia", traits = {}, options = {})
   end if 
 end function
 
-public function unidentify(plugin = "gygia")
+override public function unidentify(plugin = "gygia")
   m.isIdentified = false
   m.defaultOptions = m.getDefaultOptions()
   m.defaultProperties = m.getDefaultProperties()
   m.library.identify("anonymous", m.defaultOptions, m.defaultProperties)
 end function
 
-public function track(eventName, actionName = invalid, properties = {}, options = {})
+override public function track(eventName, properties = {}, options = {})
+  m.trackEvent(eventName, invalid, properties, options)
+end function
+
+override public function trackEvent(eventName, actionName = invalid, properties = {}, options = {})
   
   if actionName <> invalid
     properties.name = eventName
