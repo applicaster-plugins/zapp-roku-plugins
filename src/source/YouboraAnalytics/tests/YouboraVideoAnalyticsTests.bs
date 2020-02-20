@@ -6,13 +6,13 @@ namespace YVAMTests
 function beforeEach()
   AppService.clearClassInstances()
   
-  config = {
+  m.config = {
     "account_code": "#ac"
     "is_debug": 1
     "task_name": "Node"
   }
 
-  m.pluginData = new BasePlugin({ "configuration_json": config, "identifier": "youbora" })
+  m.pluginData = new BasePlugin({ "configuration_json": m.config, "identifier": "youbora" })
   
   m.plugin = new YouboraVideoAnalytics(m.pluginData)
 end function
@@ -35,10 +35,10 @@ end function
 function videoStart_no_task(content, expectedLive)
   videoNode = { "id" : "videoNode" }
   task = { "id" : "task" }
-  m.plugin.config = { "isConfigSet": true }
+  m.plugin.taskName = "YBPluginRokuVideo"
   
   m.expectOnce(m.plugin, "getInstance", ["youboraAnalyticsTask"], invalid)
-  m.expectOnce(m.plugin, "createInstance", [m.constants.youboraTaskComponentName, videoNode, "youboraAnalyticsTask"], task)
+  m.expectOnce(m.plugin, "createInstance", ["YBPluginRokuVideo", videoNode, "youboraAnalyticsTask"], task)
   m.expectOnce(m.plugin, "setInstance", ["youboraAnalyticsTask", task])
   
   m.plugin.videoStart(videoNode, content)
@@ -50,7 +50,7 @@ function videoStart_no_task(content, expectedLive)
   m.assertEqual(task.event, { handler: "play" })
   m.assertEqual(task.options.content.isLive, expectedLive)
   m.assertEqual(task.options.content.title, content.title)
-  m.assertTrue(task.options.isConfigSet)
+  
 end function
 
 '@Test task previously existed
@@ -73,7 +73,7 @@ function videoStart_task_previously_existed(content, expectedLive)
   m.assertEqual(task.event, { handler: "play" })
   m.assertEqual(task.options.content.isLive, expectedLive)
   m.assertEqual(task.options.content.title, content.title)
-  m.assertTrue(task.options.isConfigSet)
+  
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

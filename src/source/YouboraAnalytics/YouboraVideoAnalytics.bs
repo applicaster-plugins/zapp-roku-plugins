@@ -57,7 +57,7 @@ private taskName = "YBPluginRokuVideo"
 override public function new(plugin)
   
   m.super("YouboraVideoAnalytics")
-  m.taskName = plugin.getStringValue("task_name")
+  m.taskName = plugin.getStringValue("task_name", "YBPluginRokuVideo")
   
   m.config = {
     "accountCode": plugin.getStringValue("account_code")
