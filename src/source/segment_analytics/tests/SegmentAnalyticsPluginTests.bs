@@ -1,0 +1,58 @@
+'@TestSuite [SAPT] SegmentAnalyticsPluginTests
+
+namespace SAPT
+
+'@BeforeEach
+function beforeEach()
+  config = {
+    "write_key": "#w"
+  }
+  m.modelLocator = createObject("roSGNode", "ModelLocator")
+  m.modelLocator.constants = {
+    "applicasterDeviceId": "#a"
+  }
+  TU.setModelLocator(m.modelLocator)
+
+  m.pluginData = new BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
+  
+  m.plugin = new SegmentAnalyticsPlugin(m.pluginData)
+end function
+
+'@AfterEach
+function afterEach()
+  TU.unsetModelLocator()
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests constructor
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test constructor
+function constructor()
+  m.assertEqual(m.plugin.id, "segment_analytics_roku")
+  m.assertSubType(m.plugin.segmentTask, "SegmentAnalyticsTask")
+  m.assertEqual(m.plugin.writeKey, "#w")
+  m.assertEqual(m.plugin.applicasterDeviceId, "#a")
+  m.assertNotInvalid(m.plugin.library)
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests start
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test start
+function start()
+  
+  library = { "id" : "library" }
+  m.plugin.library = library
+  
+  m.expectOnce(library, "init", [{
+    "writeKey": "#w"
+    "debug": true
+    "queueSize": 3
+    "retryLimit": 0
+  }])
+
+  m.plugin.start()
+end function
+

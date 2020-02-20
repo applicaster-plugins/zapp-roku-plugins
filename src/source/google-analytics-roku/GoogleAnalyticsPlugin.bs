@@ -1,0 +1,24 @@
+import "pkg:/source/analytics/BaseAnalyticsPlugin"
+
+namespace GoogleAnalyticsP
+
+class GoogleAnalyticsPlugin extends BaseAnalyticsPlugin
+
+public isEnabled = false
+public isIdentified = false
+
+public function new(plugin)
+  m.super("GoogleAnalyticsPlugin", plugin)
+  m.task = m.createInstance("GoogleAnalyticsTask", invalid, "googleAnalyticsTask")
+  
+  m.task.trackingId = plugin.getStringValue("tracking_id")
+  m.task.clientId = plugin.getStringValue("client_id")
+end function
+
+override public function start()
+  m.setInstance("googleAnalyticsTask", m.task)
+  m.task.control = "run"
+end function
+
+end class
+end namespace

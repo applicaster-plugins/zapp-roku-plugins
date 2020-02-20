@@ -1,4 +1,4 @@
-'@TestSuite SVAPT SegmenetVideoAnalyticsPlutinTests
+'@TestSuite SVAPT SegmenetVideoAnalyticsPluginTests
 
 namespace SVAPT
 
@@ -11,7 +11,7 @@ function beforeEach()
   
   m.modelLocator = { 
     "constants" : m.constants
-    "segmentAnalyticsManager" : m.analyticsManager
+    "SegmentAnalyticsPlugin" : m.analyticsManager
   }
   
   TU.setModelLocator(m.modelLocator)
