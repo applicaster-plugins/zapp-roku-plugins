@@ -1,0 +1,26 @@
+import "pkg:/source/bitmovin-player-roku/ZBitMovinPlayerVM.bs"
+
+function initialize(args)
+  logInfo("initialize")
+  createVM()
+end function
+
+function createVM()
+  logMethod("createVM")
+  
+  m.vm = ZBitMovinPlayerVM(m.top)
+  m.vm.initialize()
+  
+  MVMM.initializeBindings(true)
+end function
+
+function _applyStyle(styles, localizations, assets)
+end function
+
+function playItem(item)
+  m.vm.playItem(item)
+end function
+
+function stopItem(args = invalid)
+  m.vm.stopItem(item)
+end function

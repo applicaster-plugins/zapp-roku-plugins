@@ -1,0 +1,146 @@
+import "pkg:/source/zapp/BaseZappVM.bs"
+import "pkg:/source/plugin-support/PluginManager.bs"
+
+namespace ZBMPVM
+
+class ZBitMovinPlayerVM extends BaseZappVM
+
+private view = invalid
+private player = invalid
+private currentItem = invalid
+private licenseKey = ""
+private overrideVideoUrl = ""
+private isValid = false
+private state = "none"
+
+public function new(view)
+  m.super("ZBitMovinPlayerVM")
+  m.view = view
+  
+  m.pluginProvider = new PluginManager(m.getInstance("plugins"))
+  plugin = m.pluginProvider.getPluginById("bitmovin-player-roku")
+  
+  if plugin.isValid
+    m.licenseKey = plugin.getStringValue("license_key")
+    m.overrideVideoUrl = plugin.getStringValue("override_video_url")
+  else
+    m.logError("There was no plugin config!")
+  end if
+  
+  m.isValid = m.licenseKey <> ""
+end function
+
+private function _initialize()
+  m.createPlayer()
+end function
+
+private function createPlayer()
+  m.state = "creatingPlayer"
+  m.bitmovinPlayerSDK = m.view.createChild("ComponentLibrary")
+  m.bitmovinPlayerSDK.id = "BitmovinPlayerSDK"
+  m.bitmovinPlayerSDK.uri = "https://cdn.bitmovin.com/player/roku/1/bitmovinplayer.zip"
+  ' Adding the ComponentLibrary node to the scene will start the download of the library
+  m.view.appendChild(m.bitmovinPlayerSDK)
+  m.bindNodeField(m.bitmovinPlayerSDK, "loadStatus", "onSDKLoadStatusChange", MOM_createBindingProperties())
+end function
+
+private function onSDKLoadStatusChange(status)
+  m.logInfo("sdk status is now", status)
+  
+  if status = "ready"
+    m.state = "ready"
+    m.logInfo("creating player")
+    m.player = m.view.createChild("BitmovinPlayerSDK:BitmovinPlayer")
+    m.player.id = "player"
+    
+    m.playerFunctions = m.player.BitmovinFunctions
+    m.playerFields = m.player.BitmovinFields
+    m.playerState = m.player.BitmovinPlayerState
+    
+    bindingProperties = MOM.createBindingProperties(false)
+    m.bindNodeField(m.player, m.playerFields.PLAYER_STATE, "onPlayerStateChange", bindingProperties)
+    m.bindNodeField(m.player, m.playerFields.ERROR, "onPlayerVideoError", bindingProperties)
+    m.bindNodeField(m.player, m.playerFields.CURRENT_TIME, "onPlayerCurrentTimeChange", bindingProperties)
+    ' m.bindNodeField(m.playerFields.SEEK, "onPlayerSeek", bindingProperties)
+    ' m.bindNodeField(m.playerFields.SEEKED, "onPlayerSeeked", bindingProperties)
+    m.bitmovinPlayer.callFunc(m.playerFunctions.SETUP, {
+      key: m.licenseKey
+    })
+    m.isValid = true
+  end if
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Public api
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+public function playItem(item)
+  logMethod("playItem ", item.id)
+  
+  m.currentItem = item
+  m.state = "playing"
+  playerData = m.getPlayerData(m.currentItem, result.data)
+  m.player.callFunc(m.playerFunctions.LOAD, playerData)
+end function
+
+public function getPlayerData(item, url)
+  
+  'TODO - ascertain media type; but that's TBD and I need DSP entries to look at first
+  'TODO if there is a hardcoded url, use that; but I need to know the media types for that too.
+  return {
+    hls: "https://bitmovin-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8"
+    title: "TEST2"
+  }
+end function
+
+public function stopItem()
+  logMethod("stopItem")
+  m.player.callFunc(m.playerFunctions.UNLOAD, invalid)
+  m.currentItem = invalid
+  m.view.isPlaybackFinished = true
+end function
+
+public function onControlChange(control)
+  logInfo("onControlChange", control)
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Player callbacks
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+private function onPlayerStateChange(state) as void
+  m.logInfo("player state change", state)
+  
+  if state = m.playerState.FINISHED
+    m.view.playbackResult = m.makeResult("finished", "")
+    m.view.isPlaybackFinished = true
+    m.state = "ready"
+  else if state = m.playerState.ERROR
+    m.view.playbackResult = m.makeResult("error", "error during playback")
+    m.view.isPlaybackFinished = true
+    m.state = "ready"
+  else 
+    'ignore this state
+  end if
+end function
+
+private function onPlayerVideoError(error)
+  m.logMethod("onPlayVideoError", error)
+  m.view.playbackResult = m.makeResult("error", error)
+  m.state = "ready"
+end function
+
+private function onPlayerCurrentTimeChange(currentTime)
+  m.view.position = currentTime
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ private impl
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+private function makeResult(state, message)
+  return { "state": state, "message": message }
+end function
+
+end class
+end namespace
