@@ -4,17 +4,17 @@ namespace YVAMTests
 
 '@BeforeEach
 function beforeEach()
-  m.constants = {
-    youboraTaskComponentName: "Node"
-  }
-  m.config = {
-    accountCode: "testAccount"
-    expectAds: true
-  }
-  m.modelLocator = { constants: m.constants }
-  TU.setModelLocator(m.modelLocator)
+  AppService.clearClassInstances()
   
-  m.plugin = new YouboraVideoAnalytics(m.config)
+  config = {
+    "account_code": "#ac"
+    "is_debug": 1
+    "task_name": "Node"
+  }
+
+  m.pluginData = new BasePlugin({ "configuration_json": config, "identifier": "youbora" })
+  
+  m.plugin = new YouboraVideoAnalytics(m.pluginData)
 end function
 
 '@AfterEach
