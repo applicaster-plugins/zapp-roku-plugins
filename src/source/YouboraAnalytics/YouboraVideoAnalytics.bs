@@ -51,27 +51,19 @@ class YouboraVideoAnalytics extends BaseVideoAnalyticsPlugin
 ' }
 
 private youboraTask = invalid
+private config = {}
+private taskName = "YBPluginRokuVideo"
 
-override public function new(pluginConfiguration)
+override public function new(plugin)
   
-  m.super("YouboraVideoAnalm.ytics")
+  m.super("YouboraVideoAnalytics")
+  m.taskName = plugin.getStringValue("task_name")
   
-  config = {
-    "accountCode": "nicetest"
-    "expectAds": false
-    "enableDebug": false
+  m.config = {
+    "accountCode": plugin.getStringValue("account_code")
+    "expectAds": plugin.getBoolValue("expect_ads")
+    "enableDebug": plugin.getBoolValue("is_debug")
   }
-  
-  if type(pluginConfiguration) = "roAssociativeArray"
-    for each key in config
-      if pluginConfiguration[key] <> invalid
-        config[key] = pluginConfiguration[key]
-      end if
-    end for
-  end if
-  
-  m.constants = m.getInstance("constants")
-  m.config = config
 end function
 
 override public function videoStart(videoNode, contentNode)
@@ -81,7 +73,7 @@ override public function videoStart(videoNode, contentNode)
   m.youboraTask = m.getInstance("youboraAnalyticsTask")
   
   if m.youboraTask = invalid
-    m.youboraTask = m.createInstance(m.constants.youboraTaskComponentName, videoNode, "youboraAnalyticsTask")
+    m.youboraTask = m.createInstance(m.taskName, videoNode, "youboraAnalyticsTask")
     m.youboraTask.videoplayer = videoNode
     m.youboraTask.control = "RUN"
     m.setInstance("youboraAnalyticsTask", m.youboraTask)
