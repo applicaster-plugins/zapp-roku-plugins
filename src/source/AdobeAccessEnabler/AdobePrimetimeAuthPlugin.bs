@@ -24,15 +24,9 @@ public function new(plugin)
   m.requestorID = plugin.getStringValue("requestorID", "")
   m.secret = plugin.getStringValue("secret", "")
   m.publicKey = plugin.getStringValue("publicKey", "")
-  m.base_url = plugin.getStringValue("base_url", "")
-  
-  if m.base_url = invalid or m.base_url.trim() = ""
-    m.base_url = "https://api.auth.adobe.com"
-  end if
+  m.base_url = plugin.getStringValue("base_url", "https://api.auth.adobe.com")
   
   m.constants = m.getInstance("constants")
-  m.request = request
-  m.uri = uri
   
 end function
 

@@ -1,5 +1,5 @@
 import "pkg:/source/rLog/rLogMixin.brs"
-import "pkg:/source/google-analytics-roku/AnalyticsEventFactory.bs"
+import "pkg:/source/google_analytics_roku/AnalyticsEventFactory.bs"
 
 function init()
   registerLogger("Analytics", true)

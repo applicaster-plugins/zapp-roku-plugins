@@ -1,7 +1,7 @@
 import "pkg:/source/plugin-support/BasePlugin.bs"
 import "pkg:/source/plugin-support/PluginManager.bs"
 import "./SegmentAnalyticsConnector.brs"
-import "pkg:/source/analytics/BaseAnalyticsPlugin"
+import "pkg:/source/analytics/BaseAnalyticsPlugin.bs"
 
 namespace SegmentAM
 class SegmentAnalyticsPlugin extends BaseAnalyticsPlugin
