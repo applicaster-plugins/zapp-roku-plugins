@@ -1,0 +1,23 @@
+import "pkg:/source/aws_cognito_login_screen_roku/AWSLoginScreenVM.bs"
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Initialization
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function init()
+  m.top.isConsumingOriginEntry = true
+  M_createNodeVars()  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Overridden methods
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function getControlName()
+  return "AWSLoginScreen"
+end function
+
+function createVM()
+  return AWSLoginScreenVM(m.top.riversJson)
+end function
+

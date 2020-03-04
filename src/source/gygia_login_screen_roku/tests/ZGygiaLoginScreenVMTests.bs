@@ -1,0 +1,334 @@
+'@TestSuite [OCGPSVMT]
+namespace OCGPSVMT
+
+'@BeforeEach
+function beforeEach()
+  localStore = createObject("roSGNode", "ZSessionStore")
+  modelLocator = createObject("roSGNode", "ModelLocator")
+  modelLocator.addfields({ "ZPLocalStore": localStore })
+  TU.setModelLocator(modelLocator)
+  
+  m.optionsScreenState = {}
+  riversJson = {
+    "id": "myAccount"
+    "data": { "base_url": "#base_url/" }
+  }
+  
+  m.vm = new OCAccountMyAccountVM(riversJson)
+  m.analyticsManager = { "id" : "analyticsManager" }
+  m.vm.analyticsManager = m.analyticsManager
+  
+  m.vm.initialize()
+end function
+
+'@AfterEach
+function afterEach()
+  m.global.delete("zapp")
+  TU.unsetModelLocator()
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests constructor
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test
+function constructor()
+  m.assertNotInvalid(m.vm)
+  m.assertInvalid(m.vm.currentRequest)
+  m.assertFalse(m.vm.isLoggedIn)
+  m.assertEqual(m.vm.visibleContentId, "loginGroup")
+  m.assertEqual(m.vm.focusId, "loginButton")
+  m.assertEqual(m.vm.usernameText, "")
+  m.assertEqual(m.vm.regcodeText, "")
+  m.assertEqual(m.vm.loginUrlText, "DEFAULT_ACCOUNT")
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests restoreAccount
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test has account
+function restoreAccount_has_account()
+  accountInfo = { "firstname": "#fn" }
+  
+  m.expectOnce(m.vm, "getLocalStoreValue", ["account_info", "gygia", true], accountInfo)
+  m.expectOnce(m.vm, "showLoggedInScreen")
+  m.expectOnce(m.analyticsManager, "callFunc", ["identify", "gygia"])
+  m.expectOnce(m.analyticsManager, "callFunc", ["trackEvent", "Gygia Login Succesful", "page_loaded"])
+  
+  m.vm.restoreAccount()
+  
+  m.assertEqual(m.vm.accountInfo, accountInfo)
+end function
+
+'@Test does not have account
+function restoreAccount_does_not_have_account()
+  m.expectNone(m.vm, "showLoggedInScreen")
+  m.expectOnce(m.vm, "getLocalStoreValue", ["account_info", "gygia", true], invalid)
+  
+  m.vm.restoreAccount()
+  
+  m.assertInvalid(m.vm.accountInfo)
+  m.assertEqual(m.vm.usernameText, "")
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests onKeyPressOk
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test - focused on loginButton
+function onKeyPressOk_loginButton()
+  m.vm.focusId = "loginButton"
+  m.expectOnce(m.vm, "requestCode")
+  m.expectOnce(m.vm, "toggleNavMenuVisible", [false, false])
+  m.expectOnce(m.analyticsManager, "callFunc", ["trackEvent", "Gygia Waiting", "page_loaded"])
+  
+  m.assertTrue(m.vm.onKeyPressOK())
+  
+  m.assertEqual(m.vm.visibleContentId, "regcodeGroup")
+  m.assertEqual(m.vm.focusId, "regcodeGroup")
+end function
+
+'@Test - focused on logoutButton
+function onKeyPressOk_logoutButton()
+  m.vm.focusId = "logoutButton"
+  m.expectOnce(m.vm, "logout")
+  
+  m.assertTrue(m.vm.onKeyPressOK())
+end function
+
+'@Test - focused on regcodeGroup
+function onKeyPressOK_regcodeGroup()
+  m.vm.visibleContentId = "regcodeGroup"
+  m.vm.focusId = "regcodeGroup"
+  
+  
+  m.assertTrue(m.vm.onKeyPressOK())
+  
+  m.assertEqual(m.vm.visibleContentId, "regcodeGroup")
+  m.assertEqual(m.vm.focusId, "regcodeGroup")
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests requestCode
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test - showing regcodegroup
+function requestCode()
+  mockRequest = { "id": "request" }
+  mockConstants = { "applicasterdeviceid": "#did" }
+  url = "#base_url/CreateDevice"
+  
+  params = {
+    "deviceId": "#did"
+  }
+  
+  m.expectOnce(m.vm, "getInstance", ["constants"], mockConstants)
+  m.expectOnce(m.vm, "executeUrlRequest", ["regcode", url, "onRegCodeResponse", params, "POST"], mockRequest)
+  
+  m.vm.requestCode()
+  
+  m.assertEqual(m.vm.currentRequest, mockRequest)
+  m.assertTrue(m.vm.isLoading)
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests onRegCodeResponse
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test 
+'@Params[{isOK: false, data:invalid}, "", "stop"]
+'@Params[{isOK: true, data: {"devicePinCode": "k7W3d3"}}, "k7W3d3", "start"]
+function onRegCodeResponse(json, expectedCode, expectedTimerControl)
+  m.vm.onRegCodeResponse(json)
+  
+  m.assertEqual(m.vm.regcodeInfo, json.data)
+  m.assertEqual(m.vm.regcodeText, expectedCode)
+  m.assertEqual(m.vm.regcodePollTimerControl, expectedTimerControl)
+  m.assertFalse(m.vm.isLoading)
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests onRegcodePollTimerFire
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test 
+'@Params["233fs", "#base_url/GetDeviceByPin/233fs"]
+'@Params["aaa99", "#base_url/GetDeviceByPin/aaa99"]
+function onRegcodePollTimerFire(pin, expectedUrl)
+  mockRequest = { id: "re" }
+  m.expectOnce(m.vm, "cancelRequests")
+  m.expectOnce(m.vm, "executeUrlRequest", ["poll", expectedUrl, "onPollResponse"], mockRequest)
+  m.vm.regcodeInfo = {
+    devicePinCode: pin
+  }
+  m.vm.onRegcodePollTimerFire(true)
+  
+  m.assertEqual(m.vm.currentRequest, mockRequest)
+  m.assertFalse(m.vm.isLoading)
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests onPollResponse
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test valid
+function onPollResponse_valid()
+  response = {
+    isOK: true
+    data: {
+      access_token: "#act"
+      firstname: "#firstname"
+    }
+  }
+  m.expectOnce(m.vm, "showLoggedInScreen")
+  m.expectOnce(m.vm, "setLocalStoreValue", ["account_info", "gygia", formatJson(response.data), true])
+  m.expectOnce(m.analyticsManager, "callFunc", ["identify", "gygia"])
+  m.expectOnce(m.analyticsManager, "callFunc", ["trackEvent", "Gygia Login Succesful", "page_loaded"])
+  
+  m.vm.onPollResponse(response)
+  
+  m.assertEqual(m.vm.accountInfo, response.data)
+  m.assertTrue(m.vm.isLoggedIn)
+end function
+
+'@Test timed out
+function onPollResponse_timeout()
+  m.expectNone(m.vm, "showLoggedInScreen")
+  m.expectOnce(m.vm, "requestCode")
+  
+  response = {
+    isOK: true
+    data: {
+      ErrorCode: 4
+    }
+  }
+  m.vm.onPollResponse(response)
+  
+  m.assertInvalid(m.vm.accountInfo)
+  m.assertFalse(m.vm.isLoggedIn)
+end function
+
+'@Test invalid
+'@Params[{isOK:false}]
+'@Params[{isOK:true, data:invalid}]
+'@Params[{isOK:true, data:{}}]
+'@Params[{isOK:true, data:{access_token:invalid}}]
+function onPollResponse_invalid(response)
+  m.expectNone(m.vm, "showLoggedInScreen")
+  
+  m.vm.onPollResponse(response)
+  
+  m.assertInvalid(m.vm.accountInfo)
+  m.assertFalse(m.vm.isLoggedIn)
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests logout
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test 
+function logout()
+  mockRequest = { "id": "request" }
+  m.vm.accountInfo = { "access_token": "#at" }
+  url = "#base_url/Logout"
+  
+  params = {
+    "access_token": "#at"
+  }
+  
+  m.expectOnce(m.vm, "cancelRequests")
+  m.expectOnce(m.vm, "executeUrlRequest", ["logout", url, "onLogoutResponse", params, "POST"], mockRequest)
+  
+  m.vm.logout()
+  
+  m.assertEqual(m.vm.currentRequest, mockRequest)
+  m.assertTrue(m.vm.isLoading)
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests onLogoutResponse
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test valid
+function onLogoutResponse_valid()
+  m.expectOnce(m.vm, "showLoggedOutScreen")
+  m.vm.accountInfo = {}
+  
+  response = {
+    isOK: true
+  }
+  m.expectOnce(m.analyticsManager, "callFunc", ["unidentify", "gygia"])
+  m.expectOnce(m.analyticsManager, "callFunc", ["trackEvent", "Gygia Signed Out", "page_loaded"])
+  m.expectOnce(m.vm, "setLocalStoreValue", ["account_info", "gygia", invalid, true])
+  
+  m.vm.onLogoutResponse(response)
+  
+  m.assertEqual(m.vm.usernameText, "")
+  m.assertInvalid(m.vm.accountInfo)
+  m.assertFalse(m.vm.isLoggedIn)
+end function
+
+'@Test invalid
+'@Params[{isOK:false}]
+function onLogoutResponse_invalid(response)
+  m.expectNone(m.vm, "showLoggedOutScreen")
+  m.expectOnce(m.vm, "showDialog", ["Error logging out", "Could not log out"])
+  
+  m.vm.onLogoutResponse(response)
+  
+  m.assertInvalid(m.vm.accountInfo)
+  m.assertFalse(m.vm.isLoggedIn)
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests onKeyPressBack
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test - showing regcodegroup
+function onKeyPressBack_showing_regcodeGroup()
+  m.vm.visibleContentId = "regcodeGroup"
+  m.vm.focusId = "regcodeGroup"
+  m.expectOnce(m.vm, "toggleNavMenuVisible", [true])
+  
+  m.vm.onKeyPressBack()
+  
+  m.assertEqual(m.vm.visibleContentId, "loginGroup")
+  m.assertEqual(m.vm.focusId, "loginButton")
+end function
+
+end namespace
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It test screen visibility helpers
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test showLoggedInScreen
+function showLoggedInScreen()
+  m.vm.accountInfo = { "firstname": "#firstname" }
+  m.expectOnce(m.vm, "toggleNavMenuVisible", [true])
+  
+  m.vm.showLoggedInScreen()
+  
+  m.assertEqual(m.vm.usernameText, "#firstname")
+  m.assertEqual(m.vm.visibleContentId, "signedInGroup")
+  m.assertEqual(m.vm.focusId, "logoutButton")
+end function
+
+'@Test showLoggedOutScreen
+function showLoggedOutScreen()
+  m.vm.accountInfo = { "firstname": "#firstname" }
+  
+  m.vm.showLoggedOutScreen()
+  
+  m.assertEqual(m.vm.usernameText, "")
+  m.assertEqual(m.vm.visibleContentId, "loginGroup")
+  m.assertEqual(m.vm.focusId, "loginButton")
+end function
+
+
+end namespace

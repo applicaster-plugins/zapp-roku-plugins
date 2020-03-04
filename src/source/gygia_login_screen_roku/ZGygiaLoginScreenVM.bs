@@ -1,0 +1,199 @@
+import "pkg:/source/UIBuilder/view/ZUIBScreenVM.bs"
+
+namespace OCGPSVM 
+
+class ZGygiaLoginScreenVM extends ZUIBScreenVM
+
+public visibleContentId = "loginGroup"
+public currentRequest = invalid
+public isLoggedIn = false
+public accountInfo = invalid
+public baseUrl = ""
+
+'style bindings
+public activationText = ""
+public isSkipButtonVisible = false
+
+public regcodeText = ""
+public regcodePollTimerControl = "stop"
+
+public function new(riversJson)
+  m.super(riversJson, "ZGygiaLoginScreenVM")
+  m.focusId = "loginButton"
+  m.analytics = m.getInstance("analyticsManager")
+  m.baseUrl = riversJson.data.base_url
+  m.processStyles(m.riversJson.styles)
+  
+end function
+
+
+public function processStyles(styles)
+  
+  m.backgroundColor = ViewUtils.transposeUIBColor(styles.background_color)
+  m.titleStyle = ViewUtils.makeStyleWithRiversJson(styles, "title")
+  m.regcodeTitleStyle = ViewUtils.makeStyleWithRiversJson(styles, "regcode_title")
+  m.regcodeStyle = ViewUtils.makeStyleWithRiversJson(styles, "regcode")
+  m.supporStyle = ViewUtils.makeStyleWithRiversJson(styles, "support")
+  m.gotoStyle = ViewUtils.makeStyleWithRiversJson(styles, "goto")
+  m.loginButtonStyle = ViewUtils.makeActionButtonStyleWithRiversJson(styles, "login_button", "center", styles.login_button_text)
+  m.skipButtonStyle = ViewUtils.makeActionButtonStyleWithRiversJson(styles, "skip_button", "center", styles.skip_button_text)
+
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Overridden
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+public function _initialize()
+  m.logInfo("_initialize")
+  m.restoreAccount()
+end function
+
+public function showLoggedInScreen()
+  m.setField("state", "finished")
+end function
+
+
+public function restoreAccount()
+  'TODO - this needs to become a bonafide auth provider, and
+  'therefore have it's auth restored by the auth manager
+  'it's currently coupled to the view - this can be revisted later
+  m.logInfo("restoreAccount")
+  m.accountInfo = m.getLocalStoreValue("account_info", "gygia", true)
+  m.logInfo("raw stored accountinfo is", accountInfo)
+  
+  if m.accountInfo <> invalid 
+    m.logInfo("there is an account stored for this device")
+    m.analyticsManager@.identify("gygia")
+    m.analyticsManager@.trackEvent("Gygia Login Succesful", "page_loaded")
+    
+    m.showLoggedInScreen()
+  end if
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ RequestCode management
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+public function cancelRequests()
+  m.cancelNetworkRequest(m.currentRequest)
+  m.setField("isLoading", false)
+end function
+
+public function requestCode()
+  m.logInfo("requesting new access code")
+  m.cancelRequests()
+  constants = m.getInstance("constants")
+  url = m.baseUrl + "CreateDevice"
+  
+  params = {
+    "deviceId": constants.applicasterdeviceid
+  }
+  
+  m.currentRequest = m.executeUrlRequest("regcode", url, "onRegCodeResponse", params, "POST")
+  m.setField("isLoading", true)
+end function
+
+public function onRegCodeResponse(response)
+  m.cancelRequests()
+  
+  if response.isOK and response.data <> invalid and response.data.devicePinCode <> invalid
+    m.logInfo("succesfully got code", response.data.devicePinCode, "starting code timer")
+    m.setField("regcodeText", response.data.devicePinCode)
+    m.setField("regcodePollTimerControl", "start")
+    m.regcodeInfo = response.data
+  else
+    m.setField("regcodePollTimerControl", "stop")
+    m.setField("regcodeText", "")
+  end if
+  
+end function
+
+public function onRegcodePollTimerFire(value)
+  m.logInfo("onRegcodePollTimerFire")
+  m.cancelRequests()
+  url = m.baseUrl + "GetDeviceByPin/" + m.regcodeInfo.devicePinCode
+  
+  m.currentRequest = m.executeUrlRequest("poll", url, "onPollResponse")
+end function
+
+public function onPollResponse(response)
+  m.cancelRequests()
+  
+  if response.isOK and response.data <> invalid
+    
+    if response.data.access_token <> invalid
+      m.setField("regcodePollTimerControl", "stop")
+      m.logInfo("succesfully logged in - storing creds", response.data)
+      m.accountInfo = response.data
+      m.isLoggedIn = true
+      m.showLoggedInScreen()
+      
+      m.setLocalStoreValue("account_info", "gygia", formatJson(m.accountInfo), true)
+      m.analyticsManager@.identify("gygia")
+      m.analyticsManager@.trackEvent("Gygia Login Succesful", "page_loaded")
+    else if response.data.ErrorCode = 4
+      m.logInfo("token has expired - re-requesting")
+      m.setField("regcodePollTimerControl", "stop")
+      m.requestCode()
+    end if
+    
+  else
+    m.isLoggedIn = false
+    m.accountInfo = invalid
+  end if
+end function
+
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Callback
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+public function onLoginButtonSelected(value)
+  m.logInfo("starting regcode selected")
+  m.setField("focusId", "regcodeGroup")
+  m.setField("visibleContentId", "regcodeGroup")
+  m.requestCode()
+end function
+
+public function onSkipButtonSelected(value)
+  m.logInfo("selected skip")
+  m.setField("state", "finished")
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Key Handling
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+public function onKeyPressBack()
+  if m.visibleContentId = "regcodeGroup"
+    m.setField("regcodePollTimerControl", "stop")
+    m.setField("visibleContentId", "loginGroup")
+    m.setField("focusId", "loginButton")
+    m.cancelRequests()
+    return true
+  else 
+    m.logInfo("on key press back")
+    m.setField("state", "finished")
+    return true
+    
+  end if
+end function
+
+public function isCapturingAnyKeyPress(key, press)
+  return true
+end function
+
+public function onKeyPressDown()
+  if m.isSkipButtonVisible
+    m.setField("focusId", "skipButton")
+  end if
+end function
+
+override public function onKeyPressUp()
+  m.setField("focusId", "loginButton")
+end function
+
+end class
+end namespace
