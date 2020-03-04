@@ -1,0 +1,249 @@
+import "pkg:/source/UIBuilder/view/ZUIBScreenVM.bs"
+import "pkg:/source/lib/ViewUtils.bs"
+import "pkg:/source/mixin/KeyboardDialogMixin.bs"
+
+namespace TAAWSLSVM
+class AWSLoginScreenVM extends ZUIBScreenVM
+
+'styles
+public titleStyle = invalid
+public descriptionStyle = invalid
+public optional1Style = invalid
+public optional2Style = invalid
+public inputStyle = invalid
+public loginButtonStyle = invalid
+public isCredsValid = false
+public isLoginButtonEnabled = false
+public errorStyle = invalid
+public isLoading = false
+public usernameButtonType = "textInput"
+public passwordButtonType = "textInput"
+
+public usernameText = ""
+public username = ""
+public passwordText = ""
+public password = ""
+
+public errorText = ""
+public usernamePlaceholderText = ""
+public passwordPlaceholderText = ""
+public backgroundColor = "#000000ff"
+
+public function new(riversJson)
+  m.super(riversJson, "AWSLoginScreenVM")
+  
+  m.focusId = "usernameInput"
+  KeyboardDialogMixin.mixin(m)
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Overridden
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+override public function createContent()
+  m.logInfo("createContent is overridden in this screen")
+  m.processStyles(m.riversJson.styles)
+end function
+
+override public function load() as boolean
+  m.logInfo("load")
+  return true
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ styles
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function processStyles(styles)
+  m.logInfo("converting rivers json styles into a format our UI controls can consume")
+  
+  m.setField("backgroundColor", ViewUtils.transposeUIBColor(styles.background_color))
+  m.setField("titleStyle", ViewUtils.makeStyleWithRiversJson(styles, "title"))
+  m.setField("descriptionStyle", ViewUtils.makeStyleWithRiversJson(styles, "description"))
+  m.setField("optional1Style", ViewUtils.makeStyleWithRiversJson(styles, "optional_text1"))
+  m.setField("optional2Style", ViewUtils.makeStyleWithRiversJson(styles, "optional_text2"))
+  m.setField("errorStyle", ViewUtils.makeStyleWithRiversJson(styles, "error"))
+  
+  m.setField("usernameText", styles.username_placeholder_text)
+  m.usernamePlaceholderText = m.usernameText
+  
+  m.setField("passwordText", styles.password_placeholder_text)
+  m.passwordPlaceholderText = m.passwordText
+  
+  inputStyle = ViewUtils.makeActionButtonStyleWithRiversJson(styles, "input", "textInputPlaceholder")
+  
+  m.setField("inputStyle", inputStyle)
+  
+  m.setField("loginButtonStyle", ViewUtils.makeActionButtonStyleWithRiversJson(styles, "login_button", "center", styles.login_button_text))
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ callbacks
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+public function onLoginButtonSelected(value)
+  m.logMethod("onLoginButtonSelected")
+  
+  if not m.isLoading and m.isCredsValid
+    m.processLogin()
+  else
+    m.logWarn("ignoring loging button, while loading")
+  end if
+end function
+
+public function onUsernameButtonSelected(value)
+  
+  m.showKeyboardDialog("Enter your username", m.username, "onUsernameKeyboardDialogDismissal")
+end function
+
+public function onPasswordButtonSelected(value)
+  
+  m.showKeyboardDialog("Enter your password", m.password, "onPasswordKeyboardDialogDismissal", true)
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Keyboard dialog
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+private function onUsernameKeyboardDialogDismissal(text)
+  m.logMethod("onKeyboardDialogDismissal")
+  
+  if text.trim() = ""
+    m.setField("usernameText", m.usernamePlaceholderText)
+    m.setField("usernameButtonType", "textInputPlaceholder")
+    m.username = ""
+    m.setField("usernameText", m.usernamePlaceholderText)
+  else
+    m.setField("usernameText", text)
+    m.username = text
+    m.setField("usernameButtonType", "textInput")
+  end if 
+  
+  m.checkCredsValid()
+  
+end function
+
+private function onPasswordKeyboardDialogDismissal(text)
+  m.logMethod("onPasswordKeyboardDialogDismissal")
+  
+  if text.trim() = ""
+    m.setField("passwordText", m.passwordPlaceholderText)
+    m.password = ""
+    m.setField("passwordButtonType", "textInputPlaceholder")
+    m.setField("passwordText", m.passwordPlaceholderText)
+  else
+    m.setField("passwordText", KeyboardDialogMixin.getHiddenPasswordText(text))
+    m.password = text
+    m.setField("passwordButtonType", "textInput")
+  end if 
+  
+  m.checkCredsValid()
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ login
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+public function checkCredsValid()
+  m.setField("isCredsValid", m.usernameText <> invalid and m.usernameText.trim() <> "" and m.password <> invalid and m.password.trim() <> "")
+  
+  m.setField("isLoginButtonEnabled", m.isCredsValid and not m.isLoading)
+end function
+
+public function processLogin()
+  m.logInfo("logging in")
+  
+  if m.isCredsValid
+    m.authTask = m.createInstance("AuthTask", invalid, "authTask")
+    m.authTask.functionName = "execLogIn"
+    m.authTask.client_type = "aws_cognito_auth_plugin"
+    creds = m.createInstance("AuthenticationCredentials")
+    creds.username = m.usernameText
+    creds.password = m.password
+    
+    m.authTask.credentials = creds
+    m.setField("isLoginButtonEnabled", false)
+    
+    m.bindNodeField(m.authTask, "isComplete", "onLoginComplete", MOM_createBindingProperties(false, invalid, true))
+    
+    m.setField("isLoading", true)
+    m.setField("errorText", "")
+    m.setField("state", "loading")
+    
+    m.authTask.control = "RUN"
+  end if
+end function
+
+public function onLoginComplete(isComplete)
+  result = m.authTask.result
+  m.logMethod("onLoginComplete", result)
+  m.setField("isLoading", false)
+  
+  if result.state = "valid"
+    m.logInfo("logged in succesfullt")
+    m.setField("state", "finished")
+  else
+    m.setField("state", "ready")
+    m.setField("errorText", result.message)
+    m.setField("isLoginButtonEnabled", true)
+  end if
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Key Handling
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+public function isCapturingAnyKeyPress(key, press)
+  'do not anyone escape this screen!
+  return true
+end function
+
+public function onKeyPressBack() as boolean
+  m.logMethod("onKeyPressBack", m.focusId)
+  
+  if m.focusId = "usernameInput"
+    'TODO - exit app?
+    return false
+  else
+    return m.onKeyPressUp()
+  end if
+  
+  return false
+end function
+
+public function onKeyPressDown() as boolean
+  m.logMethod("onKeyPressDown", m.focusId)
+  
+  if m.focusId = "usernameInput"
+    m.setField("focusId", "passwordInput")
+  else if m.focusId = "passwordInput"
+    m.setField("focusId", "loginButton")
+  end if
+  
+  return true
+end function
+
+public function onKeyPressOption() as boolean
+  m.logMethod("onKeyPressOption", m.focusId)
+  
+  m.onUsernameKeyboardDialogDismissal("test@email.com")
+  m.onPasswordKeyboardDialogDismissal("1234Test.")
+  
+  return true
+end function
+
+override public function onKeyPressUp() as boolean
+  m.logMethod("onKeyPressUp", m.focusId)
+  
+  if m.focusId = "passwordInput"
+    m.setField("focusId", "usernameInput")
+  else if m.focusId = "loginButton"
+    m.setField("focusId", "passwordInput")
+  end if
+  
+  return true
+end function
+
+end class
+end namespace

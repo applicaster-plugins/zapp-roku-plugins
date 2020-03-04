@@ -85,12 +85,14 @@ end function
 
 public function getPlayerData(item)
   
-  'TODO - ascertain media type; but that's TBD and I need DSP entries to look at first
-  'TODO if there is a hardcoded url, use that; but I need to know the media types for that too.
-  return {
-    hls: "https://bitmovin-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8"
-    title: "TEST2"
-  }
+  if item.playerData <> invalid
+    return item.playerData
+  else
+    return {
+      hls: item.url
+      title: item.title
+    }
+  end if
 end function
 
 public function stopItem()

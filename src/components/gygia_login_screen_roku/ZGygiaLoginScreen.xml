@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component
+    name="ZGygiaLoginScreen"
+    extends="ZUIBScreen">
+
+  <interface>
+    <field
+        id="_debugLogin"
+        type="boolean"
+        value="{(vm.onDebugLoginChange, isSettingInitialValue=false)}" />
+  </interface>
+
+  <children>
+    <Timer
+        id="regcodeTimer"
+        duration="10"
+        repeat="true"
+        control="{{vm.regcodePollTimerControl}}"
+        fire="{(vm.onRegcodePollTimerFire, isSettingInitialValue=false)}" />
+
+    <!-- account not signed in -->
+    <Group
+        id="loginGroup"
+        translation="[0,0]">
+      <MLabel
+          id="titleText"
+          text="{{:vm.riversJson.styles.title_text}}"
+          horizAlign="center"
+          vertAlign="top"
+          width="1920"
+          wrap="true"
+          systemFont="MediumBold,40"
+          color="#545A5C"
+          translation="[0,353]" />
+      <ZActionButton
+          id="loginButton"
+          translation="[635,719]"
+          buttonType="center"
+          width="650"
+          selected="{(vm.onLoginButtonSelected, isSettingInitialValue=false)}"
+          text="{{:vm.riversJson.styles.login_button_text}}" />
+      <ZActionButton
+          id="skipButton"
+          translation="[660,822]"
+          width="600"
+          buttonType="center"
+          visible="{{vm.isSkipButtonVisible}}"
+          selected="{(vm.onSkipButtonSelected, isSettingInitialValue=false)}"
+          text="{{:vm.riversJson.styles.skip_button_text}}" />
+    </Group>
+
+    <!-- regcode -->
+    <Group id="regcodeGroup">
+      <Rectangle
+          color="#dddddd"
+          width="300"
+          height="300"
+          translation="[136,246]" />
+      <MLabel
+          id="regcodeTitleLabel"
+          translation="[510,250]"
+          systemFont="MediumBold,40"
+          text="{{:vm.riversJson.styles.regcode_title_text}}"
+          color="#545A5C" />
+      <MLabel
+          id="gotoLabel"
+          text="{{:vm.riversJson.styles.go_to_text}}"
+          translation="[458,420]"
+          systemFont="Medium,34"
+          color="#545A5C" />
+      <MLabel
+          id="loginUrlLabel"
+          translation="[458,457]"
+          systemFont="MediumBold,34"
+          text="{{:vm.riversJson.styles.login_url_text}}"
+          color="#545A5C" />
+      <MLabel
+          id="activationLabel"
+          translation="[458,576]"
+          text="{{vm.activationText}}"
+          systemFont="Medium,34"
+          color="#545A5C" />
+      <MLabel
+          id="codeLabel"
+          translation="[458,632]"
+          text="{{vm.regcodeText}}"
+          systemFont="LargeBold,120"
+          color="#545A5C" />
+
+      <MLabel
+          id="supportLabel"
+          translation="[476,878]"
+          color="#545A5C"
+          systemFont="MediumBold,27"
+          text="{{:vm.riversJson.styles.support_text}}" />
+    </Group>
+  </children>
+</component>

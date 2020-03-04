@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component
+    name="AWSLoginScreen"
+    extends="ZUIBScreen">
+
+  <interface></interface>
+
+  <children>
+    <Rectangle
+        id="backgroundRect"
+        color="0xFFFFFFFF" />
+    <Poster
+        id="backgroundPoster"
+        width="1920"
+        height="1080" />
+
+    <LayoutGroup
+        id="labelsGroup"
+        layoutDirection="vert"
+        translation="[230,310]"
+        itemSpacings="[56, 56, 26]">
+      <MLabel
+          id="titleText"
+          style="{{vm.titleStyle}}"
+          wrap="true"
+          width="610" />
+
+      <MLabel
+          id="descriptionText"
+          style="{{vm.descriptionStyle}}"
+          wrap="true"
+          width="610" />
+
+      <MLabel
+          id="optional1Text"
+          style="{{vm.optional1Style}}"
+          wrap="true"
+          width="610" />
+
+      <MLabel
+          id="optional2Text"
+          style="{{vm.optional2Style}}"
+          wrap="true"
+          width="610" />
+
+    </LayoutGroup>
+
+    <LayoutGroup
+        id="controlsGroup"
+        translation="[1040,300]"
+        itemSpacings="[10, 45, 52]">
+      <ZActionButton
+          id="usernameInput"
+          style="{{vm.inputStyle}}"
+          text="{{vm.usernameText}}"
+          buttonType="{{vm.usernameButtonType}}"
+          selected="{(vm.onUsernameButtonSelected,isSettingInitialValue=false)}"
+          width="610" />
+
+      <ZActionButton
+          id="passwordInput"
+          text="{{vm.passwordText}}"
+          style="{{vm.inputStyle}}"
+          buttonType="{{vm.passwordButtonType}}"
+          selected="{(vm.onPasswordButtonSelected,isSettingInitialValue=false)}"
+          width="610" />
+
+      <ZActionButton
+          id="loginButton"
+          style="{{vm.loginButtonStyle}}"
+          isEnabled="{{vm.isLoginButtonEnabled}}"
+          selected="{(vm.onLoginButtonSelected,isSettingInitialValue=false)}"
+          width="610" />
+
+      <MLabel
+          id="errorText"
+          width="610"
+          style="{{vm.errorStyle}}"
+          text="{{vm.errorText}}" />
+    </LayoutGroup>
+
+
+  </children>
+</component>
