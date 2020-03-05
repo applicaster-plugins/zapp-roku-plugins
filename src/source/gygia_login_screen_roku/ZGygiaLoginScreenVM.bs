@@ -9,9 +9,9 @@ public currentRequest = invalid
 public isLoggedIn = false
 public accountInfo = invalid
 public baseUrl = ""
+public state = ""
 
 'style bindings
-public activationText = ""
 public isSkipButtonVisible = false
 
 public regcodeText = ""
@@ -22,6 +22,7 @@ public function new(riversJson)
   m.focusId = "loginButton"
   m.analytics = m.getInstance("analyticsManager")
   m.baseUrl = riversJson.data.base_url
+  m.setField("isSkipButtonVisible", riversJson.styles.is_skip_button_shown)
   m.processStyles(m.riversJson.styles)
   
 end function
@@ -35,14 +36,24 @@ public function processStyles(styles)
   m.regcodeStyle = ViewUtils.makeStyleWithRiversJson(styles, "regcode")
   m.supporStyle = ViewUtils.makeStyleWithRiversJson(styles, "support")
   m.gotoStyle = ViewUtils.makeStyleWithRiversJson(styles, "goto")
-  m.loginButtonStyle = ViewUtils.makeActionButtonStyleWithRiversJson(styles, "login_button", "center", styles.login_button_text)
-  m.skipButtonStyle = ViewUtils.makeActionButtonStyleWithRiversJson(styles, "skip_button", "center", styles.skip_button_text)
-
+  m.loginUrlStyle = ViewUtils.makeStyleWithRiversJson(styles, "login_url")
+  m.loginButtonStyle = ViewUtils.makeActionButtonStyleWithRiversJson(styles, "button", "center", styles.login_button_text)
+  m.skipButtonStyle = ViewUtils.makeActionButtonStyleWithRiversJson(styles, "button", "center", styles.skip_button_text)
+  
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '++ Overridden
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+override public function load() as boolean
+  return true
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ general impl
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 
 public function _initialize()
   m.logInfo("_initialize")
@@ -50,7 +61,8 @@ public function _initialize()
 end function
 
 public function showLoggedInScreen()
-  m.setField("state", "finished")
+  m.logInfo("login is complete, setting state to success")
+  m.setField("state", "success")
 end function
 
 
@@ -60,7 +72,7 @@ public function restoreAccount()
   'it's currently coupled to the view - this can be revisted later
   m.logInfo("restoreAccount")
   m.accountInfo = m.getLocalStoreValue("account_info", "gygia", true)
-  m.logInfo("raw stored accountinfo is", accountInfo)
+  m.logInfo("raw stored accountinfo is", m.accountInfo)
   
   if m.accountInfo <> invalid 
     m.logInfo("there is an account stored for this device")
@@ -159,7 +171,7 @@ end function
 
 public function onSkipButtonSelected(value)
   m.logInfo("selected skip")
-  m.setField("state", "finished")
+  m.setField("state", "success")
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -167,6 +179,8 @@ end function
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 public function onKeyPressBack()
+  m.logInfo("on key press back")
+
   if m.visibleContentId = "regcodeGroup"
     m.setField("regcodePollTimerControl", "stop")
     m.setField("visibleContentId", "loginGroup")
@@ -174,8 +188,7 @@ public function onKeyPressBack()
     m.cancelRequests()
     return true
   else 
-    m.logInfo("on key press back")
-    m.setField("state", "finished")
+    m.setField("state", "cancelled")
     return true
     
   end if

@@ -31,6 +31,7 @@ function initializeVMBindings()
   logMethod("initializeVMBindings")
   
   MOM_observeField(m.vm, "visibleContentId", onVisibleContentIdChange)
+  
 end function
 
 function onVisibleContentIdChange(visibleContentId)
