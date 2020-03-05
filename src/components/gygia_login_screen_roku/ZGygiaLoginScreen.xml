@@ -17,7 +17,11 @@
         repeat="true"
         control="{{vm.regcodePollTimerControl}}"
         fire="{(vm.onRegcodePollTimerFire, isSettingInitialValue=false)}" />
-
+    <Rectangle
+        id="backgroundRect"
+        width="1920"
+        height="1080"
+        color="{{:vm.backgroundColor}}" />
     <!-- account not signed in -->
     <Group
         id="loginGroup"
@@ -60,7 +64,7 @@
           id="regcodeTitleLabel"
           translation="[510,250]"
           systemFont="MediumBold,40"
-          style="{{:vm.regcodeStyle}}"
+          style="{{:vm.regcodeTitleStyle}}"
           color="#545A5C" />
       <MLabel
           id="gotoLabel"
@@ -84,6 +88,7 @@
           id="codeLabel"
           translation="[458,632]"
           text="{{vm.regcodeText}}"
+          style="{{:vm.regcodeStyle}}"
           systemFont="LargeBold,120"
           color="#545A5C" />
 

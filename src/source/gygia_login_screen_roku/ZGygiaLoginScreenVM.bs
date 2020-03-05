@@ -21,7 +21,7 @@ public function new(riversJson)
   m.super(riversJson, "ZGygiaLoginScreenVM")
   m.focusId = "loginButton"
   m.analytics = m.getInstance("analyticsManager")
-  m.baseUrl = riversJson.data.base_url
+  m.baseUrl = riversJson.general.base_url
   m.setField("isSkipButtonVisible", riversJson.styles.is_skip_button_shown)
   m.processStyles(m.riversJson.styles)
   
@@ -34,7 +34,7 @@ public function processStyles(styles)
   m.titleStyle = ViewUtils.makeStyleWithRiversJson(styles, "title")
   m.regcodeTitleStyle = ViewUtils.makeStyleWithRiversJson(styles, "regcode_title")
   m.regcodeStyle = ViewUtils.makeStyleWithRiversJson(styles, "regcode")
-  m.supporStyle = ViewUtils.makeStyleWithRiversJson(styles, "support")
+  m.supportStyle = ViewUtils.makeStyleWithRiversJson(styles, "support")
   m.gotoStyle = ViewUtils.makeStyleWithRiversJson(styles, "goto")
   m.loginUrlStyle = ViewUtils.makeStyleWithRiversJson(styles, "login_url")
   m.loginButtonStyle = ViewUtils.makeActionButtonStyleWithRiversJson(styles, "button", "center", styles.login_button_text)
@@ -188,7 +188,9 @@ public function onKeyPressBack()
     m.cancelRequests()
     return true
   else 
-    m.setField("state", "cancelled")
+    m.logInfo("cancelling")
+    m.cancelRequests()
+    m.setField("state", "cancel")
     return true
     
   end if
