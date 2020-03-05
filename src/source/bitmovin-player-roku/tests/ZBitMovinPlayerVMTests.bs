@@ -18,7 +18,14 @@ function BeforeEach()
   m.selection = createObject("roSGNode", "Selection")
   
   m.selection.modelLocator = m.modelLocator
-  m.view = { "id": "#view", "isPlaybackFinished": false, "playbackResult": invalid } 
+  m.riversJson = {
+    "general": {
+      "license_key": "lk"
+      "override_video_url": "ourl"
+    }
+  }
+  
+  m.view = { "id": "#view", "isPlaybackFinished": false, "playbackResult": invalid, "riversJson": m.riversJson } 
   m.player = {
     "isPlayer": true
     "BitmovinFunctions": { "UNLOAD": "unload", "LOAD": "load", }
@@ -38,26 +45,6 @@ end function
 '@It tests constructor
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-'@Test no plugin
-function constructor_noPlugin()
-  m.assertEqual(m.vm.state, "none")
-  m.assertEqual(m.vm.view, m.view)
-  m.assertEmpty(m.vm.licenseKey)
-  m.assertEmpty(m.vm.overrideVideoUrl)
-  m.assertFalse(m.vm.isValid)
-end function
-
-'@Test wrong plugin
-function constructor_wrongPlugin()
-  m.modelLocator.plugins = [PPMT_CreatePluginJson("wrong_plugin", {})] 
-  
-  m.assertEqual(m.vm.state, "none")
-  m.assertEqual(m.vm.view, m.view)
-  m.assertEmpty(m.vm.licenseKey)
-  m.assertEmpty(m.vm.overrideVideoUrl)
-  m.assertFalse(m.vm.isValid)
-end function
-
 '@Test bad configured plugin
 '@Params[{}]
 '@Params[{"license_key": invalid }]
@@ -68,9 +55,8 @@ end function
 '@Params[{"license_key": "", "overrideVideoUrl": "" }]
 '@Params[{"overrideVideoUrl": "" }]
 '@Params[{"overrideVideoUrl": "#override" }]
-function constructor_badConfiguredPlugin(pluginJson)
-  m.modelLocator.plugins = [PPMT_CreatePluginJson("tva-bitmovin-player-plugin-roku", pluginJson)] 
-  
+function constructor_badConfiguredPlugin(generalJson)
+  m.view.riversJson = { "general": generalJson }
   m.vm = new ZBitMovinPlayerVM(m.view)
   
   m.assertEqual(m.vm.state, "none")
@@ -82,12 +68,11 @@ end function
 
 '@Test valid plugin
 function constructor_validPlugin()
-  pluginJson = {
-    "license_key": "#key"
-    "override_video_url": "#override"
+  m.view.riversJson = { "general": {
+      "license_key": "#key"
+      "override_video_url": "#override"
+    }
   }
-  
-  m.modelLocator.plugins = [PPMT_CreatePluginJson("bitmovin-player-roku", pluginJson)] 
   
   m.vm = new ZBitMovinPlayerVM(m.view)
   
@@ -111,13 +96,11 @@ end function
 function onLoadSDKStatusChange_otherStates(state)
   m.expectNone(m.view, "createChild")
   
-  m.vm.onSDKLoadSTatusChange(state) 
+  m.vm.onSDKLoadStatusChange(state) 
   
   m.assertInvalid(m.vm.player)
   m.assertInvalid(m.vm.playerFunctions)
   m.assertInvalid(m.vm.playerFields)
-  
-  m.assertFalse(m.vm.isValid)
 end function
 
 '@Test onLoadSDKStatusChange ready
@@ -131,7 +114,7 @@ function onLoadSDKStatusChange_ready()
   m.expectOnce(m.vm, "bindNodeField", [m.player, "currentTime", "onPlayerCurrentTimeChange", properties])
   
   m.expectOnce(m.player, "callFunc", [m.player.BitmovinFunctions.SETUP, {
-    key:"#key"
+      key: "#key"
   }])
   
   m.vm.onSDKLoadStatusChange("ready") 

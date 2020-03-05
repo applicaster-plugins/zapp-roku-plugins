@@ -17,16 +17,9 @@ public function new(view)
   m.super("ZBitMovinPlayerVM")
   m.view = view
   
-  m.pluginProvider = new PluginManager(m.getInstance("plugins"))
-  plugin = m.pluginProvider.getPluginById("bitmovin-player-roku")
-  
-  if plugin.isValid
-    m.licenseKey = plugin.getStringValue("license_key")
-    m.overrideVideoUrl = plugin.getStringValue("override_video_url")
-  else
-    m.logError("There was no plugin config!")
-  end if
-  
+  m.licenseKey = MU.getContentField(view.riversJson, "general.license_key", "")
+  m.overrideVideoUrl = MU.getContentField(view.riversJson, "general.override_video_url", "")
+
   m.isValid = m.licenseKey <> ""
 end function
 
@@ -66,7 +59,6 @@ private function onSDKLoadStatusChange(status)
     m.player.callFunc(m.playerFunctions.SETUP, {
       key: m.licenseKey
     })
-    m.isValid = true
   end if
 end function
 
