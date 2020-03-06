@@ -6,7 +6,23 @@ import "pkg:/source/aws_cognito_login_screen_roku/AWSLoginScreenVM.bs"
 
 function init()
   m.top.isConsumingOriginEntry = true
-  M_createNodeVars()  
+  M_createNodeVars() 
+  m.top._styledControlIds = [
+    "backgroundRect"
+    "backgroundPoster"
+    "logoPoster"
+    "labelsGroup"
+    "titleText"
+    "descriptionText"
+    "optional1Text"
+    "optional2Text"
+    "controlsGroup"
+    "usernameInput"
+    "passwordInput"
+    "loginButton"
+    "errorText"
+  ] 
+  
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -18,6 +34,17 @@ function getControlName()
 end function
 
 function createVM()
-  return AWSLoginScreenVM(m.top.riversJson)
+  return new AWSLoginScreenVM(m.top.riversJson)
 end function
 
+function initializeUIBContent()
+  
+  styleText = MU.getContentField(m.vm.riversJson, "styles.style_json")
+  
+  if (styleText <> invalid)
+    logInfo("user has provided a precision style - applying now")
+    m.top._styleText = styleText
+  end if
+  
+  m.top.state = "initialized"
+end function
