@@ -58,6 +58,8 @@ function processStyles(styles)
   m.logInfo("converting rivers json styles into a format our UI controls can consume")
   
   m.setField("backgroundColor", ViewUtils.transposeUIBColor(styles.background_color))
+  m.setField("backgroundUri", styles.background_url)
+  m.setField("logoUri", styles.logo_image_url)
   m.setField("titleStyle", ViewUtils.makeStyleWithRiversJson(styles, "title"))
   m.setField("descriptionStyle", ViewUtils.makeStyleWithRiversJson(styles, "description"))
   m.setField("optional1Style", ViewUtils.makeStyleWithRiversJson(styles, "optional_text1"))
