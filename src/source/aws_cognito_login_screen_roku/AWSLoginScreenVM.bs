@@ -58,6 +58,8 @@ function processStyles(styles)
   m.logInfo("converting rivers json styles into a format our UI controls can consume")
   
   m.setField("backgroundColor", ViewUtils.transposeUIBColor(styles.background_color))
+  m.setField("backgroundUri", styles.background_url)
+  m.setField("logoUri", styles.logo_image_url)
   m.setField("titleStyle", ViewUtils.makeStyleWithRiversJson(styles, "title"))
   m.setField("descriptionStyle", ViewUtils.makeStyleWithRiversJson(styles, "description"))
   m.setField("optional1Style", ViewUtils.makeStyleWithRiversJson(styles, "optional_text1"))
@@ -181,8 +183,8 @@ public function onLoginComplete(isComplete)
   m.setField("isLoading", false)
   
   if result.state = "valid"
-    m.logInfo("logged in succesfullt")
-    m.setField("state", "finished")
+    m.logInfo("logged in succesfull")
+    m.setField("state", "success")
   else
     m.setField("state", "ready")
     m.setField("errorText", result.message)
@@ -211,6 +213,15 @@ public function onKeyPressBack() as boolean
   
   return false
 end function
+public function onKeyPressRight() as boolean
+  
+  if m.focusId = "loginButton" and m.riversJson.styles.debug_skip_on_right = true
+    m.logWarn("skipping debug flag is on")
+    m.onLoginComplete(true)
+  end if
+  
+  return false
+end function
 
 public function onKeyPressDown() as boolean
   m.logMethod("onKeyPressDown", m.focusId)
@@ -227,8 +238,8 @@ end function
 public function onKeyPressOption() as boolean
   m.logMethod("onKeyPressOption", m.focusId)
   
-  m.onUsernameKeyboardDialogDismissal("test@email.com")
-  m.onPasswordKeyboardDialogDismissal("1234Test.")
+  m.onUsernameKeyboardDialogDismissal(m.riversJson.styles.debug_username)
+  m.onPasswordKeyboardDialogDismissal(m.riversJson.styles.debug_password)
   
   return true
 end function
