@@ -24,7 +24,6 @@ public function new(riversJson)
   m.baseUrl = riversJson.general.base_url
   m.setField("isSkipButtonVisible", riversJson.styles.is_skip_button_shown)
   m.processStyles(m.riversJson.styles)
-  
 end function
 
 
@@ -55,14 +54,14 @@ end function
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-public function _initialize()
-  m.logInfo("_initialize")
+override public function createContent()
   m.restoreAccount()
 end function
 
 public function showLoggedInScreen()
   m.logInfo("login is complete, setting state to success")
   m.setField("state", "success")
+  
 end function
 
 
@@ -80,7 +79,20 @@ public function restoreAccount()
     m.analyticsManager@.trackEvent("Gygia Login Succesful", "page_loaded")
     
     m.showLoggedInScreen()
+  else if m.isSkipButtonVisible
+    isShown = m.getLocalStoreValue("gygia_login_popup", "is_login_screen_shown")
+    
+    if isShown <> invalid
+      m.logInfo("could not restore; but we've already shown the login screen before")
+      m.showLoggedInScreen()
+
+    else
+
+      m.logInfo("will skip showing login screen again")
+      m.setLocalStoreValue("gygia_login_popup", "is_login_screen_shown", "true", true)
+    end if
   end if
+  
   
 end function
 
