@@ -19,7 +19,7 @@ public function new(plugin)
   m.request = m.getClassInstance("RequestModule")
   m.JWTUtil = m.getClassInstance("JWTUtilModule")
   m.uri = m.getClassInstance("URIModule")
-
+  
   m.resourceID = plugin.getStringValue("resourceID", "")
   m.requestorID = plugin.getStringValue("requestorID", "")
   m.secret = plugin.getStringValue("secret", "")
@@ -39,11 +39,11 @@ override public function _verify()
   ' do a simple local verification just to make sure AuthN completed
   if m.authData <> invalid and MU.isString(m.authData.token)
     parsed = ParseJSON(m.authData.token)
-
+    
     if parsed <> invalid and parsed.expires <> invalid and parsed.expires <> ""
       return m.getAuthorization()
     end if
-
+    
   end if
   ' Here if the local token is invalid.  Don't treat it as an error,
   ' rather just as if there was not a valid token
@@ -271,7 +271,12 @@ end function
 
 private function getResourceText(content = invalid)
   if content = invalid
-    content = m.getInstance("selectedContentItem")
+    selection = m.getInstance("currentSelection")
+    
+    if selection <> invalid
+      content = selection.currentItem
+    end if
+
     m.logInfo(">>>> using content", content)
   end if
   

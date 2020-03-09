@@ -34,6 +34,8 @@ public function new(riversJson)
   
   m.focusId = "usernameInput"
   KeyboardDialogMixin.mixin(m)
+  m.processStyles(m.riversJson.styles)
+  
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -42,7 +44,6 @@ end function
 
 override public function createContent()
   m.logInfo("createContent is overridden in this screen")
-  m.processStyles(m.riversJson.styles)
 end function
 
 override public function load() as boolean

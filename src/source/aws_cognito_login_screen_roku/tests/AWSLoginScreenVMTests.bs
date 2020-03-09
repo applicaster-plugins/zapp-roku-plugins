@@ -194,6 +194,7 @@ end function
 '@It tests onUsernameKeyboardDialogDismissal
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+'@Only
 '@Test 
 '@Params["", "placeholder", "textInputPlaceholder"]
 '@Params["   ", "placeholder", "textInputPlaceholder"]
