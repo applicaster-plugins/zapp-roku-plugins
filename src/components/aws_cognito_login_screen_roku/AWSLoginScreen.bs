@@ -34,18 +34,17 @@ function getControlName()
 end function
 
 function createVM()
-  vm = new AWSLoginScreenVM(m.top.riversJson)
-  applyStyleJson()
-  return vm
+  return new AWSLoginScreenVM(m.top.riversJson)
 end function
 
-function applyStyleJson()
-  logInfo("applying style json before bindings, so we don't lose font sizes")
-
-  styleText = MU.getContentField(m.top.riversJson, "styles.style_json")
+function initializeUIBContent()
+  
+  styleText = MU.getContentField(m.vm.riversJson, "styles.style_json")
   
   if (styleText <> invalid)
     logInfo("user has provided a precision style - applying now")
     m.top._styleText = styleText
   end if
+  
+  m.top.state = "initialized"
 end function
