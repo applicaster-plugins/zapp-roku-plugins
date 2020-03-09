@@ -34,7 +34,9 @@ function getControlName()
 end function
 
 function createVM()
-  return new AWSLoginScreenVM(m.top.riversJson)
+  vm = new AWSLoginScreenVM(m.top.riversJson)
+  applyStyleJsonToScreen()
+  return vm
 end function
 
 function initializeUIBContent()
