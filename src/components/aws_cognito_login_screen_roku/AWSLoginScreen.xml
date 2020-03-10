@@ -79,17 +79,31 @@
       <ZActionButton
           id="loginButton"
           style="{{:vm.loginButtonStyle}}"
-          isEnabled="{{vm.isLoginButtonEnabled}}"
           visible="{{vm.isLoading,  isSettingInitialValue=true,transform=MOM_transform_invertBoolean}}"
           selected="{(vm.onLoginButtonSelected,isSettingInitialValue=false)}"
           width="610" />
 
+    </LayoutGroup>
+
+    <Group
+        id="errorGroup"
+        translation="[1720,0.0]"
+        visible="{{vm.isErrorShowing}}">
+      <Poster
+          id="errorBackground"
+          blendColor="#42454A"
+          uri="pkg:/asset-bundle/button-background.9.png"
+          width="500"
+          height="180" />
       <MLabel
           id="errorText"
-          width="610"
+          width="500"
+          height="180"
+          vertAlign="center"
+          horizAlign="center"
           style="{{vm.errorStyle}}"
           text="{{vm.errorText}}" />
-    </LayoutGroup>
+    </Group>
 
     <LoadingIndicator
         id="loadingIndicator"
