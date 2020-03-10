@@ -36,17 +36,6 @@ end function
 function createVM()
   vm = new AWSLoginScreenVM(m.top.riversJson)
   applyStyleJsonToScreen()
+  
   return vm
-end function
-
-function initializeUIBContent()
-  
-  styleText = MU.getContentField(m.vm.riversJson, "styles.style_json")
-  
-  if (styleText <> invalid)
-    logInfo("user has provided a precision style - applying now")
-    m.top._styleText = styleText
-  end if
-  
-  m.top.state = "initialized"
 end function
