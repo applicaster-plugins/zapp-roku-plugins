@@ -12,9 +12,10 @@ public optional1Style = invalid
 public optional2Style = invalid
 public inputStyle = invalid
 public loginButtonStyle = invalid
+public errorStyle = invalid
+
 public isCredsValid = false
 public isLoginButtonEnabled = false
-public errorStyle = invalid
 public isLoading = false
 public usernameButtonType = "textInput"
 public passwordButtonType = "textInput"
@@ -58,26 +59,27 @@ end function
 function processStyles(styles)
   m.logInfo("converting rivers json styles into a format our UI controls can consume")
   
-  m.setField("backgroundColor", ViewUtils.transposeUIBColor(styles.background_color))
-  m.setField("backgroundUri", styles.background_url)
-  m.setField("logoUri", styles.logo_image_url)
-  m.setField("titleStyle", ViewUtils.makeStyleWithRiversJson(styles, "title"))
-  m.setField("descriptionStyle", ViewUtils.makeStyleWithRiversJson(styles, "description"))
-  m.setField("optional1Style", ViewUtils.makeStyleWithRiversJson(styles, "optional_text1"))
-  m.setField("optional2Style", ViewUtils.makeStyleWithRiversJson(styles, "optional_text2"))
-  m.setField("errorStyle", ViewUtils.makeStyleWithRiversJson(styles, "error"))
+  m.titleStyle = ViewUtils.makeStyleWithRiversJson(styles, "title")
+  m.descriptionStyle = ViewUtils.makeStyleWithRiversJson(styles, "description")
+  m.optional1Style = ViewUtils.makeStyleWithRiversJson(styles, "optional_text1")
+  m.optional2Style = ViewUtils.makeStyleWithRiversJson(styles, "optional_text2")
+  m.errorStyle = ViewUtils.makeStyleWithRiversJson(styles, "error")
   
   m.setField("usernameText", styles.username_placeholder_text)
   m.usernamePlaceholderText = m.usernameText
   
   m.setField("passwordText", styles.password_placeholder_text)
   m.passwordPlaceholderText = m.passwordText
+
+  m.backgroundColor = ViewUtils.transposeUIBColor(styles.background_color)
+  m.backgroundUrl = styles.background_url
+  m.logoImageUrl = styles.logo_image_url
   
-  inputStyle = ViewUtils.makeActionButtonStyleWithRiversJson(styles, "input", "textInputPlaceholder")
-  
+  inputStyle = ViewUtils.makeActionButtonStyleWithRiversJson(styles, "general_input", "textInputPlaceholder")
+
   m.setField("inputStyle", inputStyle)
   
-  m.setField("loginButtonStyle", ViewUtils.makeActionButtonStyleWithRiversJson(styles, "login_button", "center", styles.login_button_text))
+  m.loginButtonStyle = ViewUtils.makeActionButtonStyleWithRiversJson(styles, "login_button", "custom", styles.login_button_text)
   
 end function
 

@@ -11,13 +11,13 @@
         color="{{:vm.backgroundColor}}" />
     <Poster
         id="backgroundPoster"
-        uri="{{:vm.backgroundUri}}"
+        uri="{{:vm.backgroundUrl}}"
         loadSync="true"
         width="1920"
         height="1080" />
     <Poster
         id="logoPoster"
-        uri="{{:vm.logoUri}}"
+        uri="{{:vm.logoUrl}}"
         loadSync="true"
         translation="[100,100]"
         width="100"
@@ -30,25 +30,25 @@
         itemSpacings="[56, 56, 26]">
       <MLabel
           id="titleText"
-          style="{{vm.titleStyle}}"
+          style="{{:vm.titleStyle}}"
           wrap="true"
           width="610" />
 
       <MLabel
           id="descriptionText"
-          style="{{vm.descriptionStyle}}"
+          style="{{:vm.descriptionStyle}}"
           wrap="true"
           width="610" />
 
       <MLabel
           id="optional1Text"
-          style="{{vm.optional1Style}}"
+          style="{{:vm.optional1Style}}"
           wrap="true"
           width="610" />
 
       <MLabel
           id="optional2Text"
-          style="{{vm.optional2Style}}"
+          style="{{:vm.optional2Style}}"
           wrap="true"
           width="610" />
 
@@ -60,7 +60,8 @@
         itemSpacings="[10, 45, 52]">
       <ZActionButton
           id="usernameInput"
-          style="{{vm.inputStyle}}"
+          style="{{:vm.inputStyle}}"
+          labelXOffset="9"
           text="{{vm.usernameText}}"
           buttonType="{{vm.usernameButtonType}}"
           selected="{(vm.onUsernameButtonSelected,isSettingInitialValue=false)}"
@@ -69,15 +70,17 @@
       <ZActionButton
           id="passwordInput"
           text="{{vm.passwordText}}"
-          style="{{vm.inputStyle}}"
+          style="{{:vm.inputStyle}}"
+          labelXOffset="9"
           buttonType="{{vm.passwordButtonType}}"
           selected="{(vm.onPasswordButtonSelected,isSettingInitialValue=false)}"
           width="610" />
 
       <ZActionButton
           id="loginButton"
-          style="{{vm.loginButtonStyle}}"
+          style="{{:vm.loginButtonStyle}}"
           isEnabled="{{vm.isLoginButtonEnabled}}"
+          visible="{{vm.isLoading,  isSettingInitialValue=true,transform=MOM_transform_invertBoolean}}"
           selected="{(vm.onLoginButtonSelected,isSettingInitialValue=false)}"
           width="610" />
 
@@ -88,6 +91,14 @@
           text="{{vm.errorText}}" />
     </LayoutGroup>
 
+    <LoadingIndicator
+        id="loadingIndicator"
+        width="100"
+        height="100"
+        translation="[1000,500]"
+        isActive="{{vm.isLoading, isSettingInitialValue=true}}"
+        backgroundVisible="false"
+        text="" />
 
   </children>
 </component>
