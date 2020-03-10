@@ -26,6 +26,7 @@ public passwordText = ""
 public password = ""
 
 public errorText = ""
+public isErrorShowing = false
 public usernamePlaceholderText = ""
 public passwordPlaceholderText = ""
 public backgroundColor = "#000000ff"
@@ -70,13 +71,13 @@ function processStyles(styles)
   
   m.setField("passwordText", styles.password_placeholder_text)
   m.passwordPlaceholderText = m.passwordText
-
+  
   m.backgroundColor = ViewUtils.transposeUIBColor(styles.background_color)
   m.backgroundUrl = styles.background_url
   m.logoImageUrl = styles.logo_image_url
   
   inputStyle = ViewUtils.makeActionButtonStyleWithRiversJson(styles, "general_input", "textInputPlaceholder")
-
+  
   m.setField("inputStyle", inputStyle)
   
   m.loginButtonStyle = ViewUtils.makeActionButtonStyleWithRiversJson(styles, "login_button", "custom", styles.login_button_text)
@@ -92,6 +93,9 @@ public function onLoginButtonSelected(value)
   
   if not m.isLoading and m.isCredsValid
     m.processLogin()
+  else if not m.isCredsValid
+    m.setField("errorText", "Please enter your email address and password")
+    m.setfield("isErrorShowing", true)
   else
     m.logWarn("ignoring loging button, while loading")
   end if
@@ -174,6 +178,7 @@ public function processLogin()
     
     m.setField("isLoading", true)
     m.setField("errorText", "")
+    m.setField("isErrorShowing", false)
     m.setField("state", "loading")
     
     m.authTask.control = "RUN"
@@ -191,6 +196,7 @@ public function onLoginComplete(isComplete)
   else
     m.setField("state", "ready")
     m.setField("errorText", result.message)
+    m.setField("isErrorShowing", true)
     m.setField("isLoginButtonEnabled", true)
   end if
 end function

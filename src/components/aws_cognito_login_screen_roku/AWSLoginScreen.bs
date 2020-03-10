@@ -20,7 +20,10 @@ function init()
     "usernameInput"
     "passwordInput"
     "loginButton"
+    "loadingIndicator"
     "errorText"
+    "errorGroup"
+    "errorBackground"
   ] 
   
 end function
