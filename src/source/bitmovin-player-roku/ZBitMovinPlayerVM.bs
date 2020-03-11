@@ -74,7 +74,7 @@ public function playItem(item)
   playerData = m.getPlayerData(m.currentItem)
   m.player.callFunc(m.playerFunctions.LOAD, playerData)
   m.player.callFunc(m.playerFunctions.PLAY, invalid)
-  
+  m.setFocus(m.player)
 end function
 
 public function getPlayerData(item)
@@ -91,9 +91,11 @@ end function
 
 public function stopItem()
   logMethod("stopItem")
+  m.player.callFunc(m.playerFunctions.PAUSE, invalid)
   m.player.callFunc(m.playerFunctions.UNLOAD, invalid)
   m.currentItem = invalid
   m.view.isPlaybackFinished = true
+  m.state = "ready"
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
