@@ -6,11 +6,11 @@ end function
 
 function onControlChange()
   logInfo("onControlChange", m.top.control)
-
+  
   if m.top.control = "play"
     m.vm.player.callFunc(m.vm.playerFunctions.PLAY, invalid)
   end if
-
+  
 end function
 
 function initialize(args)
@@ -36,4 +36,10 @@ end function
 
 function stopItem(args = invalid)
   m.vm.stopItem()
+end function
+
+function onGainedFocus(isSelfFocused)
+  if isSelfFocused
+    m.vm.player.setFocus(true)
+  end if
 end function
