@@ -1,5 +1,18 @@
 import "pkg:/source/bitmovin-player-roku/ZBitMovinPlayerVM.bs"
 
+function init()
+  m.top.observeField("control", "onControlChange")
+end function
+
+function onControlChange()
+  logInfo("onControlChange", m.top.control)
+
+  if m.top.control = "play"
+    m.vm.player.callFunc(m.vm.playerFunctions.PLAY, invalid)
+  end if
+
+end function
+
 function initialize(args)
   logInfo("initialize")
   createVM()
@@ -22,5 +35,5 @@ function playItem(item)
 end function
 
 function stopItem(args = invalid)
-  m.vm.stopItem(item)
+  m.vm.stopItem()
 end function

@@ -3,7 +3,8 @@
     name="ZBitMovinPlayer"
     extends="BaseVideoPlayer">
 
-  <interface></interface>
+  <interface>
+  </interface>
   <children>
   </children>
 
