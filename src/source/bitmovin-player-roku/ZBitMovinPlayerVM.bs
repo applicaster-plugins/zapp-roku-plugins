@@ -19,7 +19,7 @@ public function new(view)
   
   m.licenseKey = MU.getContentField(view.riversJson, "general.license_key", "")
   m.overrideVideoUrl = MU.getContentField(view.riversJson, "general.override_video_url", "")
-
+  
   m.isValid = m.licenseKey <> ""
 end function
 
@@ -31,7 +31,7 @@ private function createPlayer()
   m.state = "creatingPlayer"
   m.bitmovinPlayerSDK = m.view.createChild("ComponentLibrary")
   m.bitmovinPlayerSDK.id = "BitmovinPlayerSDK"
-  m.bitmovinPlayerSDK.uri = "https://cdn.bitmovin.com/player/roku/1/bitmovinplayer.zip"
+  m.bitmovinPlayerSDK.uri = "https://cdn.bitmovin.com/player/roku/1.22.0/bitmovinplayer.zip"
   ' Adding the ComponentLibrary node to the scene will start the download of the library
   m.view.appendChild(m.bitmovinPlayerSDK)
   m.bindNodeField(m.bitmovinPlayerSDK, "loadStatus", "onSDKLoadStatusChange", MOM_createBindingProperties())
@@ -73,12 +73,14 @@ public function playItem(item)
   m.state = "playing"
   playerData = m.getPlayerData(m.currentItem)
   m.player.callFunc(m.playerFunctions.LOAD, playerData)
+  m.player.callFunc(m.playerFunctions.PLAY, invalid)
+  
 end function
 
 public function getPlayerData(item)
   
-  if item.playerData <> invalid
-    return item.playerData
+  if item.playbackData <> invalid
+    return item.playbackData
   else
     return {
       hls: item.url
@@ -92,10 +94,6 @@ public function stopItem()
   m.player.callFunc(m.playerFunctions.UNLOAD, invalid)
   m.currentItem = invalid
   m.view.isPlaybackFinished = true
-end function
-
-public function onControlChange(control)
-  logInfo("onControlChange", control)
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -112,7 +110,7 @@ private function onPlayerStateChange(state) as void
   else if state = m.playerState.ERROR
     m.view.playbackResult = m.makeResult("error", "error during playback")
     m.view.isPlaybackFinished = true
-    m.state = "ready"
+    m.state = "error"
   else 
     'ignore this state
   end if
@@ -120,7 +118,7 @@ end function
 
 private function onPlayerVideoError(error)
   m.logMethod("onPlayVideoError", error)
-  m.view.playbackResult = m.makeResult("error", error)
+  m.view.playbackResult = m.makeResult("error", error.message)
   m.state = "ready"
 end function
 
