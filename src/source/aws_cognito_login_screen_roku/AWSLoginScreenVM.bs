@@ -16,6 +16,7 @@ public errorStyle = invalid
 
 public isCredsValid = false
 public isLoginButtonEnabled = false
+public isRefreshing = true
 public isLoading = false
 public usernameButtonType = "textInput"
 public passwordButtonType = "textInput"
@@ -49,7 +50,8 @@ override public function createContent()
 end function
 
 override public function load() as boolean
-  m.logInfo("load")
+  m.logInfo("load - refreshing login")
+  m.refreshLogin() 
   return true
 end function
 
@@ -151,6 +153,36 @@ private function onPasswordKeyboardDialogDismissal(text)
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ refresh
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+private function refreshLogin()
+  m.logInfo("calling authTask to refresh login")
+  
+  args = {
+    id: "authTask"
+    functionName: "execLoad"
+    client_type: "aws_cognito_auth_plugin"
+  }
+  m.authTask = m.createTask("AuthTask", args, "onRefreshComplete", true, "isComplete")
+  
+  m.setField("isRefreshing", true)
+  m.setField("isLoginButtonEnabled", false)
+end function
+
+private function onRefreshComplete(result)
+  result = m.authTask.result
+  m.logMethod("onRefreshComplete", result)
+  m.setField("isLoading", false)
+  
+  if m.getInstance("user").isLoggedIn
+    m.setField("state", "success")
+  end if
+
+  m.setField("isRefreshing", false)
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '++ login
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -164,24 +196,23 @@ public function processLogin()
   m.logInfo("logging in")
   
   if m.isCredsValid
-    m.authTask = m.createInstance("AuthTask", invalid, "authTask")
-    m.authTask.functionName = "execLogIn"
-    m.authTask.client_type = "aws_cognito_auth_plugin"
     creds = m.createInstance("AuthenticationCredentials")
     creds.username = m.usernameText
     creds.password = m.password
+    args = {
+      id: "authTask"
+      functionName: "execLogIn"
+      client_type: "aws_cognito_auth_plugin"
+      credentials: creds
+    }
+    m.authTask = m.createTask("AuthTask", args, "onLoginComplete", true, "isComplete")
     
-    m.authTask.credentials = creds
     m.setField("isLoginButtonEnabled", false)
-    
-    m.bindNodeField(m.authTask, "isComplete", "onLoginComplete", MOM_createBindingProperties(false, invalid, true))
     
     m.setField("isLoading", true)
     m.setField("errorText", "")
     m.setField("isErrorShowing", false)
     m.setField("state", "loading")
-    
-    m.authTask.control = "RUN"
   end if
 end function
 
