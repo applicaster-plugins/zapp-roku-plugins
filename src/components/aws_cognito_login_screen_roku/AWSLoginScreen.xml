@@ -13,6 +13,7 @@
         id="backgroundPoster"
         uri="{{:vm.backgroundUrl}}"
         loadSync="true"
+        loadDisplayMode="scaleToFill"
         loadWidth="1920"
         loadHeight="1080"
         width="1920"
