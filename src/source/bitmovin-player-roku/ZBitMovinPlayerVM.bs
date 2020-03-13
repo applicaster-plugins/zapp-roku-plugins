@@ -6,6 +6,7 @@ namespace ZBMPVM
 class ZBitMovinPlayerVM extends BaseZappVM
 
 private view = invalid
+private themeColor = "#ffffff"
 private player = invalid
 private currentItem = invalid
 private licenseKey = ""
@@ -19,7 +20,14 @@ public function new(view)
   
   m.licenseKey = MU.getContentField(view.riversJson, "general.license_key", "")
   m.overrideVideoUrl = MU.getContentField(view.riversJson, "general.override_video_url", "")
-  
+  themeColor = MU.getContentField(view.riversJson, "styles.theme_color")
+
+  if themeColor = invalid
+    m.themeColor = "#ffffff"
+  else
+    m.themeColor = ViewUtils.transposeUIBColor(themeColor)
+  end if
+
   m.isValid = m.licenseKey <> ""
 end function
 
@@ -49,7 +57,7 @@ private function onSDKLoadStatusChange(status)
     m.playerFunctions = m.player.BitmovinFunctions
     m.playerFields = m.player.BitmovinFields
     m.playerState = m.player.BitmovinPlayerState
-    
+    m.setVideoChromeStyle() 
     bindingProperties = MOM.createBindingProperties(false)
     m.bindNodeField(m.player, m.playerFields.PLAYER_STATE, "onPlayerStateChange", bindingProperties)
     m.bindNodeField(m.player, m.playerFields.ERROR, "onPlayerVideoError", bindingProperties)
@@ -60,6 +68,13 @@ private function onSDKLoadStatusChange(status)
       key: m.licenseKey
     })
   end if
+end function
+
+private function setVideoChromeStyle()
+  videoNode = m.player.getChild(0)
+  videoNode.retrievingBar.filledBarBlendColor = m.themeColor
+  videoNode.bufferingBar.filledBarBlendColor = m.themeColor
+  videoNode.trickPlayBar.filledBarBlendColor = m.themeColor
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -74,13 +89,17 @@ public function playItem(item)
   playerData = m.getPlayerData(m.currentItem)
   m.player.callFunc(m.playerFunctions.LOAD, playerData)
   m.player.callFunc(m.playerFunctions.PLAY, invalid)
+  videoNode = m.player.getChild(0)
+  videoNode.control = "play"
   m.setFocus(m.player)
+  m.setVideoChromeStyle()
 end function
 
 public function getPlayerData(item)
   
   if item.playbackData <> invalid
     return item.playbackData
+
   else
     return {
       hls: item.url
@@ -91,7 +110,7 @@ end function
 
 public function stopItem()
   logMethod("stopItem")
-  m.player.callFunc(m.playerFunctions.PAUSE, invalid)
+  ' m.player.callFunc(m.playerFunctions.PAUSE, invalid)
   m.player.callFunc(m.playerFunctions.UNLOAD, invalid)
   m.currentItem = invalid
   m.view.isPlaybackFinished = true
