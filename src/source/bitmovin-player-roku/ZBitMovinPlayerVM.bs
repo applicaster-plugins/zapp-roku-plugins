@@ -21,13 +21,13 @@ public function new(view)
   m.licenseKey = MU.getContentField(view.riversJson, "general.license_key", "")
   m.overrideVideoUrl = MU.getContentField(view.riversJson, "general.override_video_url", "")
   themeColor = MU.getContentField(view.riversJson, "styles.theme_color")
-
+  
   if themeColor = invalid
     m.themeColor = "#ffffff"
   else
     m.themeColor = ViewUtils.transposeUIBColor(themeColor)
   end if
-
+  
   m.isValid = m.licenseKey <> ""
 end function
 
@@ -86,8 +86,12 @@ public function playItem(item)
   
   m.currentItem = item
   m.state = "playing"
-  playerData = m.getPlayerData(m.currentItem)
-  m.player.callFunc(m.playerFunctions.LOAD, playerData)
+  playerItem = m.getPlayerItem(m.currentItem)
+  playerItem.options = {
+    "startOffset": m.currentItem.BookmarkPosition
+  }
+
+  m.player.callFunc(m.playerFunctions.LOAD, playerItem)
   m.player.callFunc(m.playerFunctions.PLAY, invalid)
   videoNode = m.player.getChild(0)
   videoNode.control = "play"
@@ -95,11 +99,11 @@ public function playItem(item)
   m.setVideoChromeStyle()
 end function
 
-public function getPlayerData(item)
+public function getPlayerItem(item)
   
   if item.playbackData <> invalid
     return item.playbackData
-
+    
   else
     return {
       hls: item.url
