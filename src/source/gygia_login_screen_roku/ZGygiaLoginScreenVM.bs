@@ -20,7 +20,7 @@ public regcodePollTimerControl = "stop"
 public function new(riversJson)
   m.super(riversJson, "ZGygiaLoginScreenVM")
   m.focusId = "loginButton"
-  m.analytics = m.getInstance("analyticsManager")
+  m.analyticsManager = m.getInstance("analyticsManager")
   m.baseUrl = riversJson.general.base_url
   m.setField("isSkipButtonVisible", riversJson.styles.is_skip_button_shown)
   m.processStyles(m.riversJson.styles)
