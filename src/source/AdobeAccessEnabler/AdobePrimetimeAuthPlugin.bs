@@ -168,13 +168,6 @@ override public function _logOut()
 end function
 
 
-override public function configureAuthenticationFlow(flow)
-  m.logMethod("configureAuthenticationFlow")
-  flow.isPreSelectionRequiredBeforeRegister = true
-  flow.flowType = "regcode"
-end function
-
-
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '++ private impl
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
