@@ -27,7 +27,7 @@
         height="100" />
     <Group
         id="loginGroup"
-        visible="{{vm.isRefreshing, aisSettingInitialValue=true,transform=MOM_transform_invertBoolean}}">
+        visible="{{vm.isRefreshing, isSettingInitialValue=true,transform=MOM_transform_invertBoolean}}">
       <LayoutGroup
           id="labelsGroup"
           layoutDirection="vert"
