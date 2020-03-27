@@ -20,11 +20,14 @@
         height="1080" />
     <Poster
         id="logoPoster"
-        uri="{{:vm.logoUrl}}"
         loadSync="true"
-        translation="[100,100]"
-        width="100"
-        height="100" />
+        translation="{{:vm.logoPosition}}"
+        loadWidth="{{:vm.logoWidth}}"
+        loadHeight="{{:vm.logoHeight}}"
+        width="{{:vm.logoWidth}}"
+        height="{{:vm.logoHeight}}"
+        uri="{{:vm.logoImageUrl}}"
+         />
     <Group
         id="loginGroup"
         visible="{{vm.isRefreshing, isSettingInitialValue=true,transform=MOM_transform_invertBoolean}}">
