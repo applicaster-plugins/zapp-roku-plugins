@@ -1,0 +1,156 @@
+import "pkg:/source/UIBuilder/view/ZUIBScreenVM.bs"
+import "pkg:/source/lib/ViewUtils.bs"
+
+namespace WMSVM
+class WarningMessageScreenVM extends ZUIBScreenVM
+
+'styles
+public isContentGroupVisible = false
+public titleStyle = invalid
+public descriptionStyle = invalid
+public optional1Style = invalid
+public titleText = ""
+public descriptionText = ""
+public optional1Text = ""
+public doneButtonStyle = invalid
+public isShowingLoadingIndicator = true
+
+public backgroundColor = "#000000ff"
+public backgroundUrl = ""
+public textPosition = [0, 310]
+public buttonPosition = [655, 688]
+public logoPosition = [100, 33]
+public logoWidth = 350
+public logoHeight = 100
+public logoImageUrl = ""
+
+private conditionPath = ""
+private conditionValue = ""
+
+public function new(riversJson)
+  m.super(riversJson, "AWSLoginScreenVM")
+  
+  m.focusId = "usernameInput"
+  m.conditionPath = m.riversJson.styles.condition_path
+  m.conditionValue = m.riversJson.styles.condition_value
+  m.processStyles(m.riversJson.styles)
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Overridden
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+override public function createContent()
+  m.logInfo("createContent is overridden in this screen")
+end function
+
+override public function load() as boolean
+  isShowingWarning = false
+  
+  if m.originEntry <> invalid and MU.isString(m.conditionPath) and MU.isString(m.conditionValue) and m.conditionPath.trim() <> "" and m.conditionValue.trim() <> ""
+    value = MU.getContentField(m.originEntry, m.conditionPath, invalid)
+    if MU.isString(value) and value = m.conditionValue
+      m.logInfo("this content has a value that matches the locking condition")
+      isShowingWarning = true
+      m.super()
+    end if
+  end if
+  
+  if not isShowingWarning
+    m.logInfo("this content does NOT match the locking condition continuing with flow")
+    m.setField("state", "success")
+  end if
+  
+  return true
+end function
+
+override public function onFeedResult(result)
+  m.logMethod("onFeedResult")
+  m.setField("isShowingLoadingIndicator", false)
+  
+  if result.isOk and result.data.itemType <> "problemDetailsResponse"
+    'TODO - ascertain the entry to use as our message etry
+    messageEntry = result.data
+    m.showMessage(messageEntry)
+  else
+    entry = {
+      title: "This content cannot be displayed"
+      json: {
+        "summary": "Entry failed to load"
+      }
+    }
+  end if
+end function
+
+private function showMessage(entry)
+  m.setField("isContentGroupVisible", true)
+  titleText = MU.getContentField(entry, "title", "")
+  
+  if titleText = ""
+    titleText = "This content cannot be displayed"
+  end if
+  
+  m.setField("titleText", titleText)
+  
+  m.setField("descriptionText", MU.getContentField(entry, "json.summary", ""))
+  m.setField("optional1Text", MU.getContentField(entry, "extensions.extra_text", ""))
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ styles
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function processStyles(styles)
+  m.logInfo("converting rivers json styles into a format our UI controls can consume")
+  
+  m.titleStyle = ViewUtils.makeStyleWithRiversJson(styles, "title")
+  
+  m.descriptionStyle = ViewUtils.makeStyleWithRiversJson(styles, "description")
+  m.optional1Style = ViewUtils.makeStyleWithRiversJson(styles, "optional_text1")
+  m.backgroundColor = ViewUtils.transposeUIBColor(styles.background_color)
+  m.backgroundUrl = styles.background_url
+  m.logoImageUrl = styles.logo_image_url
+  
+  m.doneButtonStyle = ViewUtils.makeActionButtonStyleWithRiversJson(styles, "done_button", "custom", styles.done_button_text)
+  
+  m.logoImageUrl = styles.logo_url
+  m.logoPosition = ViewUtils.makePositionWithRiversJson(styles, "logo", 100, 33)
+  m.textPosition = ViewUtils.makePositionWithRiversJson(styles, "text", 0, 310)
+  m.textWidth = ViewUtils.getUIBInt(styles, "text_w", 1920)
+  m.buttonPosition = ViewUtils.makePositionWithRiversJson(styles, "button", 100, 33)
+  logoSize = ViewUtils.makeSizeWithRiversJson(styles, "logo", 350, 100)
+  m.logoWidth = logoSize[0]
+  m.logoHeight = logoSize[1]
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ callbacks
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+public function onDoneButtonSelected(value)
+  m.logMethod("onDoneButtonSelected")
+  m.setField("state", "cancel")
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Key Handling
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+public function isCapturingAnyKeyPress(key, press)
+  'do not anyone escape this screen!
+  return true
+end function
+
+public function onKeyPressBack() as boolean
+  m.setField("state", "cancel")
+  return true
+end function
+
+override public function onKeyPressUp() as boolean
+  return true
+end function
+
+end class
+end namespace

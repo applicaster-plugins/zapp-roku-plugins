@@ -1,0 +1,30 @@
+'@TestSuite [WMSVMT] WarningMessageScreenVM Tests
+namespace WMSVMT
+
+'@BeforeEach
+function beforeEach()
+  localStore = createObject("roSGNode", "ZSessionStore")
+  modelLocator = createObject("roSGNode", "ModelLocator")
+  modelLocator.addfields({ "ZPLocalStore": localStore })
+  TU.setModelLocator(modelLocator)
+  
+  m.optionsScreenState = {}
+  riversJson = {
+    "id": "myAccount"
+    "data": { "base_url": "#base_url/" }
+  }
+  
+  m.vm = new WarningMessageScreenVM(riversJson)
+  m.analyticsManager = { "id" : "analyticsManager" }
+  m.vm.analyticsManager = m.analyticsManager
+  
+  m.vm.initialize()
+end function
+
+'@AfterEach
+function afterEach()
+  m.global.delete("zapp")
+  TU.unsetModelLocator()
+end function
+
+end namespace
