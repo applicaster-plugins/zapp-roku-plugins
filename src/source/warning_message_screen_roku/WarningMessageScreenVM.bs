@@ -24,6 +24,8 @@ public logoWidth = 350
 public logoHeight = 100
 public logoImageUrl = ""
 
+private warningEntryIndex = 2
+private warningEntryDepth = 1
 private conditionPath = ""
 private conditionValue = ""
 
@@ -48,13 +50,15 @@ end function
 override public function load() as boolean
   isShowingWarning = false
   
-  if m.originEntry <> invalid and MU.isString(m.conditionPath) and MU.isString(m.conditionValue) and m.conditionPath.trim() <> "" and m.conditionValue.trim() <> ""
+  if m.originEntry <> invalid and MU.isString(m.conditionPath) and MU.isString(m.conditionValue) 
     value = MU.getContentField(m.originEntry, m.conditionPath, invalid)
+    
     if MU.isString(value) and value = m.conditionValue
       m.logInfo("this content has a value that matches the locking condition")
       isShowingWarning = true
       m.super()
     end if
+
   end if
   
   if not isShowingWarning
@@ -67,24 +71,47 @@ end function
 
 override public function onFeedResult(result)
   m.logMethod("onFeedResult")
-  m.setField("isShowingLoadingIndicator", false)
+  'now load the child with the entry that's going to display the message
+  warningEntry = invalid
+  
+  if result.isOk and result.data.itemType <> "problemDetailsResponse" and result.data.getChildCount() > m.warningEntryIndex
+    warningEntry = result.data.getChild(m.warningEntryIndex)
+    if warningEntry <> invalid
+      m.executeLoadItemTask(warningEntry.id, warningEntry, "onLoadedChildEntry", 0)
+    end if
+  end if
+  
+  if warningEntry = invalid
+    m.showGenericErrorMessage()
+  end if
+end function
+
+private function onLoadedChildEntry(result)
+  m.logMethod("onLoadedChildEntry")
+  
+  messageEntry = invalid
   
   if result.isOk and result.data.itemType <> "problemDetailsResponse"
-    'TODO - ascertain the entry to use as our message etry
-    messageEntry = result.data
+    messageEntry = MU.getChildAtDepth(result.data, m.warningEntryDepth)
+  end if
+  
+  if messageEntry <> invalid
     m.showMessage(messageEntry)
   else
-    entry = {
-      title: "This content cannot be displayed"
-      json: {
-        "summary": "Entry failed to load"
-      }
-    }
+    m.showGenericErrorMessage()
   end if
+end function
+
+private function showGenericErrorMessage()
+  m.setField("isShowingLoadingIndicator", false)
+
+  'this is already showing by default
 end function
 
 private function showMessage(entry)
   m.setField("isContentGroupVisible", true)
+  m.setField("isShowingLoadingIndicator", false)
+
   titleText = MU.getContentField(entry, "title", "")
   
   if titleText = ""
@@ -93,7 +120,7 @@ private function showMessage(entry)
   
   m.setField("titleText", titleText)
   
-  m.setField("descriptionText", MU.getContentField(entry, "json.summary", ""))
+  m.setField("descriptionText", MU.getContentField(entry, "description", ""))
   m.setField("optional1Text", MU.getContentField(entry, "extensions.extra_text", ""))
 end function
 

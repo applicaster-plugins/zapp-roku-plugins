@@ -68,18 +68,16 @@
           style="{{:vm.doneButtonStyle}}"
           selected="{(vm.onDoneButtonSelected,isSettingInitialValue=false)}"
           width="610" />
-
-
-      <LoadingIndicator
-          id="loadingIndicator"
-          width="1920"
-          height="1080"
-          translation="[0,0]"
-          isActive="{{vm.isShowingLoadingIndicator, isSettingInitialValue=true}}"
-          backgroundVisible="false"
-          text="" />
-
-
     </Group>
+
+    <LoadingIndicator
+        id="loadingIndicator"
+        width="1920"
+        height="1080"
+        translation="[0,0]"
+        isActive="{{vm.isShowingLoadingIndicator, isSettingInitialValue=true}}"
+        backgroundVisible="false"
+        text="" />
+
   </children>
 </component>
