@@ -228,7 +228,6 @@ end function
 public function onLoginComplete(isComplete)
   result = m.authTask.result
   m.logMethod("onLoginComplete", result)
-  m.setField("isLoading", false)
   
   if result.state = "valid"
     m.logInfo("logged in succesfull")
@@ -239,6 +238,9 @@ public function onLoginComplete(isComplete)
     m.setField("isErrorShowing", true)
     m.setField("isLoginButtonEnabled", true)
   end if
+
+  m.setField("isLoading", false)
+  
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

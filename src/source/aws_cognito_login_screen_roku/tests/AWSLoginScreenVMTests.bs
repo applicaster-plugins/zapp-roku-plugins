@@ -352,6 +352,7 @@ function processLogin_valid_creds()
   
 end function
 
+'@Ignore - only use these with your own creds, and for non suit tests
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '@It INTEGRATION tests processLogin
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -374,10 +375,10 @@ function processLogin_beforeEach()
       },
       "type": "auth_provider"
       "configuration_json": {
-        "host": "CHANGE_ME_AND_DO_NOT_COMMIT"
-        "region": "us-west-2"
-        "endpoint": "CHANGE_ME_AND_DO_NOT_COMMIT"
-        "app_client_id": "CHANGE_ME_AND_DO_NOT_COMMIT"
+        "host": "SOME_HOST"
+        "region": "SOME_REGION"
+        "endpoint": "SOME_ENDPOINT"
+        "app_client_id": "SOME_CLIENT_ID"
       }
   }] 
   
@@ -394,19 +395,14 @@ end function
 '@Test valid creds
 function processLogin_integration_test()
   m.vm.isCredsValid = true
-  m.vm.usernameText = "test@email.com"
-  m.vm.password = "CHANGE_ME_AND_DO_NOT_COMMIT"
+  m.vm.usernameText = "SOME_USER@email.com"
+  m.vm.password = "SOME_PASSWORD"
   
-  authTask = createObject("roSGNode", "AuthTask") 
-  
-  m.expectOnce(m.vm, "createInstance", ["AuthTask", invalid, "authTask"], authTask)
   m.expectOnce(m.vm, "createInstance", ["AuthenticationCredentials"], createObject("roSGNode", "AuthenticationCredentials"))
   
   m.vm.processLogin()
   
-  TU.waitForField(authTask, "isComplete", 3000)
-  
-  m.vm.onLoginComplete(authTask.result)
+  TU.waitForField(m.vm, "isLoading", 3000, 5)
   
   m.assertEqual(m.vm.state, "finished")
   m.assertFalse(m.vm.isLoading)
@@ -419,15 +415,11 @@ function processLogin_integration_test_invalid()
   m.vm.usernameText = "user"
   m.vm.password = "pass"
   
-  authTask = createObject("roSGNode", "AuthTask") 
-  m.expectOnce(m.vm, "createInstance", ["AuthTask", invalid, "authTask"], authTask)
   m.expectOnce(m.vm, "createInstance", ["AuthenticationCredentials"], createObject("roSGNode", "AuthenticationCredentials"))
   
   m.vm.processLogin()
   
-  TU.waitForField(authTask, "isComplete")
-  
-  m.vm.onLoginComplete(authTask.result)
+  TU.waitForField(m.vm, "isLoading")
   
   m.assertEqual(m.vm.state, "ready")
   m.assertFalse(m.vm.isLoading)
