@@ -34,12 +34,12 @@ override public function start()
 
   m.library.init(config)
 
-  'we only support hardocded support for gygia right now
+  'we only support hardocded support for gygya right now
   'TODO add other account types
-  m.identify("gygia")
+  m.identify("Gigya")
 end function
 
-override public function identify(plugin = "gygia", traits = {}, options = {})
+override public function identify(plugin = "Gigya", traits = {}, options = {})
   m.logInfo("identify", plugin)
   
   m.defaultOptions = m.getDefaultOptions()
@@ -58,7 +58,7 @@ override public function identify(plugin = "gygia", traits = {}, options = {})
   end if 
 end function
 
-override public function unidentify(plugin = "gygia")
+override public function unidentify(plugin = "Gigya")
   m.isIdentified = false
   m.defaultOptions = m.getDefaultOptions()
   m.defaultProperties = m.getDefaultProperties()
@@ -108,7 +108,7 @@ end function
 
 public function getDefaultOptions()
   
-  accountInfo = m.getLocalStoreValue("account_info", "gygia", true)
+  accountInfo = m.getLocalStoreValue("account_info", "Gigya", true)
   
   options = {}
   if accountInfo <> invalid 
@@ -122,7 +122,7 @@ end function
 
 public function getDefaultProperties()
   
-  accountInfo = m.getLocalStoreValue("account_info", "gygia", true)
+  accountInfo = m.getLocalStoreValue("account_info", "Gigya", true)
   properties = {
     user_email: "anonymous"
     user_name: "anonymous"

@@ -51,10 +51,10 @@ end function
 function restoreAccount_has_account()
   accountInfo = { "firstname": "#fn" }
   
-  m.expectOnce(m.vm, "getLocalStoreValue", ["account_info", "gygia", true], accountInfo)
+  m.expectOnce(m.vm, "getLocalStoreValue", ["account_info", "Gigya", true], accountInfo)
   m.expectOnce(m.vm, "showLoggedInScreen")
-  m.expectOnce(m.analyticsManager, "callFunc", ["identify", "gygia"])
-  m.expectOnce(m.analyticsManager, "callFunc", ["trackEvent", "Gygia Login Succesful", "page_loaded"])
+  m.expectOnce(m.analyticsManager, "callFunc", ["identify", "Gigya"])
+  m.expectOnce(m.analyticsManager, "callFunc", ["trackEvent", "Gigya Login Succesful", "page_loaded"])
   
   m.vm.restoreAccount()
   
@@ -64,7 +64,7 @@ end function
 '@Test does not have account
 function restoreAccount_does_not_have_account()
   m.expectNone(m.vm, "showLoggedInScreen")
-  m.expectOnce(m.vm, "getLocalStoreValue", ["account_info", "gygia", true], invalid)
+  m.expectOnce(m.vm, "getLocalStoreValue", ["account_info", "Gigya", true], invalid)
   
   m.vm.restoreAccount()
   
@@ -81,7 +81,7 @@ function onKeyPressOk_loginButton()
   m.vm.focusId = "loginButton"
   m.expectOnce(m.vm, "requestCode")
   m.expectOnce(m.vm, "toggleNavMenuVisible", [false, false])
-  m.expectOnce(m.analyticsManager, "callFunc", ["trackEvent", "Gygia Waiting", "page_loaded"])
+  m.expectOnce(m.analyticsManager, "callFunc", ["trackEvent", "Gigya Waiting", "page_loaded"])
   
   m.assertTrue(m.vm.onKeyPressOK())
   
@@ -185,9 +185,9 @@ function onPollResponse_valid()
     }
   }
   m.expectOnce(m.vm, "showLoggedInScreen")
-  m.expectOnce(m.vm, "setLocalStoreValue", ["account_info", "gygia", formatJson(response.data), true])
-  m.expectOnce(m.analyticsManager, "callFunc", ["identify", "gygia"])
-  m.expectOnce(m.analyticsManager, "callFunc", ["trackEvent", "Gygia Login Succesful", "page_loaded"])
+  m.expectOnce(m.vm, "setLocalStoreValue", ["account_info", "Gigya", formatJson(response.data), true])
+  m.expectOnce(m.analyticsManager, "callFunc", ["identify", "Gigya"])
+  m.expectOnce(m.analyticsManager, "callFunc", ["trackEvent", "Gigya Login Succesful", "page_loaded"])
   
   m.vm.onPollResponse(response)
   
@@ -262,9 +262,9 @@ function onLogoutResponse_valid()
   response = {
     isOK: true
   }
-  m.expectOnce(m.analyticsManager, "callFunc", ["unidentify", "gygia"])
-  m.expectOnce(m.analyticsManager, "callFunc", ["trackEvent", "Gygia Signed Out", "page_loaded"])
-  m.expectOnce(m.vm, "setLocalStoreValue", ["account_info", "gygia", invalid, true])
+  m.expectOnce(m.analyticsManager, "callFunc", ["unidentify", "Gigya"])
+  m.expectOnce(m.analyticsManager, "callFunc", ["trackEvent", "Gigya Signed Out", "page_loaded"])
+  m.expectOnce(m.vm, "setLocalStoreValue", ["account_info", "Gigya", invalid, true])
   
   m.vm.onLogoutResponse(response)
   

@@ -2,7 +2,7 @@ import "pkg:/source/UIBuilder/view/ZUIBScreenVM.bs"
 
 namespace OCGPSVM 
 
-class ZGygiaLoginScreenVM extends ZUIBScreenVM
+class ZGigyaLoginScreenVM extends ZUIBScreenVM
 
 public visibleContentId = "loginGroup"
 public currentRequest = invalid
@@ -18,7 +18,7 @@ public regcodeText = ""
 public regcodePollTimerControl = "stop"
 
 public function new(riversJson)
-  m.super(riversJson, "ZGygiaLoginScreenVM")
+  m.super(riversJson, "ZGigyaLoginScreenVM")
   m.focusId = "loginButton"
   m.analyticsManager = m.getInstance("analyticsManager")
   m.baseUrl = riversJson.general.base_url
@@ -70,17 +70,17 @@ public function restoreAccount()
   'therefore have it's auth restored by the auth manager
   'it's currently coupled to the view - this can be revisted later
   m.logInfo("restoreAccount")
-  m.accountInfo = m.getLocalStoreValue("account_info", "gygia", true)
+  m.accountInfo = m.getLocalStoreValue("account_info", "Gigya", true)
   m.logInfo("raw stored accountinfo is", m.accountInfo)
   
   if m.accountInfo <> invalid 
     m.logInfo("there is an account stored for this device")
-    m.analyticsManager@.identify("gygia")
-    m.analyticsManager@.trackEvent("Gygia Login Succesful", "page_loaded")
+    m.analyticsManager@.identify("Gigya")
+    m.analyticsManager@.trackEvent("Gigya Login Succesful", "page_loaded", {"provider": "Gigya"})
     
     m.showLoggedInScreen()
   else if m.isSkipButtonVisible
-    isShown = m.getLocalStoreValue("gygia_login_popup", "is_login_screen_shown")
+    isShown = m.getLocalStoreValue("gigya_login_popup", "is_login_screen_shown")
     
     if isShown <> invalid
       m.logInfo("could not restore; but we've already shown the login screen before")
@@ -89,7 +89,7 @@ public function restoreAccount()
     else
 
       m.logInfo("will skip showing login screen again")
-      m.setLocalStoreValue("gygia_login_popup", "is_login_screen_shown", "true", true)
+      m.setLocalStoreValue("gigya_login_popup", "is_login_screen_shown", "true", true)
     end if
   end if
   
@@ -154,9 +154,9 @@ public function onPollResponse(response)
       m.isLoggedIn = true
       m.showLoggedInScreen()
       
-      m.setLocalStoreValue("account_info", "gygia", formatJson(m.accountInfo), true)
-      m.analyticsManager@.identify("gygia")
-      m.analyticsManager@.trackEvent("Gygia Login Succesful", "page_loaded")
+      m.setLocalStoreValue("account_info", "Gigya", formatJson(m.accountInfo), true)
+      m.analyticsManager@.identify("Gigya")
+      m.analyticsManager@.trackEvent("Gigya Login Succesful", "page_loaded")
     else if response.data.ErrorCode = 4
       m.logInfo("token has expired - re-requesting")
       m.setField("regcodePollTimerControl", "stop")

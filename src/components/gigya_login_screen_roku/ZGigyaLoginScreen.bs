@@ -1,4 +1,4 @@
-import "pkg:/source/gygia_login_screen_roku/ZGygiaLoginScreenVM.bs"
+import "pkg:/source/gigya_login_screen_roku/ZGigyaLoginScreenVM.bs"
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '++ Initialization
@@ -16,7 +16,7 @@ end function
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 function getControlName()
-  return "ZGygiaLoginScreen"
+  return "ZGigyaLoginScreen"
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -24,7 +24,7 @@ end function
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 function createVM()
-  return new ZGygiaLoginScreenVM(m.top.riversJson)
+  return new ZGigyaLoginScreenVM(m.top.riversJson)
 end function
 
 function initializeVMBindings()
