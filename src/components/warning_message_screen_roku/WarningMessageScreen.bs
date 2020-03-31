@@ -15,7 +15,6 @@ function init()
     "titleText"
     "descriptionText"
     "optional1Text"
-    "controlsGroup"
     "doneButton"
   ] 
   

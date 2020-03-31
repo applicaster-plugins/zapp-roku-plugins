@@ -59,6 +59,7 @@ override public function load() as boolean
       m.super()
     end if
 
+'@Only
   end if
   
   if not isShowingWarning
