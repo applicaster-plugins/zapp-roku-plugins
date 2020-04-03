@@ -1,0 +1,110 @@
+import "pkg:/source/UIBuilder/view/ZUIBScreenVM.bs"
+import "pkg:/source/lib/ViewUtils.bs"
+
+namespace GTSVM
+class GeneralTextScreenVM extends ZUIBScreenVM
+
+'styles
+public isContentGroupVisible = false
+public titleStyle = invalid
+public descriptionStyle = invalid
+public optional1Style = invalid
+public titleText = ""
+public descriptionText = ""
+public optional1Text = ""
+public doneButtonStyle = invalid
+public isShowingLoadingIndicator = true
+
+public backgroundColor = "#000000ff"
+public backgroundUrl = ""
+public textPosition = [0, 310]
+public buttonPosition = [655, 688]
+public logoPosition = [100, 33]
+public logoWidth = 350
+public logoHeight = 100
+public logoImageUrl = ""
+
+public function new(riversJson)
+  m.super(riversJson, "WarningMessageScreenVM")
+  
+  m.focusId = "usernameInput"
+  m.processStyles(m.riversJson.styles)
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Overridden
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+override public function createContent()
+  m.logInfo("createContent is overridden in this screen")
+  m.showGenericErrorMessage()
+end function
+
+override public function load() as boolean
+  return true
+end function
+
+private function showGenericErrorMessage()
+  m.setField("isContentGroupVisible", true)
+  m.setField("isShowingLoadingIndicator", false)
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ styles
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function processStyles(styles)
+  m.logInfo("converting rivers json styles into a format our UI controls can consume")
+  
+  m.titleStyle = ViewUtils.makeStyleWithRiversJson(styles, "title")
+  
+  m.descriptionStyle = ViewUtils.makeStyleWithRiversJson(styles, "description")
+  m.optional1Style = ViewUtils.makeStyleWithRiversJson(styles, "optional_text1")
+  m.backgroundColor = ViewUtils.transposeUIBColor(styles.background_color)
+  m.backgroundUrl = styles.background_url
+  m.logoImageUrl = styles.logo_image_url
+  
+  m.doneButtonStyle = ViewUtils.makeActionButtonStyleWithRiversJson(styles, "done_button", "custom", styles.done_button_text)
+  
+  m.logoImageUrl = styles.logo_url
+  m.logoPosition = ViewUtils.makePositionWithRiversJson(styles, "logo", 100, 33)
+  m.textPosition = ViewUtils.makePositionWithRiversJson(styles, "text", 0, 310)
+  m.textWidth = ViewUtils.getUIBInt(styles, "text_w", 1920)
+  m.buttonPosition = ViewUtils.makePositionWithRiversJson(styles, "button", 100, 33)
+  logoSize = ViewUtils.makeSizeWithRiversJson(styles, "logo", 350, 100)
+  m.logoWidth = logoSize[0]
+  m.logoHeight = logoSize[1]
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ callbacks
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+public function onDoneButtonSelected(value)
+  m.logMethod("onDoneButtonSelected")
+  m.dismiss("cancel")
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Key Handling
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+public function isCapturingAnyKeyPress(key, press)
+  'do not anyone escape this screen!
+  return true
+end function
+
+public function onKeyPressBack() as boolean
+  m.dismiss("cancel")
+  
+  return true
+end function
+
+override public function onKeyPressUp() as boolean
+  return true
+end function
+
+end class
+end namespace
