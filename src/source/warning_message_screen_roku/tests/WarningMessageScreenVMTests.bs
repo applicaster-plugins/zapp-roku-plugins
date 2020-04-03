@@ -8,7 +8,6 @@ function beforeEach()
   modelLocator.addfields({ "ZPLocalStore": localStore })
   TU.setModelLocator(modelLocator)
   
-  m.optionsScreenState = {}
   riversJson = {
     "id": "warningScreen"
     styles:{
