@@ -1,0 +1,124 @@
+import "pkg:/source/UIBuilder/view/ZUIBScreenVM.bs"
+import "pkg:/source/lib/ViewUtils.bs"
+
+namespace LogoutSVM
+class LogoutScreenVM extends ZUIBScreenVM
+
+public isLogoutButtonVisible = true
+public isShowingLoadingIndicator = false
+
+'styles
+public titleStyle = invalid
+public titleText = "Are you sure you want to sign out?"
+public buttonText = "Sign out"
+public buttonStyle = invalid
+public backgroundColor = "#000000ff"
+public textPosition = [0, 310]
+public buttonPosition = [0, 310]
+
+private isLoggedOut = false
+private signedOutButtonText = ""
+private signedOutTitle = ""
+
+public function new(riversJson)
+  m.super(riversJson, "LogoutScreenVM")
+  
+  m.focusId = "button"
+  m.processStyles(m.riversJson.styles)
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Overridden
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+override public function createContent()
+  m.logInfo("createContent is overridden in this screen")
+end function
+
+override public function load() as boolean
+  return true
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ styles
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function processStyles(styles)
+  m.logInfo("converting rivers json styles into a format our UI controls can consume")
+  
+  m.titleStyle = ViewUtils.makeStyleWithRiversJson(styles, "title")
+  m.titleText = m.titleStyle.text
+  m.backgroundColor = ViewUtils.transposeUIBColor(styles.background_color)
+  
+  m.buttonStyle = ViewUtils.makeActionButtonStyleWithRiversJson(styles, "logout_button", "custom", styles.logout_button_text)
+  
+  m.textPosition = ViewUtils.makePositionWithRiversJson(styles, "text", 0, 310)
+  m.buttonPosition = ViewUtils.makePositionWithRiversJson(styles, "button", 400, 600)
+  m.textWidth = ViewUtils.getUIBInt(styles, "text_w", 1920)
+  m.signedOutButtonText = styles.signed_out_button_text
+  m.signedOutTitle = styles.signed_out_text
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ callbacks
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+public function onLogoutButtonSelected(value)
+  m.logMethod("onLogoutButtonSelected")
+  if m.isLoggedOut
+    m.restartApp()
+  else
+    m.logout()
+  end if
+end function
+
+function logout()
+  'later on we can specify client_type, via a style property
+  args = {
+    id: "authTask"
+    functionName: "execLogOutAll"
+  }
+  m.authTask = m.createTask("AuthTask", args, "onLogoutComplete", true, "isComplete")
+  
+  m.isLoggedOut = true
+  m.setField("isShowingLoadingIndicator", true)
+  m.setField("isLogoutButtonVisible", false)
+  
+end function
+
+function onLogoutComplete(result)
+  m.logMethod("onLogoutComplete")
+
+  m.setField("isShowingLoadingIndicator", false)
+  m.setField("isLogoutButtonVisible", true)
+  m.setField("buttonText", m.signedOutButtonText)
+  m.setField("titleText", m.signedOutTitle)
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Key Handling
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+public function isCapturingAnyKeyPress(key, press)
+  'do not anyone escape this screen!
+  return true
+end function
+
+public function onKeyPressBack() as boolean
+  
+  if not m.isLoggedOut
+    m.pop()
+  else
+    m.logInfo("cannot go back when logout is in process")
+  end if
+  
+  return true
+end function
+
+override public function onKeyPressUp() as boolean
+  return true
+end function
+
+end class
+end namespace

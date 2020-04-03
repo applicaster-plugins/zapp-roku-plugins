@@ -1,0 +1,130 @@
+'@TestSuite [LogoutSVMT] LogoutScreenVM Tests
+namespace LogoutSVMT
+
+'@BeforeEach
+function beforeEach()
+  m.riversJson = {
+    "id": "logoutscreen"
+    styles: {
+      text_w: 300
+      text_x: 20
+      text_y: 600
+      button_x: 700
+      button_y: 400
+      title_text: "are you sure"
+      signed_out_text: "you are signed out"
+      logout_button_text: "signe out"
+      signed_out_button_text: "ok"
+    }
+  }
+  
+  m.vm = new LogoutScreenVM(m.riversJson)
+  m.vm.initialize()
+end function
+
+'@AfterEach
+function afterEach()
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests constructor
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test constructor
+function constructor()
+  m.assertEqual(m.vm.riversJson, m.riversJson)
+  m.assertEqual(m.vm.textPosition, [20, 600])
+  m.assertEqual(m.vm.textWidth, 300)
+  m.assertEqual(m.vm.buttonPosition, [700, 400])
+  m.assertEqual(m.vm.titleText, "are you sure")
+  m.assertEqual(m.vm.buttonText, "Sign out")
+  m.assertEqual(m.vm.signedOutTitle, "you are signed out")
+  m.assertEqual(m.vm.signedOutButtonText, "ok")
+  
+end function
+
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests onLogoutButtonSelected
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test not logged out yet
+function onLogoutButtonSelected()
+  m.expectOnce(m.vm, "logout", [])
+  m.expectNone(m.vm, "restartApp")
+  
+  m.vm.onLogoutButtonSelected(true)
+end function
+
+'@Test logged out
+function onLogoutButtonSelected_logged_out()
+  m.vm.isLoggedOut = true
+  
+  m.expectNone(m.vm, "logout")
+  m.expectOnce(m.vm, "restartApp", [])
+  
+  m.vm.onLogoutButtonSelected(true)
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests logout
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test 
+function logout()
+  authTask = { "id" : "authTask" }
+  
+  expectedArgs = {
+    id: "authTask"
+    functionName: "execLogOutAll"
+  }
+  
+  m.expectOnce(m.vm, "createTask", ["AuthTask", expectedArgs, "onLogoutComplete", true, "isComplete"], authTask)
+  
+  m.vm.logout()
+  
+  m.assertEqual(m.vm.authTask, authTask)
+  
+  m.assertTrue(m.vm.isLoggedOut)
+  m.assertTrue(m.vm.isShowingLoadingIndicator)
+  m.assertFalse(m.vm.isLogoutButtonVisible)
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests onKeyPressBack
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test not signing out
+function onKeyPressBack_not_signing_out()
+  
+  m.expectOnce(m.vm, "pop", [])
+  m.vm.onKeyPressBack()
+  
+end function
+
+'@Test signing out
+function onKeyPressBack_signing_out()
+  m.vm.isLoggedOut = true
+  
+  m.expectNone(m.vm, "pop")
+  m.vm.onKeyPressBack()
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests onLogoutCompplete
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+'@Test onLogoutComplete
+function onLogoutComplete()
+  
+  m.vm.onLogoutComplete({isOK:true})
+  
+  m.assertFalse(m.vm.isShowingLoadingIndicator)
+  m.assertTrue(m.vm.isLogoutButtonVisible)
+  m.assertEqual(m.vm.buttonText, "ok")
+  m.assertEqual(m.vm.titleText, "you are signed out")
+end function
+
+end namespace
