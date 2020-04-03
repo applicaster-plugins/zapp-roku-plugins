@@ -76,7 +76,7 @@ public function restoreAccount()
   if m.accountInfo <> invalid 
     m.logInfo("there is an account stored for this device")
     m.analyticsManager@.identify("Gigya")
-    m.analyticsManager@.trackEvent("Gigya Login Succesful", "page_loaded", {"provider": "Gigya"})
+    m.analyticsManager@.trackEvent("Gigya Login Succesful", "page_loaded", { "provider": "Gigya" })
     
     m.showLoggedInScreen()
   else if m.isSkipButtonVisible
@@ -85,9 +85,9 @@ public function restoreAccount()
     if isShown <> invalid
       m.logInfo("could not restore; but we've already shown the login screen before")
       m.showLoggedInScreen()
-
+      
     else
-
+      
       m.logInfo("will skip showing login screen again")
       m.setLocalStoreValue("gigya_login_popup", "is_login_screen_shown", "true", true)
     end if
@@ -192,7 +192,7 @@ end function
 
 public function onKeyPressBack()
   m.logInfo("on key press back")
-
+  
   if m.visibleContentId = "regcodeGroup"
     m.setField("regcodePollTimerControl", "stop")
     m.setField("visibleContentId", "loginGroup")
@@ -202,7 +202,7 @@ public function onKeyPressBack()
   else 
     m.logInfo("cancelling")
     m.cancelRequests()
-    m.setField("state", "cancel")
+    m.dismiss("cancel")
     return true
     
   end if

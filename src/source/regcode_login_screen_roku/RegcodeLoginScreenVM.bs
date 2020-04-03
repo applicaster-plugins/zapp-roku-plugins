@@ -31,12 +31,13 @@ private providerAnalyticsName = ""
 public function new(riversJson)
   m.super(riversJson, "RegcodeLoginScreenVM")
   m.analytics = m.getInstance("AnalyticsManager")
-
-  m.authProviderId = m.getAuthProviderId()
+  
   m.focusId = "refreshButton"
   '1. get auth provider id - firs
   m.processStyles(m.riversJson.styles)
-  m.providerAnalyticsName = riversJson.  
+  m.providerAnalyticsName = riversJson. 
+
+  m.authProviderId = m.getAuthProviderId()
   if m.authProviderId = invalid
     m.isValid = false
     m.titleText = "No auth provider found that. Make sure you have specified at least one auth provider"
@@ -48,12 +49,14 @@ end function
 
 private function getAuthProviderId()
   providerId = MU.getContentField(m.riversJson, "styles.provider_id", "")
-  plugins = m.getClassInstance("PluginProvider")
+  plugins = m.getClassInstance("PluginManager")
+  
+  authPlugin = invalid
   
   if providerId <> ""
     authPlugin = plugins.getPluginById(providerId)
   else
-    authPlugins = m.getPluginsWithInterface("IAuthProvider")
+    authPlugins = plugins.getPluginsWithInterface("IAuthProvider")
     
     if authPlugins.count() > 0
       authPlugin = authPlugins[0]
@@ -135,10 +138,10 @@ end function
 
 private function loadCode()
   m.logMethod("loadCode")
-
+  
   m.toggleCheckAuthTimer(false)
   m.cancelTask(m.authTask)
-
+  
   args = {
     id: "authTask"
     functionName: "execRegcode"
@@ -184,7 +187,7 @@ private function onPollComplete(result)
     m.toggleCheckAuthTimer(true)
   else
     m.anlytics@.trackEvent("Adobe Login Succesful", "page_loaded")
-    m.setField("state", "success")
+    m.dismiss("success")
   end if
   
 end function
@@ -199,7 +202,8 @@ public function isCapturingAnyKeyPress(key, press)
 end function
 
 public function onKeyPressBack() as boolean
-  m.setField("state", "cancel")
+  m.dismiss("cancel")
+  
   return true
 end function
 

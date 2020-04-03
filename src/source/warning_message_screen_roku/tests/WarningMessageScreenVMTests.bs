@@ -91,9 +91,9 @@ end function
 
 '@Test 
 function onDoneButtonSelected()
-  m.vm.onDoneButtonSelected(true)
+  m.expectOnce(m.vm, "dismiss", ["cancel"])
   
-  m.assertEqual(m.vm.state, "cancel")
+  m.vm.onDoneButtonSelected(true)
   
 end function
 
@@ -103,9 +103,9 @@ end function
 
 '@Test 
 function onKeyPressBack()
-  m.vm.onKeyPressBack()
+  m.expectOnce(m.vm, "dismiss", ["cancel"])
   
-  m.assertEqual(m.vm.state, "cancel")
+  m.vm.onKeyPressBack()
   
 end function
 
