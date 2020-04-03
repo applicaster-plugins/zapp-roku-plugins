@@ -1,0 +1,136 @@
+'@TestSuite [RCLSVMT] RegcodeLoginScreenVM Tests
+namespace RCLSVMT
+
+'@BeforeEach
+function beforeEach()
+  localStore = createObject("roSGNode", "ZSessionStore")
+  modelLocator = createObject("roSGNode", "ModelLocator")
+  modelLocator.addfields({ "ZPLocalStore": localStore })
+  TU.setModelLocator(modelLocator)
+  
+  riversJson = {
+    "id": "warningScreen"
+    styles:{
+      condition_path: ""
+      condition_value: ""
+    }
+  }
+  
+  m.vm = new RegcodeLoginScreenVM(riversJson)
+  m.analyticsManager = { "id" : "analyticsManager" }
+  m.vm.analyticsManager = m.analyticsManager
+  
+  m.vm.initialize()
+end function
+
+'@AfterEach
+function afterEach()
+  m.global.delete("zapp")
+  TU.unsetModelLocator()
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests load
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test matching conditions
+'@Params[{field:"v" }, "field", "v"]
+'@Params[{json{field:"v2"} }, "json.field", "v2"]
+'@Params[{json{field:"v2 "} }, "json.field", "v2"]
+'@Params[{json{field:"v2 "} }, "json.field", "v2 "]
+function load_matching(entry, path, condition)
+  m.vm.conditionPath = path
+  m.vm.conditionValue = condition
+  m.expectOnce(m.vm, "load_ZUIBContentVM")
+  m.vm.originEntry = entry
+
+  m.vm.load() 
+  
+  m.assertNotEqual(m.vm.state, "success")
+  
+end function
+
+'@Test no entry
+function load_no_entry()
+  m.expectNone(m.vm, "ZUIBCVM_load")
+  m.vm.originEntry = invalid
+  
+  m.vm.load() 
+  
+  m.assertEqual(m.vm.state, "success")
+  
+end function
+
+'@Test not matching conditions
+'@Params[{field:"", }, "field", "v"]
+'@Params[{field:"v", }, "field", ""]
+'@Params[{field:"v", }, "field", "V"]
+'@Params[{json{field:"v2"}, }, "json.field", "n2"]
+'@Params[{json{field:"v2 "}, }, "json.field", "n2"]
+'@Params[{json{field:"v2 "}, }, "json.field", "n2 "]
+'@Params[{json{field:"v2"}, }, "", "v2"]
+'@Params[{json{field:"v2"}, }, " ", "v2"]
+'@Params[{json{field:"v2"}, }, "json.field", ""]
+'@Params[{json{field:"v2"}, }, "json.field", " "]
+function load_not_matching(entry, path, condition)
+  m.vm.conditionPath = path
+  m.vm.conditionValue = condition
+  m.expectNone(m.vm, "ZUIBCVM_load")
+  m.vm.originEntry = entry
+  
+  m.vm.load() 
+  
+  m.assertEqual(m.vm.state, "success")
+  
+end function
+
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests onDoneButtonSelected
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test 
+function onDoneButtonSelected()
+  m.vm.onDoneButtonSelected(true)
+  
+  m.assertEqual(m.vm.state, "cancel")
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests onKeyPressBack
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test 
+function onKeyPressBack()
+  m.vm.onKeyPressBack()
+  
+  m.assertEqual(m.vm.state, "cancel")
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests showMessage
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+'@Test showMessage
+function showMessage()
+  entry = { "id" : "entry"
+    title: "#t"
+    description: "#d"
+    extensions: {
+      extra_text: "#e"
+    }
+  }
+  
+  m.vm.showMessage(entry)
+  m.assertFalse(m.vm.isShowingLoadingIndicator)
+  m.assertTrue(m.vm.isContentGroupVisible)
+  
+  m.assertEqual(m.vm.titleText, "#t")
+  m.assertEqual(m.vm.descriptionText, "#d")
+  m.assertEqual(m.vm.optional1Text, "#e")
+  
+end function
+end namespace

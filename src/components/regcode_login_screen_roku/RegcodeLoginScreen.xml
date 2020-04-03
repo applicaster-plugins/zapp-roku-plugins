@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component
+    name="RegcodeLoginScreen"
+    extends="ZUIBScreen">
+
+  <interface></interface>
+
+  <children>
+    <Timer
+        id="checkAuthTimer"
+        duration="3"
+        control="{{vm.timerControl}}"
+        fire="{(vm.onTimerFire())}" />
+    <Group
+        id="contentGroup"
+        visible="{{vm.isContentGroupVisible}}">
+      <Rectangle
+          id="backgroundRect"
+          color="{{:vm.backgroundColor}}" />
+      <Poster
+          id="backgroundPoster"
+          loadSync="true"
+          loadDisplayMode="scaleToFill"
+          loadWidth="1920"
+          loadHeight="1080"
+          uri="{{:vm.backgroundUrl}}"
+          width="1920"
+          height="1080" />
+      <Poster
+          id="logoPoster"
+          loadSync="true"
+          translation="{{:vm.logoPosition}}"
+          loadWidth="{{:vm.logoWidth}}"
+          loadHeight="{{:vm.logoHeight}}"
+          width="{{:vm.logoWidth}}"
+          height="{{:vm.logoHeight}}"
+          uri="{{:vm.logoImageUrl}}" />
+
+      <LayoutGroup
+          id="labelsGroup"
+          layoutDirection="vert"
+          translation="{{:vm.textPosition}}"
+          itemSpacings="[56, 56, 26]">
+        <MLabel
+            id="titleText"
+            style="{{:vm.titleStyle}}"
+            width="{{vm.textWidth}}"
+            horizAlign="center"
+            wrap="true" />
+
+        <MLabel
+            id="descriptionText"
+            style="{{:vm.descriptionStyle}}"
+            width="{{vm.textWidth}}"
+            horizAlign="center"
+            wrap="true" />
+
+        <MLabel
+            id="optional1Text"
+            style="{{:vm.optional1Style}}"
+            width="{{vm.textWidth}}"
+            horizAlign="center"
+            wrap="true" />
+
+        <MLabel
+            id="codeText"
+            style="{{:vm.optional1Style}}"
+            text="{{vm.optional1Text}}"
+            width="{{vm.textWidth}}"
+            horizAlign="center"
+            wrap="true" />
+
+      </LayoutGroup>
+
+      <ZActionButton
+          id="refreshButton"
+          translation="{{:vm.buttonPosition}}"
+          style="{{:vm.refreshButtonStyle}}"
+          visible="{{vm.isRefreshing, transform=MOM_transform_invertBoolean}}"
+          selected="{(vm.onRefreshButtonSelected,isSettingInitialValue=false)}"
+          width="610" />
+    </Group>
+
+    <LoadingIndicator
+        id="loadingIndicator"
+        width="1920"
+        height="1080"
+        translation="[0,0]"
+        isActive="{{vm.isShowingLoadingIndicator, isSettingInitialValue=true}}"
+        backgroundVisible="false"
+        text="" />
+
+  </children>
+</component>

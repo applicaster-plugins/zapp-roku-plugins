@@ -1,0 +1,211 @@
+import "pkg:/source/UIBuilder/view/ZUIBScreenVM.bs"
+import "pkg:/source/lib/ViewUtils.bs"
+
+namespace RCLSVM
+class RegcodeLoginScreenVM extends ZUIBScreenVM
+
+'styles
+public isContentGroupVisible = false
+public titleStyle = invalid
+public descriptionStyle = invalid
+public optional1Style = invalid
+public codeText = ""
+public refreshButtonStyle = invalid
+public isShowingLoadingIndicator = true
+public timerControl = "stop"
+
+public backgroundColor = "#000000ff"
+public backgroundUrl = ""
+public textPosition = [0, 310]
+public buttonPosition = [655, 688]
+public logoPosition = [100, 33]
+public logoWidth = 350
+public logoHeight = 100
+public logoImageUrl = ""
+
+private authProviderId = ""
+private authTask = invalid
+private analytics = invalid 
+private providerAnalyticsName = ""
+
+public function new(riversJson)
+  m.super(riversJson, "RegcodeLoginScreenVM")
+  m.analytics = m.getInstance("AnalyticsManager")
+
+  m.authProviderId = m.getAuthProviderId()
+  m.focusId = "refreshButton"
+  '1. get auth provider id - firs
+  m.processStyles(m.riversJson.styles)
+  m.providerAnalyticsName = riversJson.  
+  if m.authProviderId = invalid
+    m.isValid = false
+    m.titleText = "No auth provider found that. Make sure you have specified at least one auth provider"
+    m.logError(titleText)
+    m.titleStyle.color = "#ff0000"
+  end if
+  
+end function
+
+private function getAuthProviderId()
+  providerId = MU.getContentField(m.riversJson, "styles.provider_id", "")
+  plugins = m.getClassInstance("PluginProvider")
+  
+  if providerId <> ""
+    authPlugin = plugins.getPluginById(providerId)
+  else
+    authPlugins = m.getPluginsWithInterface("IAuthProvider")
+    
+    if authPlugins.count() > 0
+      authPlugin = authPlugins[0]
+    end if
+  end if
+  
+  if authPlugin <> invalid
+    return authPlugin.id
+  end if
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Overridden
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+override public function createContent()
+  m.logInfo("createContent is overridden in this screen")
+end function
+
+override public function load() as boolean
+  return true
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ styles
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function processStyles(styles)
+  m.logInfo("converting rivers json styles into a format our UI controls can consume")
+  
+  m.titleStyle = ViewUtils.makeStyleWithRiversJson(styles, "title")
+  
+  m.descriptionStyle = ViewUtils.makeStyleWithRiversJson(styles, "description")
+  m.optional1Style = ViewUtils.makeStyleWithRiversJson(styles, "optional_text1")
+  m.codeStyle = ViewUtils.makeStyleWithRiversJson(styles, "code")
+  m.backgroundColor = ViewUtils.transposeUIBColor(styles.background_color)
+  m.backgroundUrl = styles.background_url
+  m.logoImageUrl = styles.logo_image_url
+  
+  m.refreshButtonStyle = ViewUtils.makeActionButtonStyleWithRiversJson(styles, "done_button", "custom", styles.done_button_text)
+  
+  m.logoImageUrl = styles.logo_url
+  m.logoPosition = ViewUtils.makePositionWithRiversJson(styles, "logo", 100, 33)
+  m.textPosition = ViewUtils.makePositionWithRiversJson(styles, "text", 0, 310)
+  m.textWidth = ViewUtils.getUIBInt(styles, "text_w", 1920)
+  m.buttonPosition = ViewUtils.makePositionWithRiversJson(styles, "button", 100, 33)
+  logoSize = ViewUtils.makeSizeWithRiversJson(styles, "logo", 350, 100)
+  m.logoWidth = logoSize[0]
+  m.logoHeight = logoSize[1]
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ callbacks
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+public function onRefreshButtonSelected(value)
+  m.logMethod("onRefreshButtonSelected")
+  m.loadCode()
+end function
+
+public function onTimerFire(value)
+  m.logMethod("onTimerFire")
+  
+  if value 
+    m.cancelTask(m.authTask)
+    args = {
+      id: "authTask"
+      functionName: "execPoll"
+      client_type: m.authProviderId
+    }
+    
+    m.authTask = m.createTask("AuthTask", args, "onPollComplete", true, "isComplete")
+  end if
+end function
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Auth methods
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+private function loadCode()
+  m.logMethod("loadCode")
+
+  m.toggleCheckAuthTimer(false)
+  m.cancelTask(m.authTask)
+
+  args = {
+    id: "authTask"
+    functionName: "execRegcode"
+    client_type: m.authProviderId
+  }
+  
+  m.authTask = m.createTask("AuthTask", args, "onLoadCodeComplete", true, "isComplete")
+  
+  m.setField("isRefreshing", true)
+  m.setField("isShowingLoadingIndicator", true)
+end function
+
+private function onLoadCodeComplete(result)
+  m.logMethod("onLoadCodeComplete")
+  m.setField("isShowingLoadingIndicator", false)
+  m.setField("isRefreshing", false)
+  
+  result = m.authTask.result
+  
+  if result <> invalid
+    m.setField("codeText", result.regcode)
+    m.toggleCheckAuthTimer(true)
+  else
+    m.setField("codeText", "")
+  end if
+  
+end function
+
+private function toggleCheckAuthTimer(isActive)
+  m.setField("timerControl", "stop")
+  
+  if isActive
+    m.setField("timerControl", "start")
+  end if
+end function
+
+private function onPollComplete(result)
+  m.logMethod("onPollComplete")
+  
+  result = m.authTask.result
+  
+  if result = invalid or result.state <> "valid"
+    m.toggleCheckAuthTimer(true)
+  else
+    m.anlytics@.trackEvent("Adobe Login Succesful", "page_loaded")
+    m.setField("state", "success")
+  end if
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Key Handling
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+public function isCapturingAnyKeyPress(key, press)
+  'do not anyone escape this screen!
+  return true
+end function
+
+public function onKeyPressBack() as boolean
+  m.setField("state", "cancel")
+  return true
+end function
+
+override public function onKeyPressUp() as boolean
+  return true
+end function
+
+end class
+end namespace
