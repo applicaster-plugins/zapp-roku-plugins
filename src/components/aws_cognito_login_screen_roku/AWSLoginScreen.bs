@@ -6,6 +6,7 @@ import "pkg:/source/aws_cognito_login_screen_roku/AWSLoginScreenVM.bs"
 
 function init()
   m.top.isConsumingOriginEntry = true
+  m.top.isForcingMenuHidden = true
   M_createNodeVars() 
   m.top._styledControlIds = [
     "backgroundRect"

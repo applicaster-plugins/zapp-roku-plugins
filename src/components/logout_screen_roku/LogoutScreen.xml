@@ -6,36 +6,33 @@
   <interface></interface>
 
   <children>
-    <Group
-        id="contentGroup"
-        visible="{{vm.isContentGroupVisible}}">
-      <Rectangle
-          id="backgroundRect"
-          color="{{:vm.backgroundColor}}" />
+    <Rectangle
+        id="backgroundRect"
+        color="{{:vm.backgroundColor}}" />
 
-      <LayoutGroup
-          id="labelsGroup"
-          layoutDirection="vert"
-          itemSpacings="[56, 56, 26]">
-        <MLabel
-            id="titleText"
-            style="{{:vm.titleStyle}}"
-            text="{{vm.titleText}}"
-            width="{{vm.textWidth}}"
-            horizAlign="center"
-            wrap="true" />
-      </LayoutGroup>
+    <LayoutGroup
+        id="labelsGroup"
+        layoutDirection="vert"
+        translation="{{:vm.textPosition}}"
+        itemSpacings="[56, 56, 26]">
+      <MLabel
+          id="titleText"
+          style="{{:vm.titleStyle}}"
+          text="{{vm.titleText}}"
+          width="{{vm.textWidth}}"
+          horizAlign="center"
+          wrap="true" />
+    </LayoutGroup>
 
-      <ZActionButton
-          id="logoutButton"
-          translation="{{:vm.buttonPosition}}"
-          visible="{{:vm.isButtonVisible}}"
-          style="{{:vm.buttonStyle}}"
-          text="{{vm.buttonText}}"
-          selected="{(vm.onLogoutButtonSelected,isSettingInitialValue=false)}"
-          width="610" />
+    <ZActionButton
+        id="logoutButton"
+        translation="{{:vm.buttonPosition}}"
+        visible="{{:vm.isButtonVisible}}"
+        style="{{:vm.buttonStyle}}"
+        text="{{vm.buttonText}}"
+        selected="{(vm.onLogoutButtonSelected,isSettingInitialValue=false)}"
+        width="610" />
 
-    </Group>
     <LoadingIndicator
         id="loadingIndicator"
         width="1920"

@@ -238,7 +238,7 @@ public function onLoginComplete(isComplete)
     m.setField("isErrorShowing", true)
     m.setField("isLoginButtonEnabled", true)
   end if
-
+  
   m.setField("isLoading", false)
   
 end function

@@ -4,7 +4,7 @@ import "pkg:/source/lib/ViewUtils.bs"
 namespace LogoutSVM
 class LogoutScreenVM extends ZUIBScreenVM
 
-public isLogoutButtonVisible = true
+public isButtonVisible = true
 public isShowingLoadingIndicator = false
 
 'styles
@@ -52,7 +52,7 @@ function processStyles(styles)
   m.backgroundColor = ViewUtils.transposeUIBColor(styles.background_color)
   
   m.buttonStyle = ViewUtils.makeActionButtonStyleWithRiversJson(styles, "logout_button", "custom", styles.logout_button_text)
-  
+  m.buttonStyle.delete("text")
   m.textPosition = ViewUtils.makePositionWithRiversJson(styles, "text", 0, 310)
   m.buttonPosition = ViewUtils.makePositionWithRiversJson(styles, "button", 400, 600)
   m.textWidth = ViewUtils.getUIBInt(styles, "text_w", 1920)
@@ -83,7 +83,7 @@ function logout()
   
   m.isLoggedOut = true
   m.setField("isShowingLoadingIndicator", true)
-  m.setField("isLogoutButtonVisible", false)
+  m.setField("isButtonVisible", false)
   
 end function
 
@@ -91,7 +91,7 @@ function onLogoutComplete(result)
   m.logMethod("onLogoutComplete")
 
   m.setField("isShowingLoadingIndicator", false)
-  m.setField("isLogoutButtonVisible", true)
+  m.setField("isButtonVisible", true)
   m.setField("buttonText", m.signedOutButtonText)
   m.setField("titleText", m.signedOutTitle)
 end function
