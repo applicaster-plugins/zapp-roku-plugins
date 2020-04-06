@@ -51,8 +51,8 @@ function processStyles(styles)
   m.titleText = m.titleStyle.text
   m.backgroundColor = ViewUtils.transposeUIBColor(styles.background_color)
   
-  m.buttonStyle = ViewUtils.makeActionButtonStyleWithRiversJson(styles, "logout_button", "custom", styles.logout_button_text)
-  m.buttonStyle.delete("text")
+  m.buttonStyle = ViewUtils.makeActionButtonStyleWithRiversJson(styles, "logout_button", "custom")
+  m.buttonStyle.normal.delete("text")
   m.textPosition = ViewUtils.makePositionWithRiversJson(styles, "text", 0, 310)
   m.buttonPosition = ViewUtils.makePositionWithRiversJson(styles, "button", 400, 600)
   m.textWidth = ViewUtils.getUIBInt(styles, "text_w", 1920)
