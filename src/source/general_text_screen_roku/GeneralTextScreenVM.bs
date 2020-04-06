@@ -5,15 +5,13 @@ namespace GTSVM
 class GeneralTextScreenVM extends ZUIBScreenVM
 
 'styles
-public isContentGroupVisible = false
 public titleStyle = invalid
 public descriptionStyle = invalid
 public optional1Style = invalid
 public titleText = ""
 public descriptionText = ""
 public optional1Text = ""
-public doneButtonStyle = invalid
-public isShowingLoadingIndicator = true
+public buttonStyle = invalid
 
 public backgroundColor = "#000000ff"
 public backgroundUrl = ""
@@ -38,16 +36,10 @@ end function
 
 override public function createContent()
   m.logInfo("createContent is overridden in this screen")
-  m.showGenericErrorMessage()
 end function
 
 override public function load() as boolean
   return true
-end function
-
-private function showGenericErrorMessage()
-  m.setField("isContentGroupVisible", true)
-  m.setField("isShowingLoadingIndicator", false)
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -65,7 +57,7 @@ function processStyles(styles)
   m.backgroundUrl = styles.background_url
   m.logoImageUrl = styles.logo_image_url
   
-  m.doneButtonStyle = ViewUtils.makeActionButtonStyleWithRiversJson(styles, "done_button", "custom", styles.done_button_text)
+  m.buttonStyle = ViewUtils.makeActionButtonStyleWithRiversJson(styles, "done_button", "custom", styles.done_button_text)
   
   m.logoImageUrl = styles.logo_url
   m.logoPosition = ViewUtils.makePositionWithRiversJson(styles, "logo", 100, 33)
@@ -82,8 +74,8 @@ end function
 '++ callbacks
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-public function onDoneButtonSelected(value)
-  m.logMethod("onDoneButtonSelected")
+public function onButtonSelected(value)
+  m.logMethod("onButtonSelected")
   m.dismiss("cancel")
 end function
 
@@ -98,11 +90,6 @@ end function
 
 public function onKeyPressBack() as boolean
   m.dismiss("cancel")
-  
-  return true
-end function
-
-override public function onKeyPressUp() as boolean
   return true
 end function
 

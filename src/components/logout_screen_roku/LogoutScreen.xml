@@ -9,7 +9,10 @@
     <Rectangle
         id="backgroundRect"
         color="{{:vm.backgroundColor}}" />
-
+    <Button
+        id="focustrap"
+        visible="false" />
+        
     <LayoutGroup
         id="labelsGroup"
         layoutDirection="vert"

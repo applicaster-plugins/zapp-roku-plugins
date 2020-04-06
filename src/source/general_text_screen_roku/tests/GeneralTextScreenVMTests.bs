@@ -29,10 +29,10 @@ end function
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 '@Test 
-function onDoneButtonSelected()
+function onButtonSelected()
   m.expectOnce(m.vm, "dismiss", ["cancel"])
 
-  m.vm.onDoneButtonSelected(true)
+  m.vm.onButtonSelected(true)
   
 end function
 
