@@ -30,14 +30,14 @@ end function
 public function processStyles(styles)
   
   m.backgroundColor = ViewUtils.transposeUIBColor(styles.background_color)
-  m.titleStyle = ViewUtils.makeStyleWithRiversJson(styles, "title")
-  m.regcodeTitleStyle = ViewUtils.makeStyleWithRiversJson(styles, "regcode_title")
-  m.regcodeStyle = ViewUtils.makeStyleWithRiversJson(styles, "regcode")
-  m.supportStyle = ViewUtils.makeStyleWithRiversJson(styles, "support")
-  m.gotoStyle = ViewUtils.makeStyleWithRiversJson(styles, "goto")
-  m.loginUrlStyle = ViewUtils.makeStyleWithRiversJson(styles, "login_url")
-  m.loginButtonStyle = ViewUtils.makeActionButtonStyleWithRiversJson(styles, "button", "center", styles.login_button_text)
-  m.skipButtonStyle = ViewUtils.makeActionButtonStyleWithRiversJson(styles, "button", "center", styles.skip_button_text)
+  m.titleStyle = ViewUtils.makeUIBTextStyle(styles, "title")
+  m.regcodeTitleStyle = ViewUtils.makeUIBTextStyle(styles, "regcode_title")
+  m.regcodeStyle = ViewUtils.makeUIBTextStyle(styles, "regcode")
+  m.supportStyle = ViewUtils.makeUIBTextStyle(styles, "support")
+  m.gotoStyle = ViewUtils.makeUIBTextStyle(styles, "goto")
+  m.loginUrlStyle = ViewUtils.makeUIBTextStyle(styles, "login_url")
+  m.loginButtonStyle = ViewUtils.makeUIBButtonStyle(styles, "button", "center", styles.login_button_text)
+  m.skipButtonStyle = ViewUtils.makeUIBButtonStyle(styles, "button", "center", styles.skip_button_text)
   
 end function
 

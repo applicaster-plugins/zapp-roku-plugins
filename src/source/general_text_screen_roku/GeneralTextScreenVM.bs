@@ -49,22 +49,22 @@ end function
 function processStyles(styles)
   m.logInfo("converting rivers json styles into a format our UI controls can consume")
   
-  m.titleStyle = ViewUtils.makeStyleWithRiversJson(styles, "title")
+  m.titleStyle = ViewUtils.makeUIBTextStyle(styles, "title")
   
-  m.descriptionStyle = ViewUtils.makeStyleWithRiversJson(styles, "description")
-  m.optional1Style = ViewUtils.makeStyleWithRiversJson(styles, "optional_text1")
+  m.descriptionStyle = ViewUtils.makeUIBTextStyle(styles, "description")
+  m.optional1Style = ViewUtils.makeUIBTextStyle(styles, "optional_text1")
   m.backgroundColor = ViewUtils.transposeUIBColor(styles.background_color)
   m.backgroundUrl = styles.background_url
   m.logoImageUrl = styles.logo_image_url
   
-  m.buttonStyle = ViewUtils.makeActionButtonStyleWithRiversJson(styles, "done_button", "custom", styles.done_button_text)
+  m.buttonStyle = ViewUtils.makeUIBButtonStyle(styles, "done_button", "custom", styles.done_button_text)
   
   m.logoImageUrl = styles.logo_url
-  m.logoPosition = ViewUtils.makePositionWithRiversJson(styles, "logo", 100, 33)
-  m.textPosition = ViewUtils.makePositionWithRiversJson(styles, "text", 0, 310)
+  m.logoPosition = ViewUtils.makeUIBPosition(styles, "logo", 100, 33)
+  m.textPosition = ViewUtils.makeUIBPosition(styles, "text", 0, 310)
   m.textWidth = ViewUtils.getUIBInt(styles, "text_w", 1920)
-  m.buttonPosition = ViewUtils.makePositionWithRiversJson(styles, "button", 100, 33)
-  logoSize = ViewUtils.makeSizeWithRiversJson(styles, "logo", 350, 100)
+  m.buttonPosition = ViewUtils.makeUIBPosition(styles, "button", 100, 33)
+  logoSize = ViewUtils.makeUIBSize(styles, "logo", 350, 100)
   m.logoWidth = logoSize[0]
   m.logoHeight = logoSize[1]
   
