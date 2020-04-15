@@ -28,6 +28,7 @@ private warningEntryIndex = 2
 private warningEntryDepth = 1
 private conditionPath = ""
 private conditionValue = ""
+private warningType = "entry"
 
 public function new(riversJson)
   m.super(riversJson, "WarningMessageScreenVM")
@@ -56,9 +57,16 @@ override public function load() as boolean
     if MU.isString(value) and value = m.conditionValue
       m.logInfo("this content has a value that matches the locking condition")
       isShowingWarning = true
-      m.super()
-    end if
 
+      if m.warningType = "entry"
+        m.logInfo("loading entry to display")
+        m.super()
+      else
+        m.logInfo("showig static message")
+        m.showGenericErrorMessage()
+      end if
+    end if
+    
   end if
   
   if not isShowingWarning
@@ -87,7 +95,7 @@ override public function onFeedResult(result)
 end function
 
 private function onLoadedChildEntry(result)
-  m.logMethod("onLoadedChildEntry")
+  m.logMethod("onLoadedChildEntry", result)
   
   messageEntry = invalid
   
@@ -104,14 +112,14 @@ end function
 
 private function showGenericErrorMessage()
   m.setField("isShowingLoadingIndicator", false)
-
+  
   'this is already showing by default
 end function
 
 private function showMessage(entry)
   m.setField("isContentGroupVisible", true)
   m.setField("isShowingLoadingIndicator", false)
-
+  
   titleText = MU.getContentField(entry, "title", "")
   
   if titleText = ""
@@ -149,7 +157,12 @@ function processStyles(styles)
   logoSize = ViewUtils.makeUIBSize(styles, "logo", 350, 100)
   m.logoWidth = logoSize[0]
   m.logoHeight = logoSize[1]
+
+  m.warningType = MU.getContentField(styles, "warning_type", "entry")
+  m.warningEntryIndex = ViewUtils.getUIBInt(styles, "entry_index", 2)
+  m.warningEntryDepth = ViewUtils.getUIBInt(styles, "entry_depth", 1)
   
+  m.warningType = MU.getContentField(styles, "warning_type", "entry")
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
