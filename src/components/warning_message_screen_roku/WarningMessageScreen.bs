@@ -7,17 +7,6 @@ import "pkg:/source/warning_message_screen_roku/WarningMessageScreenVM.bs"
 function init()
   m.top.isConsumingOriginEntry = true
   M_createNodeVars() 
-  m.top._styledControlIds = [
-    "backgroundRect"
-    "backgroundPoster"
-    "logoPoster"
-    "labelsGroup"
-    "titleText"
-    "descriptionText"
-    "optional1Text"
-    "doneButton"
-  ] 
-  
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -31,12 +20,5 @@ end function
 function createVM()
   vm = new WarningMessageScreenVM(m.top.riversJson)
   vm.originEntry = m.top.originEntry
-  setFocus(m.doneButton)
   return vm
-end function
-
-function onGainedFocus(isSelfFocused)
-  if isSelfFocused
-    setFocus(m.doneButton)
-  end if
 end function

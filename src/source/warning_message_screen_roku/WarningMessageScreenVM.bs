@@ -6,23 +6,10 @@ class WarningMessageScreenVM extends ZUIBScreenVM
 
 'styles
 public isContentGroupVisible = false
-public titleStyle = invalid
-public descriptionStyle = invalid
-public optional1Style = invalid
 public titleText = ""
 public descriptionText = ""
-public optional1Text = ""
-public doneButtonStyle = invalid
+public extraText = ""
 public isShowingLoadingIndicator = true
-
-public backgroundColor = "#000000ff"
-public backgroundUrl = ""
-public textPosition = [0, 310]
-public buttonPosition = [655, 688]
-public logoPosition = [100, 33]
-public logoWidth = 350
-public logoHeight = 100
-public logoImageUrl = ""
 
 private warningEntryIndex = 2
 private warningEntryDepth = 1
@@ -34,11 +21,18 @@ public function new(riversJson)
   m.super(riversJson, "WarningMessageScreenVM")
   
   m.focusId = "usernameInput"
-  m.conditionPath = m.riversJson.styles.condition_path
-  m.conditionValue = m.riversJson.styles.condition_value
-  m.processStyles(m.riversJson.styles)
+  styles = riversJson.styles
+
+  m.conditionPath = styles.condition_path
+  m.conditionValue = styles.condition_value
+  m.warningType = MU.getContentField(styles, "warning_type", "entry")
+  m.warningEntryIndex = ViewUtils.getUIBInt(styles, "entry_index", 2)
+  m.warningEntryDepth = ViewUtils.getUIBInt(styles, "entry_depth", 1)
   
+  m.setFocusId("doneButton")
 end function
+
+
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '++ Overridden
@@ -48,7 +42,7 @@ override public function createContent()
   m.logInfo("createContent is overridden in this screen")
 end function
 
-override public function load() as boolean
+override public function load()
   isShowingWarning = false
   
   if m.originEntry <> invalid and MU.isString(m.conditionPath) and MU.isString(m.conditionValue) 
@@ -129,42 +123,8 @@ private function showMessage(entry)
   m.setField("titleText", titleText)
   
   m.setField("descriptionText", MU.getContentField(entry, "description", ""))
-  m.setField("optional1Text", MU.getContentField(entry, "extensions.extra_text", ""))
+  m.setField("extraText", MU.getContentField(entry, "extensions.extra_text", ""))
 end function
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'++ styles
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-function processStyles(styles)
-  m.logInfo("converting rivers json styles into a format our UI controls can consume")
-  
-  m.titleStyle = ViewUtils.makeUIBTextStyle(styles, "title")
-  
-  m.descriptionStyle = ViewUtils.makeUIBTextStyle(styles, "description")
-  m.optional1Style = ViewUtils.makeUIBTextStyle(styles, "optional_text1")
-  m.backgroundColor = ViewUtils.transposeUIBColor(styles.background_color)
-  m.backgroundUrl = styles.background_url
-  m.logoImageUrl = styles.logo_image_url
-  
-  m.doneButtonStyle = ViewUtils.makeUIBButtonStyle(styles, "done_button", "custom", styles.done_button_text)
-  
-  m.logoImageUrl = styles.logo_url
-  m.logoPosition = ViewUtils.makeUIBPosition(styles, "logo", 100, 33)
-  m.textPosition = ViewUtils.makeUIBPosition(styles, "text", 0, 310)
-  m.textWidth = ViewUtils.getUIBInt(styles, "text_w", 1920)
-  m.buttonPosition = ViewUtils.makeUIBPosition(styles, "button", 100, 33)
-  logoSize = ViewUtils.makeUIBSize(styles, "logo", 350, 100)
-  m.logoWidth = logoSize[0]
-  m.logoHeight = logoSize[1]
-
-  m.warningType = MU.getContentField(styles, "warning_type", "entry")
-  m.warningEntryIndex = ViewUtils.getUIBInt(styles, "entry_index", 2)
-  m.warningEntryDepth = ViewUtils.getUIBInt(styles, "entry_depth", 1)
-  
-  m.warningType = MU.getContentField(styles, "warning_type", "entry")
-end function
-
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '++ callbacks
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
