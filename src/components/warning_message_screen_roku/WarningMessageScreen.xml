@@ -1,55 +1,83 @@
-<?xml version='1.0' encoding='utf-8' ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <component
-    name='WarningMessageScreen'
-    extends='ZUIBScreen'>
+    name="WarningMessageScreen"
+    extends="ZUIBScreen">
 
   <interface></interface>
 
   <children>
     <Group
-        id='contentGroup'
-        visible='{{vm.isContentGroupVisible}}'>
-
+        id="contentGroup"
+        visible="{{vm.isContentGroupVisible}}">
       <Rectangle
-          id='background'
-          color='{{=ViewUtils_UIBColor("{background_color}")}}' />
-
+          id="backgroundRect"
+          color="{{:vm.backgroundColor}}" />
       <Poster
-          id='backgroundPoster'
-          loadSync='true'
-          loadDisplayMode='scaleToFill'
-          loadWidth='1920'
-          loadHeight='1080'
-          uri='{{=m.vm.riversJson.styles.background_url}}'
-          width='1920'
-          height='1080' />
+          id="backgroundPoster"
+          loadSync="true"
+          loadDisplayMode="scaleToFill"
+          loadWidth="1920"
+          loadHeight="1080"
+          uri="{{:vm.backgroundUrl}}"
+          width="1920"
+          height="1080" />
+      <Poster
+          id="logoPoster"
+          loadSync="true"
+          translation="{{:vm.logoPosition}}"
+          loadWidth="{{:vm.logoWidth}}"
+          loadHeight="{{:vm.logoHeight}}"
+          width="{{:vm.logoWidth}}"
+          height="{{:vm.logoHeight}}"
+          uri="{{:vm.logoImageUrl}}" />
 
       <LayoutGroup
-          id='labelsGroup'
-          layoutDirection='vert'
-          translation='{{=ViewUtils_UIBPosition("labels")}}'
-          itemSpacings='[56, 56, 26]'>
+          id="labelsGroup"
+          layoutDirection="vert"
+          translation="{{:vm.textPosition}}"
+          itemSpacings="[56, 56, 26]">
         <MLabel
-            id='title'
-            style='{{=ViewUtils_UIBLabel("title")}}'
-            text='{{vm.titleText}}' />
+            id="titleText"
+            style="{{:vm.titleStyle}}"
+            text="{{vm.titleText}}"
+            width="{{vm.textWidth}}"
+            horizAlign="center"
+            wrap="true" />
+
         <MLabel
-            id='description'
-            style='{{=ViewUtils_UIBLabel("description")}}'
-            text='{{vm.descriptionText}}' />
+            id="descriptionText"
+            style="{{:vm.descriptionStyle}}"
+            text="{{vm.descriptionText}}"
+            width="{{vm.textWidth}}"
+            horizAlign="center"
+            wrap="true" />
+
         <MLabel
-            id='optional'
-            style='{{=ViewUtils_UIBLabel("optional_text1")}}'
-            text='{{vm.optionalText1}}' />
+            id="optional1Text"
+            style="{{:vm.optional1Style}}"
+            text="{{vm.optional1Text}}"
+            width="{{vm.textWidth}}"
+            horizAlign="center"
+            wrap="true" />
 
       </LayoutGroup>
 
       <ZActionButton
-          id='doneButton'
-          style='{{=ViewUtils_UIBButton("done")}}'
-          selected='{(vm.onDoneButtonSelected,isSettingInitialValue=false)}' />
-
+          id="doneButton"
+          translation="{{:vm.buttonPosition}}"
+          style="{{:vm.doneButtonStyle}}"
+          selected="{(vm.onDoneButtonSelected,isSettingInitialValue=false)}"
+          width="610" />
     </Group>
+
+    <LoadingIndicator
+        id="loadingIndicator"
+        width="1920"
+        height="1080"
+        translation="[0,0]"
+        isActive="{{vm.isShowingLoadingIndicator, isSettingInitialValue=true}}"
+        backgroundVisible="false"
+        text="" />
 
   </children>
 </component>
