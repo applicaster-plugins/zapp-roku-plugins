@@ -85,6 +85,7 @@ override public function onFeedResult(result)
   if result.isOk and result.data.itemType <> "problemDetailsResponse" and result.data.getChildCount() > m.warningEntryIndex
     warningEntry = result.data.getChild(m.warningEntryIndex)
     if warningEntry <> invalid
+      m.logInfo("loading required entry to display mesage", warningEntry.id)
       m.executeLoadItemTask(warningEntry.id, warningEntry, "onLoadedChildEntry", 0)
     end if
   end if
