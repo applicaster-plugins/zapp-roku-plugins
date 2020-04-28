@@ -1,0 +1,17 @@
+import "pkg:/source/roku_search_screen/ZFullScreenSearchVM.bs"
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Initialization
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function Init()
+  m.top.isConsumingOriginEntry = true
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Overridden
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function createVM()
+  return new ZFullScreenSearchVM(m.top.riversJson)
+end function
