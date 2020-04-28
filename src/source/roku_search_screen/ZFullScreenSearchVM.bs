@@ -19,7 +19,8 @@ public searchText = ""
 
 private searchDelayTask = invalid
 private minCharacters = 3
-private m.searchQueryName = "q"
+private searchQueryName = "q" 
+private isShowingContent = false
 
 public function new(riversJson)
   m.super(riversJson, "ZFullScreenSearchVM")
@@ -59,6 +60,8 @@ end function
 private function getGridStyle(styles)
   if m.style <> invalid and m.style.rowList <> invalid
     style = m.style.rowList
+    style.itemSize = style.rowItemSize
+    style.itemSpacing = ViewUtils.makeUIBSize(styles, "grid_spacing", 44, 20)
   else
     style = {}
   end if
@@ -88,7 +91,7 @@ public function onSelectItem(index)
   if item <> invalid and item.itemType <> "placeholder"
     m.logInfo("selected item: ", item.id)
     m.executeContentSelection(m.createSelectionFromContent(item, m.results))
-    
+    m.isShowingContent = true 
   else
     m.logWarn("selected non-selectable item") 
   end if
@@ -130,7 +133,7 @@ private function performSearch(text)
   entry = createObject("roSGNode", "ZPEntry")
   entry.itemType = "feed"
   entry.link = m.getLegacyCompatibleLink(m.riversJson.data)
-  entry.link += "&" + m.searchQueryName + "=" + text.trim()
+  entry.link += "&" + m.searchQueryName + "=" + text.trim().encodeUriComponent()
   m.logInfo("entry link is ", entry.link)
   m.toggleLoadingItemTask(true, entry, m.loadDepth)
   
@@ -141,11 +144,10 @@ override public function onFeedResult(result)
   
   m.toggleLoadingItemTask(false)
   m.setField("isLoading", false)
-  m.setGridVisible(true)
   
-  if result.isOk and result.data.itemType <> "problemDetailsResponse"
-    m.setContentStyle(result.data)
-    results = result.data
+  if result.isOk and result.data.itemType <> "problemDetailsResponse" and result.data.getChildCount() > 0
+    results = result.data.getChild(0)
+    m.setContentStyle(results)
   else
     results = createObject("roSGNode", "ZPEntry")
   end if
@@ -155,6 +157,7 @@ override public function onFeedResult(result)
   
   m.setField("results", results)
   m.setField("jumpToItem", 0)
+  m.setGridVisible(true)
 end function
 
 private function setGridVisible(isGridVisible)
@@ -165,7 +168,7 @@ private function setGridVisible(isGridVisible)
   if not m.isGridVisible 
     m.setField("results", createObject("roSGnode", "ZPEntry"))
   end if
-
+  
   if not m.isGridVisible and m.focusId = "grid"
     m.setFocusId("keyboard")
   end if
@@ -207,6 +210,13 @@ function onKeyPressLeft() as boolean
   return false
 end function
 
+private function reset()
+  m.setField("jumpToItem", 0)
+  m.setField("results", createObject("roSGNode", "ZPEntry"))
+  m.setGridVisible(false)
+  m.setField("searchText", "") 
+end function
+
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '++ lifecycle
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -222,10 +232,12 @@ end function
 
 override public function onShow() as void
   m.logMethod("onShow")
-  m.setField("jumpToItem", 0)
-  m.setField("results", createObject("roSGNode", "ZPEntry"))
-  m.setGridVisible(false)
-  m.setField("searchText", "")
+  
+  if not m.isShowingContent
+    m.reset()
+  end if
+  
+  m.isShowingContent = false
 end function
 
 end class

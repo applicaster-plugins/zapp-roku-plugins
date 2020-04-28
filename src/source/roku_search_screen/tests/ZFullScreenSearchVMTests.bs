@@ -78,18 +78,43 @@ function onHide()
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests showing resets the view
+'@It tests reset
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 '@Test 
-function onShow()
+function reset()
   m.expectOnce(m.vm, "setGridVisible", [false])
   
-  m.vm.onShow()
+  m.vm.reset()
   
   m.assertNodeEmpty(m.vm.results)
   m.assertEqual(m.vm.jumpToItem, 0)
   m.assertEmpty(m.vm.searchText)
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests showing resets the view when appropriate
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test was not showing content
+function onShow()
+  m.vm.isShowingContent = true
+  m.expectNone(m.vm, "reset")
+  
+  m.vm.onShow()
+  m.assertFalse(m.vm.isShowingContent)
+  
+end function
+
+'@Test was showing content
+function onShow_wasShowing()
+  m.vm.isShowingContent = false
+  m.expectOnce(m.vm, "reset", [])
+  
+  m.vm.onShow()
+  
+  m.assertFalse(m.vm.isShowingContent)
   
 end function
 
@@ -112,10 +137,13 @@ end function
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 '@Test onKeyPressRight
-'@Params["keyboard", "grid"]
-'@Params["grid", "grid"]
-function onKeyPressRight(currentKey, expectedKey)
+'@Params["keyboard", true, "grid"]
+'@Params["grid", true, "grid"]
+'@Params["keyboard", false, "keyboard"]
+'@Params["grid", false, "grid"]
+function onKeyPressRight(currentKey, isGridVisible, expectedKey)
   m.vm.focusId = currentKey
+  m.vm.isGridVisible = isGridVisible
   m.vm.onKeyPressRight()
   m.assertEqual(m.vm.focusId, expectedKey)
 end function
@@ -235,7 +263,7 @@ end function
 function onSearchDelayComplete(text)
   m.expectOnce(m.vm, "performSearch", [text])
   m.vm.searchText = text
-
+  
   m.vm.onSearchDelayComplete()
   
 end function
