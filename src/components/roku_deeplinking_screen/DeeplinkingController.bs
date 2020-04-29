@@ -1,0 +1,18 @@
+import "pkg:/source/roku_deeplinking_screen/DeeplinkingControllerVM.bs"
+function init()
+  m.top.isForcingMenuHidden = true
+  m.top.isManagingPrehooks = true
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Overridden methods
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function getControlName()
+  return "DeeplinkingController"
+end function
+
+function createVM()
+  return new DeeplinkingControllerVM(m.top.riversJson)
+end function
+

@@ -1,0 +1,211 @@
+import "pkg:/source/UIBuilder/view/ZUIBScreenVM.bs"
+import "pkg:/source/lib/ViewUtils.bs"
+
+namespace Applicaster.Deepinking
+class DeeplinkingControllerVM extends ZUIBScreenVM
+
+public isLoadingIndicatorVisible = false
+public currentScreen = invalid
+private isLivePrehook = false
+
+public screenNamesByType = {}
+
+public function new(riversJson)
+  m.super(riversJson, "DeeplinkingControllerVM")
+  m.focusId = "screenContainer"
+  m.processStyles(riversJson.styles)
+end function
+
+private function processStyles(styles)
+  m.screenNamesByType = { 
+    "season": MU.getContentField(styles, "series_screen_name") 
+    "episode": MU.getContentField(styles, "episode_screen_name") 
+    "detail": MU.getContentField(styles, "detail_screen_name") 
+  }
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ overridden
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+override public function createContent()
+end function
+
+override public function load() as boolean
+  return true
+end function
+
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ prehook support
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+private function togglePrehookController(isActive, controller = invalid)
+  m.logMethod("togglePrehookController", isActive)
+  m.setField("isLoadingndicatorVisible", false)
+  
+  if m.currentScreen <> invalid
+    m.unbindNodeField(m.currentScreen, "state", "onPrehookControllerStateChange")
+  end if
+  
+  if isActive
+    m.bindNodeField(controller, "state", "onPrehookControllerStateChange", MOM.createBindingProperties(false, invalid, true))
+    m.setField("currentScreen", controller)
+  else
+    m.setField("currentScreen", invalid)
+  end if
+end function
+
+private function onPrehookControllerStateChange(state)
+  m.logInfo("prehook state changed", state)
+  m.setField("currentScreen", invalid)
+  
+  if state = "success"
+    
+    m.logInfo("prehook succesfully finished - playing item")
+    m.applyDeeplinking()
+    
+  else 
+    m.dismissDeeplinkingController()
+  end if
+end function
+
+private function getPrehookController()
+  prehooks = MU.getContentField(m.riversJson, "hooks.preload_plugins") 
+  
+  if prehooks <> invalid and prehooks.count() > 0
+    prehookScreen = m.createInstance("ScreenHookController", invalid, "prehooksController")
+    prehookScreen.hooks = prehooks
+    prehookScreen.targetScreen = invalid
+    prehookScreen.isManagingScreensOnCompletion = false
+    return prehookScreen
+  else
+    return invalid
+  end if
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ deeeplinking application
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function applyDeeplinking() as void
+  m.logMethod("applyDeeplinking - app is configured for deeplinking. Navigating to the appropriate view")
+  deeplinkingData = m.getInstance("deeplinkingData")
+  
+  deeplinkingSelection = m.getDeeplinkingSelectionWithData(deeplinkingData)
+  
+  if deeplinkingSelection = invalid
+    m.logError("Deep linking data could not be configured.")
+    m.dismissDeeplinkingController()
+    return
+  end if
+  
+  m.logInfo("Applying deep link for entry with link ", deeplinkingData.entryLink)
+  
+  parentScreen = m.getParentScreen(deeplinkingData.itemType, deeplinkingData.parentEntry)
+  
+  if parentScreen = invalid
+    parentScreen = m.getParentScreen("detail", deeplinkingData.entry)
+  end if
+  
+  if parentScreen <> invalid and deeplinkingData.itemType <> "channel"
+    deeplinkingData.isShowingParentScreen = true
+    m.setField("currentScreen", parentScreen)
+  end if
+  
+  if deeplinkingSelection.action = "play"
+    m.playSelection(deeplinkingSelection)
+  end if
+  
+  if not m.isLivePrehook
+    m.signalAppLaunchComplete()
+  end if
+end function
+
+private function getParentScreen(itemType, entry)
+  screen = invalid
+  
+  if entry <> invalid
+    screenName = m.screenNamesByType[itemType]
+    
+    if screenName <> invalid and screenName.trim() <> ""
+      screen = m.getScreenByName(screenName, entry)
+    end if
+  end if 
+  
+  return screen
+end function
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ private impl
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+private function dismissDeeplinkingController()
+  m.setField("isLoadingIndicatorVisible", false)
+  
+  if m.isLivePrehook
+    m.logInfo("user cancelled, going to go back, if possible")
+    m.exitFromDeeplinking()
+  else
+    m.logInfo("went back from prehook when launching, which means exit app")
+    m.exitApp()
+  end if
+end function
+
+private function getDeeplinkingSelectionWithData(deeplinkingData)
+  m.logMethod("getDeeplinkingSelectionWithData")
+  
+  if deeplinkingData = invalid or deeplinkingData.isValid <> true or deeplinkingData.itemType = invalid or deeplinkingData.entry = invalid
+    m.logInfo("received invalid deeplinkingData")
+    return invalid
+  end if
+  
+  selection = CreateObject("roSGNode", "Selection")
+  
+  deeplinkType = deeplinkingData.itemType
+  content = deeplinkingData.entry.clone(true)
+  selection.action = deeplinkingData.action
+  selection.currentItem = content
+  selection.initialItem = content
+  collection = createObject("roSGNode", "ZPEntry")
+  collection.appendChild(deeplinkingData.entry)
+  collection.id = deeplinkingData.entry.id
+  selection.collection = collection
+
+  return selection
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Key handling
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function onKeyPressBack() as boolean
+  m.logMethod("onKeyPressBack")
+  
+  m.togglePrehookController(false)
+  m.dismissDeeplinkingController()
+  
+  return true
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Lifecycle methods
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+override public function onShow()
+  m.logInfo("onShow")
+  
+  prehookController = m.getPrehookController()
+  
+  deeplinkingData = m.getInstance("deeplinkingData")
+  deeplinkingData.isShowingParentScreen = false
+  
+  if prehookController <> invalid
+    m.togglePrehookController(true, prehookController)
+  else
+    m.applyDeeplinking()
+  end if
+end function
+
+end class
+end namespace

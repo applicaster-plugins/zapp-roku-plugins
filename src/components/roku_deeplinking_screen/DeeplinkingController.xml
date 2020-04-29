@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<component
+    name='DeeplinkingController'
+    extends='ZUIBScreen'>
+
+  <interface>
+    </interface>
+
+  <children>
+    <Rectangle
+        id='backgroundColor'
+        width='1920'
+        height='1080'
+        color='{{:vm.backgroundColor}}' />
+    <DynamicContainer
+        id='screenContainer'
+        nextView='{{vm.currentScreen}}' />
+    <LoadingIndicator
+        id='loadingIndicator'
+        width='1920'
+        height='1080'
+        isActive='{{vm.isLoadingIndicatorVisible, isSettingInitialValue=true}}'
+        backgroundVisible='false'
+        text='' />
+  </children>
+</component>
