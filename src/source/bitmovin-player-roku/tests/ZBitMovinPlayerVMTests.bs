@@ -17,7 +17,6 @@ function BeforeEach()
   
   m.selection = createObject("roSGNode", "Selection")
   
-  m.selection.modelLocator = m.modelLocator
   m.riversJson = {
     "general": {
       "license_key": "lk"
@@ -38,7 +37,7 @@ end function
 
 '@AfterEach
 function afterEach()
-  TU.unsetmodelLocator()
+  TU.unsetModelLocator()
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
