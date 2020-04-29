@@ -11,7 +11,7 @@ class SegmentVideoAnalyticsPlugin extends BaseVideoAnalyticsPlugin
 private contentNode = invalid
 
 public function new(pluginJson)
-  m.super("SegmentVideoAnalyticsPlugin")
+  super("SegmentVideoAnalyticsPlugin")
   m.analyticsManager = m.getInstance("analyticsManager")
   m.heartbeatInterval = 15
   constants = m.getInstance("constants")
@@ -284,29 +284,29 @@ public function getVideoResolution(height)
 end function
 
 override public function videoStart(videoNode, contentNode)
-  m.super(videoNode, contentNode)
+  super.videoStart(videoNode, contentNode)
   m.contentNode = contentNode
   
   m.postSegmentEvent("Video Content Started")
 end function
 
 override public function videoEnd()
-  m.super()
+  super.videoEnd()
   m.postSegmentEvent("Video Completed")
 end function
 
 override public function videoPause()
-  m.super()
+  super.videoPause()
   m.postSegmentEvent("Video Paused")
 end function
 
 override public function videoResume()
-  m.super()
+  super.videoResume()
   m.postSegmentEvent("Video Playback Resume")
 end function
 
 override public function videoHeartbeat()
-  m.super()
+  super.videoHeartbeat()
   
   if m.isInAdBreak
     eventName = "Video Ad Playing (Heartbeat)"
@@ -318,22 +318,22 @@ override public function videoHeartbeat()
 end function
 
 override public function adBreakStart()
-  m.super()
+  super.adBreakStart()
   m.postSegmentEvent("Video Ad Play")
 end function
 
 override public function adBreakEnd()
-  m.super()
+  super.adBreakEnd()
   m.postSegmentEvent("Video Ad Completed")
 end function
 
 override public function onSubtitleChange()
-  m.super()
+  super.onSubtitleChange()
   m.postSegmentEvent("Subtitle Languge Changed")
 end function
 
 override public function onAudioChange()
-  m.super()
+  super.onAudioChange()
   m.postSegmentEvent("Audio Language Selected")
 end function
 

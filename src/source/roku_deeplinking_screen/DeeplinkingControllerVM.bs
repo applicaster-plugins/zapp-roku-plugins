@@ -11,7 +11,7 @@ private isLivePrehook = false
 public screenNamesByType = {}
 
 public function new(riversJson)
-  m.super(riversJson, "DeeplinkingControllerVM")
+  super(riversJson, "DeeplinkingControllerVM")
   m.focusId = "screenContainer"
   m.processStyles(riversJson.styles)
 end function

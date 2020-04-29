@@ -14,7 +14,7 @@ private publicKey = ""
 private base_url = ""
 
 public function new(plugin)
-  m.super("AdobePrimetime", plugin) 
+  super("AdobePrimetime", plugin) 
   m.allowRegcode = true
   m.request = m.getClassInstance("RequestModule")
   m.JWTUtil = m.getClassInstance("JWTUtilModule")

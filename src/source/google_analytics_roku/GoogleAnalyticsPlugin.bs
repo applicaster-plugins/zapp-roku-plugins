@@ -8,7 +8,7 @@ public isEnabled = false
 public isIdentified = false
 
 public function new(plugin)
-  m.super("GoogleAnalyticsPlugin", plugin)
+  super("GoogleAnalyticsPlugin", plugin)
   m.task = m.createInstance("GoogleAnalyticsTask", invalid, "googleAnalyticsTask")
   
   m.task.trackingId = plugin.getStringValue("tracking_id")

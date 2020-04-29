@@ -15,7 +15,7 @@ private isValid = false
 private state = "none"
 
 public function new(view)
-  m.super("ZBitMovinPlayerVM")
+  super("ZBitMovinPlayerVM")
   m.view = view
   
   m.licenseKey = MU.getContentField(view.riversJson, "general.license_key", "")

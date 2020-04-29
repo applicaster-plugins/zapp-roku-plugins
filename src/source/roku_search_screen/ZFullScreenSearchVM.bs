@@ -23,7 +23,7 @@ private searchQueryName = "q"
 private isShowingContent = false
 
 public function new(riversJson)
-  m.super(riversJson, "ZFullScreenSearchVM")
+  super(riversJson, "ZFullScreenSearchVM")
   m.focusId = "keyboard"
   m.processStyles(riversJson.styles)
   m.setGridVisible(false)

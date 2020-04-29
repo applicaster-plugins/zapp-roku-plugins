@@ -11,7 +11,7 @@ private writeKey = ""
 private isDebug = false
 
 public function new(plugin)
-  m.super("SegmentAnalyticsPlugin", plugin)
+  super("SegmentAnalyticsPlugin", plugin)
   
   m.segmentTask = createObject("roSGNode", "SegmentAnalyticsTask")
   m.segmentTask.id = "segmentAnalyticsTask"

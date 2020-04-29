@@ -23,7 +23,7 @@ public logoHeight = 100
 public logoImageUrl = ""
 
 public function new(riversJson)
-  m.super(riversJson, "WarningMessageScreenVM")
+  super(riversJson, "WarningMessageScreenVM")
   
   m.focusId = "usernameInput"
   m.processStyles(m.riversJson.styles)

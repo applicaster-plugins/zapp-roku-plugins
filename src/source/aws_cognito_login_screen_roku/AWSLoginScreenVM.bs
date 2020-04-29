@@ -37,7 +37,7 @@ public passwordPlaceholderText = ""
 public backgroundColor = "#000000ff"
 
 public function new(riversJson)
-  m.super(riversJson, "AWSLoginScreenVM")
+  super(riversJson, "AWSLoginScreenVM")
   
   m.focusId = "usernameInput"
   KeyboardDialogMixin.mixin(m)

@@ -29,7 +29,7 @@ private analytics = invalid
 private providerAnalyticsName = ""
 
 public function new(riversJson)
-  m.super(riversJson, "RegcodeLoginScreenVM")
+  super(riversJson, "RegcodeLoginScreenVM")
   m.analytics = m.getInstance("AnalyticsManager")
   
   m.focusId = "refreshButton"

@@ -21,7 +21,7 @@ private signedOutButtonText = ""
 private signedOutTitle = ""
 
 public function new(riversJson)
-  m.super(riversJson, "LogoutScreenVM")
+  super(riversJson, "LogoutScreenVM")
   
   m.focusId = "button"
   m.processStyles(m.riversJson.styles)

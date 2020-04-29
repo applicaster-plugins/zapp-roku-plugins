@@ -31,7 +31,7 @@ private conditionValue = ""
 private warningType = "entry"
 
 public function new(riversJson)
-  m.super(riversJson, "WarningMessageScreenVM")
+  super(riversJson, "WarningMessageScreenVM")
   
   m.focusId = "usernameInput"
   m.conditionPath = m.riversJson.styles.condition_path
@@ -60,7 +60,7 @@ override public function load() as boolean
 
       if m.warningType = "entry"
         m.logInfo("loading entry to display")
-        m.super()
+        super.load()
       else
         m.logInfo("showig static message")
         m.showGenericErrorMessage()

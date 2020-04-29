@@ -18,7 +18,7 @@ public regcodeText = ""
 public regcodePollTimerControl = "stop"
 
 public function new(riversJson)
-  m.super(riversJson, "ZGigyaLoginScreenVM")
+  super(riversJson, "ZGigyaLoginScreenVM")
   m.focusId = "loginButton"
   m.analyticsManager = m.getInstance("analyticsManager")
   m.baseUrl = riversJson.general.base_url
