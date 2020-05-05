@@ -8,10 +8,23 @@
 
   <children>
     <Rectangle
-        id='backgroundColor'
+        id='backgroundRect'
         width='1920'
         height='1080'
         color='{{:vm.backgroundColor}}' />
+    <Poster
+        id='backgroundPoster'
+        loadSync='true'
+        loadDisplayMode='scaleToFill'
+        loadWidth='1920'
+        loadHeight='1080'
+        uri='{{:vm.backgroundUrl}}'
+        width='1920'
+        height='1080' />
+    <ZPoster
+        id='logoPoster'
+        style='{{=ViewUtils_UIBPoster("logo")}}' />
+
     <DynamicContainer
         id='screenContainer'
         nextView='{{vm.currentScreen}}' />

@@ -13,6 +13,23 @@ function getControlName()
 end function
 
 function createVM()
+  logInfo("m.top.riversJson", m.top.riversJson)
   return new DeeplinkingControllerVM(m.top.riversJson)
 end function
 
+function getDefaultRiversJson()
+  return {
+    "id": "deeplinkingcontroller"
+    "styles": {
+      "logo_w": "350",
+      "logo_x": "100",
+      "family": "FAMILY_1",
+      "logo_y": "33",
+      "background_color": "#ff000000",
+      "logo_h": "100",
+      "style_json": "{}",
+      "logo_image_url": "loginLogo.png",
+      "background_url": "pkg:/asset-bundle/background.jpg"
+    } 
+  }
+end function

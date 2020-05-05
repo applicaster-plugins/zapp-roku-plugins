@@ -7,9 +7,9 @@ namespace Applicaster.Deeplinking.DeeplinkingControllerVMTests
 function BeforeEach()
   m.riversJson = {
     styles: {
-      detail_screen_name: "detailScreen"
-      series_screen_name: "seriesScreen"
-      episode_screen_name: "episodeScreen"
+      detail_screen: "detailScreen"
+      series_screen: "seriesScreen"
+      episode_screen: "episodeScreen"
     }
   }
   
@@ -26,7 +26,7 @@ end function
 
 '@Test 
 function constructor()
-  m.assertEqual(m.vm.screenNamesByType, {
+  m.assertEqual(m.vm.screenIdsByName, {
     "season": "seriesScreen"
     "episode": "episodeScreen"
     "detail": "detailScreen"
@@ -87,7 +87,9 @@ function onPrehookControllerStateChange_success()
   screen = { "id" : "screen" }
   m.vm.currentScreen = screen
   
-  m.expectOnce(m.vm, "applyDeepLinking", [])
+  args = { "id" : "args" }
+  m.expectOnce(m.vm, "getInstance", ["deeplinkingArgs"], args)
+  m.expectOnce(m.vm, "toggleDeeplinkingTask", [true, args])
   m.expectNone(m.vm, "dismissDeeplinkingController")
   
   m.vm.onPrehookControllerStateChange("success")
@@ -95,6 +97,7 @@ function onPrehookControllerStateChange_success()
   m.assertInvalid(m.vm.currentScreen)
   
 end function
+
 '@Test other states
 '@Params["error"]
 '@Params["cancel"]
@@ -182,30 +185,28 @@ end function
 '@Test has prehooks
 function onShow_has_prehook()
   prehookController = { "id" : "prehookController" }
-  deeplinkingData = { "id" : "deeplinkingData", "isShowingParentScreen": true }
   
-  m.expectOnce(m.vm, "getInstance", ["deeplinkingData"], deeplinkingData)
   m.expectOnce(m.vm, "getPrehookController", [], prehookController)
   m.expectOnce(m.vm, "togglePrehookController", [true, prehookController])
-  m.expectNone(m.vm, "applyDeepLinking")
+  m.expectNone(m.vm, "getInstance")
+  m.expectNone(m.vm, "toggleDeeplinkingTask")
   
   m.vm.onShow()
-  m.assertFalse(deeplinkingData.isShowingParentScreen)
+  m.assertFalse(m.vm.isShowingParentScreen)
   
 end function
 
 '@Test no prehooks
 function onShow_no_prehook()
-  deeplinkingData = { "id" : "deeplinkingData", "isShowingParentScreen": true }
-  
-  m.expectOnce(m.vm, "getInstance", ["deeplinkingData"], deeplinkingData)
+  args = { "id" : "args" }
   m.expectOnce(m.vm, "getPrehookController", [], invalid)
   m.expectNone(m.vm, "togglePrehookController")
-  m.expectOnce(m.vm, "applyDeepLinking", [])
+  m.expectOnce(m.vm, "getInstance", ["deeplinkingArgs"], args)
+  m.expectOnce(m.vm, "toggleDeeplinkingTask", [true, args])
   
   m.vm.onShow()
   
-  m.assertFalse(deeplinkingData.isShowingParentScreen)
+  m.assertFalse(m.vm.isShowingParentScreen)
 end function
 
 
@@ -221,14 +222,13 @@ function applyDeeplinking_invalid_selection()
     "isShowingParentScreen": false
   }
   
-  m.expectOnce(m.vm, "getInstance", ["deeplinkingData"], deeplinkingData)
   m.expectOnce(m.vm, "getDeeplinkingSelectionWithData", [deeplinkingData], invalid)
   m.expectNone(m.vm, "getParentScreen")
   m.expectNone(m.vm, "playSelection")
   m.expectNone(m.vm, "signalAppLaunchComplete")
   m.expectOnce(m.vm, "dismissDeeplinkingController", [])
   
-  m.vm.applyDeepLinking()
+  m.vm.applyDeepLinking(deeplinkingData)
   
 end function
 
@@ -248,16 +248,15 @@ function applyDeeplinking_onlyVideo_parent_screen(isLaunchPrehook)
   }
   selection = { "id" : "selection", "action": "play" }
   m.vm.isLivePrehook = not isLaunchPrehook
-  m.expectOnce(m.vm, "getInstance", ["deeplinkingData"], deeplinkingData)
   m.expectOnce(m.vm, "getDeeplinkingSelectionWithData", [deeplinkingData], selection)
   m.expectOnce(m.vm, "getParentScreen", ["series", parentEntry], parentScreen)
   m.expectOnce(m.vm, "playSelection", [selection])
   m.expectOnceOrNone(m.vm, "signalAppLaunchComplete", isLaunchPrehook, [])
   
-  m.vm.applyDeepLinking()
+  m.vm.applyDeepLinking(deeplinkingData)
   
   m.assertEqual(m.vm.currentScreen, parentScreen)
-  m.assertTrue(deeplinkingData.isShowingParentScreen)
+  m.assertTrue(m.vm.isShowingParentScreen)
   
 end function
 
@@ -280,17 +279,16 @@ function applyDeeplinking_onlyVideo_parent_screen_detail(isLaunchPrehook, action
   }
   selection = { "id" : "selection", "action": action }
   m.vm.isLivePrehook = not isLaunchPrehook
-  m.expectOnce(m.vm, "getInstance", ["deeplinkingData"], deeplinkingData)
   m.expectOnce(m.vm, "getDeeplinkingSelectionWithData", [deeplinkingData], selection)
   m.expectOnce(m.vm, "getParentScreen", ["series", parentEntry], invalid)
   m.expectOnce(m.vm, "getParentScreen", ["detail", entry], parentScreen)
   m.expectOnceOrNone(m.vm, "playSelection", isPlaying, [selection])
   m.expectOnceOrNone(m.vm, "signalAppLaunchComplete", isLaunchPrehook, [])
   
-  m.vm.applyDeepLinking()
+  m.vm.applyDeepLinking(deeplinkingData)
   
   m.assertEqual(m.vm.currentScreen, parentScreen)
-  m.assertTrue(deeplinkingData.isShowingParentScreen)
+  m.assertTrue(m.vm.isShowingParentScreen)
   
 end function
 
@@ -309,15 +307,14 @@ function applyDeeplinking_onlyVideo(isLaunchPrehook)
   }
   selection = { "id" : "selection", "action": "play" }
   m.vm.isLivePrehook = not isLaunchPrehook
-  m.expectOnce(m.vm, "getInstance", ["deeplinkingData"], deeplinkingData)
   m.expectOnce(m.vm, "getDeeplinkingSelectionWithData", [deeplinkingData], selection)
   m.expectOnce(m.vm, "getParentScreen", ["series", parentEntry], invalid)
   m.expectOnce(m.vm, "getParentScreen", ["detail", entry], invalid)
   m.expectOnce(m.vm, "playSelection", [selection])
   m.expectOnceOrNone(m.vm, "signalAppLaunchComplete", isLaunchPrehook, [])
   
-  m.vm.applyDeepLinking()
-  m.assertFalse(deeplinkingData.isShowingParentScreen)
+  m.vm.applyDeepLinking(deeplinkingData)
+  m.assertFalse(m.vm.isShowingParentScreen)
   
 end function
 
@@ -422,5 +419,94 @@ function getDeeplinkingSelectionWithData_notValid(itemType)
   m.AssertInvalid(selection)
 end function
 
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests toggleDeeplinkingTask
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test inactive no task
+'@Params[true]
+'@Params[false]
+function toggleDeeplinkingTask_inactive_no_task(navMenuFocusable)
+  m.vm.isNAvMenuFocusable = navMenuFocusable
+  
+  m.expectNone(m.vm, "unbindNodeField")
+  m.expectNone(m.vm, "createInstance")
+  m.expectNone(m.vm, "bindNodeField")
+  
+  m.vm.toggleDeeplinkingTask(false)
+  
+  m.assertFalse(m.vm.isLoadingIndicatorVisible)
+end function
+
+'@Test inactive with task
+'@Params[true]
+'@Params[false]
+function toggleDeeplinkingTask_inactive_task(navMenuFocusable)
+  m.vm.isNavMenuFocusable = navMenuFocusable
+  m.vm.deeplinkingTask = { "id": "task" }
+  
+  m.expectOnce(m.vm, "unbindNodeField", [m.vm.deeplinkingTask, "deeplinkingData", "onDeeplinkingTaskResult"])
+  m.expectNone(m.vm, "createInstance")
+  m.expectNone(m.vm, "bindNodeField")
+  
+  m.vm.toggleDeeplinkingTask(false)
+  
+  m.assertInvalid(m.vm.deeplinkingTask)
+  
+  m.assertFalse(m.vm.isLoadingIndicatorVisible)
+  
+end function
+
+
+'@Test active -no task
+function toggleDeeplinkingTask_active()
+  deeplinkingTask = { "id": "task" }
+  args = { "id": "args" }
+  
+  m.expectOnce(m.vm, "createInstance", ["DeeplinkingTask", invalid, "deeplinkingTask"], deeplinkingTask)
+  m.expectOnce(m.vm, "bindNodeField", [deeplinkingTask, "deeplinkingData", "onDeeplinkingTaskResult", MOM.createBindingProperties(false, invalid, true)]) 
+  
+  m.vm.toggleDeeplinkingTask(true, args)
+  
+  m.assertEqual(deeplinkingTask.args, args)
+  m.assertEqual(deeplinkingTask.control, "run")
+  
+  m.assertTrue(m.vm.isLoadingIndicatorVisible)
+end function
+
+'@Test active - with task
+function toggleDeeplinkingTask_active_with_task()
+  m.vm.deeplinkingTask = { "id": "old_task" }
+  deeplinkingTask = { "id": "task" }
+  args = { "id": "args" }
+  
+  m.expectOnce(m.vm, "unbindNodeField", [m.vm.deeplinkingTask, "deeplinkingData", "onDeeplinkingTaskResult"])
+  
+  m.expectOnce(m.vm, "createInstance", ["DeeplinkingTask", invalid, "deeplinkingTask"], deeplinkingTask)
+  m.expectOnce(m.vm, "bindNodeField", [deeplinkingTask, "deeplinkingData", "onDeeplinkingTaskResult", MOM.createBindingProperties(false, invalid, true)]) 
+  
+  m.vm.toggleDeeplinkingTask(true, args)
+  
+  m.assertEqual(deeplinkingTask.args, args)
+  m.assertEqual(deeplinkingTask.control, "run")
+  m.assertTrue(m.vm.isLoadingIndicatorVisible)
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests onDeeplinkingTaskResult
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test data isValid
+function onDeeplinkingTaskResult_valid()
+  data = createObject("roSGNode", "DeeplinkingData")
+  data.isValid = true
+  data.id = "dld"
+  
+  m.expectOnce(m.vm, "applyDeeplinking", [data])
+  
+  m.vm.onDeeplinkingTaskResult(data)
+end function
 
 end namespace
