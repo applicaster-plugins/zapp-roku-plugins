@@ -13,6 +13,7 @@ private licenseKey = ""
 private overrideVideoUrl = ""
 private isValid = false
 private state = "none"
+private pendingPlayerItem = invalid
 
 public function new(view)
   super("ZBitMovinPlayerVM")
@@ -68,6 +69,11 @@ private function onSDKLoadStatusChange(status)
     m.player.callFunc(m.playerFunctions.SETUP, {
       key: m.licenseKey
     })
+    if m.pendingPlayerItem <> invalid
+      m.logInfo("there was an item pending to play, playing it now")
+      m.playBitmovinItem(m.pendingPlayerItem)
+      m.pendingPlayerItem = invalid
+    end if
   end if
 end function
 
@@ -93,6 +99,15 @@ public function playItem(item)
   }
   m.logInfo("playing with player item", formatJson(playerItem))
   
+  if m.player <> invalid
+    m.playBitmovinItem(playerItem)
+  else
+    m.logWarn("player is not ready yet; settig this item as pending")
+    m.pendingPlayerItem = playerItem
+  end if
+end function
+
+function playBitmovinItem(playerItem)
   m.player.callFunc(m.playerFunctions.LOAD, playerItem)
   m.player.callFunc(m.playerFunctions.PLAY, invalid)
   videoNode = m.player.getChild(0)
@@ -119,6 +134,7 @@ public function stopItem()
   if m.player <> invalid
     m.player.callFunc(m.playerFunctions.UNLOAD, invalid)
   end if
+  m.pendingPlayerItem = invalid
   m.currentItem = invalid
   m.view.isPlaybackFinished = true
   m.state = "ready"
