@@ -176,7 +176,7 @@ end function
 
 public function onLoginButtonSelected(value)
   m.logInfo("starting regcode selected")
-  m.setField("focusId", "regcodeGroup")
+  m.setFocusId("regcodeGroup")
   m.setField("visibleContentId", "regcodeGroup")
   m.requestCode()
 end function

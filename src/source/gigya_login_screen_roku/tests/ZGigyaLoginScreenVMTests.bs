@@ -10,7 +10,8 @@ function beforeEach()
   
   riversJson = {
     "id": "myAccount"
-    "data": { "base_url": "#base_url/" }
+    "general": { "base_url": "#base_url/" }
+    "styles": { "is_skip_button_shown": false }
   }
   
   m.vm = new ZGigyaLoginScreenVM(riversJson)
@@ -37,9 +38,7 @@ function constructor()
   m.assertFalse(m.vm.isLoggedIn)
   m.assertEqual(m.vm.visibleContentId, "loginGroup")
   m.assertEqual(m.vm.focusId, "loginButton")
-  m.assertEqual(m.vm.usernameText, "")
   m.assertEqual(m.vm.regcodeText, "")
-  m.assertEqual(m.vm.loginUrlText, "DEFAULT_ACCOUNT")
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -53,7 +52,7 @@ function restoreAccount_has_account()
   m.expectOnce(m.vm, "getLocalStoreValue", ["account_info", "Gigya", true], accountInfo)
   m.expectOnce(m.vm, "showLoggedInScreen")
   m.expectOnce(m.analyticsManager, "callFunc", ["identify", "Gigya"])
-  m.expectOnce(m.analyticsManager, "callFunc", ["trackEvent", "Gigya Login Succesful", "page_loaded"])
+  m.expectOnce(m.analyticsManager, "callFunc", ["trackEvent", "Gigya Login Succesful", "page_loaded",  { "provider": "Gigya" }])
   
   m.vm.restoreAccount()
   
@@ -68,46 +67,31 @@ function restoreAccount_does_not_have_account()
   m.vm.restoreAccount()
   
   m.assertInvalid(m.vm.accountInfo)
-  m.assertEqual(m.vm.usernameText, "")
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests onKeyPressOk
+'@It tests button callbacks
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 '@Test - focused on loginButton
-function onKeyPressOk_loginButton()
+function onLoginButtonSelected()
   m.vm.focusId = "loginButton"
   m.expectOnce(m.vm, "requestCode")
-  m.expectOnce(m.vm, "toggleNavMenuVisible", [false, false])
-  m.expectOnce(m.analyticsManager, "callFunc", ["trackEvent", "Gigya Waiting", "page_loaded"])
   
-  m.assertTrue(m.vm.onKeyPressOK())
+  m.vm.onLoginButtonSelected(true)
   
   m.assertEqual(m.vm.visibleContentId, "regcodeGroup")
   m.assertEqual(m.vm.focusId, "regcodeGroup")
 end function
 
 '@Test - focused on logoutButton
-function onKeyPressOk_logoutButton()
+function onSkipButtonSelected()
   m.vm.focusId = "logoutButton"
-  m.expectOnce(m.vm, "logout")
   
-  m.assertTrue(m.vm.onKeyPressOK())
+  m.vm.onSkipButtonSelected(true)
+  m.assertEqual(m.vm.state, "success")
+  
 end function
-
-'@Test - focused on regcodeGroup
-function onKeyPressOK_regcodeGroup()
-  m.vm.visibleContentId = "regcodeGroup"
-  m.vm.focusId = "regcodeGroup"
-  
-  
-  m.assertTrue(m.vm.onKeyPressOK())
-  
-  m.assertEqual(m.vm.visibleContentId, "regcodeGroup")
-  m.assertEqual(m.vm.focusId, "regcodeGroup")
-end function
-
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '@It tests requestCode
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -226,65 +210,6 @@ function onPollResponse_invalid(response)
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests logout
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-'@Test 
-function logout()
-  mockRequest = { "id": "request" }
-  m.vm.accountInfo = { "access_token": "#at" }
-  url = "#base_url/Logout"
-  
-  params = {
-    "access_token": "#at"
-  }
-  
-  m.expectOnce(m.vm, "cancelRequests")
-  m.expectOnce(m.vm, "executeUrlRequest", ["logout", url, "onLogoutResponse", params, "POST"], mockRequest)
-  
-  m.vm.logout()
-  
-  m.assertEqual(m.vm.currentRequest, mockRequest)
-  m.assertTrue(m.vm.isLoading)
-  
-end function
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests onLogoutResponse
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-'@Test valid
-function onLogoutResponse_valid()
-  m.expectOnce(m.vm, "showLoggedOutScreen")
-  m.vm.accountInfo = {}
-  
-  response = {
-    isOK: true
-  }
-  m.expectOnce(m.analyticsManager, "callFunc", ["unidentify", "Gigya"])
-  m.expectOnce(m.analyticsManager, "callFunc", ["trackEvent", "Gigya Signed Out", "page_loaded"])
-  m.expectOnce(m.vm, "setLocalStoreValue", ["account_info", "Gigya", invalid, true])
-  
-  m.vm.onLogoutResponse(response)
-  
-  m.assertEqual(m.vm.usernameText, "")
-  m.assertInvalid(m.vm.accountInfo)
-  m.assertFalse(m.vm.isLoggedIn)
-end function
-
-'@Test invalid
-'@Params[{isOK:false}]
-function onLogoutResponse_invalid(response)
-  m.expectNone(m.vm, "showLoggedOutScreen")
-  m.expectOnce(m.vm, "showDialog", ["Error logging out", "Could not log out"])
-  
-  m.vm.onLogoutResponse(response)
-  
-  m.assertInvalid(m.vm.accountInfo)
-  m.assertFalse(m.vm.isLoggedIn)
-end function
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '@It tests onKeyPressBack
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -292,42 +217,24 @@ end function
 function onKeyPressBack_showing_regcodeGroup()
   m.vm.visibleContentId = "regcodeGroup"
   m.vm.focusId = "regcodeGroup"
-  m.expectOnce(m.vm, "toggleNavMenuVisible", [true])
+  m.expectOnce(m.vm, "cancelRequests", [])
   
-  m.vm.onKeyPressBack()
+  m.assertTrue(m.vm.onKeyPressBack())
   
   m.assertEqual(m.vm.visibleContentId, "loginGroup")
   m.assertEqual(m.vm.focusId, "loginButton")
+  m.assertEqual(m.vm.regcodePollTimerControl, "stop")
 end function
 
-end namespace
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It test screen visibility helpers
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-'@Test showLoggedInScreen
-function showLoggedInScreen()
-  m.vm.accountInfo = { "firstname": "#firstname" }
-  m.expectOnce(m.vm, "toggleNavMenuVisible", [true])
+'@Test - not showing regcodegroup
+function onKeyPressBack_not_showing_regcodeGroup()
+  m.vm.visibleContentId = "loginGroup"
+  m.vm.focusId = "loginButton"
+  m.expectOnce(m.vm, "cancelRequests", [])
+  m.expectOnce(m.vm, "dismiss", ["cancel"])
   
-  m.vm.showLoggedInScreen()
+  m.assertTrue(m.vm.onKeyPressBack())
   
-  m.assertEqual(m.vm.usernameText, "#firstname")
-  m.assertEqual(m.vm.visibleContentId, "signedInGroup")
-  m.assertEqual(m.vm.focusId, "logoutButton")
 end function
-
-'@Test showLoggedOutScreen
-function showLoggedOutScreen()
-  m.vm.accountInfo = { "firstname": "#firstname" }
-  
-  m.vm.showLoggedOutScreen()
-  
-  m.assertEqual(m.vm.usernameText, "")
-  m.assertEqual(m.vm.visibleContentId, "loginGroup")
-  m.assertEqual(m.vm.focusId, "loginButton")
-end function
-
 
 end namespace
