@@ -317,7 +317,7 @@ function processLogin_invalid_creds()
   m.vm.isCredsValid = false
   
   m.expectNone(m.vm, "createInstance")
-  m.expectNone(m.vm, "bindNodeField")
+  m.expectNone(m.vm, "createTask")
   
   m.vm.processLogin()
   
@@ -330,25 +330,31 @@ function processLogin_valid_creds()
   m.vm.isCredsValid = true
   m.vm.usernameText = "user"
   m.vm.password = "pass"
-  
   authTask = { "id": "authTask" }
   creds = { "id": "creds" }
-  m.expectOnce(m.vm, "createInstance", ["AuthTask", invalid, "authTask"], authTask)
+  
+  args = {
+    id: "authTask"
+    functionName: "execLogIn"
+    client_type: "aws_cognito_auth_plugin"
+    credentials: creds
+  }
+  m.expectOnce(m.vm, "createTask", ["AuthTask", args, "onLoginComplete", true, "isComplete"], authTask)
   m.expectOnce(m.vm, "createInstance", ["AuthenticationCredentials"], creds)
-  m.expectOnce(m.vm, "bindNodeField", [authTask, "isComplete", "onLoginComplete", MOM_createBindingProperties(false, invalid, true)])
   
   m.vm.processLogin()
   
   m.assertEqual(m.vm.authTask, authTask)
-  m.assertEqual(authTask.credentials, creds)
-  m.assertEqual(authTask.control, "RUN")
-  m.assertEqual(authTask.functionName, "execLogIn")
-  m.assertEqual(authTask.client_type, "aws_cognito_auth_plugin")
   
   m.assertEqual(creds.username, "user")
   m.assertEqual(creds.password, "pass")
+  m.assertEqual(m.vm.state, "loading")
   
   m.assertTrue(m.vm.isLoading)
+  m.assertFalse(m.vm.isLoginButtonEnabled)
+  m.assertFalse(m.vm.isErrorShowing)
+  m.assertEmpty(m.vm.errorText)
+  
   
 end function
 
