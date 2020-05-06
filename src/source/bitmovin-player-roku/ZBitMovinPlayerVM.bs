@@ -92,7 +92,6 @@ public function playItem(item)
   m.logMethod("playItem ", item.id)
   
   m.currentItem = item
-  m.state = "playing"
   playerItem = m.getPlayerItem(m.currentItem)
   playerItem.options = {
     "startOffset": m.currentItem.BookmarkPosition
@@ -100,6 +99,7 @@ public function playItem(item)
   m.logInfo("playing with player item", formatJson(playerItem))
   
   if m.player <> invalid
+    m.pendingPlayerItem = invalid
     m.playBitmovinItem(playerItem)
   else
     m.logWarn("player is not ready yet; settig this item as pending")
@@ -108,6 +108,9 @@ public function playItem(item)
 end function
 
 function playBitmovinItem(playerItem)
+  m.logMethod("playBitmovinItem")
+  
+  m.state = "playing"
   m.player.callFunc(m.playerFunctions.LOAD, playerItem)
   m.player.callFunc(m.playerFunctions.PLAY, invalid)
   videoNode = m.player.getChild(0)
