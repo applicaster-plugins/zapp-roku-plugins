@@ -217,7 +217,7 @@ function onSearchTextChang_search_scenarios(text)
   searchDelayTask = { "id" : "searchDelayTask" }
   m.vm.searchDelayTask = searchDelayTask
   m.vm.loadItemTask = loadItemTask
-  
+  m.vm.minCharacters = 3
   newDelayTask = { "id" : "newDelayTask" }
   
   m.expectOnce(m.vm, "cancelWaitTimer", [searchDelayTask])
