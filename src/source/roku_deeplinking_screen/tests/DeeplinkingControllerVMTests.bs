@@ -1,4 +1,3 @@
-'@Only
 '@TestSuite DCVMT DeeplinkingControllerVMTests
 
 namespace Applicaster.Deeplinking.DeeplinkingControllerVMTests
@@ -8,6 +7,7 @@ function BeforeEach()
   m.riversJson = {
     styles: {
       detail_screen: "detailScreen"
+      season_screen: "seasonScreen"
       series_screen: "seriesScreen"
       episode_screen: "episodeScreen"
     }
@@ -30,6 +30,7 @@ function constructor()
     "season": "seriesScreen"
     "episode": "episodeScreen"
     "detail": "detailScreen"
+    "series": "seriesScreen"
   })
 end function
 
@@ -118,27 +119,19 @@ end function
 '@It tests dismissDeeplinkingController
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-'@Test live
-function dismissDeeplinkingController_live()
-  m.vm.isLivePrehook = true
+'@Test 
+'@Params[true, false, true, false]
+'@Params[true, true, true, false]
+'@Params[false, false, true, false]
+'@Params[false, true, false, true]
+function dismissDeeplinkingController(isLiveDeeplink, isShowingPrehooks, isExitDeeplinking, isExitApp)
+  m.vm.isLiveDeeplink = isLiveDeeplink
+  m.vm.isShowingPrehooks = isShowingPrehooks
   
-  m.expectNone(m.vm, "showPrehookContent")
-  m.expectOnce(m.vm, "exitFromDeeplinking", [])
-  m.expectNone(m.vm, "exitApp")
-  
-  m.vm.dismissDeeplinkingController()
-end function
-
-'@Test launch
-function dismissDeeplinkingController_launch()
-  m.vm.isLivePrehook = false
-  
-  m.expectNone(m.vm, "showPrehookContent")
-  m.expectNone(m.vm, "exitFromDeeplinking")
-  m.expectOnce(m.vm, "exitApp")
+  m.expectOnceOrNone(m.vm, "exitFromDeeplinking", isExitDeeplinking, [])
+  m.expectOnceOrNone(m.vm, "exitApp", isExitApp, [])
   
   m.vm.dismissDeeplinkingController()
-  
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -182,31 +175,15 @@ end function
 '@It tests onShow
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-'@Test has prehooks
-function onShow_has_prehook()
-  prehookController = { "id" : "prehookController" }
-  
-  m.expectOnce(m.vm, "getPrehookController", [], prehookController)
-  m.expectOnce(m.vm, "togglePrehookController", [true, prehookController])
-  m.expectNone(m.vm, "getInstance")
-  m.expectNone(m.vm, "toggleDeeplinkingTask")
-  
+'@Test 
+'@Params[false, false, false]
+'@Params[true, false, true]
+'@Params[true, true, false]
+function onShow_no_prehook(isDeeplinkingApplied, isShowingParentScreen, isExitCalled)
+  m.vm.isShowingParentScreen = isShowingParentScreen
+  m.vm.isDeeplinkingApplied = isDeeplinkingApplied
+  m.expectOnceOrNone(m.vm, "exitFromDeeplinking", isExitCalled, [])
   m.vm.onShow()
-  m.assertFalse(m.vm.isShowingParentScreen)
-  
-end function
-
-'@Test no prehooks
-function onShow_no_prehook()
-  args = { "id" : "args" }
-  m.expectOnce(m.vm, "getPrehookController", [], invalid)
-  m.expectNone(m.vm, "togglePrehookController")
-  m.expectOnce(m.vm, "getInstance", ["deeplinkingArgs"], args)
-  m.expectOnce(m.vm, "toggleDeeplinkingTask", [true, args])
-  
-  m.vm.onShow()
-  
-  m.assertFalse(m.vm.isShowingParentScreen)
 end function
 
 
@@ -235,7 +212,7 @@ end function
 '@Test video and parent screen present
 '@Params[true]
 '@Params[false]
-function applyDeeplinking_onlyVideo_parent_screen(isLaunchPrehook)
+function applyDeeplinking_onlyVideo_parent_screen(isLaunchDeeplink)
   parentEntry = { "id" : "parentEntry" }
   parentScreen = { "id" : "parentScreen" }
   
@@ -247,43 +224,11 @@ function applyDeeplinking_onlyVideo_parent_screen(isLaunchPrehook)
     "itemType": "series"
   }
   selection = { "id" : "selection", "action": "play" }
-  m.vm.isLivePrehook = not isLaunchPrehook
+  m.vm.isLiveDeeplink = not isLaunchDeeplink
   m.expectOnce(m.vm, "getDeeplinkingSelectionWithData", [deeplinkingData], selection)
   m.expectOnce(m.vm, "getParentScreen", ["series", parentEntry], parentScreen)
   m.expectOnce(m.vm, "playSelection", [selection])
-  m.expectOnceOrNone(m.vm, "signalAppLaunchComplete", isLaunchPrehook, [])
-  
-  m.vm.applyDeepLinking(deeplinkingData)
-  
-  m.assertEqual(m.vm.currentScreen, parentScreen)
-  m.assertTrue(m.vm.isShowingParentScreen)
-  
-end function
-
-'@Test video and parent screen present; showing detail
-'@Params[true, "play", true]
-'@Params[false, "play", true]
-'@Params[true, "display", false]
-'@Params[false, "display", false]
-function applyDeeplinking_onlyVideo_parent_screen_detail(isLaunchPrehook, action, isPlaying)
-  parentEntry = { "id" : "parentEntry" }
-  parentScreen = { "id" : "parentScreen" }
-  
-  entry = { "id" : "entry" }
-  deeplinkingData = {
-    "id" : "deeplinkingData"
-    "parentEntry": parentEntry
-    "entry": entry
-    "itemType": "series"
-    "isShowingParentScreen": false
-  }
-  selection = { "id" : "selection", "action": action }
-  m.vm.isLivePrehook = not isLaunchPrehook
-  m.expectOnce(m.vm, "getDeeplinkingSelectionWithData", [deeplinkingData], selection)
-  m.expectOnce(m.vm, "getParentScreen", ["series", parentEntry], invalid)
-  m.expectOnce(m.vm, "getParentScreen", ["detail", entry], parentScreen)
-  m.expectOnceOrNone(m.vm, "playSelection", isPlaying, [selection])
-  m.expectOnceOrNone(m.vm, "signalAppLaunchComplete", isLaunchPrehook, [])
+  m.expectOnceOrNone(m.vm, "signalAppLaunchComplete", isLaunchDeeplink, [])
   
   m.vm.applyDeepLinking(deeplinkingData)
   
@@ -295,7 +240,7 @@ end function
 '@Test only video
 '@Params[true]
 '@Params[false]
-function applyDeeplinking_onlyVideo(isLaunchPrehook)
+function applyDeeplinking_onlyVideo(isLaunchDeeplink)
   parentEntry = { "id" : "parentEntry" }
   entry = { "id" : "entry" }
   deeplinkingData = {
@@ -306,12 +251,11 @@ function applyDeeplinking_onlyVideo(isLaunchPrehook)
     "isShowingParentScreen": false
   }
   selection = { "id" : "selection", "action": "play" }
-  m.vm.isLivePrehook = not isLaunchPrehook
+  m.vm.isLiveDeeplink = not isLaunchDeeplink
   m.expectOnce(m.vm, "getDeeplinkingSelectionWithData", [deeplinkingData], selection)
   m.expectOnce(m.vm, "getParentScreen", ["series", parentEntry], invalid)
-  m.expectOnce(m.vm, "getParentScreen", ["detail", entry], invalid)
   m.expectOnce(m.vm, "playSelection", [selection])
-  m.expectOnceOrNone(m.vm, "signalAppLaunchComplete", isLaunchPrehook, [])
+  m.expectOnceOrNone(m.vm, "signalAppLaunchComplete", isLaunchDeeplink, [])
   
   m.vm.applyDeepLinking(deeplinkingData)
   m.assertFalse(m.vm.isShowingParentScreen)

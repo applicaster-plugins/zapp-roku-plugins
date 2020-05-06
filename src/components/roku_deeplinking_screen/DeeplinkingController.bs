@@ -1,5 +1,6 @@
 import "pkg:/source/roku_deeplinking_screen/DeeplinkingControllerVM.bs"
 function init()
+  
   m.top.isForcingMenuHidden = true
   m.top.isManagingPrehooks = true
 end function
@@ -14,10 +15,15 @@ end function
 
 function createVM()
   logInfo("m.top.riversJson", m.top.riversJson)
-  return new DeeplinkingControllerVM(m.top.riversJson)
+  vm = new DeeplinkingControllerVM(m.top.riversJson)
+  MVMM.initializeBindings(true)
+  initializeView(m.top.findNode("screenContainer"))
+  return vm
 end function
 
 function getDefaultRiversJson()
+  logInfo("getDefaultRiversJson")
+  
   return {
     "id": "deeplinkingcontroller"
     "styles": {
@@ -28,7 +34,7 @@ function getDefaultRiversJson()
       "background_color": "#ff000000",
       "logo_h": "100",
       "style_json": "{}",
-      "logo_image_url": "loginLogo.png",
+      "logo_url": "loginLogo.png",
       "background_url": "pkg:/asset-bundle/background.jpg"
     } 
   }
