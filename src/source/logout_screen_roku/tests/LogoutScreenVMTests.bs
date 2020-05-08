@@ -87,7 +87,7 @@ function logout()
   
   m.assertTrue(m.vm.isLoggedOut)
   m.assertTrue(m.vm.isShowingLoadingIndicator)
-  m.assertFalse(m.vm.isLogoutButtonVisible)
+  m.assertFalse(m.vm.isButtonVisible)
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -122,7 +122,7 @@ function onLogoutComplete()
   m.vm.onLogoutComplete({isOK:true})
   
   m.assertFalse(m.vm.isShowingLoadingIndicator)
-  m.assertTrue(m.vm.isLogoutButtonVisible)
+  m.assertTrue(m.vm.isButtonVisible)
   m.assertEqual(m.vm.buttonText, "ok")
   m.assertEqual(m.vm.titleText, "you are signed out")
 end function

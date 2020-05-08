@@ -42,6 +42,7 @@ function load_matching(entry, path, condition)
   m.vm.conditionPath = path
   m.vm.conditionValue = condition
   m.expectOnce(m.vm, "load_ZUIBContentVM")
+  m.expectNone(m.vm, "dismiss")
   m.vm.originEntry = entry
 
   m.vm.load() 
@@ -53,11 +54,11 @@ end function
 '@Test no entry
 function load_no_entry()
   m.expectNone(m.vm, "ZUIBCVM_load")
+  m.expectOnce(m.vm, "dismiss", ["success"])
+  
   m.vm.originEntry = invalid
   
   m.vm.load() 
-  
-  m.assertEqual(m.vm.state, "success")
   
 end function
 
@@ -76,11 +77,10 @@ function load_not_matching(entry, path, condition)
   m.vm.conditionPath = path
   m.vm.conditionValue = condition
   m.expectNone(m.vm, "ZUIBCVM_load")
+  m.expectOnce(m.vm, "dismiss", ["success"])
   m.vm.originEntry = entry
   
   m.vm.load() 
-  
-  m.assertEqual(m.vm.state, "success")
   
 end function
 
