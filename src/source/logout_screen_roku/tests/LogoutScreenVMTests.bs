@@ -70,17 +70,46 @@ end function
 '@It tests logout
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-'@Test 
-function logout()
+'@Test all providers 
+'@Params[invalid, { id: "authTask", functionName: "execLogOutAll"}]
+function logout(providerId, expectedArgs)
   authTask = { "id" : "authTask" }
   
-  expectedArgs = {
-    id: "authTask"
-    functionName: "execLogOutAll"
-  }
+  analyticsManager = { "id" : "analyticsManager" }
+  m.expectOnce(analyticsManager, "callFunc", ["trackEvent", "Signed Out", "page_loaded", { "provider": "AdobeAccessEnabler" }])
+  
+  m.expectOnce(m.vm, "getSessionStoreValue", ["all_zapp_pipes_providers", "default_auth_plugin_id"], "AdobeAccessEnabler")
+  
+  m.expectOnce(m.vm, "getInstance", ["AnalyticsManager"], analyticsManager)
   
   m.expectOnce(m.vm, "createTask", ["AuthTask", expectedArgs, "onLogoutComplete", true, "isComplete"], authTask)
+  m.vm.providerId = providerid
+
+  m.vm.logout()
   
+  m.assertEqual(m.vm.authTask, authTask)
+  
+  m.assertTrue(m.vm.isLoggedOut)
+  m.assertTrue(m.vm.isShowingLoadingIndicator)
+  m.assertFalse(m.vm.isButtonVisible)
+end function
+
+'@Test specific providers
+'@Params["id1", { id: "authTask", functionName: "execLogOut", client_type: "id1"}]
+'@Params["id2", { id: "authTask", functionName: "execLogOut", client_type: "id2"}]
+function logout_specific_provider(providerId, expectedArgs)
+  authTask = { "id" : "authTask" }
+  
+  analyticsManager = { "id" : "analyticsManager" }
+  m.expectOnce(analyticsManager, "callFunc", ["trackEvent", "Signed Out", "page_loaded", { "provider": providerId }])
+  
+  m.expectNone(m.vm, "getSessionStoreValue")
+  
+  m.expectOnce(m.vm, "getInstance", ["AnalyticsManager"], analyticsManager)
+  
+  m.expectOnce(m.vm, "createTask", ["AuthTask", expectedArgs, "onLogoutComplete", true, "isComplete"], authTask)
+  m.vm.providerId = providerid
+
   m.vm.logout()
   
   m.assertEqual(m.vm.authTask, authTask)
@@ -119,7 +148,7 @@ end function
 '@Test onLogoutComplete
 function onLogoutComplete()
   
-  m.vm.onLogoutComplete({isOK:true})
+  m.vm.onLogoutComplete({ isOK: true })
   
   m.assertFalse(m.vm.isShowingLoadingIndicator)
   m.assertTrue(m.vm.isButtonVisible)

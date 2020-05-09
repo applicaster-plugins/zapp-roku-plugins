@@ -19,6 +19,7 @@ public buttonPosition = [0, 310]
 private isLoggedOut = false
 private signedOutButtonText = ""
 private signedOutTitle = ""
+private providerId = invalid
 
 public function new(riversJson)
   super(riversJson, "LogoutScreenVM")
@@ -58,6 +59,7 @@ function processStyles(styles)
   m.textWidth = ViewUtils.getUIBInt(styles, "text_w", 1920)
   m.signedOutButtonText = styles.signed_out_button_text
   m.signedOutTitle = styles.signed_out_text
+  m.providerId = MU.getContentField(styles, "provider_id", invalid)
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -75,21 +77,37 @@ end function
 
 function logout()
   'later on we can specify client_type, via a style property
-  args = {
-    id: "authTask"
-    functionName: "execLogOutAll"
-  }
+  if m.providerId = invalid
+    args = {
+      id: "authTask"
+      functionName: "execLogOutAll"
+    }
+  else
+    args = {
+      id: "authTask"
+      functionName: "execLogOut"
+      client_type: m.providerId
+    }
+  end if
+  
   m.authTask = m.createTask("AuthTask", args, "onLogoutComplete", true, "isComplete")
+  if m.providerId = invalid
+    defaultId = m.getSessionStoreValue("all_zapp_pipes_providers", "default_auth_plugin_id")
+  else
+    defaultId = m.providerId
+  end if
   
   m.isLoggedOut = true
   m.setField("isShowingLoadingIndicator", true)
   m.setField("isButtonVisible", false)
+  analyticsManager = m.getInstance("AnalyticsManager")
+  analyticsManager@.trackEvent("Signed Out", "page_loaded", { "provider": defaultId })
   
 end function
 
 function onLogoutComplete(result)
   m.logMethod("onLogoutComplete")
-
+  
   m.setField("isShowingLoadingIndicator", false)
   m.setField("isButtonVisible", true)
   m.setField("buttonText", m.signedOutButtonText)
