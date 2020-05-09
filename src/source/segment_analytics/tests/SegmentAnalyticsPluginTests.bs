@@ -57,3 +57,46 @@ function start()
   m.plugin.start()
 end function
 
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests generateAuthProviderNameMap
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test some
+function generateAuthProviderNameMap_some()
+  config = {
+    "write_key": "#w"
+    "provider_1_id": "AdobePrimetime"
+    "provider_1_name": "Adobe"
+    "provider_2_id": "aws_cognito_auth_plugin"
+    "provider_2_name": "Cognito"
+    "provider_3_id": ""
+    "provider_3_name": ""
+  }
+
+  pluginData = new BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
+
+  map = m.plugin.generateAuthProviderNameMap(pluginData)
+  
+  m.assertEqual(map["AdobePrimetime"], "Adobe")
+  m.assertEqual(map["aws_cognito_auth_plugin"], "Cognito")
+end function
+
+'@Test none
+function generateAuthProviderNameMap_none()
+  config = {
+    "write_key": "#w"
+    "provider_1_id": ""
+    "provider_1_name": ""
+    "provider_2_id": ""
+    "provider_2_name": ""
+    "provider_3_id": ""
+    "provider_3_name": ""
+  }
+
+  pluginData = new BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
+
+  m.assertEmpty(m.plugin.generateAuthProviderNameMap(pluginData))
+  
+end function
+
+end namespace

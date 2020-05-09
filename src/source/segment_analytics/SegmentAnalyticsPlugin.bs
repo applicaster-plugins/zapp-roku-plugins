@@ -19,10 +19,13 @@ public function new(plugin)
   constants = m.getInstance("constants")
   m.applicasterDeviceId = constants.applicasterDeviceId
   m.writeKey = plugin.getStringValue("write_key")
-  m.isDebug = plugin.getBoolValue("is_debug")
-  
+  m.isDebug = plugin.getBoolValue("is_debug") 
   m.library = SegmentAnalyticsConnector(m.segmentTask)
 end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ overridden methods
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 override public function start()
   config = {
@@ -31,15 +34,20 @@ override public function start()
     "queueSize": 3
     "retryLimit": 0
   }
-
+  
   m.library.init(config)
-
+  
   'we only support hardocded support for gygya right now
   'TODO add other account types
   m.identify("Gigya")
 end function
 
-override public function identify(plugin = "Gigya", traits = {}, options = {})
+override private function mapPropertyValues(properties)
+  m.substituteValue(m.valuesMap.providers, properties, "provider")
+  return properties
+end function
+
+override public function _identify(plugin = "Gigya", traits = {}, options = {})
   m.logInfo("identify", plugin)
   
   m.defaultOptions = m.getDefaultOptions()
@@ -58,18 +66,18 @@ override public function identify(plugin = "Gigya", traits = {}, options = {})
   end if 
 end function
 
-override public function unidentify(plugin = "Gigya")
+override public function _unidentify(plugin = "Gigya")
   m.isIdentified = false
   m.defaultOptions = m.getDefaultOptions()
   m.defaultProperties = m.getDefaultProperties()
   m.library.identify("anonymous", m.defaultOptions, m.defaultProperties)
 end function
 
-override public function track(eventName, properties = {}, options = {})
+override public function _track(eventName, properties = {}, options = {})
   m.trackEvent(eventName, invalid, properties, options)
 end function
 
-override public function trackEvent(eventName, actionName = invalid, properties = {}, options = {})
+override public function _trackEvent(eventName, actionName = invalid, properties = {}, options = {})
   
   if actionName <> invalid
     properties.name = eventName
@@ -86,7 +94,12 @@ override public function trackEvent(eventName, actionName = invalid, properties 
   
 end function
 
-public function screen(eventName, category, properties = {}, options = {})
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ private impl
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+private function screen(eventName, category, properties = {}, options = {})
   
   if m.isEnabled
     options.append(m.defaultOptions)
@@ -96,7 +109,7 @@ public function screen(eventName, category, properties = {}, options = {})
   
 end function
 
-public function group(eventName, groupId, traits = {}, options = {})
+private function group(eventName, groupId, traits = {}, options = {})
   
   if m.isEnabled
     options.append(m.defaultOptions)
@@ -106,7 +119,7 @@ public function group(eventName, groupId, traits = {}, options = {})
   
 end function
 
-public function getDefaultOptions()
+private function getDefaultOptions()
   
   accountInfo = m.getLocalStoreValue("account_info", "Gigya", true)
   
@@ -120,8 +133,10 @@ public function getDefaultOptions()
   return options
 end function
 
-public function getDefaultProperties()
+private function getDefaultProperties()
   
+  'these values are set in the plugin for now; in future we will have a 
+  'mechanism to map these
   accountInfo = m.getLocalStoreValue("account_info", "Gigya", true)
   properties = {
     user_email: "anonymous"
@@ -132,13 +147,14 @@ public function getDefaultProperties()
   }
   
   if accountInfo <> invalid 
-    properties.user_gygia_id = accountInfo.uid
+    properties.user_gigya_id = accountInfo.uid
   else
-    properties.user_gygia_id = "anonymous"
+    properties.user_gigya_id = "anonymous"
   end if
   
-  primetimeAccountInfo = m.getLocalStoreValue("account_info", "adobe_primetime", true)
+  primetimeAccountInfo = m.getLocalStoreValue("account_info", "AdobeAccessEnabler", true)
   if primetimeAccountInfo <> invalid 
+    'FIXME
     properties.user_adobe_id = primetimeAccountInfo.uid
   else
     properties.user_adobe_id = "anonymous"
