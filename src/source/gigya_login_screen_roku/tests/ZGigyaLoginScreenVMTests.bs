@@ -52,7 +52,7 @@ function restoreAccount_has_account()
   m.expectOnce(m.vm, "getLocalStoreValue", ["account_info", "Gigya", true], accountInfo)
   m.expectOnce(m.vm, "showLoggedInScreen")
   m.expectOnce(m.analyticsManager, "callFunc", ["identify", "Gigya"])
-  m.expectOnce(m.analyticsManager, "callFunc", ["trackEvent", "Gigya Login Succesful", "page_loaded",  { "provider": "Gigya" }])
+  m.expectOnce(m.analyticsManager, "callFunc", ["trackEvent", "Login Succesful", "page_loaded",  { "provider": "gigya_login_screen_roku" }])
   
   m.vm.restoreAccount()
   
@@ -170,7 +170,7 @@ function onPollResponse_valid()
   m.expectOnce(m.vm, "showLoggedInScreen")
   m.expectOnce(m.vm, "setLocalStoreValue", ["account_info", "Gigya", formatJson(response.data), true])
   m.expectOnce(m.analyticsManager, "callFunc", ["identify", "Gigya"])
-  m.expectOnce(m.analyticsManager, "callFunc", ["trackEvent", "Gigya Login Succesful", "page_loaded"])
+  m.expectOnce(m.analyticsManager, "callFunc", ["trackEvent", "Login Succesful", "page_loaded", { "provider": "gigya_login_screen_roku" }])
   
   m.vm.onPollResponse(response)
   

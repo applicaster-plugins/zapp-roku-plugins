@@ -76,7 +76,7 @@ public function restoreAccount()
   if m.accountInfo <> invalid 
     m.logInfo("there is an account stored for this device")
     m.analyticsManager@.identify("Gigya")
-    m.analyticsManager@.trackEvent("Gigya Login Succesful", "page_loaded", { "provider": "Gigya" })
+    m.analyticsManager@.trackEvent("Login Succesful", "page_loaded", { "provider": "gigya_login_screen_roku" })
     
     m.showLoggedInScreen()
   else if m.isSkipButtonVisible
@@ -156,7 +156,7 @@ public function onPollResponse(response)
       
       m.setLocalStoreValue("account_info", "Gigya", formatJson(m.accountInfo), true)
       m.analyticsManager@.identify("Gigya")
-      m.analyticsManager@.trackEvent("Gigya Login Succesful", "page_loaded")
+      m.analyticsManager@.trackEvent("Login Succesful", "page_loaded", { "provider": "gigya_login_screen_roku" })
     else if response.data.ErrorCode = 4
       m.logInfo("token has expired - re-requesting")
       m.setField("regcodePollTimerControl", "stop")
