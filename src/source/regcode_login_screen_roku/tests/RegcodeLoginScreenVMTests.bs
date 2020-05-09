@@ -28,6 +28,63 @@ function afterEach()
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests refreshLogin
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test
+'@Params[invalid]
+'@Params["id1"]
+'@Params["id2"]
+function refreshLogin(providerId)
+  authTask = { "id" : "authTask" }
+  
+  expectedArgs = {
+    id: "authTask"
+    functionName: "execLoad"
+    client_type: providerId
+  }
+  
+  m.expectOnce(m.vm, "createTask", ["AuthTask", expectedArgs, "onRefreshLoginComplete", true, "isComplete"], authTask)
+  m.vm.providerId = providerId
+  
+  m.vm.refreshLogin()
+  
+  m.assertEqual(m.vm.authTask, authTask)
+  
+  m.assertFalse(m.vm.isContentGroupVisible)
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests onRefreshLoginComplete
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test success
+function onRefreshLoginComplete_success()
+  user = { "id" : "user", isLoggedIn: true }
+  m.expectOnce(m.vm, "getInstance", ["user"], user)
+  
+  m.vm.onRefreshLoginComplete({})
+
+  m.assertFalse(m.vm.isShowingLoadingIndicator)
+  m.assertEqual(m.vm.state, "success")
+  
+end function
+
+'@Test not valid
+function onRefreshLoginComplete_not_valid()
+  user = { "id" : "user", isLoggedIn: false }
+  m.expectOnce(m.vm, "getInstance", ["user"], user)
+  
+  m.vm.onRefreshLoginComplete({})
+
+  m.assertFalse(m.vm.isShowingLoadingIndicator)
+  m.assertNotEqual(m.vm.state, "success")
+  m.assertTrue(m.vm.isContentGroupVisible)
+  
+end function
+
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '@It tests onKeyPressBack
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

@@ -27,6 +27,7 @@ private authProviderId = ""
 private authTask = invalid
 private analytics = invalid 
 private providerAnalyticsName = ""
+private providerId = invalid
 
 public function new(riversJson)
   super(riversJson, "RegcodeLoginScreenVM")
@@ -35,8 +36,7 @@ public function new(riversJson)
   m.focusId = "refreshButton"
   '1. get auth provider id - firs
   m.processStyles(m.riversJson.styles)
-  m.providerAnalyticsName = riversJson. 
-
+  
   m.authProviderId = m.getAuthProviderId()
   if m.authProviderId = invalid
     m.isValid = false
@@ -77,7 +77,39 @@ override public function createContent()
 end function
 
 override public function load() as boolean
+  refreshLogin()
   return true
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ refresh
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+private function refreshLogin()
+  m.logInfo("calling authTask to refresh login")
+  
+  args = {
+    id: "authTask"
+    functionName: "execLoad"
+    client_type: m.providerId
+  }
+  m.authTask = m.createTask("AuthTask", args, "onRefreshLoginComplete", true, "isComplete")
+  
+  m.setField("isContentGroupVisible", false)
+end function
+
+
+private function onRefreshLoginComplete(result)
+  m.logMethod("onRefreshLoginComplete", result)
+  m.setField("isShowingLoadingIndicator", false)
+  
+  if m.getInstance("user").isLoggedIn
+    m.setField("state", "success")
+  else
+    m.setField("isContentGroupVisible", true)
+    
+  end if
+  
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -106,6 +138,7 @@ function processStyles(styles)
   logoSize = ViewUtils.makeUIBSize(styles, "logo", 350, 100)
   m.logoWidth = logoSize[0]
   m.logoHeight = logoSize[1]
+  m.providerId = MU.getContentField(styles, "provider_id", invalid)
   
 end function
 
@@ -132,6 +165,7 @@ public function onTimerFire(value)
     m.authTask = m.createTask("AuthTask", args, "onPollComplete", true, "isComplete")
   end if
 end function
+
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '++ Auth methods
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
