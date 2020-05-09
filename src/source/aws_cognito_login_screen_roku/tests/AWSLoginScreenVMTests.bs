@@ -431,3 +431,66 @@ function processLogin_integration_test_invalid()
   m.assertFalse(m.vm.isLoading)
   m.assertEqual(m.vm.errorText, "User does not exist.")
 end function
+
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests refreshLogin
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test 
+function refreshLogin()
+  authTask = { "id" : "authTask" }
+  expectedArgs = { id: "authTask"
+    functionName: "execLoad"
+    client_type: "aws_cognito_auth_plugin" 
+  }
+  
+  m.expectOnce(m.vm, "createTask", ["AuthTask", expectedArgs, "onRefreshComplete", true, "isComplete"], authTask)
+  
+  m.vm.refreshLogin()
+  
+  m.assertEqual(m.vm.authTask, authTask)
+  
+  m.assertTrue(m.vm.isRefreshing)
+  m.assertFalse(m.vm.isLoginButtonEnabled)
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests onRefreshComplete
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test sucess
+function onRefreshComplete()
+  user = { "id" : "user", isLoggedIn: true }
+  m.expectOnce(m.vm, "getInstance", ["user"], user)
+  
+  m.vm.isLoading = true
+  m.vm.isRefreshing = true
+
+  m.vm.onRefreshComplete({})
+
+  m.assertEqual(m.vm.state, "success")
+
+  m.assertFalse(m.vm.isRefreshing)
+  m.assertFalse(m.vm.isLoading)
+  
+end function
+
+
+'@Test failure
+function onRefreshComplete_failure()
+  user = { "id" : "user", isLoggedIn: false }
+  m.expectOnce(m.vm, "getInstance", ["user"], user)
+  m.vm.isLoading = true
+  m.vm.isRefreshing = true
+  m.vm.onRefreshComplete({})
+
+  m.assertNotEqual(m.vm.state, "success")
+
+  m.assertFalse(m.vm.isRefreshing)
+  m.assertFalse(m.vm.isLoading)
+  
+end function
+
+
+end namespace
