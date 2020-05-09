@@ -18,7 +18,7 @@ public function new(plugin)
   m.allowRegcode = true
   m.request = m.getClassInstance("RequestModule")
   m.JWTUtil = m.getClassInstance("JWTUtilModule")
-  m.uri = m.getClassInstance("URIModule")
+  m.uri = m.getClassInstance("UriModule")
   
   m.resourceID = plugin.getStringValue("resourceID", "")
   m.requestorID = plugin.getStringValue("requestorID", "")
@@ -27,7 +27,6 @@ public function new(plugin)
   m.base_url = plugin.getStringValue("base_url", "https://api.auth.adobe.com")
   
   m.constants = m.getInstance("constants")
-  
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

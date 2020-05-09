@@ -180,7 +180,6 @@ private function refreshLogin()
 end function
 
 private function onRefreshComplete(result)
-  result = m.authTask.result
   m.logMethod("onRefreshComplete", result)
   m.setField("isLoading", false)
   
