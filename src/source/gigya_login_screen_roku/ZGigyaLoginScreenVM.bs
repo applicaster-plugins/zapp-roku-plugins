@@ -1,44 +1,15 @@
 import "pkg:/source/UIBuilder/view/ZUIBScreenVM.bs"
 
-namespace OCGPSVM 
+namespace Applicaster.Gigya
 
 class ZGigyaLoginScreenVM extends ZUIBScreenVM
 
-public visibleContentId = "loginGroup"
-public currentRequest = invalid
-public isLoggedIn = false
-public accountInfo = invalid
-public baseUrl = ""
-public state = ""
-
-'style bindings
-public isSkipButtonVisible = false
-
-public regcodeText = ""
-public regcodePollTimerControl = "stop"
+public isContentVisible = false
+public isRefreshing = true
 
 public function new(riversJson)
   super(riversJson, "ZGigyaLoginScreenVM")
   m.focusId = "loginButton"
-  m.analyticsManager = m.getInstance("analyticsManager")
-  m.baseUrl = riversJson.general.base_url
-  m.setField("isSkipButtonVisible", riversJson.styles.is_skip_button_shown)
-  m.processStyles(m.riversJson.styles)
-end function
-
-
-public function processStyles(styles)
-  
-  m.backgroundColor = ViewUtils.transposeUIBColor(styles.background_color)
-  m.titleStyle = ViewUtils.makeUIBTextStyle(styles, "title")
-  m.regcodeTitleStyle = ViewUtils.makeUIBTextStyle(styles, "regcode_title")
-  m.regcodeStyle = ViewUtils.makeUIBTextStyle(styles, "regcode")
-  m.supportStyle = ViewUtils.makeUIBTextStyle(styles, "support")
-  m.gotoStyle = ViewUtils.makeUIBTextStyle(styles, "goto")
-  m.loginUrlStyle = ViewUtils.makeUIBTextStyle(styles, "login_url")
-  m.loginButtonStyle = ViewUtils.makeUIBButtonStyle(styles, "button", "center", styles.login_button_text)
-  m.skipButtonStyle = ViewUtils.makeUIBButtonStyle(styles, "button", "center", styles.skip_button_text)
-  
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -46,144 +17,88 @@ end function
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 override public function load() as boolean
+  isShown = m.getSessionStoreValue("gigya_login_screen_roku", "isShown")
+  if isShown <> invalid
+    m.dismiss("success")
+  else
+    m.setSessionStoreValue("gigya_login_screen_roku", "isShown", "true")
+    m.refreshLogin()
+  end if
   return true
+end function
+
+override public function createContent()
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '++ general impl
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-
-override public function createContent()
-  m.restoreAccount()
+private function refreshLogin()
+  m.logInfo("calling authTask to refresh login")
+  
+  m.authTask = m.createAuthTask("execLoad", "gigya_auth_plugin_roku", "onRefreshComplete")
+  
+  m.setField("isRefreshing", true)
+  m.setField("isContentVisible", false)
 end function
 
-public function showLoggedInScreen()
-  m.logInfo("login is complete, setting state to success")
-  m.setField("state", "success")
-  
-end function
-
-
-public function restoreAccount()
-  'TODO - this needs to become a bonafide auth provider, and
-  'therefore have it's auth restored by the auth manager
-  'it's currently coupled to the view - this can be revisted later
-  m.logInfo("restoreAccount")
-  m.accountInfo = m.getLocalStoreValue("account_info", "Gigya", true)
-  m.logInfo("raw stored accountinfo is", m.accountInfo)
-  
-  if m.accountInfo <> invalid 
-    m.logInfo("there is an account stored for this device")
-    m.analyticsManager@.identify("Gigya")
-    m.analyticsManager@.trackEvent("Login Succesful", "page_loaded", { "provider": "gigya_login_screen_roku" })
-    
-    m.showLoggedInScreen()
-  else if m.isSkipButtonVisible
-    isShown = m.getLocalStoreValue("gigya_login_popup", "is_login_screen_shown")
-    
-    if isShown <> invalid
-      m.logInfo("could not restore; but we've already shown the login screen before")
-      m.showLoggedInScreen()
-      
-    else
-      
-      m.logInfo("will skip showing login screen again")
-      m.setLocalStoreValue("gigya_login_popup", "is_login_screen_shown", "true", true)
-    end if
-  end if
-  
-  
-end function
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'++ RequestCode management
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-public function cancelRequests()
-  m.cancelNetworkRequest(m.currentRequest)
+private function onRefreshComplete(result)
+  m.logMethod("onRefreshComplete", result)
   m.setField("isLoading", false)
-end function
-
-public function requestCode()
-  m.logInfo("requesting new access code")
-  m.cancelRequests()
-  constants = m.getInstance("constants")
-  url = m.baseUrl + "CreateDevice"
   
-  params = {
-    "deviceId": constants.applicasterdeviceid
-  }
-  
-  m.currentRequest = m.executeUrlRequest("regcode", url, "onRegCodeResponse", params, "POST")
-  m.setField("isLoading", true)
-end function
-
-public function onRegCodeResponse(response)
-  m.cancelRequests()
-  
-  if response.isOK and response.data <> invalid and response.data.devicePinCode <> invalid
-    m.logInfo("succesfully got code", response.data.devicePinCode, "starting code timer")
-    m.setField("regcodeText", response.data.devicePinCode)
-    m.setField("regcodePollTimerControl", "start")
-    m.regcodeInfo = response.data
-  else
-    m.setField("regcodePollTimerControl", "stop")
-    m.setField("regcodeText", "")
+  if m.getInstance("user").isLoggedIn
+    analytics = m.getInstance("analyticsManager")
+    analytics@.identify("gigya_login_screen_roku")
+    analytics@.trackEvent("Login Succesful", "page_loaded", { "provider": "gigya_login_screen_roku" })
+    
+    m.dismiss("success")
   end if
   
+  m.setField("isRefreshing", false)
+  m.setField("isContentVisible", true)
 end function
 
-public function onRegcodePollTimerFire(value)
-  m.logInfo("onRegcodePollTimerFire")
-  m.cancelRequests()
-  url = m.baseUrl + "GetDeviceByPin/" + m.regcodeInfo.devicePinCode
+private function showLoginScreen()
+  screen = m.getScreen(m.riversJson.styles.login_screen)
   
-  m.currentRequest = m.executeUrlRequest("poll", url, "onPollResponse")
-end function
-
-public function onPollResponse(response)
-  m.cancelRequests()
-  
-  if response.isOK and response.data <> invalid
+  if screen <> invalid
+    m.logInfo("found login screen, displaying now")
+    m.push(screen)
+    m.setFocus(screen)
+    m.bindNodeField(screen, "state", "onLoginScreenStateChange", MOM.createBindingProperties(false))
     
-    if response.data.access_token <> invalid
-      m.setField("regcodePollTimerControl", "stop")
-      m.logInfo("succesfully logged in - storing creds", response.data)
-      m.accountInfo = response.data
-      m.isLoggedIn = true
-      m.showLoggedInScreen()
-      
-      m.setLocalStoreValue("account_info", "Gigya", formatJson(m.accountInfo), true)
-      m.analyticsManager@.identify("Gigya")
-      m.analyticsManager@.trackEvent("Login Succesful", "page_loaded", { "provider": "gigya_login_screen_roku" })
-    else if response.data.ErrorCode = 4
-      m.logInfo("token has expired - re-requesting")
-      m.setField("regcodePollTimerControl", "stop")
-      m.requestCode()
+  else
+    m.logError("could not get the screen for", m.riversJson.styles.login_screen)
+  end if
+end function
+
+public function onLoginScreenStateChange(state)
+  
+  if state = "success" or state = "cancel" or state = "error"
+    m.logInfo("screenHook screen requested to finished with state: ", state)
+    
+    if state = "success"
+      m.logInfo("login completed!")
+      m.setField("state", "success")
+    else
+      m.setFocusId("loginButton")
     end if
     
-  else
-    m.isLoggedIn = false
-    m.accountInfo = invalid
   end if
 end function
-
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '++ Callback
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 public function onLoginButtonSelected(value)
-  m.logInfo("starting regcode selected")
-  m.setFocusId("regcodeGroup")
-  m.setField("visibleContentId", "regcodeGroup")
-  m.requestCode()
+  m.showLoginScreen()
 end function
 
 public function onSkipButtonSelected(value)
-  m.logInfo("selected skip")
-  m.setField("state", "success")
+  m.logMethod("onSkipButtonSelected")
+  m.dismiss("success")
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -191,21 +106,9 @@ end function
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 public function onKeyPressBack()
-  m.logInfo("on key press back")
-  
-  if m.visibleContentId = "regcodeGroup"
-    m.setField("regcodePollTimerControl", "stop")
-    m.setField("visibleContentId", "loginGroup")
-    m.setField("focusId", "loginButton")
-    m.cancelRequests()
-    return true
-  else 
-    m.logInfo("cancelling")
-    m.cancelRequests()
-    m.dismiss("cancel")
-    return true
-    
-  end if
+  m.logMethod("onKeyPressBack")
+  m.dismiss("cancel")
+  return true
 end function
 
 public function isCapturingAnyKeyPress(key, press)
@@ -214,12 +117,12 @@ end function
 
 public function onKeyPressDown()
   if m.isSkipButtonVisible
-    m.setField("focusId", "skipButton")
+    m.setFocusId("skipButton")
   end if
 end function
 
 override public function onKeyPressUp()
-  m.setField("focusId", "loginButton")
+  m.setFocusId("loginButton")
 end function
 
 end class

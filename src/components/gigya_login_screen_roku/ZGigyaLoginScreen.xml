@@ -1,103 +1,52 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version='1.0' encoding='utf-8' ?>
 <component
-    name="ZGigyaLoginScreen"
-    extends="ZUIBScreen">
+    name='ZGigyaLoginScreen'
+    extends='ZUIBScreen'>
 
   <interface>
-    <field
-        id="_debugLogin"
-        type="boolean"
-        value="{(vm.onDebugLoginChange, isSettingInitialValue=false)}" />
   </interface>
 
   <children>
-    <Timer
-        id="regcodeTimer"
-        duration="10"
-        repeat="true"
-        control="{{vm.regcodePollTimerControl}}"
-        fire="{(vm.onRegcodePollTimerFire, isSettingInitialValue=false)}" />
     <Rectangle
-        id="backgroundRect"
-        width="1920"
-        height="1080"
-        color="{{:vm.backgroundColor}}" />
+        id='backgroundRectangle'
+        width='1920'
+        height='1080'
+        color='{{=ViewUtils_UIBColor("background_color")}}' />
+    <ZPoster
+        id='backgroundImage'
+        style='{{=ViewUtils_UIBPoster("poster")}}'
+        loadDisplayMode='scaleToFill'
+        loadWidth='1920'
+        loadHeight='1080'
+        width='1920'
+        height='1080' />
+
     <!-- account not signed in -->
     <Group
-        id="loginGroup"
-        translation="[0,0]">
+        id='conentGroup'
+        visible='{{vm.isContentVisible}}'
+        translation='[0,0]'>
       <MLabel
-          id="titleText"
-          style="{{:vm.titleStyle}}"
-          horizAlign="center"
-          vertAlign="top"
-          width="1920"
-          wrap="true"
-          systemFont="MediumBold,40"
-          color="#545A5C"
-          translation="[0,353]" />
+          id='title'
+          style='{{=ViewUtils_UIBLabel("title")}}' />
       <ZActionButton
-          id="loginButton"
-          translation="[635,719]"
-          buttonType="center"
-          width="650"
-          selected="{(vm.onLoginButtonSelected, isSettingInitialValue=false)}"
-          style="{{:vm.loginButtonStyle}}" />
+          id='loginButton'
+          style='{{=ViewUtils_UIBButton("login_button")}}'
+          selected='{(vm.isSettingInitialValue=false)}' />
       <ZActionButton
-          id="skipButton"
-          translation="[660,822]"
-          width="600"
-          buttonType="center"
-          visible="{{:vm.isSkipButtonVisible}}"
-          selected="{(vm.onSkipButtonSelected, isSettingInitialValue=false)}"
-          style="{{:vm.skipButtonStyle}}" />
+          id='skipButton'
+          style='{{=ViewUtils_UIBButton("skip_button")}}'
+          selected='{(vm.isSettingInitialValue=false)}' />
     </Group>
 
-    <!-- regcode -->
-    <Group id="regcodeGroup">
-      <Rectangle
-          color="#dddddd"
-          width="300"
-          height="300"
-          translation="[136,246]" />
-      <MLabel
-          id="regcodeTitleLabel"
-          translation="[510,250]"
-          systemFont="MediumBold,40"
-          style="{{:vm.regcodeTitleStyle}}"
-          color="#545A5C" />
-      <MLabel
-          id="gotoLabel"
-          style="{{:vm.gotoStyle}}"
-          translation="[458,420]"
-          systemFont="Medium,34"
-          color="#545A5C" />
-      <MLabel
-          id="urlLabel"
-          translation="[458,457]"
-          systemFont="MediumBold,34"
-          style="{{:vm.loiginUrlStyle}}"
-          color="#545A5C" />
-      <MLabel
-          id="activationLabel"
-          translation="[458,576]"
-          text="{{vm.activationText}}"
-          systemFont="Medium,34"
-          color="#545A5C" />
-      <MLabel
-          id="codeLabel"
-          translation="[458,632]"
-          text="{{vm.regcodeText}}"
-          style="{{:vm.regcodeStyle}}"
-          systemFont="LargeBold,120"
-          color="#545A5C" />
+    <LoadingIndicator
+        id='refreshLoadingIndicator'
+        width='1920'
+        height='1080'
+        translation='[0,0]'
+        isActive='{{vm.isRefreshing, isSettingInitialValue=true}}'
+        backgroundVisible='false'
+        text='' />
 
-      <MLabel
-          id="supportLabel"
-          translation="[476,878]"
-          color="#545A5C"
-          systemFont="MediumBold,27"
-          style="{{:vm.supportStyle}}" />
-    </Group>
   </children>
 </component>

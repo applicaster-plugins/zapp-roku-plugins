@@ -8,7 +8,6 @@ function init()
   m.top.isConsumingOriginEntry = true
   m.top.isForcingMenuHidden = true
   M_createNodeVars()
-  m.groupNames = ["loginGroup", "regcodeGroup"]
   
 end function
 
@@ -26,18 +25,4 @@ end function
 
 function createVM()
   return new ZGigyaLoginScreenVM(m.top.riversJson)
-end function
-
-function initializeVMBindings()
-  logMethod("initializeVMBindings")
-  
-  MOM_observeField(m.vm, "visibleContentId", onVisibleContentIdChange)
-  
-end function
-
-function onVisibleContentIdChange(visibleContentId)
-  logInfo("onVisibleContentIdChange", visibleContentId)
-  for each groupName in m.groupNames
-    m[groupName].visible = groupName = visibleContentId
-  end for
 end function
