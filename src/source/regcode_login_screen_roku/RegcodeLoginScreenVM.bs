@@ -23,22 +23,20 @@ public logoWidth = 350
 public logoHeight = 100
 public logoImageUrl = ""
 
-private authProviderId = ""
 private authTask = invalid
-private analytics = invalid 
-private providerAnalyticsName = ""
+private analyticsManager = invalid 
 private providerId = invalid
 
 public function new(riversJson)
   super(riversJson, "RegcodeLoginScreenVM")
-  m.analytics = m.getInstance("AnalyticsManager")
+  m.analyticsManager = m.getInstance("analyticsManager")
   
   m.focusId = "refreshButton"
   '1. get auth provider id - firs
   m.processStyles(m.riversJson.styles)
   
-  m.authProviderId = m.getAuthProviderId()
-  if m.authProviderId = invalid
+  m.providerId = m.getAuthProviderId()
+  if m.providerId = invalid
     m.isValid = false
     m.titleText = "No auth provider found that. Make sure you have specified at least one auth provider"
     m.logError(titleText)
@@ -88,12 +86,7 @@ end function
 private function refreshLogin()
   m.logInfo("calling authTask to refresh login")
   
-  args = {
-    id: "authTask"
-    functionName: "execLoad"
-    client_type: m.providerId
-  }
-  m.authTask = m.createTask("AuthTask", args, "onRefreshLoginComplete", true, "isComplete")
+  m.authTask = m.createAuthTask("execLoad", m.providerId, "onRefreshLoginComplete")
   
   m.setField("isContentGroupVisible", false)
 end function
@@ -156,13 +149,7 @@ public function onTimerFire(value)
   
   if value 
     m.cancelTask(m.authTask)
-    args = {
-      id: "authTask"
-      functionName: "execPoll"
-      client_type: m.authProviderId
-    }
-    
-    m.authTask = m.createTask("AuthTask", args, "onPollComplete", true, "isComplete")
+    m.authTask = m.createAuthTask("execPoll", m.providerId, "onPollComplete")
   end if
 end function
 
@@ -176,13 +163,7 @@ private function loadCode()
   m.toggleCheckAuthTimer(false)
   m.cancelTask(m.authTask)
   
-  args = {
-    id: "authTask"
-    functionName: "execRegcode"
-    client_type: m.authProviderId
-  }
-  
-  m.authTask = m.createTask("AuthTask", args, "onLoadCodeComplete", true, "isComplete")
+  m.authTask = m.createAuthTask("execRegcode", m.providerId, "onLoadCodeComplete")
   
   m.setField("isRefreshing", true)
   m.setField("isShowingLoadingIndicator", true)
@@ -220,7 +201,7 @@ private function onPollComplete(result)
   if result = invalid or result.state <> "valid"
     m.toggleCheckAuthTimer(true)
   else
-    m.anlytics@.trackEvent("Adobe Login Succesful", "page_loaded")
+    m.anlytics@.trackEvent("Login Succesful", "page_loaded", {"provider": m.providerId})
     m.dismiss("success")
   end if
   
@@ -245,5 +226,13 @@ override public function onKeyPressUp() as boolean
   return true
 end function
 
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ lifecycle
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+override function onFirstShow()
+  super.onFirstShow()
+  m.analyticsManager@.trackEvent("Waiting Page", "page_loaded", { "Provider": m.providerId })
+end function
 end class
 end namespace

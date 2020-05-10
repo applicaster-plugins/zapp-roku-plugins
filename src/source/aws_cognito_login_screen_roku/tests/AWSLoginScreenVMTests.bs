@@ -333,13 +333,7 @@ function processLogin_valid_creds()
   authTask = { "id": "authTask" }
   creds = { "id": "creds" }
   
-  args = {
-    id: "authTask"
-    functionName: "execLogIn"
-    client_type: "aws_cognito_auth_plugin"
-    credentials: creds
-  }
-  m.expectOnce(m.vm, "createTask", ["AuthTask", args, "onLoginComplete", true, "isComplete"], authTask)
+  m.expectOnce(m.vm, "createAuthTask", ["execLogIn", "aws_cognito_auth_plugin", "onLoginComplete", creds], authTask)
   m.expectOnce(m.vm, "createInstance", ["AuthenticationCredentials"], creds)
   
   m.vm.processLogin()
@@ -440,12 +434,8 @@ end function
 '@Test 
 function refreshLogin()
   authTask = { "id" : "authTask" }
-  expectedArgs = { id: "authTask"
-    functionName: "execLoad"
-    client_type: "aws_cognito_auth_plugin" 
-  }
   
-  m.expectOnce(m.vm, "createTask", ["AuthTask", expectedArgs, "onRefreshComplete", true, "isComplete"], authTask)
+  m.expectOnce(m.vm, "createAuthTask", ["execLoad", "aws_cognito_auth_plugin", "onRefreshComplete"], authTask)
   
   m.vm.refreshLogin()
   

@@ -168,12 +168,7 @@ end function
 private function refreshLogin()
   m.logInfo("calling authTask to refresh login")
   
-  args = {
-    id: "authTask"
-    functionName: "execLoad"
-    client_type: "aws_cognito_auth_plugin"
-  }
-  m.authTask = m.createTask("AuthTask", args, "onRefreshComplete", true, "isComplete")
+  m.authTask = m.createAuthTask("execLoad", "aws_cognito_auth_plugin", "onRefreshComplete")
   
   m.setField("isRefreshing", true)
   m.setField("isLoginButtonEnabled", false)
@@ -207,13 +202,7 @@ public function processLogin()
     creds = m.createInstance("AuthenticationCredentials")
     creds.username = m.usernameText
     creds.password = m.password
-    args = {
-      id: "authTask"
-      functionName: "execLogIn"
-      client_type: "aws_cognito_auth_plugin"
-      credentials: creds
-    }
-    m.authTask = m.createTask("AuthTask", args, "onLoginComplete", true, "isComplete")
+    m.authTask = m.createAuthTask("execLogIn", "aws_cognito_auth_plugin", "onLoginComplete", creds)
     
     m.setField("isLoginButtonEnabled", false)
     

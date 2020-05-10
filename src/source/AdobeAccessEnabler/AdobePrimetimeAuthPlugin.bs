@@ -15,7 +15,7 @@ private base_url = ""
 
 public function new(plugin)
   super("AdobePrimetime", plugin) 
-  m.allowRegcode = true
+  m.isTokenUsableWithDSP = true
   m.request = m.getClassInstance("RequestModule")
   m.JWTUtil = m.getClassInstance("JWTUtilModule")
   m.uri = m.getClassInstance("UriModule")
@@ -33,19 +33,24 @@ end function
 '++ overridden
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+override public function _getAccountInfo()
+  'FIXME - verify these values
+  return {
+    id: "not known yet"
+    email: "anonymous@anon.com"
+    username: "anonymous"
+  }
+end function
+
+
 override public function _verify()
   ' We don't need the token for the AuthZ calls, but we
   ' do a simple local verification just to make sure AuthN completed
-  if m.authData <> invalid and MU.isString(m.authData.token)
-    parsed = ParseJSON(m.authData.token)
-    
-    if parsed <> invalid and parsed.expires <> invalid and parsed.expires <> ""
-      return m.getAuthorization()
-    end if
-    
+  
+  if not m.isAuthDataExpired()
+    return m.getAuthorization()
   end if
-  ' Here if the local token is invalid.  Don't treat it as an error,
-  ' rather just as if there was not a valid token
+  
   return m.createErrorResult("Invalid token for verification")
 end function
 
@@ -71,20 +76,19 @@ override public function _regcode()
   if result <> invalid and result <> "" then
     parsed = ParseJSON(result)
     if parsed <> invalid and parsed.code <> invalid and parsed.code <> ""
-      result = {
-        "regcode": parsed.code
-        "state": "none"
-        "code": 0
-        "message": ""
-      }
+      
       if type(request.urlevent) = "roUrlEvent"
-        result.code = request.urlevent.getResponseCode()
+        errorCode = request.urlevent.getResponseCode()
+      else 
+        errorCode = 0
       end if
-      return result
+      
+      return m.createRegCodeResult(parsed.code, errorCode)
     end if
   end if
-  request.print("ERROR: regcode")
-  return m.createErrorResult("Unknown error")
+  
+  m.logError("Error retrieving regcode")
+  return m.createRegCodeResult(invalid, - 1, "Unknown error")
 end function
 
 override public function _poll()
@@ -154,16 +158,12 @@ override public function _logOut()
   url = m.base_url + requestPath + "?" + m.uri.encodeParams(params)
   request = m.request.createRequest(url, options)
   result = request.start(true)
+  
   if request.response = invalid or request.response.code = invalid or request.response.code <> 204
-    request.print("ERROR: logout")
+    m.logError("error logging out")
   end if
-  return {
-    "jwt": invalid
-    "token": invalid
-    "state": "none"
-    "code": 0
-    "message": ""
-  }
+  
+  return m.createAuthData()
 end function
 
 
@@ -213,8 +213,15 @@ private function getAuthorization()
         "message": ""
       }
       if type(request.urlevent) = "roUrlEvent"
-        token.code = request.urlevent.getResponseCode()
+        errorCode = request.urlevent.getResponseCode()
+      else
+        errorCode = 0
       end if
+      
+      'TODO - double check these values
+      'Especially result and if we need to manipulate parsed.expires
+      return m.createAuthData("valid", result, result, result, result, parsed.expires, errorCode)
+      
       return token
     end if
   end if
@@ -268,7 +275,7 @@ private function getResourceText(content = invalid)
     if selection <> invalid
       content = selection.currentItem
     end if
-
+    
     m.logInfo(">>>> using content", content)
   end if
   

@@ -78,16 +78,9 @@ end function
 function logout()
   'later on we can specify client_type, via a style property
   if m.providerId = invalid
-    args = {
-      id: "authTask"
-      functionName: "execLogOutAll"
-    }
+    m.authTask = m.createAuthTask("execLogOutAll", invalid, "onLogoutComplete")
   else
-    args = {
-      id: "authTask"
-      functionName: "execLogOut"
-      client_type: m.providerId
-    }
+    m.authTask = m.createAuthTask("execLogOut", m.providerId, "onLogoutComplete")
   end if
   
   m.authTask = m.createTask("AuthTask", args, "onLogoutComplete", true, "isComplete")
@@ -100,7 +93,7 @@ function logout()
   m.isLoggedOut = true
   m.setField("isShowingLoadingIndicator", true)
   m.setField("isButtonVisible", false)
-  analyticsManager = m.getInstance("AnalyticsManager")
+  analyticsManager = m.getInstance("analyticsManager")
   analyticsManager@.trackEvent("Signed Out", "page_loaded", { "provider": defaultId })
   
 end function

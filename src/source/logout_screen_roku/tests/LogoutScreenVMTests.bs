@@ -71,8 +71,7 @@ end function
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 '@Test all providers 
-'@Params[invalid, { id: "authTask", functionName: "execLogOutAll"}]
-function logout(providerId, expectedArgs)
+function logout()
   authTask = { "id" : "authTask" }
   
   analyticsManager = { "id" : "analyticsManager" }
@@ -80,9 +79,9 @@ function logout(providerId, expectedArgs)
   
   m.expectOnce(m.vm, "getSessionStoreValue", ["all_zapp_pipes_providers", "default_auth_plugin_id"], "AdobeAccessEnabler")
   
-  m.expectOnce(m.vm, "getInstance", ["AnalyticsManager"], analyticsManager)
+  m.expectOnce(m.vm, "getInstance", ["analyticsManager"], analyticsManager)
   
-  m.expectOnce(m.vm, "createTask", ["AuthTask", expectedArgs, "onLogoutComplete", true, "isComplete"], authTask)
+  m.expectOnce(m.vm, "createAuthTask", ["execLogOutAll", invalid, "onLogoutComplete"], authTask)
   m.vm.providerId = providerid
 
   m.vm.logout()
@@ -95,9 +94,9 @@ function logout(providerId, expectedArgs)
 end function
 
 '@Test specific providers
-'@Params["id1", { id: "authTask", functionName: "execLogOut", client_type: "id1"}]
-'@Params["id2", { id: "authTask", functionName: "execLogOut", client_type: "id2"}]
-function logout_specific_provider(providerId, expectedArgs)
+'@Params["id1"]
+'@Params["id2"]
+function logout_specific_provider(providerId)
   authTask = { "id" : "authTask" }
   
   analyticsManager = { "id" : "analyticsManager" }
@@ -105,9 +104,9 @@ function logout_specific_provider(providerId, expectedArgs)
   
   m.expectNone(m.vm, "getSessionStoreValue")
   
-  m.expectOnce(m.vm, "getInstance", ["AnalyticsManager"], analyticsManager)
+  m.expectOnce(m.vm, "getInstance", ["analyticsManager"], analyticsManager)
   
-  m.expectOnce(m.vm, "createTask", ["AuthTask", expectedArgs, "onLogoutComplete", true, "isComplete"], authTask)
+  m.expectOnce(m.vm, "createAUthTask", ["execLogOut", providerId, "onLogoutComplete"], authTask)
   m.vm.providerId = providerid
 
   m.vm.logout()

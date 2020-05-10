@@ -38,13 +38,7 @@ end function
 function refreshLogin(providerId)
   authTask = { "id" : "authTask" }
   
-  expectedArgs = {
-    id: "authTask"
-    functionName: "execLoad"
-    client_type: providerId
-  }
-  
-  m.expectOnce(m.vm, "createTask", ["AuthTask", expectedArgs, "onRefreshLoginComplete", true, "isComplete"], authTask)
+  m.expectOnce(m.vm, "createAuthTask", ["execLoad", providerId, "onRefreshLoginComplete"], authTask)
   m.vm.providerId = providerId
   
   m.vm.refreshLogin()
