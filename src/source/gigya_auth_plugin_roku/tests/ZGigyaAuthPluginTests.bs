@@ -1,0 +1,180 @@
+'@Only
+'@TestSuite [ZGAPLT] ZGigyaAuthPluginTests
+namespace Applicaster.Authentication.GigyaTests
+
+'@BeforeEach
+function beforeEach()
+  m.riversJson = {
+    "id": "myAccount"
+  }
+  pluginConfiguration = {
+    "identifier": "aws_cognito_auth_plugin",
+    "configuration_json": { "base_url": "host/" }
+  }
+  
+  m.request = { "id" : "request" }
+  
+  plugin = new BasePlugin(pluginConfiguration)
+  
+  m.plugin = new ZGigyaAuthPlugin(plugin)
+  m.plugin.request = m.request
+  m.analyticsManager = { "id" : "analyticsManager" }
+end function
+
+'@AfterEach
+function afterEach()
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests constructor
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test
+function constructor()
+  pluginConfiguration = {
+    "identifier": "aws_cognito_auth_plugin",
+    "configuration_json": { "base_url": "host/" }
+  }
+  
+  plugin = new BasePlugin(pluginConfiguration)
+  
+  m.plugin = new ZGigyaAuthPlugin(plugin)
+  
+  m.assertEqual(m.plugin.baseUrl, "host/")
+  m.assertNotInvalid(m.plugin.request)
+  m.assertEqual(m.plugin.request.__classname, "RequestModule")
+end function
+
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests _getAcountInfo
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test _getAccountInfo
+function _getAccountInfo()
+  m.plugin.authData = {
+    "rawAuthData": {
+      "uid": "id"
+    }
+  }
+  m.assertEqual(m.plugin._getAccountInfo(), {
+    "id": "id"
+    "email": "anonymous@anon.com"
+    "username": "anonymous"
+  })
+end function
+
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests _verify
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@Test invalid token
+function _verify_has_invalid_token()
+  m.expectOnce(m.plugin, "isAuthDataExpired", [], true)
+  
+  result = m.plugin._verify()
+  m.assertNotEmpty(result)
+  
+  m.assertEqual(result.state, "error")
+end function
+
+'@Test has_token_not_valid
+function _verify_has_token_valid()
+  
+  m.expectOnce(m.plugin, "isAuthDataExpired", [], true)
+  
+  
+  m.plugin.authData = { "id" : "authData" }
+  result = m.plugin._verify()
+  
+  m.assertEqual(result, m.plugin.authData)
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests poll
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+'@Test valid resposne
+function onPollResponse_valid()
+  m.expectOnce(m.plugin, "getSessionStoreValue", [m.plugin.id, "regcode"], "pin")
+  
+  response = {
+    isOK: true
+    data: {
+      access_token: "t"
+      firstname: "#firstname"
+    }
+  }
+  m.expectOnce(m.plugin.request, "getJsonSync", ["host/GetDeviceByPin/pin"], response)
+  
+  m.expectOnce(m.plugin, "createAuthData", ["valid", "t", "t", "t", response.data, 99999])
+  
+  m.plugin._poll()
+  
+end function
+
+
+'@Test invalid invalid - no data
+'@Params[{"isOK": false}]
+'@Params[{"isOK": true}]
+'@Params[{"isOK": true, "data": invalid}]
+function onPollResponse_invalid(response)
+  m.expectOnce(m.plugin, "getSessionStoreValue", [m.plugin.id, "regcode"], "pin")
+  m.expectOnce(m.plugin.request, "getJsonSync", ["host/GetDeviceByPin/pin"], response)
+  
+  m.expectOnce(m.plugin, "createErrorResult", ["could not complete poll"])
+  
+  m.plugin._poll()
+end function
+
+'@Test invalid invalid - with data
+'@Params[{"isOK": false}]
+'@Params[{"isOK": true}]
+'@Params[{"isOK": true, "data": {"ErrorCode", "e"}}]
+function onPollResponse_invalid_with_data(response)
+  m.expectOnce(m.plugin, "getSessionStoreValue", [m.plugin.id, "regcode"], "pin")
+  m.expectOnce(m.plugin.request, "getJsonSync", ["host/GetDeviceByPin/pin"], response)
+  
+  m.expectOnce(m.plugin, "createErrorResult", ["could not complete poll", e])
+  
+  m.plugin._poll()
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests logout
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+'@Test valid resposne
+function onLogout()
+  m.plugin.authData = {
+    "access_token": "at"
+  }
+  requestModule = { "id" : "request" }
+  response = { "id" : "response" }
+  m.expectOnce(requestModule, "start", [true], response)
+  
+  expectedArgs = { 
+    "body": formatJson({ 
+      "access_token": "at" 
+    })
+    "headers": { 
+      "Accept": "application/json" 
+    }
+    "method": "POST"
+  }
+  
+  m.expectOnce(m.plugin.request, "createRequest", ["host/Logout", expectedArgs], requestModule)
+  
+  m.expectOnce(m.plugin, "createAuthData", [])
+  
+  m.plugin._logOut()
+  
+end function
+
+
+
+
+end namespace

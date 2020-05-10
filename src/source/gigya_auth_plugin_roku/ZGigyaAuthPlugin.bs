@@ -1,0 +1,102 @@
+import "pkg:/source/authorization/BaseAuthPlugin.bs" 
+import "pkg:/source/lib/request.bs" 
+import "pkg:/source/lib/uri.bs" 
+import "pkg:/source/authorization/JWTUtil.bs"
+
+import "pkg:/source/authorization/BaseAuthPlugin.bs" 
+
+namespace Applicaster.Authentication.Gigya
+
+class ZGigyaAuthPlugin extends BaseAuthPlugin
+
+public baseUrl = ""
+
+public function new(plugin)
+  super("ZGigyaAuthPlugin", plugin)
+  m.baseUrl = plugin.getStringValue("base_url")
+  m.request = m.getClassInstance("RequestModule")
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Overridden
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+override public function _getAccountInfo()
+  'FIXME - verify these values
+  return {
+    id: m.authData.rawAuthData.uid
+    email: "anonymous@anon.com"
+    username: "anonymous"
+  }
+end function
+
+override public function _verify()
+  m.logMethod("_verify")
+  
+  if not m.isAuthDataExpired()
+    return m.authData
+  end if
+  
+  return m.createErrorResult("Invalid token for verification")
+end function
+
+override public function _regcode()
+  m.logMethod("_regcode")
+  
+  constants = m.getInstance("constants")
+  url = m.baseUrl + "CreateDevice"
+  
+  params = { "deviceId": constants.applicasterdeviceid }
+  headers = { "Accept": "application/json" }
+  request = request.createRequest(url, { method: "POST", body: formatJson(params), headers: headers })
+  response = request.start(true)
+  
+  if response.isOK and response.data <> invalid and response.data.devicePinCode <> invalid
+    m.logInfo("succesfully got code", response.data.devicePinCode, "starting code timer")
+    return m.createRegCodeResult(response.data.devicePinCode)
+  else
+    return m.createRegCodeResult(invalid, - 1, "could not retrieve regcode")
+  end if
+  
+end function
+
+override public function _poll()
+  m.logMethod("_poll")
+  pinCode = m.getSessionStoreValue(m.id, "regcode")
+  url = m.baseUrl + "GetDeviceByPin/" + pinCode
+  response = m.request.getJsonSync(url)
+  
+  if response.isOK and response.data <> invalid
+    
+    if response.data.access_token <> invalid
+      token = response.data.access_token
+      expiresIn = 99999 ' TODO where do we get this from?
+      'TODO - double check these values
+      'Especially result and if we need to manipulate parsed.expires
+      return m.createAuthData("valid", token, token, token, response.data, expiresIn)
+    else 
+      return m.createErrorResult("could not complete poll", response.data.ErrorCode)
+    end if
+  end if
+  
+  return m.createErrorResult("could not complete poll")
+end function
+
+override public function _logOut()
+  m.logMethod("_logOut")
+  
+  url = m.baseUrl + "Logout"
+  
+  params = { "access_token": m.authData.access_token }
+  headers = { "Accept": "application/json" }
+  request = m.request.createRequest(url, { method: "POST", body: formatJson(params), headers: headers })
+  response = request.start(true)
+  
+  if request.response = invalid or request.response.code = invalid or request.response.code <> 204
+    m.logError("error logging out")
+  end if
+  
+  return m.createAuthData()
+end function
+end class
+end namespace
