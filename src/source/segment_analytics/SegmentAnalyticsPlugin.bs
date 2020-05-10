@@ -36,10 +36,6 @@ override public function start()
   }
   
   m.library.init(config)
-  
-  'we only support hardocded support for gygya right now
-  'TODO add other account types
-  m.identify("Gigya")
 end function
 
 override private function mapPropertyValues(properties)
@@ -47,16 +43,17 @@ override private function mapPropertyValues(properties)
   return properties
 end function
 
-override public function _identify(plugin = "Gigya", traits = {}, options = {})
-  m.logInfo("identify", plugin)
+override public function _identify(pluginId, traits = {}, options = {})
+  m.logInfo("identify", pluginId)
   
-  m.defaultOptions = m.getDefaultOptions()
-  m.defaultProperties = m.getDefaultProperties()
   if m.isEnabled and not m.isIdentified
     
-    accountInfo = m.getLocalStoreValue("account_info", plugin, true)
+    accountInfo = m.getSeessionStoreValue(pluginId, "account", true)
     
     if accountInfo <> invalid 
+      m.defaultOptions = m.getDefaultOptions()
+      options.append(m.defaultOptions)
+      
       m.logInfo("identifying analytics with the userId", accountInfo.uid, "for plugin:", plugin)
       m.library.identify(accountInfo.uid, traits, options)
       m.isIdentified = true
@@ -66,10 +63,11 @@ override public function _identify(plugin = "Gigya", traits = {}, options = {})
   end if 
 end function
 
-override public function _unidentify(plugin = "Gigya")
+override public function _unidentify(pluginId)
   m.isIdentified = false
   m.defaultOptions = m.getDefaultOptions()
   m.defaultProperties = m.getDefaultProperties()
+  m.logWarn("segment does not have an unidentify api, so we idenitfy as anonymous")
   m.library.identify("anonymous", m.defaultOptions, m.defaultProperties)
 end function
 
@@ -135,15 +133,12 @@ end function
 
 private function getDefaultProperties()
   
-  'these values are set in the plugin for now; in future we will have a 
-  'mechanism to map these
-  accountInfo = m.getLocalStoreValue("account_info", "Gigya", true)
+  accountInfo = m.getSessionStoreValue("gigya_auth_plugin_roku", "account", true)
   properties = {
     user_email: "anonymous"
     user_name: "anonymous"
     applicaster_device_id: m.applicasterDeviceId
     platform: "roku"
-    
   }
   
   if accountInfo <> invalid 
@@ -152,7 +147,7 @@ private function getDefaultProperties()
     properties.user_gigya_id = "anonymous"
   end if
   
-  primetimeAccountInfo = m.getLocalStoreValue("account_info", "AdobeAccessEnabler", true)
+  primetimeAccountInfo = m.getLocalStoreValue("AdobeAccessEnabler", "account", true)
   if primetimeAccountInfo <> invalid 
     'FIXME
     properties.user_adobe_id = primetimeAccountInfo.uid
