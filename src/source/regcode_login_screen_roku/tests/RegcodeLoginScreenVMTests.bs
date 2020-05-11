@@ -1,4 +1,3 @@
-'@Only
 '@TestSuite [RCLSVMT] RegcodeLoginScreenVM Tests
 namespace Applicaster.Authentication.RegcodeLoginScreenVMTests
 
