@@ -1,3 +1,4 @@
+'@Only
 '@TestSuite [RCLSVMT] RegcodeLoginScreenVM Tests
 namespace Applicaster.Authentication.RegcodeLoginScreenVMTests
 
@@ -25,6 +26,55 @@ end function
 function afterEach()
   m.global.delete("zapp")
   TU.unsetModelLocator()
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests load
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test not showing
+function load_no_show()
+  currentSelection = { "id" : "currentSelection" }
+  
+  m.expectOnce(m.vm, "getInstance", ["currentSelection"], currentSelection)
+  m.expectOnce(m.vm, "shouldDisplayWithContent", [currentSelection], false)
+  m.expectOnce(m.vm, "dismiss", ["success"])
+  
+  m.vm.load()
+end function
+
+'@Test showing
+function load_showing()
+  currentSelection = { "id" : "currentSelection" }
+  m.vm.providerId = "pid"
+  m.expectOnce(m.vm, "getInstance", ["currentSelection"], currentSelection)
+  m.expectOnce(m.vm, "shouldDisplayWithContent", [currentSelection], true)
+  m.expectNone(m.vm, "dismiss")
+  m.expectOnce(m.analyticsManager, "callFunc", ["trackEvent", "Waiting Page", "page_loaded", { "Provider": "pid" }])
+  
+  m.expectOnce(m.vm, "refreshLogin", [])
+  
+  m.vm.load()
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests shouldDisplayWithContent
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test
+'@Params[invalid, true]
+'@Params[{true}, true]
+'@Params[{"currentItem": invalid}, true]
+'@Params[{"currentItem": {"url":""}}, true]
+'@Params[{"currentItem": {"url":"   "}}, true]
+'@Params[{"currentItem": {"url":"", "isFree": false}}, true]
+'@Params[{"currentItem": {"url":"url", "isFree: false}}, false]
+'@Params[{"currentItem": {"url":"url", "isFree: true}}, false]
+'@Params[{"currentItem": {"url":"", "isFree: true}}, false]
+'@Params[{"currentItem": {"url":"    ", "isFree: true}}, false]
+function shouldDisplayWithContent(currentSelection, expected)
+  m.assertEqual(m.vm.shouldDisplayWithContent(currentSelection), expected)
+  
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -57,10 +107,10 @@ function onRefreshLoginComplete_success()
   user = { "id" : "user", isLoggedIn: true }
   m.expectOnce(m.vm, "getInstance", ["user"], user)
   
+  m.expectOnce(m.vm, "dismiss", ["success"])
   m.vm.onRefreshLoginComplete({})
   
   m.assertFalse(m.vm.isShowingLoadingIndicator)
-  m.assertEqual(m.vm.state, "success")
   
 end function
 
@@ -68,17 +118,18 @@ end function
 function onRefreshLoginComplete_not_valid()
   user = { "id" : "user", isLoggedIn: false }
   m.expectOnce(m.vm, "getInstance", ["user"], user)
+  m.expectOnce(m.vm, "loadCode", [])
+  m.expectNone(m.vm, "dismiss")
   
   m.vm.onRefreshLoginComplete({})
   
   m.assertFalse(m.vm.isShowingLoadingIndicator)
-  m.assertNotEqual(m.vm.state, "success")
   m.assertTrue(m.vm.isContentGroupVisible)
   
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests onREfreshButtonSelected
+'@It tests onRefreshButtonSelected
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 '@Test 
@@ -91,8 +142,11 @@ end function
 '@It tests onPollTimerFire
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-'@Test true
-function onTimerFire_true()
+'@Test
+'@params[invalid]
+'@params[true]
+'@params[false]
+function onTimerFire_true(value)
   m.vm.authTask = { "id" : "authtask" }
   newAuthTask = { "id" : "newAuthTask" }
   m.vm.providerId = "pid"
@@ -100,21 +154,11 @@ function onTimerFire_true()
   m.expectOnce(m.vm, "cancelTask", [m.vm.authTask])
   m.expectOnce(m.vm, "createAuthTask", ["execPoll", "pid", "onPollComplete"], newAuthTask)
   
-  m.vm.onPollTimerFire(true)
+  m.vm.onPollTimerFire(value)
   m.assertEqual(m.vm.authTask, newAuthTask)
 end function
 
-'@Test false
-function onTimerFire_false()
-  oldAuthTask = { "id" : "authtask" }
-  m.vm.authTask = oldAuthTask
-  m.vm.providerId = "pid"
-  m.expectNone(m.vm, "cancelTask")
-  m.expectNone(m.vm, "createAuthTask")
-  
-  m.vm.onPollTimerFire(false)
-  m.assertEqual(m.vm.authTask, oldAuthTask)
-end function
+
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '@It tests loadCode
@@ -204,7 +248,7 @@ end function
 function onPollComplete_fail(result)
   m.vm.providerId = "pid"
   m.expectNone(m.vm.analyticsManager, "callFunc")
-  m.expectNone(m.vm, "dismiss" )
+  m.expectNone(m.vm, "dismiss")
   m.expectOnce(m.vm, "togglePollTimer", [true])
   
   m.vm.onPollComplete(result)

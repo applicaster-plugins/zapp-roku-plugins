@@ -26,9 +26,8 @@ public function new(riversJson)
   
   if m.providerId = invalid
     m.isValid = false
-    m.titleText = "No auth provider found that. Make sure you have specified at least one auth provider"
+    m.titleText = "No auth provider found. Make sure you have specified at least one auth provider"
     m.logError(titleText)
-    m.titleStyle.color = "#ff0000"
   end if
   
 end function
@@ -63,21 +62,35 @@ override public function createContent()
 end function
 
 override public function load() as boolean
-  selection = m.getInstance("currentSelection")
   currentSelection = m.getInstance("currentSelection")
-  
-  url = MU.getContentField(currentSelection, "currentItem.url", "")
-  if url <> ""
-    m.logInfo("Selected is not locked; we don't need to log in")
-    m.dismiss("success")
-  else
+  if m.shouldDisplayWithContent(currentSelection)
     m.logInfo("Selected content is locked; need to login")
     m.analyticsManager@.trackEvent("Waiting Page", "page_loaded", { "Provider": m.providerId })
     m.refreshLogin()
+  else
+    m.dismiss("success")
   end if
   
   return true
 end function
+
+private function shouldDisplayWithContent(currentSelection)
+  
+  url = MU.getContentField(currentSelection, "currentItem.url", "")
+  isFree = MU.getContentField(currentSelection, "currentItem.free", false)
+  isShowing = true
+
+  if url.trim() = ""
+    if isFree
+      m.logInfo("this item is free; so even though it has no url, we are assuming a prehook other than this can resolve it's url correctly")
+      isShowing = false
+    else
+      m.logInfo("item has no url, and is not free - we will show the screen, incase it is locked")
+    end if
+  end if
+
+  return isShowing
+end function 
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '++ refresh
@@ -97,10 +110,10 @@ private function onRefreshLoginComplete(result)
   m.setField("isShowingLoadingIndicator", false)
   
   if m.getInstance("user").isLoggedIn
-    m.setField("state", "success")
+    m.dismiss("success")
   else
     m.setField("isContentGroupVisible", true)
-    
+    m.loadCode()
   end if
   
 end function
@@ -118,10 +131,8 @@ end function
 public function onPollTimerFire(value)
   m.logMethod("onPollTimerFire")
   
-  if value 
-    m.cancelTask(m.authTask)
-    m.authTask = m.createAuthTask("execPoll", m.providerId, "onPollComplete")
-  end if
+  m.cancelTask(m.authTask)
+  m.authTask = m.createAuthTask("execPoll", m.providerId, "onPollComplete")
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -146,9 +157,11 @@ private function onLoadCodeComplete(result)
   m.setField("isRefreshing", false)
   
   if result <> invalid and result.regcode <> invalid
+    m.logInfo("received code", result.regcode)
     m.setField("codeText", result.regcode)
     m.togglePollTimer(true)
   else
+    m.logWarn("received illegal code")
     m.setField("codeText", "")
   end if
   
