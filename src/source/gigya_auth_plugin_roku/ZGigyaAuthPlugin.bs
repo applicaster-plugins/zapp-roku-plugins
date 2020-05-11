@@ -26,7 +26,7 @@ override public function _getAccountInfo()
   return {
     id: m.authData.rawAuthData.uid
     email: "anonymous@anon.com"
-    username: "anonymous"
+    username: m.authData.rawAuthData.firstName
   }
 end function
 
@@ -47,15 +47,16 @@ override public function _regcode()
   url = m.baseUrl + "CreateDevice"
   
   params = { "deviceId": constants.applicasterdeviceid }
-  headers = { "Accept": "application/json" }
-  response = m.request.post(url, params)
+  headers = { "Accept": "application/json", "Content-Type": "application/json" }
+  response = m.request.post(url, params, headers)
   
-  if response.isOK and response.data <> invalid and response.data.devicePinCode <> invalid
-    m.logInfo("succesfully got code", response.data.devicePinCode)
+  if response <> invalid and response.devicePinCode <> invalid
+    m.logInfo("succesfully got code", response.devicePinCode)
     'store in session store; so we can use it in the get call later
-    m.setSessionStoreValue("gigya_auth_plugin_roku", "regcode", response.data.devicePinCode)
-    return m.createRegCodeResult(response.data.devicePinCode)
+    m.setSessionStoreValue("gigya_auth_plugin_roku", "regcode", response.devicePinCode)
+    return m.createRegCodeResult(response.devicePinCode)
   else
+    m.logError("received illegal regcode", response)
     m.setSessionStoreValue("gigya_auth_plugin_roku", "regcode", invalid)
     return m.createRegCodeResult(invalid, - 1, "could not retrieve regcode")
   end if
@@ -68,16 +69,18 @@ override public function _poll()
   url = m.baseUrl + "GetDeviceByPin/" + pinCode
   response = m.request.getJsonSync(url)
   
-  if response.isOK and response.data <> invalid
+  if response <> invalid 
     
-    if response.data.access_token <> invalid
-      token = response.data.access_token
+    if response.access_token <> invalid
+      token = response.access_token
       expiresIn = 99999 ' TODO where do we get this from?
       'TODO - double check these values
       'Especially result and if we need to manipulate parsed.expires
       return m.createAuthData("valid", token, token, token, response.data, expiresIn)
     else 
-      return m.createErrorResult("could not complete poll", response.data.ErrorCode)
+      result = m.createErrorResult("")
+      'it's not an actula error
+      result.state = "none"
     end if
   end if
   
