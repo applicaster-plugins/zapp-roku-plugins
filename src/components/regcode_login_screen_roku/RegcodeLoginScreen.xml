@@ -7,10 +7,10 @@
 
   <children>
     <Timer
-        id="checkAuthTimer"
+        id="pollTimer"
         duration="3"
-        control="{{vm.timerControl}}"
-        fire="{(vm.onTimerFire())}" />
+        control="{{vm.pollTimerControl}}"
+        fire="{(vm.onPollTimerFire())}" />
     <Group
         id="contentGroup"
         visible="{{vm.isContentGroupVisible}}">

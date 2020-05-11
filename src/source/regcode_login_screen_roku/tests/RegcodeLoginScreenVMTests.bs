@@ -1,5 +1,5 @@
 '@TestSuite [RCLSVMT] RegcodeLoginScreenVM Tests
-namespace RCLSVMT
+namespace Applicaster.Authentication.RegcodeLoginScreenVMTests
 
 '@BeforeEach
 function beforeEach()
@@ -58,7 +58,7 @@ function onRefreshLoginComplete_success()
   m.expectOnce(m.vm, "getInstance", ["user"], user)
   
   m.vm.onRefreshLoginComplete({})
-
+  
   m.assertFalse(m.vm.isShowingLoadingIndicator)
   m.assertEqual(m.vm.state, "success")
   
@@ -70,13 +70,146 @@ function onRefreshLoginComplete_not_valid()
   m.expectOnce(m.vm, "getInstance", ["user"], user)
   
   m.vm.onRefreshLoginComplete({})
-
+  
   m.assertFalse(m.vm.isShowingLoadingIndicator)
   m.assertNotEqual(m.vm.state, "success")
   m.assertTrue(m.vm.isContentGroupVisible)
   
 end function
 
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests onREfreshButtonSelected
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test 
+function onRefreshButtonSelected()
+  m.expectOnce(m.vm, "loadCode", [])
+  m.vm.onRefreshButtonSelected(true)
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests onPollTimerFire
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test true
+function onTimerFire_true()
+  m.vm.authTask = { "id" : "authtask" }
+  newAuthTask = { "id" : "newAuthTask" }
+  m.vm.providerId = "pid"
+  
+  m.expectOnce(m.vm, "cancelTask", [m.vm.authTask])
+  m.expectOnce(m.vm, "createAuthTask", ["execPoll", "pid", "onPollComplete"], newAuthTask)
+  
+  m.vm.onPollTimerFire(true)
+  m.assertEqual(m.vm.authTask, newAuthTask)
+end function
+
+'@Test false
+function onTimerFire_false()
+  oldAuthTask = { "id" : "authtask" }
+  m.vm.authTask = oldAuthTask
+  m.vm.providerId = "pid"
+  m.expectNone(m.vm, "cancelTask")
+  m.expectNone(m.vm, "createAuthTask")
+  
+  m.vm.onPollTimerFire(false)
+  m.assertEqual(m.vm.authTask, oldAuthTask)
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests loadCode
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test 
+function loadCode()
+  oldAuthTask = { "id" : "authtask" }
+  m.vm.authTask = oldAuthTask
+  m.vm.providerId = "pid"
+  newAuthTask = { "id" : "newAuthTask" }
+  
+  m.expectOnce(m.vm, "cancelTask", [m.vm.authTask])
+  m.expectOnce(m.vm, "createAuthTask", ["execRegcode", "pid", "onLoadCodeComplete"], newAuthTask)
+  
+  m.vm.loadCode()
+  
+  m.assertEqual(m.vm.authTask, newAuthTask)
+  m.assertTrue(m.vm.isRefreshing)
+  m.assertTrue(m.vm.isShowingLoadingIndicator)
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests onLoadCodecomplete
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test success
+function onLoadCodeComplete_success()
+  result = { "regcode": "reg" }
+  m.expectOnce(m.vm, "togglePollTimer", [true])
+  
+  m.vm.onLoadCodeComplete(result)
+  
+  m.assertEqual(m.vm.codeText, "reg")
+  m.assertFalse(m.vm.isShowingLoadingIndicator)
+  m.assertFalse(m.vm.isRefreshing)
+end function
+
+'@Test fail
+'@Params[invalid]
+'@Params[{}]
+'@Params[{"codeText": invalid}]
+function onLoadCodeComplete_fail(result)
+  m.expectNone(m.vm, "togglePollTimer")
+  
+  m.vm.onLoadCodeComplete(result)
+  
+  m.assertEqual(m.vm.codeText, "")
+  m.assertFalse(m.vm.isShowingLoadingIndicator)
+  m.assertFalse(m.vm.isRefreshing)
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests togglePollTimer
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test 
+'@Params[true, "start"]
+'@Params[false, "stop"]
+function togglePollTimer(isActive, expectedValue)
+  m.vm.togglePollTimer(isActive)
+  m.assertEqual(m.vm.pollTimerControl, expectedValue)
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests onPollComplete
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test valid
+function onPollComplete_valid()
+  result = { "state" : "valid" }
+  m.vm.providerId = "pid"
+  m.expectOnce(m.vm.analyticsManager, "callFunc", ["identify", "pid"])
+  m.expectOnce(m.vm.analyticsManager, "callFunc", ["trackEvent", "Login Succesful", "page_loaded", { "provider": "pid" }])
+  m.expectOnce(m.vm, "dismiss", ["success"])
+  
+  m.vm.onPollComplete(result)
+end function
+
+'@Only
+'@Test fail
+'@Params[invalid]
+'@Params[{}]
+'@Params[{"state":"error"}]
+'@Params[{"state":"none"}]
+function onPollComplete_fail(result)
+  m.vm.providerId = "pid"
+  m.expectNone(m.vm.analyticsManager, "callFunc")
+  m.expectNone(m.vm, "dismiss" )
+  m.expectOnce(m.vm, "togglePollTimer", [true])
+  
+  m.vm.onPollComplete(result)
+end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '@It tests onKeyPressBack

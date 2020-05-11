@@ -1,7 +1,7 @@
 import "pkg:/source/UIBuilder/view/ZUIBScreenVM.bs"
 import "pkg:/source/lib/ViewUtils.bs"
 
-namespace RCLSVM
+namespace Applicaster.Authentication
 class RegcodeLoginScreenVM extends ZUIBScreenVM
 
 'styles
@@ -12,7 +12,7 @@ public optional1Style = invalid
 public codeText = ""
 public refreshButtonStyle = invalid
 public isShowingLoadingIndicator = true
-public timerControl = "stop"
+public pollTimerControl = "stop"
 
 public backgroundColor = "#000000ff"
 public backgroundUrl = ""
@@ -144,8 +144,8 @@ public function onRefreshButtonSelected(value)
   m.loadCode()
 end function
 
-public function onTimerFire(value)
-  m.logMethod("onTimerFire")
+public function onPollTimerFire(value)
+  m.logMethod("onPollTimerFire")
   
   if value 
     m.cancelTask(m.authTask)
@@ -160,7 +160,7 @@ end function
 private function loadCode()
   m.logMethod("loadCode")
   
-  m.toggleCheckAuthTimer(false)
+  m.togglePollTimer(false)
   m.cancelTask(m.authTask)
   
   m.authTask = m.createAuthTask("execRegcode", m.providerId, "onLoadCodeComplete")
@@ -174,35 +174,32 @@ private function onLoadCodeComplete(result)
   m.setField("isShowingLoadingIndicator", false)
   m.setField("isRefreshing", false)
   
-  result = m.authTask.result
-  
-  if result <> invalid
+  if result <> invalid and result.regcode <> invalid
     m.setField("codeText", result.regcode)
-    m.toggleCheckAuthTimer(true)
+    m.togglePollTimer(true)
   else
     m.setField("codeText", "")
   end if
   
 end function
 
-private function toggleCheckAuthTimer(isActive)
-  m.setField("timerControl", "stop")
+private function togglePollTimer(isActive)
+  m.setField("pollTimerControl", "stop")
   
   if isActive
-    m.setField("timerControl", "start")
+    m.setField("pollTimerControl", "start")
   end if
 end function
 
 private function onPollComplete(result)
   m.logMethod("onPollComplete")
   
-  result = m.authTask.result
-  
-  if result = invalid or result.state <> "valid"
-    m.toggleCheckAuthTimer(true)
-  else
-    m.anlytics@.trackEvent("Login Succesful", "page_loaded", {"provider": m.providerId})
+  if result <> invalid and result.state = "valid"
+    m.analyticsManager@.identify(m.providerId)
+    m.analyticsManager@.trackEvent("Login Succesful", "page_loaded", {"provider": m.providerId})
     m.dismiss("success")
+  else
+    m.togglePollTimer(true)
   end if
   
 end function
