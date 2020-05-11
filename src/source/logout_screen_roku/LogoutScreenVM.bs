@@ -83,7 +83,6 @@ function logout()
     m.authTask = m.createAuthTask("execLogOut", m.providerId, "onLogoutComplete")
   end if
   
-  m.authTask = m.createTask("AuthTask", args, "onLogoutComplete", true, "isComplete")
   if m.providerId = invalid
     defaultId = m.getSessionStoreValue("all_zapp_pipes_providers", "default_auth_plugin_id")
   else
