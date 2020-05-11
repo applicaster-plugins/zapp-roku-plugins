@@ -87,6 +87,8 @@ private function shouldDisplayWithContent(currentSelection)
     else
       m.logInfo("item has no url, and is not free - we will show the screen, incase it is locked")
     end if
+  else
+    isShowing = false
   end if
 
   return isShowing
