@@ -11,25 +11,24 @@
         duration='3'
         control='{{vm.pollTimerControl}}'
         fire='{(vm.onPollTimerFire(),isSettingInitialValue=false)}' />
+    <Rectangle
+        id='backgroundRect'
+        width='1920'
+        height='1080'
+        color='{{:vm.backgroundColor}}' />
+    <ZPoster
+        id='backgroundPoster'
+        width='1920'
+        height='1080'
+        style='{{=ViewUtils_UIBPoster("background")}}' />
+
+    <ZPoster
+        id='logoPoster'
+        style='{{=ViewUtils_UIBPoster("logo")}}' />
+
     <Group
         id='contentGroup'
         visible='{{vm.isContentGroupVisible}}'>
-      <Rectangle
-          id='backgroundRect'
-          width='1920'
-          height='1080'
-          color='{{:vm.backgroundColor}}' />
-      <ZPoster
-          id='backgroundPoster'
-          width='1920'
-          height='1080'
-          style='{{=ViewUtils_UIBPoster("background")}}' />
-
-      <ZPoster
-          id='logoPoster'
-          style='{{=ViewUtils_UIBPoster("logo")}}' />
-
-
       <LayoutGroup
           id='labelsGroup'
           layoutDirection='vert'
@@ -49,7 +48,8 @@
 
         <MLabel
             id='codeLabel'
-            style='{{=ViewUtils_UIBLabel("code")}}' />
+            style='{{=ViewUtils_UIBLabel("code")}}'
+            text='{{vm.codeText}}' />
         <MLabel
             id='supportLabel'
             style='{{=ViewUtils_UIBLabel("support")}}' />
