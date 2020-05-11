@@ -10,6 +10,7 @@ function beforeEach()
     "identifier": "gigya_auth_plugin_roku",
     "configuration_json": { "base_url": "host/" }
   }
+  m.expectedHeaders = { "Accept": "application/json", "Content-Type": "application/json" }
   
   m.request = { "id" : "request" }
   
@@ -54,12 +55,13 @@ function _getAccountInfo()
   m.plugin.authData = {
     "rawAuthData": {
       "uid": "id"
+      "firstName": "george"
     }
   }
   m.assertEqual(m.plugin._getAccountInfo(), {
     "id": "id"
     "email": "anonymous@anon.com"
-    "username": "anonymous"
+    "username": "george"
   })
 end function
 
@@ -101,11 +103,8 @@ function onPollResponse_valid()
   m.expectOnce(m.plugin, "getSessionStoreValue", [m.plugin.id, "regcode"], "pin")
   
   response = {
-    isOK: true
-    data: {
-      access_token: "t"
-      firstname: "#firstname"
-    }
+    access_token: "t"
+    firstname: "#firstname"
   }
   m.expectOnce(m.plugin.request, "getJsonSync", ["host/GetDeviceByPin/pin"], response)
   
@@ -117,9 +116,7 @@ end function
 
 
 '@Test invalid invalid - no data
-'@Params[{"isOK": false}]
-'@Params[{"isOK": true}]
-'@Params[{"isOK": true, "data": invalid}]
+'@Params[invalid]
 function onPollResponse_invalid(response)
   m.expectOnce(m.plugin, "getSessionStoreValue", [m.plugin.id, "regcode"], "pin")
   m.expectOnce(m.plugin.request, "getJsonSync", ["host/GetDeviceByPin/pin"], response)
@@ -130,16 +127,16 @@ function onPollResponse_invalid(response)
 end function
 
 '@Test invalid invalid - with data
-'@Params[{"isOK": false}]
-'@Params[{"isOK": true}]
-'@Params[{"isOK": true, "data": {"ErrorCode", "e"}}]
+'@Params[{"ErrorCode": "e"}]
 function onPollResponse_invalid_with_data(response)
   m.expectOnce(m.plugin, "getSessionStoreValue", [m.plugin.id, "regcode"], "pin")
   m.expectOnce(m.plugin.request, "getJsonSync", ["host/GetDeviceByPin/pin"], response)
   
-  m.expectOnce(m.plugin, "createErrorResult", ["could not complete poll", e])
+  error = { "id" : "error" }
   
-  m.plugin._poll()
+  m.expectOnce(m.plugin, "createErrorResult", ["e"], error)
+  
+  m.assertEqual(m.plugin._poll(), error)
 end function
 
 
@@ -154,15 +151,12 @@ function regcode_valid()
   
   regCodeResult = { "id" : "regCodeResult" }
   m.expectOnce(m.plugin, "createRegCodeResult", ["pcode"], regCodeResult)
-
+  
   response = {
-    isOK:true
-    data: {
-      "devicePinCode": "pcode"
-    }
+    "devicePinCode": "pcode"
   }
-  m.expectOnce(m.plugin.request, "post", ["host/CreateDevice", { "deviceId": "did" }], response)
-
+  m.expectOnce(m.plugin.request, "post", ["host/CreateDevice", { "deviceId": "did" }, m.expectedHeaders], response)
+  
   m.expectOnce(m.plugin, "setSessionStoreValue", ["gigya_auth_plugin_roku", "regcode", "pcode"])
   
   m.assertEqual(m.plugin._regCode(), regCodeResult)
@@ -179,10 +173,10 @@ function regcode_invalid(response)
   m.expectOnce(m.plugin, "getInstance", ["constants"], constants)
   
   regCodeResult = { "id" : "regCodeResult" }
-  m.expectOnce(m.plugin, "createRegCodeResult", [invalid, -1, "could not retrieve regcode"], regCodeResult)
-
-  m.expectOnce(m.plugin.request, "post", ["host/CreateDevice", { "deviceId": "did" }], response)
-
+  m.expectOnce(m.plugin, "createRegCodeResult", [invalid, - 1, "could not retrieve regcode"], regCodeResult)
+  
+  m.expectOnce(m.plugin.request, "post", ["host/CreateDevice", { "deviceId": "did" }, m.expectedHeaders], response)
+  
   m.expectOnce(m.plugin, "setSessionStoreValue", ["gigya_auth_plugin_roku", "regcode", invalid])
   
   m.assertEqual(m.plugin._regCode(), regCodeResult)

@@ -78,9 +78,17 @@ override public function _poll()
       'Especially result and if we need to manipulate parsed.expires
       return m.createAuthData("valid", token, token, token, response.data, expiresIn)
     else 
-      result = m.createErrorResult("")
+      
+      if response.ErrorCode <> invalid
+        error = response.ErrorCode
+      else 
+        error = "Unknown error"
+      end if
+      
+      result = m.createErrorResult(error)
       'it's not an actula error
       result.state = "none"
+      return result
     end if
   end if
   
