@@ -213,16 +213,19 @@ public function processLogin()
   end if
 end function
 
-public function onLoginComplete(isComplete)
-  result = m.authTask.result
+public function onLoginComplete(result)
   m.logMethod("onLoginComplete", result)
   
-  if result.state = "valid"
+  if result <> invalid and result.state = "valid"
     m.logInfo("logged in succesfull")
-    m.setField("state", "success")
+    m.dismiss("success")
   else
     m.setField("state", "ready")
-    m.setField("errorText", result.message)
+    if result <> invalid and result.message <> invalid
+      m.setField("errorText", result.message)
+    else
+      m.setField("errorText", "Unknown error")
+    end if
     m.setField("isErrorShowing", true)
     m.setField("isLoginButtonEnabled", true)
   end if

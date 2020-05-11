@@ -317,7 +317,7 @@ function processLogin_invalid_creds()
   m.vm.isCredsValid = false
   
   m.expectNone(m.vm, "createInstance")
-  m.expectNone(m.vm, "createTask")
+  m.expectNone(m.vm, "createAuthTask")
   
   m.vm.processLogin()
   
@@ -426,6 +426,39 @@ function processLogin_integration_test_invalid()
   m.assertEqual(m.vm.errorText, "User does not exist.")
 end function
 
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests onLoginComplete
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test valid
+function onLoginComplete_valid()
+  m.vm.state = "loading"
+  m.expectOnce(m.vm, "dismiss", ["success"])
+  
+  m.vm.onLoginComplete({ "state": "valid" })
+  
+  m.assertFalse(m.vm.isLoading)
+  
+end function
+
+'@Test fail
+'@Params[invalid, "Unknown error"]
+'@Params[{}, "Unknown error"]
+'@Params[{"state": "error"}, "Unknown error"]
+'@Params[{"state": "error", "message": "m"}, "m"]
+function onLoginComplete_fail(result, expectedMessage)
+  m.vm.state = "loading"
+  m.expectNone(m.vm, "dismiss")
+  
+  m.vm.onLoginComplete(result)
+  
+  m.assertFalse(m.vm.isLoading)
+  m.assertEqual(m.vm.state, "ready")
+  m.assertEqual(m.vm.errorText, expectedMessage)
+  m.assertTrue(m.vm.isErrorShowing)
+  m.assertTrue(m.vm.isLoginButtonEnabled)
+  
+end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '@It tests refreshLogin
@@ -456,11 +489,11 @@ function onRefreshComplete()
   
   m.vm.isLoading = true
   m.vm.isRefreshing = true
-
+  
   m.vm.onRefreshComplete({})
-
+  
   m.assertEqual(m.vm.state, "success")
-
+  
   m.assertFalse(m.vm.isRefreshing)
   m.assertFalse(m.vm.isLoading)
   
@@ -474,9 +507,9 @@ function onRefreshComplete_failure()
   m.vm.isLoading = true
   m.vm.isRefreshing = true
   m.vm.onRefreshComplete({})
-
+  
   m.assertNotEqual(m.vm.state, "success")
-
+  
   m.assertFalse(m.vm.isRefreshing)
   m.assertFalse(m.vm.isLoading)
   
