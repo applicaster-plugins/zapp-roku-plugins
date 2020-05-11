@@ -1,27 +1,16 @@
 import "pkg:/source/UIBuilder/view/ZUIBScreenVM.bs"
 import "pkg:/source/lib/ViewUtils.bs"
+import "pkg:/source/plugin-support/BasePlugin.bs"
+import "pkg:/source/plugin-support/PluginManager.bs"
 
 namespace Applicaster.Authentication
 class RegcodeLoginScreenVM extends ZUIBScreenVM
 
 'styles
 public isContentGroupVisible = false
-public titleStyle = invalid
-public descriptionStyle = invalid
-public optional1Style = invalid
 public codeText = ""
-public refreshButtonStyle = invalid
 public isShowingLoadingIndicator = true
 public pollTimerControl = "stop"
-
-public backgroundColor = "#000000ff"
-public backgroundUrl = ""
-public textPosition = [0, 310]
-public buttonPosition = [655, 688]
-public logoPosition = [100, 33]
-public logoWidth = 350
-public logoHeight = 100
-public logoImageUrl = ""
 
 private authTask = invalid
 private analyticsManager = invalid 
@@ -32,10 +21,9 @@ public function new(riversJson)
   m.analyticsManager = m.getInstance("analyticsManager")
   
   m.focusId = "refreshButton"
-  '1. get auth provider id - firs
-  m.processStyles(m.riversJson.styles)
   
   m.providerId = m.getAuthProviderId()
+  
   if m.providerId = invalid
     m.isValid = false
     m.titleText = "No auth provider found that. Make sure you have specified at least one auth provider"
@@ -75,7 +63,19 @@ override public function createContent()
 end function
 
 override public function load() as boolean
-  refreshLogin()
+  selection = m.getInstance("currentSelection")
+  currentSelection = m.getInstance("currentSelection")
+  
+  url = MU.getContentField(currentSelection, "currentItem.url", "")
+  if url <> ""
+    m.logInfo("Selected is not locked; we don't need to log in")
+    m.dismiss("success")
+  else
+    m.logInfo("Selected content is locked; need to login")
+    m.analyticsManager@.trackEvent("Waiting Page", "page_loaded", { "Provider": m.providerId })
+    m.refreshLogin()
+  end if
+  
   return true
 end function
 
@@ -105,35 +105,6 @@ private function onRefreshLoginComplete(result)
   
 end function
 
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'++ styles
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-function processStyles(styles)
-  m.logInfo("converting rivers json styles into a format our UI controls can consume")
-  
-  m.titleStyle = ViewUtils.makeUIBTextStyle(styles, "title")
-  
-  m.descriptionStyle = ViewUtils.makeUIBTextStyle(styles, "description")
-  m.optional1Style = ViewUtils.makeUIBTextStyle(styles, "optional_text1")
-  m.codeStyle = ViewUtils.makeUIBTextStyle(styles, "code")
-  m.backgroundColor = ViewUtils.transposeUIBColor(styles.background_color)
-  m.backgroundUrl = styles.background_url
-  m.logoImageUrl = styles.logo_image_url
-  
-  m.refreshButtonStyle = ViewUtils.makeUIBButtonStyle(styles, "done_button", "custom", styles.done_button_text)
-  
-  m.logoImageUrl = styles.logo_url
-  m.logoPosition = ViewUtils.makeUIBPosition(styles, "logo", 100, 33)
-  m.textPosition = ViewUtils.makeUIBPosition(styles, "text", 0, 310)
-  m.textWidth = ViewUtils.getUIBInt(styles, "text_w", 1920)
-  m.buttonPosition = ViewUtils.makeUIBPosition(styles, "button", 100, 33)
-  logoSize = ViewUtils.makeUIBSize(styles, "logo", 350, 100)
-  m.logoWidth = logoSize[0]
-  m.logoHeight = logoSize[1]
-  m.providerId = MU.getContentField(styles, "provider_id", invalid)
-  
-end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '++ callbacks
@@ -196,7 +167,7 @@ private function onPollComplete(result)
   
   if result <> invalid and result.state = "valid"
     m.analyticsManager@.identify(m.providerId)
-    m.analyticsManager@.trackEvent("Login Succesful", "page_loaded", {"provider": m.providerId})
+    m.analyticsManager@.trackEvent("Login Succesful", "page_loaded", { "provider": m.providerId })
     m.dismiss("success")
   else
     m.togglePollTimer(true)
@@ -227,9 +198,5 @@ end function
 '++ lifecycle
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-override function onFirstShow()
-  super.onFirstShow()
-  m.analyticsManager@.trackEvent("Waiting Page", "page_loaded", { "Provider": m.providerId })
-end function
 end class
 end namespace

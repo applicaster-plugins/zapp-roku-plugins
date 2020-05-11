@@ -100,7 +100,7 @@
         <Poster
             id="errorBackground"
             blendColor="#42454A"
-            uri="pkg:/asset-bundle/button-background.9.png"
+            uri="pkg:/asset-bundle/button-backgrounds.9.png"
             width="500"
             height="180" />
         <MLabel

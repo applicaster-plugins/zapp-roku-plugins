@@ -34,9 +34,9 @@ end function
 
 '@Test not shown before
 function load_not_shown()
-  m.expectOnce(m.vm, "getSessionStoreValue", ["gigya_login_screen_roku", "isShown"], invalid)
+  m.expectOnce(m.vm, "getLocalStoreValue", ["gigya_login_screen_roku", "isShown"], invalid)
   m.expectOnce(m.vm, "refreshLogin", [])
-  m.expectOnce(m.vm, "setSessionStoreValue", ["gigya_login_screen_roku", "isShown", "true"])
+  m.expectOnce(m.vm, "setLocalStoreValue", ["gigya_login_screen_roku", "isShown", "true", true])
   
   m.vm.load()
   
@@ -44,7 +44,7 @@ end function
 
 '@Test shown before
 function load_shown()
-  m.expectOnce(m.vm, "getSessionStoreValue", ["gigya_login_screen_roku", "isShown"], "true")
+  m.expectOnce(m.vm, "getLocalStoreValue", ["gigya_login_screen_roku", "isShown"], "true")
   m.expectNone(m.vm, "refreshLogin", [])
   m.expectOnce(m.vm, "dismiss", ["success"])
   

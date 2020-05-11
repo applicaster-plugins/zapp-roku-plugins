@@ -32,11 +32,11 @@
       <ZActionButton
           id='loginButton'
           style='{{=ViewUtils_UIBButton("login_button")}}'
-          selected='{(vm.isSettingInitialValue=false)}' />
+          selected='{(vm.onLoginButtonSelected(), isSettingInitialValue=false)}' />
       <ZActionButton
           id='skipButton'
           style='{{=ViewUtils_UIBButton("skip_button")}}'
-          selected='{(vm.isSettingInitialValue=false)}' />
+          selected='{(vm.onSkipButtonSelected(), isSettingInitialValue=false)}' />
     </Group>
 
     <LoadingIndicator

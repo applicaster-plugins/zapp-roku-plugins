@@ -17,11 +17,13 @@ end function
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 override public function load() as boolean
-  isShown = m.getSessionStoreValue("gigya_login_screen_roku", "isShown")
+  isShown = m.getLocalStoreValue("gigya_login_screen_roku", "isShown")
   if isShown <> invalid
+    m.logInfo("this screen has been shown before; dismissing")
     m.dismiss("success")
   else
-    m.setSessionStoreValue("gigya_login_screen_roku", "isShown", "true")
+    m.logInfo("this screen has not been shown before")
+    m.setLocalStoreValue("gigya_login_screen_roku", "isShown", "true", true)
     m.refreshLogin()
   end if
   return true
@@ -93,6 +95,7 @@ end function
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 public function onLoginButtonSelected(value)
+  m.logMethod("onLoginButtonSelected")
   m.showLoginScreen()
 end function
 
@@ -116,9 +119,7 @@ public function isCapturingAnyKeyPress(key, press)
 end function
 
 public function onKeyPressDown()
-  if m.isSkipButtonVisible
     m.setFocusId("skipButton")
-  end if
 end function
 
 override public function onKeyPressUp()
