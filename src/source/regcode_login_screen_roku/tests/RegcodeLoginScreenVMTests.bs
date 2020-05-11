@@ -1,3 +1,4 @@
+'@Only
 '@TestSuite [RCLSVMT] RegcodeLoginScreenVM Tests
 namespace Applicaster.Authentication.RegcodeLoginScreenVMTests
 
@@ -196,7 +197,6 @@ function onPollComplete_valid()
   m.vm.onPollComplete(result)
 end function
 
-'@Only
 '@Test fail
 '@Params[invalid]
 '@Params[{}]
