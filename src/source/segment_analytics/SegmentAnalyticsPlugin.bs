@@ -28,6 +28,7 @@ end function
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 override public function start()
+  m.logInfo("starting segment analytics plugin")
   config = {
     "writeKey": m.writeKey
     "debug": true
@@ -36,10 +37,13 @@ override public function start()
   }
   
   m.library.init(config)
+  m.defaultOptions = m.getDefaultOptions()
+  m.defaultProperties = m.getDefaultProperties()
+  
 end function
 
 override private function mapPropertyValues(properties)
-  m.substituteValue(m.valuesMap.providers, properties, "provider")
+  m.substituteValue(m.valuesMap.providerNames, properties, "provider")
   return properties
 end function
 
@@ -50,8 +54,10 @@ override public function _identify(pluginId, traits = {}, options = {})
     
     accountInfo = m.getSeessionStoreValue(pluginId, "account", true)
     
+    m.defaultOptions = m.getDefaultOptions()
+    m.defaultProperties = m.getDefaultProperties()
+    
     if accountInfo <> invalid 
-      m.defaultOptions = m.getDefaultOptions()
       options.append(m.defaultOptions)
       
       m.logInfo("identifying analytics with the userId", accountInfo.uid, "for plugin:", plugin)
