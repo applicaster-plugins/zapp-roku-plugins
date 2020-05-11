@@ -1,0 +1,80 @@
+'@TestSuite AOZGUTAT ZGenericUrlTokenAppender
+
+namespace Applicaster.OpenSource.ZGenericUrlTokenAppenderTests
+
+'@BeforeEach
+function BeforeEach()
+  AppService.clearClassInstances()
+  m.modelLocator = CreateObject("roSGNode", "ModelLocator")
+  m.modelLocator.plugins = [PPMT_CreatePluginJson("generic_url_token_appender", { "provider_id": "pid", "token_key": "t" })] 
+  
+  TU.setModelLocator(m.modelLocator)
+  
+  m.appender = new ZGenericUrlTokenAppender()
+end function
+
+'@AfterEach
+function afterEach()
+  TU.unsetModelLocator()
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests constructor
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test no plugin
+function constructor_noPlugin()
+  m.modelLocator.plugins = [] 
+  AppService.clearClassInstances()
+  
+  m.appender = new ZGenericUrlTokenAppender()
+  
+  m.assertNotInvalid(m.appender.plugins)
+  m.assertFalse(m.appender.isValid)
+end function
+
+'@Test valid plugin
+function constructor_valid()
+  m.assertTrue(m.appender.isValid)
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests execute
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test no item
+'@Params[invalid]
+'@Params[{"currentItem": invalid}]
+'@Params[{"currentItem": {"id": "noUrl"}}]
+'@Params[{"currentItem": {"id": "emptyUrl", "url": invalid}}]
+'@Params[{"currentItem": {"id": "emptyUrl", "url": ""}}]
+function execute_no_item(currentSelection)
+  m.expectOnce(m.appender, "getInstance", ["currentSelection"], currentSelection)
+  
+  m.assertEqual(m.appender.execute(), "error")
+  
+end function
+
+'@Test item - success - with token
+'@Params["url1", "p1", "t", "t1", "url1?t=t1"]
+'@Params["url2", "p2", "t", "t2", "url2?t=t2"]
+'@Params["url3?withField=true", "p2", "t", "t2", "url3?withField=true&t=t2"]
+'@Params["url3?withField=true", "p2", "x", "t2", "url3?withField=true&x=t2"]
+function execute_item(url, providerId, tokenKey, token, expected)
+  currentSelection = { "id" : "currentSelection" }
+  m.appender.tokenKey = tokenKey
+  m.appender.providerId = providerId
+  item = { 
+    id : "item"
+    url: url
+    title: "t"
+  }
+  currentSelection.currentItem = item
+  m.expectOnce(m.appender, "getInstance", ["currentSelection"], currentSelection)
+  m.expectOnce(m.appender, "getSessionStoreValue", [providerId, "token"], token)
+  
+  m.assertEqual(m.appender.execute(), "success")
+  m.assertEqual(item.url, expected)
+end function
+
+end namespace
