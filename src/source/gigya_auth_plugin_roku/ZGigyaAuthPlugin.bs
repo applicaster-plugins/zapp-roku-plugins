@@ -48,13 +48,15 @@ override public function _regcode()
   
   params = { "deviceId": constants.applicasterdeviceid }
   headers = { "Accept": "application/json" }
-  request = request.createRequest(url, { method: "POST", body: formatJson(params), headers: headers })
-  response = request.start(true)
+  response = m.request.post(url, params)
   
   if response.isOK and response.data <> invalid and response.data.devicePinCode <> invalid
-    m.logInfo("succesfully got code", response.data.devicePinCode, "starting code timer")
+    m.logInfo("succesfully got code", response.data.devicePinCode)
+    'store in session store; so we can use it in the get call later
+    m.setSessionStoreValue("gigya_auth_plugin_roku", "regcode", response.data.devicePinCode)
     return m.createRegCodeResult(response.data.devicePinCode)
   else
+    m.setSessionStoreValue("gigya_auth_plugin_roku", "regcode", invalid)
     return m.createRegCodeResult(invalid, - 1, "could not retrieve regcode")
   end if
   
@@ -89,8 +91,7 @@ override public function _logOut()
   
   params = { "access_token": m.authData.access_token }
   headers = { "Accept": "application/json" }
-  request = m.request.createRequest(url, { method: "POST", body: formatJson(params), headers: headers })
-  response = request.start(true)
+  request = m.request.post(url, params)
   
   if request.response = invalid or request.response.code = invalid or request.response.code <> 204
     m.logError("error logging out")
@@ -98,5 +99,6 @@ override public function _logOut()
   
   return m.createAuthData()
 end function
+
 end class
 end namespace
