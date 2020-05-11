@@ -33,7 +33,7 @@
           id='labelsGroup'
           layoutDirection='vert'
           translation='{{=ViewUtils_UIBPosition("text")}}'
-          itemSpacings='[56, 56, 26]'>
+          itemSpacings='{{=ViewUtils_UIBIntArray("item_spacing")}}'>
         <MLabel
             id='titleLabel'
             style='{{=ViewUtils_UIBLabel("title")}}' />

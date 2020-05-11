@@ -52,7 +52,7 @@ override public function _identify(pluginId, traits = {}, options = {})
   
   if m.isEnabled and not m.isIdentified
     
-    accountInfo = m.getSeessionStoreValue(pluginId, "account", true)
+    accountInfo = m.getSessionStoreValue(pluginId, "account", true)
     
     m.defaultOptions = m.getDefaultOptions()
     m.defaultProperties = m.getDefaultProperties()

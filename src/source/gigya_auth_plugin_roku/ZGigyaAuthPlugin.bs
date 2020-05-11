@@ -100,14 +100,15 @@ override public function _logOut()
   
   url = m.baseUrl + "Logout"
   
-  params = { "access_token": m.authData.access_token }
-  headers = { "Accept": "application/json" }
-  request = m.request.post(url, params)
-  
-  if request.response = invalid or request.response.code = invalid or request.response.code <> 204
-    m.logError("error logging out")
+  if m.authData <> invalid
+    params = { "access_token": m.authData.access_token }
+    headers = { "Accept": "application/json" }
+    request = m.request.post(url, params)
+    
+    if request.response = invalid or request.response.code = invalid or request.response.code <> 204
+      m.logError("error logging out")
+    end if
   end if
-  
   return m.createAuthData()
 end function
 
