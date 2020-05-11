@@ -39,12 +39,28 @@
             style='{{=ViewUtils_UIBLabel("title")}}' />
 
         <MLabel
-            id='descriptionLabel'
-            style='{{=ViewUtils_UIBLabel("description")}}' />
+            id='text1Label'
+            style='{{=ViewUtils_UIBLabel("text1")}}' />
 
         <MLabel
-            id='optional1Label'
-            style='{{=ViewUtils_UIBLabel("optional_text_1")}}' />
+            id='text2Label'
+            style='{{=ViewUtils_UIBLabel("text2")}}' />
+
+        <MLabel
+            id='text3Label'
+            style='{{=ViewUtils_UIBLabel("text3")}}' />
+
+        <MLabel
+            id='text4Label'
+            style='{{=ViewUtils_UIBLabel("text4")}}' />
+
+        <MLabel
+            id='text5Label'
+            style='{{=ViewUtils_UIBLabel("text5")}}' />
+
+        <MLabel
+            id='text6Label'
+            style='{{=ViewUtils_UIBLabel("text6")}}' />
 
         <MLabel
             id='codeLabel'
@@ -53,12 +69,15 @@
         <MLabel
             id='supportLabel'
             style='{{=ViewUtils_UIBLabel("support")}}' />
+        <MLabel
+            id='support2Label'
+            style='{{=ViewUtils_UIBLabel("support")}}' />
 
       </LayoutGroup>
 
       <ZActionButton
           id='refreshButton'
-          style='{{=ViewUtils_UIBButton("refresh")}}'
+          style='{{=ViewUtils_UIBButton("refresh_button")}}'
           visible='{{vm.isRefreshing, transform=MOM_transform_invertBoolean}}'
           selected='{(vm.onRefreshButtonSelected,isSettingInitialValue=false)}' />
     </Group>
