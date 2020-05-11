@@ -76,7 +76,7 @@ override public function _poll()
       expiresIn = 99999 ' TODO where do we get this from?
       'TODO - double check these values
       'Especially result and if we need to manipulate parsed.expires
-      return m.createAuthData("valid", token, token, token, response.data, expiresIn)
+      return m.createAuthData("valid", token, token, token, response, expiresIn)
     else 
       
       if response.ErrorCode <> invalid
