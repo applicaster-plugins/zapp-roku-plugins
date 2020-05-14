@@ -59,12 +59,16 @@ override public function _identify(pluginId, traits = {}, options = {})
     
     if accountInfo <> invalid 
       options.append(m.defaultOptions)
-      
-      m.logInfo("identifying analytics with the userId", accountInfo.uid, "for plugin:", plugin)
-      m.library.identify(accountInfo.uid, traits, options)
-      m.isIdentified = true
+      if accountInfo.id <> invalid and accountInfo.id.trim() <> ""
+        m.logInfo("identifying analytics with the userId", accountInfo.id, "for plugin:", plugin)
+        m.library.identify(accountInfo.id, traits, options)
+        m.isIdentified = true
+      else
+        m.logError("identify called; but ther id was empty!")
+        
+      end if
     else
-      m.logInfo("idenitfy called; but there is no logged in user")
+      m.logError("idenitfy called; but there is no logged in user")
     end if
   end if 
 end function
