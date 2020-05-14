@@ -180,9 +180,10 @@ private function getAuthorization()
     else
       errorCode = 0
     end if
-    
-    'TOOD - use this result.expires
-    secondsTillExpire = 9999
+
+    expireTime = MU.strToLong(result.expires) / 1000
+    secondsTillExpire = m.date.getSecondsUntil(expireTime)
+
     return m.createAuthData("valid", token, token, token, result, secondsTillExpire, errorCode)
   end if
   

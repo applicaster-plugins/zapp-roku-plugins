@@ -265,13 +265,15 @@ function getAuthorization(lastResponseCode, expectedCode)
   url = "#url/api/v1/authorize?deviceId=did&requestor=rqd&resource=rqd"
   
   response = {
-    "expires": "FIXME"
+    "expires": "1589402085000"
   }
   m.expectOnce(m.plugin.request, "getJsonSync", [url, expectedHeaders], response)
+  m.expectOnce(m.plugin.date, "getSecondsUntil", [MU.strToLong("1589402085000")/ 1000], 9999)
+  m.plugin.pollResult = { "id" : "pollResult" }
   
   result = { "id" : "result" }
   token = formatJson(response)
-  m.expectOnce(m.plugin, "createAuthData", ["valid", token, token, token, response, 9999, expectedCode], result)
+  m.expectOnce(m.plugin, "createAuthData", ["valid", token, token, token, m.plugin.pollResult, 9999, expectedCode], result)
   
   m.expectNone(m.plugin, "createErrorResult")
   
