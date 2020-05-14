@@ -50,9 +50,17 @@ end function
 override public function _identify(pluginId, traits = {}, options = {})
   m.logInfo("identify", pluginId)
   
-  if m.isEnabled and not m.isIdentified
+  if m.isEnabled
     
-    accountInfo = m.getSessionStoreValue(pluginId, "account", true)
+    if m.isIdentified
+      m.logWarn("was previously identified; this is going to idenity with the new plugin")
+    end if
+    
+    if pluginId <> invalid
+      accountInfo = m.getSessionStoreValue(pluginId, "account", true)
+    else
+      accountInfo = invalid
+    end if
     
     m.defaultOptions = m.getDefaultOptions()
     m.defaultProperties = m.getDefaultProperties()
@@ -60,24 +68,31 @@ override public function _identify(pluginId, traits = {}, options = {})
     if accountInfo <> invalid 
       options.append(m.defaultOptions)
       if accountInfo.id <> invalid and accountInfo.id.trim() <> ""
-        m.logInfo("identifying analytics with the userId", accountInfo.id, "for plugin:", plugin)
+        m.logInfo("identifying analytics with the userId", accountInfo.id, "for plugin:", pluginId)
         m.library.identify(accountInfo.id, traits, options)
-        m.isIdentified = true
       else
         m.logError("identify called; but ther id was empty!")
-        
+        m.identifyAsAnonymous()
       end if
     else
-      m.logError("idenitfy called; but there is no logged in user")
+      m.logWarn("idenitfy called; but there is no logged in user; goint to unidentify, to get anonymous analytics")
+      m.identifyAsAnonymous()
     end if
   end if 
+  
+  m.isIdentified = true
 end function
 
 override public function _unidentify(pluginId)
+  m.logWarn("segment does not have an unidentify api, so we idenitfy as anonymous")
+  m.identifyAsAnonymous()
+end function
+
+private function identifyAsAnonymous()
+  m.logInfo("identifying as anonymous user")
   m.isIdentified = false
   m.defaultOptions = m.getDefaultOptions()
   m.defaultProperties = m.getDefaultProperties()
-  m.logWarn("segment does not have an unidentify api, so we idenitfy as anonymous")
   m.library.identify("anonymous", m.defaultOptions, m.defaultProperties)
 end function
 
