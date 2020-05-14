@@ -38,9 +38,10 @@ end function
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 override public function _getAccountInfo()
-  'FIXME - verify these values
+  userId = MU.getContentField(m.authData, "user.userId", "not known yet")
+  
   return {
-    id: "not known yet"
+    id: userId
     email: "anonymous@anon.com"
     username: "anonymous"
   }
@@ -180,11 +181,17 @@ private function getAuthorization()
     else
       errorCode = 0
     end if
-
+    
     expireTime = MU.strToLong(result.expires) / 1000
     secondsTillExpire = m.date.getSecondsUntil(expireTime)
+    
+    if m.pollResult <> invalid
+      user = m.pollResult
+    else
+      user = m.authData.user
+    end if
 
-    return m.createAuthData("valid", token, token, token, result, secondsTillExpire, errorCode)
+    return m.createAuthData("valid", token, token, token, result, secondsTillExpire, errorCode, "", user)
   end if
   
   return m.createErrorResult("Unknown error")
