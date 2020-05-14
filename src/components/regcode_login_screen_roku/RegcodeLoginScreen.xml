@@ -11,20 +11,26 @@
         duration='3'
         control='{{vm.pollTimerControl}}'
         fire='{(vm.onPollTimerFire(),isSettingInitialValue=false)}' />
-    <Rectangle
-        id='backgroundRect'
-        width='1920'
-        height='1080'
-        color='{{:vm.backgroundColor}}' />
-    <ZPoster
-        id='backgroundPoster'
-        width='1920'
-        height='1080'
-        style='{{=ViewUtils_UIBPoster("background")}}' />
+        
+    <Group
+        id='backgroundGroup'
+        visible='{{vm.isContentGroupVisible}}'>
+      <Rectangle
+          id='backgroundRect'
+          width='1920'
+          height='1080'
+          color='{{=ViewUtils_UIBColor("background_color")}}' />
 
-    <ZPoster
-        id='logoPoster'
-        style='{{=ViewUtils_UIBPoster("logo")}}' />
+      <ZPoster
+          id='backgroundPoster'
+          width='1920'
+          height='1080'
+          style='{{=ViewUtils_UIBPoster("background")}}' />
+
+      <ZPoster
+          id='logoPoster'
+          style='{{=ViewUtils_UIBPoster("logo")}}' />
+    </Group>
 
     <Group
         id='contentGroup'
