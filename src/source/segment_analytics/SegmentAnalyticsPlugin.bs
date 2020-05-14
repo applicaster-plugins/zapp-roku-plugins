@@ -167,15 +167,14 @@ private function getDefaultProperties()
   }
   
   if accountInfo <> invalid 
-    properties.user_gigya_id = accountInfo.uid
+    properties.user_gigya_id = accountInfo.id
   else
     properties.user_gigya_id = "anonymous"
   end if
   
-  primetimeAccountInfo = m.getLocalStoreValue("AdobeAccessEnabler", "account", true)
+  primetimeAccountInfo = m.getSessionStoreValue("AdobeAccessEnabler", "account", true)
   if primetimeAccountInfo <> invalid 
-    'FIXME
-    properties.user_adobe_id = primetimeAccountInfo.uid
+    properties.user_adobe_id = primetimeAccountInfo.id
   else
     properties.user_adobe_id = "anonymous"
   end if
