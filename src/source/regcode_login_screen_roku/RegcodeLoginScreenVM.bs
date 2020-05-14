@@ -63,12 +63,21 @@ end function
 
 override public function load() as boolean
   currentSelection = m.getInstance("currentSelection")
-  if m.shouldDisplayWithContent(currentSelection)
-    m.logInfo("Selected content is locked; need to login")
-    m.analyticsManager@.trackEvent("Waiting Page", "page_loaded", { "Provider": m.providerId })
-    m.refreshLogin()
+  
+  if m.isDisplayedInPrehook
+    m.logInfo("displaying in prehook")
+    
+    if m.shouldDisplayWithContent(currentSelection)
+      m.logInfo("Selected content is locked; need to login")
+      m.analyticsManager@.trackEvent("Waiting Page", "page_loaded", { "Provider": m.providerId })
+      m.refreshLogin()
+    else
+      m.dismiss("success")
+    end if
   else
-    m.dismiss("success")
+    m.logInfo("not displaying in prehook")
+    m.setField("isContentGroupVisible", true)
+    m.loadCode()
   end if
   
   return true
@@ -79,7 +88,7 @@ private function shouldDisplayWithContent(currentSelection)
   url = MU.getContentField(currentSelection, "currentItem.url", "")
   isFree = MU.getContentField(currentSelection, "currentItem.free", false)
   isShowing = true
-
+  
   if url.trim() = ""
     if isFree
       m.logInfo("this item is free; so even though it has no url, we are assuming a prehook other than this can resolve it's url correctly")
@@ -90,7 +99,7 @@ private function shouldDisplayWithContent(currentSelection)
   else
     isShowing = false
   end if
-
+  
   return isShowing
 end function 
 
