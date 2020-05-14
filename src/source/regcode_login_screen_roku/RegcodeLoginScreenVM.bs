@@ -76,6 +76,7 @@ override public function load() as boolean
     end if
   else
     m.logInfo("not displaying in prehook")
+    m.analyticsManager@.trackEvent("Waiting Page", "page_loaded", { "Provider": m.providerId })
     m.setField("isContentGroupVisible", true)
     m.loadCode()
   end if
