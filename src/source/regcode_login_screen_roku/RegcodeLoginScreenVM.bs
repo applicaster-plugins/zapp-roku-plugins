@@ -15,7 +15,7 @@ public pollTimerControl = "stop"
 private authTask = invalid
 private analyticsManager = invalid 
 private providerId = invalid
-
+private refreshButtonOpacity = 1
 public function new(riversJson)
   super(riversJson, "RegcodeLoginScreenVM")
   m.analyticsManager = m.getInstance("analyticsManager")
@@ -29,7 +29,10 @@ public function new(riversJson)
     m.titleText = "No auth provider found. Make sure you have specified at least one auth provider"
     m.logError(titleText)
   end if
-  
+
+  if not MU.getContentField(riversJson, "styles.use_refresh_button", true)
+    m.refreshButtonOpacity = 0
+  end if
 end function
 
 private function getAuthProviderId()

@@ -11,7 +11,7 @@
         duration='3'
         control='{{vm.pollTimerControl}}'
         fire='{(vm.onPollTimerFire(),isSettingInitialValue=false)}' />
-        
+
     <Group
         id='backgroundGroup'
         visible='{{vm.isContentGroupVisible}}'>
@@ -35,14 +35,14 @@
     <Group
         id='contentGroup'
         visible='{{vm.isContentGroupVisible}}'>
+      <MLabel
+          id='titleLabel'
+          style='{{=ViewUtils_UIBLabel("title")}}' />
       <LayoutGroup
           id='labelsGroup'
           layoutDirection='vert'
           translation='{{=ViewUtils_UIBPosition("text")}}'
-          itemSpacings='{{=ViewUtils_UIBIntArray("item_spacing")}}'>
-        <MLabel
-            id='titleLabel'
-            style='{{=ViewUtils_UIBLabel("title")}}' />
+          itemSpacings='{{=ViewUtils_UIBFloatArray("item_spacing")}}'>
 
         <MLabel
             id='text1Label'
@@ -70,20 +70,21 @@
 
         <MLabel
             id='codeLabel'
-            style='{{=ViewUtils_UIBLabel("code")}}'
+            style='{{=ViewUtils_UIBLabel("code","")}}'
             text='{{vm.codeText}}' />
         <MLabel
             id='supportLabel'
             style='{{=ViewUtils_UIBLabel("support")}}' />
         <MLabel
             id='support2Label'
-            style='{{=ViewUtils_UIBLabel("support")}}' />
+            style='{{=ViewUtils_UIBLabel("support2")}}' />
 
       </LayoutGroup>
 
       <ZActionButton
           id='refreshButton'
           style='{{=ViewUtils_UIBButton("refresh_button")}}'
+          opacity='{{:vm.refreshButtonOpacity}}'
           visible='{{vm.isRefreshing, transform=MOM_transform_invertBoolean}}'
           selected='{(vm.onRefreshButtonSelected,isSettingInitialValue=false)}' />
     </Group>
