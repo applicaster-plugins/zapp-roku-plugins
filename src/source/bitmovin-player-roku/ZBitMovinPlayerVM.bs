@@ -188,7 +188,7 @@ private function makeResult(state, message)
   return { "state": state, "message": message }
 end function
 
-override public function destroy()
+public override function destroy()
   'video player is never destroyed
 end function
 

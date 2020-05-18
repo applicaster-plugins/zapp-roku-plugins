@@ -15,7 +15,7 @@ public function new(plugin)
   m.task.clientId = plugin.getStringValue("client_id")
 end function
 
-override public function start()
+public override function start()
   m.setInstance("googleAnalyticsTask", m.task)
   m.task.control = "run"
 end function

@@ -21,7 +21,7 @@ end function
 '++ Overridden
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-override public function _getAccountInfo()
+public override function _getAccountInfo()
   'FIXME - verify these values
   return {
     id: m.authData.rawAuthData.uid
@@ -30,7 +30,7 @@ override public function _getAccountInfo()
   }
 end function
 
-override public function _verify()
+public override function _verify()
   m.logMethod("_verify")
   
   if not m.isAuthDataExpired()
@@ -40,7 +40,7 @@ override public function _verify()
   return m.createErrorResult("Invalid token for verification")
 end function
 
-override public function _regcode()
+public override function _regcode()
   m.logMethod("_regcode")
   
   constants = m.getInstance("constants")
@@ -63,7 +63,7 @@ override public function _regcode()
   
 end function
 
-override public function _poll()
+public override function _poll()
   m.logMethod("_poll")
   pinCode = m.getSessionStoreValue(m.id, "regcode")
   url = m.baseUrl + "GetDeviceByPin/" + pinCode
@@ -95,7 +95,7 @@ override public function _poll()
   return m.createErrorResult("could not complete poll")
 end function
 
-override public function _logOut()
+public override function _logOut()
   m.logMethod("_logOut")
   
   url = m.baseUrl + "Logout"

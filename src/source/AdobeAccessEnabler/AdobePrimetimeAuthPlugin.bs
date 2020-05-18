@@ -37,7 +37,7 @@ end function
 '++ overridden
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-override public function _getAccountInfo()
+public override function _getAccountInfo()
   userId = MU.getContentField(m.authData, "user.userId", "not known yet")
   
   return {
@@ -48,7 +48,7 @@ override public function _getAccountInfo()
 end function
 
 
-override public function _verify()
+public override function _verify()
   ' We don't need the token for the AuthZ calls, but we
   ' do a simple local verification just to make sure AuthN completed
   
@@ -59,7 +59,7 @@ override public function _verify()
   return m.createErrorResult("Invalid token for verification")
 end function
 
-override public function _regcode()
+public override function _regcode()
   m.logMethod("regCode_")
   ' <REGGIE_FQDN>/reggie/v1/{requestorId}/regcode
   requestPath = "/reggie/v1/" + m.requestorID + "/regcode"
@@ -81,7 +81,7 @@ override public function _regcode()
   return m.createRegCodeResult(invalid, - 1, "Unknown error")
 end function
 
-override public function _poll()
+public override function _poll()
   m.logMethod("poll_")
   ' <SP_FQDN>/api/v1/tokens/authn
   requestPath = "/api/v1/tokens/authn"
@@ -124,7 +124,7 @@ override public function _poll()
   return result
 end function
 
-override public function _logOut()
+public override function _logOut()
   ' <SP_FQDN>/api/v1/logout
   requestPath = "/api/v1/logout"
   

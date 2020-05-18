@@ -32,10 +32,10 @@ end function
 '++ overridden
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-override public function createContent()
+public override function createContent()
 end function
 
-override public function load() as boolean
+public override function load() as boolean
   prehookController = m.getPrehookController()
   
   if prehookController <> invalid 
@@ -252,7 +252,7 @@ end function
 '++ Lifecycle methods
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-override public function onShow()
+public override function onShow()
   m.logInfo("onShow - isShowingParentScreen", m.isShowingParentScreen)
   
   if m.isDeeplinkingApplied and not m.isShowingParentScreen

@@ -27,7 +27,7 @@ end function
 '++ overridden methods
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-override public function start()
+public override function start()
   m.logInfo("starting segment analytics plugin")
   config = {
     "writeKey": m.writeKey
@@ -42,12 +42,12 @@ override public function start()
   
 end function
 
-override private function mapPropertyValues(properties)
+private override function mapPropertyValues(properties)
   m.substituteValue(m.valuesMap.providerNames, properties, "provider")
   return properties
 end function
 
-override public function _identify(pluginId, traits = {}, options = {})
+public override function _identify(pluginId, traits = {}, options = {})
   m.logInfo("identify", pluginId)
   
   if m.isEnabled
@@ -83,7 +83,7 @@ override public function _identify(pluginId, traits = {}, options = {})
   m.isIdentified = true
 end function
 
-override public function _unidentify(pluginId)
+public override function _unidentify(pluginId)
   m.logWarn("segment does not have an unidentify api, so we idenitfy as anonymous")
   m.identifyAsAnonymous()
 end function
@@ -96,11 +96,11 @@ private function identifyAsAnonymous()
   m.library.identify("anonymous", m.defaultOptions, m.defaultProperties)
 end function
 
-override public function _track(eventName, properties = {}, options = {})
+public override function _track(eventName, properties = {}, options = {})
   m.trackEvent(eventName, invalid, properties, options)
 end function
 
-override public function _trackEvent(eventName, actionName = invalid, properties = {}, options = {})
+public override function _trackEvent(eventName, actionName = invalid, properties = {}, options = {})
   
   if actionName <> invalid
     properties.name = eventName
@@ -182,4 +182,5 @@ private function getDefaultProperties()
   return properties
 end function
 
+end class
 end namespace

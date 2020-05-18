@@ -49,11 +49,11 @@ end function
 '++ Overridden
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-override public function createContent()
+public override function createContent()
   m.logInfo("createContent is overridden in this screen")
 end function
 
-override public function load() as boolean
+public override function load() as boolean
   m.logInfo("load - refreshing login")
   m.refreshLogin() 
   return true
@@ -286,7 +286,7 @@ public function onKeyPressOption() as boolean
   return true
 end function
 
-override public function onKeyPressUp() as boolean
+public override function onKeyPressUp() as boolean
   m.logMethod("onKeyPressUp", m.focusId)
   
   if m.focusId = "passwordInput"

@@ -44,11 +44,11 @@ end function
 '++ Overridden
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-override public function createContent()
+public override function createContent()
   m.logInfo("createContent is overridden in this screen")
 end function
 
-override public function load() as boolean
+public override function load() as boolean
   isShowingWarning = false
   
   if m.originEntry <> invalid and MU.isString(m.conditionPath) and MU.isString(m.conditionValue) 
@@ -77,7 +77,7 @@ override public function load() as boolean
   return true
 end function
 
-override public function onFeedResult(result)
+public override function onFeedResult(result)
   m.logMethod("onFeedResult")
   'now load the child with the entry that's going to display the message
   warningEntry = invalid
@@ -195,7 +195,7 @@ public function onKeyPressBack() as boolean
   return true
 end function
 
-override public function onKeyPressUp() as boolean
+public override function onKeyPressUp() as boolean
   return true
 end function
 

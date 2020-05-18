@@ -76,7 +76,7 @@ end function
 '++ overridden
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-override public function load()
+public override function load()
   m.setField("state", "ready")
 end function
 
@@ -140,7 +140,7 @@ private function performSearch(text)
   
 end function
 
-override public function onFeedResult(result)
+public override function onFeedResult(result)
   m.logMethod("onFeedResult")
   
   m.toggleLoadingItemTask(false)
@@ -221,7 +221,7 @@ end function
 '++ lifecycle
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-override public function onHide()
+public override function onHide()
   super.onHide()
   
   m.cancelWaitTimer(m.searchDelayTask)
@@ -230,7 +230,7 @@ override public function onHide()
   m.searchDelayTask = invalid
 end function
 
-override public function onShow() as void
+public override function onShow() as void
   m.logMethod("onShow")
   
   if not m.isShowingContent

@@ -54,7 +54,7 @@ private youboraTask = invalid
 private config = {}
 private taskName = "YBPluginRokuVideo"
 
-override public function new(plugin)
+public override function new(plugin)
   
   super("YouboraVideoAnalytics")
   m.taskName = plugin.getStringValue("task_name", "YBPluginRokuVideo")
@@ -66,7 +66,7 @@ override public function new(plugin)
   }
 end function
 
-override public function videoStart(videoNode, contentNode)
+public override function videoStart(videoNode, contentNode)
   super.videoStart(videoNode, contentNode)
   
   m.contentNode = contentNode
@@ -93,7 +93,7 @@ override public function videoStart(videoNode, contentNode)
   m.youboraTask.event = { handler: "play" }
 end function
 
-override public function videoEnd()
+public override function videoEnd()
   m.logMethod("videoEnd")
   super.videoEnd()
   
@@ -103,15 +103,15 @@ override public function videoEnd()
   end if
 end function
 
-override public function adBreakStart()
+public override function adBreakStart()
   super.adBreakStart()
 end function
 
-override public function adBreakEnd()
+public override function adBreakEnd()
   super.adBreakEnd()
 end function
 
-override public function adTrackingEvent(eventType, rafCtx)
+public override function adTrackingEvent(eventType, rafCtx)
   m.logMethod("adTrackingEvent")
   super.adTrackingEvent(eventType, rafCtx)
   

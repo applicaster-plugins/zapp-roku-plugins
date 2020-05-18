@@ -16,7 +16,7 @@ end function
 '++ Overridden
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-override public function load() as boolean
+public override function load() as boolean
   isShown = m.getLocalStoreValue("gigya_login_screen_roku", "isShown")
   if isShown <> invalid
     m.logInfo("this screen has been shown before; dismissing")
@@ -29,7 +29,7 @@ override public function load() as boolean
   return true
 end function
 
-override public function createContent()
+public override function createContent()
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -122,7 +122,7 @@ public function onKeyPressDown()
     m.setFocusId("skipButton")
 end function
 
-override public function onKeyPressUp()
+public override function onKeyPressUp()
   m.setFocusId("loginButton")
 end function
 

@@ -1,4 +1,3 @@
-import "./SegmentAnalyticsConnector.brs"
 import "pkg:/source/lib/ZBaseClass.bs"
 import "pkg:/source/plugin-support/BasePlugin.bs"
 import "pkg:/source/plugin-support/PluginManager.bs"
@@ -283,29 +282,29 @@ public function getVideoResolution(height)
   end if
 end function
 
-override public function videoStart(videoNode, contentNode)
+public override function videoStart(videoNode, contentNode)
   super.videoStart(videoNode, contentNode)
   m.contentNode = contentNode
   
   m.postSegmentEvent("Video Content Started")
 end function
 
-override public function videoEnd()
+public override function videoEnd()
   super.videoEnd()
   m.postSegmentEvent("Video Completed")
 end function
 
-override public function videoPause()
+public override function videoPause()
   super.videoPause()
   m.postSegmentEvent("Video Paused")
 end function
 
-override public function videoResume()
+public override function videoResume()
   super.videoResume()
   m.postSegmentEvent("Video Playback Resume")
 end function
 
-override public function videoHeartbeat()
+public override function videoHeartbeat()
   super.videoHeartbeat()
   
   if m.isInAdBreak
@@ -317,22 +316,22 @@ override public function videoHeartbeat()
   m.postSegmentEvent(eventName)
 end function
 
-override public function adBreakStart()
+public override function adBreakStart()
   super.adBreakStart()
   m.postSegmentEvent("Video Ad Play")
 end function
 
-override public function adBreakEnd()
+public override function adBreakEnd()
   super.adBreakEnd()
   m.postSegmentEvent("Video Ad Completed")
 end function
 
-override public function onSubtitleChange()
+public override function onSubtitleChange()
   super.onSubtitleChange()
   m.postSegmentEvent("Subtitle Languge Changed")
 end function
 
-override public function onAudioChange()
+public override function onAudioChange()
   super.onAudioChange()
   m.postSegmentEvent("Audio Language Selected")
 end function
