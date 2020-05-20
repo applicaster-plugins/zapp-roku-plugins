@@ -305,12 +305,10 @@ public override function videoResume()
 end function
 
 public override function videoContentStarted()
-  super.videoResume()
   m.postSegmentEvent("Video Content Started")
 end function
 
 public override function videoSeek(position)
-  super.videoResume()
   m.postSegmentEvent("Player Seek")
 end function
 
@@ -366,8 +364,8 @@ private function getProperties(contentNode, action = invalid)
     videoType = "VOD"
   end if
   
-  if contentNode.length <> 0
-    progress = m.videoNode.position / contentNode.length
+  if m.videoNode.duration <> 0
+    progress = m.videoNode.position / m.videoNode.duration
     progress = int(progress * 100)
   else
     progress = 0
@@ -379,7 +377,7 @@ private function getProperties(contentNode, action = invalid)
     height: str(m.videoNode.height).trim()
     resolution: m.videoResolution
     subtitle_language: m.getSubtitleLanguage()
-    video_length: str(contentNode.length).trim()
+    video_length: str(m.videoNode.duration).trim()
     video_progress: str(progress).trim() + "%"
     video_type: videoType
     width: str(m.videoNode.width).trim()
