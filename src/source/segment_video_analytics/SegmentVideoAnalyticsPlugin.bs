@@ -304,6 +304,16 @@ public override function videoResume()
   m.postSegmentEvent("Video Playback Resume")
 end function
 
+public override function videoContentStarted()
+  super.videoResume()
+  m.postSegmentEvent("Video Content Started")
+end function
+
+public override function videoSeek(position)
+  super.videoResume()
+  m.postSegmentEvent("Player Seek")
+end function
+
 public override function videoHeartbeat()
   super.videoHeartbeat()
   
