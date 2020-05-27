@@ -1,4 +1,8 @@
-#### 3.0.6 (2020-05-26)
+#### 3.0.6 (2020-05-27)
+
+##### Bug Fixes
+
+* **roku_search_screen:**  Adds full screen flag to plugin (8c402750)
 
 #### 3.0.5 (2020-05-18)
 
