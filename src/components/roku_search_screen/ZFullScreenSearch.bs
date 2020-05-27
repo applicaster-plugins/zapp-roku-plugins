@@ -6,6 +6,7 @@ import "pkg:/source/roku_search_screen/ZFullScreenSearchVM.bs"
 
 function Init()
   m.top.isConsumingOriginEntry = true
+  m.top.isFullScreen = true
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
