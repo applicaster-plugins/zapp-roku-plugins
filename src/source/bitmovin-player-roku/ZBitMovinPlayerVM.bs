@@ -94,7 +94,7 @@ public function playItem(item)
   m.currentItem = item
   playerItem = m.getPlayerItem(m.currentItem)
   playerItem.options = {
-    "startOffset": m.currentItem.BookmarkPosition
+    "startOffset": m.currentItem.PlayStart
   }
   m.logInfo("playing with player item", formatJson(playerItem))
   
