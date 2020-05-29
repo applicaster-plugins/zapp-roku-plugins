@@ -69,6 +69,8 @@ public override function _regcode()
     "Authorization": m.signRequest("POST", requestPath)
   }
   url = m.baseUrl + requestPath
+  m.logInfo("url ", url, "headers", headers, "params", params)
+
   result = m.request.post(url, params, headers)
   
   m.logInfo("result is ", result)
@@ -231,8 +233,8 @@ end function
 
 private function getResourceText()
   selection = m.getInstance("currentSelection")
-  
-  if selection <> invalid and selection.currentItem <> invalid
+  isTemplateSupported = false
+  if isTemplateSupported and selection <> invalid and selection.currentItem <> invalid
     content = selection.currentItem
     template = ReadAsciiFile("pkg:/source/AdobeAccessEnabler/adobeAuthorizationTemplate.xml")
     template = template.replace("{REQUESTOR_ID}", m.requestorID)
