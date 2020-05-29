@@ -30,7 +30,7 @@ end function
 function _applyStyle(styles, localizations, assets)
 end function
 
-function playItem(item)
+function playItem(item, playMode = "default")
   m.vm.playItem(item)
 end function
 
