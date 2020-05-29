@@ -76,10 +76,13 @@ public function onLogoutButtonSelected(value)
 end function
 
 function logout()
-  'later on we can specify client_type, via a style property
-  if m.providerId = invalid
+  m.logMethod("logout")
+  
+  if m.providerId = invalid or m.providerId.trim() = ""
+    m.logInfo("logging out all providers")
     m.authTask = m.createAuthTask("execLogOutAll", invalid, "onLogoutComplete")
   else
+    m.logInfo("logging out with specific provider", m.providerId)
     m.authTask = m.createAuthTask("execLogOut", m.providerId, "onLogoutComplete")
   end if
   
