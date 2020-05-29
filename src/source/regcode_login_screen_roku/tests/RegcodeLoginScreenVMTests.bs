@@ -61,19 +61,15 @@ end function
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 '@Test
-'@Params[invalid, true]
-'@Params[{true}, true]
-'@Params[{"currentItem": invalid}, true]
-'@Params[{"currentItem": {"url":""}}, true]
-'@Params[{"currentItem": {"url":"   "}}, true]
-'@Params[{"currentItem": {"url":"url", "isFree": false}}, false]
-'@Params[{"currentItem": {"url":"", "isFree": false}}, true]
-'@Params[{"currentItem": {"url":"url", "isFree: true}}, false]
-'@Params[{"currentItem": {"url":"", "isFree: true}}, false]
-'@Params[{"currentItem": {"url":"    ", "isFree: true}}, false]
-function shouldDisplayWithContent(currentSelection, expected)
-  m.assertEqual(m.vm.shouldDisplayWithContent(currentSelection), expected)
+'@Params[true]
+'@Params[false]
+function shouldDisplayWithContent(expected)
+  currentSelection = { "id" : "currentSelection" }
+  entitlements = { "id" : "entitlements" }
+  m.expectOnce(m.vm, "getInstance", ["entitlements"], entitlements)
+  m.expectOnce(entitlements, "callFunc", ["isLocked", currentSelection], expected)
   
+  m.assertEqual(m.vm.shouldDisplayWithContent(currentSelection), expected)
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -29,7 +29,7 @@ public function new(riversJson)
     m.titleText = "No auth provider found. Make sure you have specified at least one auth provider"
     m.logError(titleText)
   end if
-
+  
   if not MU.getContentField(riversJson, "styles.use_refresh_button", true)
     m.refreshButtonOpacity = 0
   end if
@@ -75,6 +75,7 @@ public override function load() as boolean
       m.analyticsManager@.trackEvent("Waiting Page", "page_loaded", { "Provider": m.providerId })
       m.refreshLogin()
     else
+      m.logInfo("This content is not locked, no need to display")
       m.dismiss("success")
     end if
   else
@@ -89,22 +90,8 @@ end function
 
 private function shouldDisplayWithContent(currentSelection)
   
-  url = MU.getContentField(currentSelection, "currentItem.url", "")
-  isFree = MU.getContentField(currentSelection, "currentItem.free", false)
-  isShowing = true
-  
-  if url.trim() = ""
-    if isFree
-      m.logInfo("this item is free; so even though it has no url, we are assuming a prehook other than this can resolve it's url correctly")
-      isShowing = false
-    else
-      m.logInfo("item has no url, and is not free - we will show the screen, incase it is locked")
-    end if
-  else
-    isShowing = false
-  end if
-  
-  return isShowing
+  entitlements = m.getInstance("entitlements")
+  return entitlements@.isLocked(currentSelection.currentItem)
 end function 
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
