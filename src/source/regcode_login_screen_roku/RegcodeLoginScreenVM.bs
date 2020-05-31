@@ -71,7 +71,7 @@ public override function load() as boolean
     m.logInfo("displaying in prehook")
     
     if m.shouldDisplayWithContent(currentSelection)
-      m.logInfo("Selected content is locked; need to login")
+      m.logInfo("Selected content is locke; need to login")
       m.analyticsManager@.trackEvent("Waiting Page", "page_loaded", { "Provider": m.providerId })
       m.refreshLogin()
     else
@@ -91,7 +91,7 @@ end function
 private function shouldDisplayWithContent(currentSelection)
   
   entitlements = m.getInstance("entitlements")
-  return entitlements@.isLocked(currentSelection.currentItem)
+  return entitlements@.isLocked(MU.getContentField(currentSelection, "currentItem"))
 end function 
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
