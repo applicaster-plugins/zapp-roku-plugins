@@ -111,6 +111,7 @@ public function onSearchTextChange(text)
   else
     m.logVerbose("too few chars. ignoring")
     m.setGridVisible(false)
+    m.setField("isLoading", false)
   end if
   
 end function
