@@ -240,15 +240,24 @@ end function
 
 public function isCapturingAnyKeyPress(key, press)
   'do not anyone escape this screen!
-  return true
+  if press and key = "back" and not MU.getContentField(m.riversJson, "general.isflowBlocker", true)
+    return false
+  else
+    return true
+  end if
 end function
 
 public function onKeyPressBack() as boolean
   m.logMethod("onKeyPressBack", m.focusId)
   
   if m.focusId = "usernameInput"
-    'TODO - exit app?
-    return false
+    if not MU.getContentField(m.riversJson, "general.is_flow_blocker", true)
+      m.dismiss("cancel")
+      return true
+    else
+      'TODO - exit app?
+      return false
+    end if
   else
     return m.onKeyPressUp()
   end if
