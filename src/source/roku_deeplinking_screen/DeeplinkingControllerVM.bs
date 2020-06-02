@@ -169,6 +169,7 @@ function applyDeeplinking(deeplinkingData) as void
   m.isDeeplinkingApplied = true 
   
   if deeplinkingSelection.action = "play"
+    m.setInstance("currentSelection", deeplinkingSelection)
     m.playSelection(deeplinkingSelection)
   end if
   
@@ -219,6 +220,9 @@ private function getDeeplinkingSelectionWithData(deeplinkingData)
   
   deeplinkType = deeplinkingData.itemType
   content = deeplinkingData.entry.clone(true)
+  if content.url = invalid or content.url.trim() = ""
+    content.url = content.link
+  end if
   selection.action = deeplinkingData.action
   selection.currentItem = content
   selection.initialItem = content
