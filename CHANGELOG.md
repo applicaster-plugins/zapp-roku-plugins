@@ -1,4 +1,16 @@
-#### 3.0.6 (2020-05-27)
+#### 3.1.1 (2020-06-02)
+
+##### New Features
+
+* **aws_cognito_login_screen_roku:**  Can cancel non flow blocker login screens (447a345c)
+* **bitmovin:**  Adds support for inline video playback - the framework now allows us to play video content under the rest of the apps content (8a40ff8f)
+
+##### Bug Fixes
+
+* **regcode_login_screen_roku:**  Fixes crash on regcode screen when leaving quickly (96d21fdd)
+* **roku_search_screen:**  Hides spinner, if too few chars are entered (ecfaa25f)
+
+#### 3.1.0 (2020-05-27)
 
 ##### Bug Fixes
 
