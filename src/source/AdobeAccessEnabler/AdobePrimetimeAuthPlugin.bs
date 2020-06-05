@@ -1,4 +1,3 @@
-'@Ignore - this suite of tests has to be updated for the new AuthManager pattern
 import "pkg:/source/authorization/BaseAuthPlugin.bs" 
 import "pkg:/source/lib/request.bs" 
 import "pkg:/source/lib/uri.bs" 
