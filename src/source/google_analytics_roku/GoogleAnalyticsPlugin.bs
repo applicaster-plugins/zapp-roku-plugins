@@ -6,6 +6,7 @@ class GoogleAnalyticsPlugin extends BaseAnalyticsPlugin
 
 public isEnabled = false
 public isIdentified = false
+private eventFactory = invalid
 
 public function new(plugin)
   super("GoogleAnalyticsPlugin", plugin)
@@ -16,6 +17,8 @@ public function new(plugin)
 end function
 
 public override function start()
+  m.eventFactory = m.createInstance("AnalyticsEventFactory", invalid, "googleAnalyticsEventFactory")
+  m.setInstance("googleAnalyticsEventFactory", m.eventFactory)
   m.setInstance("googleAnalyticsTask", m.task)
   m.task.control = "run"
 end function
