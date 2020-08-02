@@ -38,6 +38,7 @@ end function
 '@Params[{json{field:"v2"} }, "json.field", "v2"]
 '@Params[{json{field:"v2 "} }, "json.field", "v2"]
 '@Params[{json{field:"v2 "} }, "json.field", "v2 "]
+'@Params[{json{field:"v2 "} }, "json.field", "V2 "]
 function load_matching(entry, path, condition)
   m.vm.conditionPath = path
   m.vm.conditionValue = condition
