@@ -54,7 +54,7 @@ public override function load() as boolean
   if m.originEntry <> invalid and MU.isString(m.conditionPath) and MU.isString(m.conditionValue) 
     value = MU.getContentField(m.originEntry, m.conditionPath, invalid)
     
-    if MU.isString(value) and value = m.conditionValue
+    if MU.isString(value) and lcase(value) = lcase(m.conditionValue)
       m.logInfo("this content has a value that matches the locking condition")
       isShowingWarning = true
       
