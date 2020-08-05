@@ -1,0 +1,22 @@
+import "pkg:/source/register_screen_roku/RegisterScreenVM.bs"
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Initialization
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function init()
+  m.top.isConsumingOriginEntry = true
+  m.top.isForcingMenuHidden = true
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Overridden methods
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function getControlName()
+  return "RegisterScreen"
+end function
+
+function createVM()
+  return new RegisterScreenVM(m.top.riversJson)
+end function

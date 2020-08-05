@@ -1,0 +1,137 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<component
+    name='LoginScreen'
+    extends='ZUIBScreen'>
+
+  <interface></interface>
+
+  <children>
+    <Rectangle
+        id='backgroundRectangle'
+        width='1920'
+        height='1080'
+        color='{{=ViewUtils_UIBColor("background_color")}}' />
+    <ZPoster
+        id='backgroundImage'
+        style='{{=ViewUtils_UIBPoster("poster")}}'
+        loadDisplayMode='scaleToFill'
+        loadWidth='1920'
+        loadHeight='1080'
+        width='1920'
+        height='1080' />
+    <ZPoster
+        id='logoPoster'
+        style='{{=ViewUtils_UIBPoster("logo")}}' />
+    <Group
+        id='registerGroup'
+        visible='{{vm.isRefreshing, isSettingInitialValue=true,transform=MOM_transform_invertBoolean}}'>
+      <LayoutGroup
+          id='labelsGroup'
+          layoutDirection='vert'
+          translation='[230,310]'
+          itemSpacings='[56, 56, 26]'>
+        <MLabel
+            id='titleText'
+            style='{{=ViewUtils_UIBLabel("title")}}'
+            width='610' />
+        <MLabel
+            id='descriptionText'
+            style='{{=ViewUtils_UIBLabel("description")}}'
+            width='610' />
+        <MLabel
+            id='opptionalText'
+            style='{{=ViewUtils_UIBLabel("opptional_text1")}}'
+            width='610' />
+        <MLabel
+            id='opptionalText'
+            style='{{=ViewUtils_UIBLabel("opptional_text2")}}'
+            width='610' />
+      </LayoutGroup>
+
+      <LayoutGroup
+          id='controlsGroup'
+          translation='[1040,300]'
+          itemSpacings='[10, 45, 52]'>
+        <ZActionButton
+            id='usernameInput'
+            style='{{:vm.inputStyle}}'
+            labelXOffset='9'
+            text='{{vm.usernameText}}'
+            buttonType='{{vm.usernameButtonType}}'
+            selected='{(vm.onUsernameButtonSelected,isSettingInitialValue=false)}'
+            width='610' />
+
+        <ZActionButton
+            id='nameInput'
+            style='{{:vm.inputStyle}}'
+            labelXOffset='9'
+            text='{{vm.nameText}}'
+            buttonType='{{vm.nameButtonType}}'
+            selected='{(vm.onNameButtonSelected,isSettingInitialValue=false)}'
+            width='610' />
+
+        <ZActionButton
+            id='passwordInput'
+            text='{{vm.passwordText}}'
+            style='{{:vm.inputStyle}}'
+            labelXOffset='9'
+            buttonType='{{vm.passwordButtonType}}'
+            selected='{(vm.onPasswordButtonSelected,isSettingInitialValue=false)}'
+            width='610' />
+
+        <ZActionButton
+            id='confirmPasswordInput'
+            text='{{vm.confirmPasswordText}}'
+            style='{{:vm.inputStyle}}'
+            labelXOffset='9'
+            buttonType='{{vm.confirmPasswordButtonType}}'
+            selected='{(vm.onConfirmPasswordButtonSelected,isSettingInitialValue=false)}'
+            width='610' />
+
+        <ZActionButton
+            id='registerButton'
+            style='{{:vm.reigsterButtonStyle}}'
+            visible='{{vm.isLoading, isSettingInitialValue=true,transform=MOM_transform_invertBoolean}}'
+            selected='{(vm.onRegisterButtonSelected,isSettingInitialValue=false)}'
+            width='610' />
+
+      </LayoutGroup>
+
+      <Group
+          id='errorGroup'
+          translation='[1720,0.0]'
+          visible='{{vm.isErrorShowing}}'>
+        <Poster
+            id='errorBackground'
+            blendColor='#42454A'
+            uri='pkg:/asset-bundle/button-backgrounds.9.png'
+            width='500'
+            height='180' />
+        <MLabel
+            id='errorText'
+            style='{{=ViewUtils_UIBLabel("error")}}'
+            width='500'
+            height='180'
+            text='{{vm.errorText}}' />
+      </Group>
+    </Group>
+
+    <LoadingIndicator
+        id='loadingIndicator'
+        width='100'
+        height='100'
+        translation='[1000,500]'
+        isActive='{{vm.isLoading, isSettingInitialValue=true}}'
+        backgroundVisible='false'
+        text='' />
+
+    <LoadingIndicator
+        id='refreshLoadingIndicator'
+        width='1920'
+        height='1080'
+        translation='[0,0]'
+        isActive='{{vm.isRefreshing, isSettingInitialValue=true}}'
+        backgroundVisible='false'
+        text='' />
+  </children>
+</component>

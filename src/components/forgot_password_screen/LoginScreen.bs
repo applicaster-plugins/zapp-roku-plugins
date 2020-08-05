@@ -1,0 +1,22 @@
+import "pkg:/source/login_screen_roku/LoginScreenVM.bs"
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Initialization
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function init()
+  m.top.isConsumingOriginEntry = true
+  m.top.isForcingMenuHidden = true
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Overridden methods
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function getControlName()
+  return "LoginScreen"
+end function
+
+function createVM()
+  return new LoginScreenVM(m.top.riversJson)
+end function
