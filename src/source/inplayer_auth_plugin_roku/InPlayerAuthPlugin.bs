@@ -1,0 +1,130 @@
+import "pkg:/source/authorization/BaseAuthPlugin.bs" 
+import "pkg:/source/lib/request.bs" 
+import "pkg:/source/lib/uri.bs" 
+import "pkg:/source/lib/APIUtils.bs"
+import "pkg:/source/authorization/BaseAuthPlugin.bs" 
+
+namespace Applicaster.Authentication.InPlayer
+
+class InPlayerAuthPlugin extends BaseAuthPlugin
+
+public apiUrl = "" ' note this is used by APIMixin
+
+public function new(plugin)
+  super("InPlayerAuthPlugin", plugin)
+  m.clientId = plugin.getStringValue("in_player_client_id")
+  if plugin.getStringValue("in_player_environment", "prod") = "prod"
+    m.apiUrl = "https://services.inplayer.com" 
+  else
+    m.apiUrl = "https://staging-v2.inplayer.com"
+  end if
+  
+  APIUtils.mixin(m)
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Overridden
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+public override function _getAccountInfo()
+  'thankfully inplayer's default account json blob matches our own
+  return m.authData.user
+end function
+
+public override function _verify()
+  m.logMethod("_verify")
+  
+  result = invalid
+
+  if not m.isAuthDataExpired()
+    params = {
+      "grant_type": "refresh_token"
+      "client_id": m.clientId
+      "refresh_token": m.authData.refreshToken
+    }
+    
+    m.logInfo("using args", params)
+    result = m.executeAPIRequest("POST", "accounts/authenticate", params)
+    
+    if result <> invalid and result.access_token <> invalid
+      m.logInfo("verify successful")
+      
+      return m.createAuthData("valid", result.access_token, result.access_token, result.refresh_token, result, result.expires, 200, "", result.account)
+    end if
+  else
+    m.logWarn("Plugin has no valid auth data; could not complete verify")
+  end if
+
+  m.logError("verify failed")
+  return m.createErrorFromResult(result)
+end function
+
+public override function _register(credentials)
+  m.logMethod("_register")
+  
+  params = {
+    "grant_type": "password"
+    "type": "consumer"
+    "client_id": m.clientId
+    "full_name": credentials.name
+    "username": credentials.username
+    "password": credentials.password
+    "password_confirmation": credentials.passwordConfirmation
+  }
+  
+  m.logInfo("using args", params)
+  result = m.executeAPIRequest("POST", "accounts", params)
+  
+  if result <> invalid and result.access_token <> invalid
+    m.logInfo("register successful")
+    return m.createAuthData("valid", result.access_token, result.access_token, result.refresh_token, result, result.expires, 200, "", result.account)
+  end if
+  
+  m.logError("registration failed")
+  return m.createErrorFromResult(result)
+end function
+
+public override function _login(credentials)
+  m.logMethod("_login")
+  
+  params = {
+    "grant_type": "password"
+    "client_id": m.clientId
+    "username": credentials.username
+    "password": credentials.password
+  }
+  
+  m.logInfo("using args", params)
+  result = m.executeAPIRequest("POST", "accounts/authenticate", params)
+  
+  if result <> invalid and result.access_token <> invalid
+    m.logInfo("login successful")
+    return m.createAuthData("valid", result.access_token, result.access_token, result.refresh_token, result, result.expires, 200, "", result.account)
+  end if
+  
+  m.logError("login failed")
+  return m.createErrorFromResult(result)
+end function
+
+public override function _logOut()
+  result = m.executeAPIRequest("GET", "accounts/logout", invalid, true, m.authData.accessToken)
+  
+  if MU.getContentField(result, "code", - 1) = 200
+    return m.createAuthData()
+  else
+    return m.createErrorFromResult(result)
+  end if
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ utils
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+private function createErrorFromResult(result)
+  code = MU.getContentField(result, "code", - 1)
+  message = MU.getContentField(result, "errors." + str(code).trim(), "Unknown error")
+  return m.createErrorResult(message, code)
+end function
+
+end class
+end namespace
