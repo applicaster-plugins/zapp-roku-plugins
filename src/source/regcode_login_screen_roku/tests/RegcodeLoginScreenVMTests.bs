@@ -224,17 +224,19 @@ end function
 '@It tests onPollComplete
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+'@Only
 '@Test valid
 function onPollComplete_valid()
   result = { "state" : "valid" }
   m.vm.providerId = "pid"
   m.expectOnce(m.vm.analyticsManager, "callFunc", ["identify", "pid"])
-  m.expectOnce(m.vm.analyticsManager, "callFunc", ["trackEvent", "Login Succesful", "page_loaded", { "provider": "pid" }])
+  m.expectOnce(m.vm.analyticsManager, "callFunc", ["trackEvent", "Signed In", "page_loaded", { "provider": "pid" }])
   m.expectOnce(m.vm, "dismiss", ["success"])
   
   m.vm.onPollComplete(result)
 end function
 
+'@Only
 '@Test fail
 '@Params[invalid]
 '@Params[{}]
