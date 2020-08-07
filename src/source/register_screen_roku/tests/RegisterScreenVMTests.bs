@@ -127,18 +127,18 @@ function processStyles()
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests onLoginButtonSelected
+'@It tests onRegisterButtonSelected
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
 '@Test 
-function onLoginButtonSelected()
+function onRegisterButtonSelected()
   m.vm.isLoading = false
   m.vm.isCredsValid = true
   
   m.expectOnce(m.vm, "processLogin")
   
-  m.vm.onLoginButtonSelected(true)
+  m.vm.onRegisterButtonSelected(true)
 end function
 
 '@Test in progress
@@ -146,7 +146,7 @@ function onLoginButtonSelected_inProgress()
   m.vm.isLoading = true
   m.expectNone(m.vm, "processLogin")
   
-  m.vm.onLoginButtonSelected(true)
+  m.vm.onRegisterButtonSelected(true)
 end function
 
 '@Test invalid creds
@@ -155,7 +155,7 @@ function onLoginButtonSelected_invalidCreds()
   m.vm.isCredsValid = false
   m.expectNone(m.vm, "processLogin")
   
-  m.vm.onLoginButtonSelected(true)
+  m.vm.onRegisterButtonSelected(true)
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -1,7 +1,6 @@
-'@TestSuite AWSLoginScreenVMTests
-import "pkg:/source/maestro/view/viewModel/BaseViewModel.bs"
+'@TestSuite LoginScreenVMTests
 
-namespace TAAWSLSVMT
+namespace Applicaster.LoginSreenVM.Tests
 
 '@BeforeEach
 function beforeEach()

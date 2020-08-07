@@ -3,7 +3,7 @@ import "pkg:/source/lib/ViewUtils.bs"
 import "pkg:/source/mixin/KeyboardDialogMixin.bs"
 
 namespace Applicaster
-class RegsisterScreenVM extends ZUIBScreenVM
+class RegisterScreenVM extends ZUIBScreenVM
 
 'styles
 public inputStyle = invalid
@@ -197,8 +197,7 @@ end function
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 public function checkCredsValid()
-  m.setField("isCredsValid", m.usernameText <> invalid and m.usernameText.trim() <> "" and m.password <> invalid and m.password.trim() <> ""
-  and m.confirmPassword <> invalid and m.confirmPassword.trim() <> "" m.nameText <> invalid and m.nameText.trim() <> "")
+  m.setField("isCredsValid", m.usernameText <> invalid and m.usernameText.trim() <> "" and m.password <> invalid and m.password.trim() <> "" and m.confirmPassword <> invalid and m.confirmPassword.trim() <> "" and m.nameText <> invalid and m.nameText.trim() <> "")
   
   m.setField("isRegisterButtonEnabled", m.isCredsValid and not m.isLoading)
 end function
