@@ -7,10 +7,10 @@ function beforeEach()
     "id": "myAccount"
   }
   pluginConfiguration = {
-    "identifier": "in_player_client_id",
+    "identifier": "client_id",
     "configuration_json": {
-      "in_player_client_id": "cid"
-      "in_player_environment": "dev"
+      "client_id": "cid"
+      "environment": "dev"
     }
   }
   m.expectedHeaders = { "Accept": "application/json", "Content-Type": "application/json" }
@@ -39,15 +39,15 @@ end function
 '@Params["cid2", "dev", "https://staging-v2.inplayer.com"]
 function constructor(clientId, env, expectedApiUrl)
   pluginConfiguration = {
-    "identifier": "in_player_client_id",
+    "identifier": "client_id",
     "configuration_json": { "base_url": "host/" }
   }
   
   pluginConfiguration = {
-    "identifier": "in_player_client_id",
+    "identifier": "client_id",
     "configuration_json": {
-      "in_player_client_id": clientId
-      "in_player_environment": env
+      "client_id": clientId
+      "environment": env
     }
   }
   

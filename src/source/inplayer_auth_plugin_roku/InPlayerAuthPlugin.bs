@@ -12,8 +12,8 @@ public apiUrl = "" ' note this is used by APIMixin
 
 public function new(plugin)
   super("InPlayerAuthPlugin", plugin)
-  m.clientId = plugin.getStringValue("in_player_client_id")
-  if plugin.getStringValue("in_player_environment", "prod") = "prod"
+  m.clientId = plugin.getStringValue("client_id")
+  if plugin.getStringValue("environment", "prod") = "prod"
     m.apiUrl = "https://services.inplayer.com" 
   else
     m.apiUrl = "https://staging-v2.inplayer.com"
