@@ -7,6 +7,7 @@ function beforeEach()
   config = {
     "tracking_id": "#t"
     "client_id": "#c"
+    "user_id": "#u"
   }
   m.modelLocator = createObject("roSGNode", "ModelLocator")
   
@@ -48,3 +49,50 @@ function start()
   m.assertEqual(m.plugin.task.control, "run")
 end function
 
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests is tracking user Id allowed
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Only'
+'@Test is user id allowed valid
+'@Params["allow-tracking-user-id-for-app-family-aaaa","aaaa", true ]
+'@Params["allow-tracking-user-id-for-app-familya-aaaa","aaaa", false ]
+'@Params["allow-tracking-user-id-for-app-family-aaaa","aaaac", false ]
+function isTrackingUserIdAllowed(userId, versionId, result)
+
+  versionPrefix = "allow-tracking-user-id-for-app-family-"
+
+   m.expectOnce(m.plugin, "getUserIdString", [], userId)
+   m.expectOnce(m.plugin, "getAppFamilyId", [], versionId)
+
+  fResult = m.plugin.checkIfTrackingUserIdAllowd()
+
+  m.assertEqual(result, fResult)
+
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests comperStrings
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Only'
+'@Test compoerString valid
+'@Params["aaaaabbbb","aaaaa", "bbbb", true ]
+'@Params["aaaaabbbba","aaaaa", "bbbb", false ]
+'@Params["aaaaabbbba","a", "bbbb", false ]
+function compoerStringValid(s, prefix, suffix, result)
+  fResult = m.plugin.comperStrings(s, prefix, suffix)
+
+  m.assertEqual(fResult, result)
+end function
+
+'@Only'
+'@Test compoerString invalid
+'@Params["aaaaabbbba",invalid, "bbbb", false ]
+'@Params["aaaaabbbba",2, "bbbb", false ]
+function compoerStringInvalid(s, prefix, suffix, result)
+  fResult = m.plugin.comperStrings(s, prefix, suffix)
+
+  m.assertEqual(fResult, result)
+end function
