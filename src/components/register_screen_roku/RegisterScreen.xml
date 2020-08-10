@@ -23,8 +23,8 @@
         id='logoPoster'
         style='{{=ViewUtils_UIBPoster("logo")}}' />
     <Group
-        id='registerGroup'
-        visible='{{vm.isRefreshing, isSettingInitialValue=true,transform=MOM_transform_invertBoolean}}'>
+        id='mainGroup'
+        visible='{{vm.isMainGroupVisible, isSettingInitialValue=true}}'>
       <LayoutGroup
           id='labelsGroup'
           layoutDirection='vert'
@@ -115,6 +115,28 @@
             text='{{vm.errorText}}' />
       </Group>
     </Group>
+
+    <LayoutGroup
+        id='doneGroup'
+        horizAlignment='center'
+        vertAlignment='center'
+        visible='{{vm.isDoneGroupVisible}}'
+        itemSpacings='[30]'>
+      <MLabel
+          id='doneTitleLabel'
+          style='{{=ViewUtils_UIBLabel("done_title")}}' />
+      <MLabel
+          id='doneMessageLabel'
+          style='{{=ViewUtils_UIBLabel("done_message")}}' />
+
+      <ZActionButton
+          id='doneButton'
+          style='{{:vm.processButtonStyle}}'
+          text='{{:vm.riversJson.styles.done_button_text}}'
+          selected='{(vm.onDoneButtonSelected,isSettingInitialValue=false)}'
+          width='610' />
+
+    </LayoutGroup>
 
     <LoadingIndicator
         id='loadingIndicator'

@@ -17,7 +17,7 @@ function beforeEach()
     "client_id": "id1234" 
     "environment": "prod" 
   }))
-  m.plugin = new InplayerEntitlementsPlugin(plugin)
+  m.plugin = new InPlayerEntitlementsPlugin(plugin)
 end function
 
 '@AfterEach
@@ -49,7 +49,7 @@ function constructor(env, id, vodModel, entitlementsPolicy, expectedIsUsingRokuS
     "entitlements_policy": entitlementsPolicy 
   }))
   
-  plugin = new InplayerEntitlementsPlugin(plugin)
+  plugin = new InPlayerEntitlementsPlugin(plugin)
   
   m.assertEqual(plugin.authenticationData, m.modelLocator.authenticationData)
   m.assertEqual(plugin.apiUrl, expectedUrl)

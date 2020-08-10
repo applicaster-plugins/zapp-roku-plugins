@@ -20,6 +20,8 @@ public isLoading = false
 public usernameButtonType = "textInput"
 public passwordButtonType = "textInput"
 public isSubScreenVisible = false
+public isMainGroupVisible = false
+public currentScreen = invalid
 
 public usernameText = ""
 public username = ""
@@ -75,7 +77,7 @@ function processStyles(styles)
   
   m.loginButtonStyle = ViewUtils.makeUIBButtonStyle(styles, "login_button", "custom", styles.login_button_text)
   m.registerButtonStyle = ViewUtils.makeUIBButtonStyle(styles, "register_button", "custom", styles.register_button_text)
-  m.forogotPasswordButtonStyle = ViewUtils.makeUIBButtonStyle(styles, "forgot_password__button", "custom", styles.forgot_password_button_text)
+  m.forgotPasswordButtonStyle = ViewUtils.makeUIBButtonStyle(styles, "forgot_password_button", "custom", styles.forgot_password_button_text)
   
 end function
 
@@ -107,12 +109,12 @@ end function
 public function onRegisterButtonSelected(value)
   m.isShowingRegisterScreen = true
   screen = m.getScreen(m.riversJson.styles.register_screen)
-  toggleSubScreen(screen)
+  m.toggleSubScreen(screen)
 end function
 
 public function onForgotPasswordButtonSelected(value)
-  screen = m.getScreen(m.riversJson.styles.register_screen)
-  toggleSubScreen(screen)
+  screen = m.getScreen(m.riversJson.styles.forgot_password_screen)
+  m.toggleSubScreen(screen)
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -120,6 +122,8 @@ end function
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 function toggleSubScreen(screen)
+  logMethod("toggleSubScreen")
+  
   if m.focusId <> "screenContainer"
     m.preScreenFocusId = m.focusId
   end if
@@ -130,10 +134,12 @@ function toggleSubScreen(screen)
   m.setField("currentScreen", invalid)
   
   m.setField("isSubScreenVisible", screen <> invalid)
+  m.setField("isMainContent", screen = invalid)
+  
   if screen <> invalid
     m.setField("currentScreen", screen)
     m.onsubScreenStateChange(m.currentScreen.state)
-    m.bindNodeField(m.currentScreen, "state", "onsubScreenStateChange", MOM.createBindingProperties(false))
+    m.bindNodeField(m.currentScreen, "state", "onSubScreenStateChange", MOM.createBindingProperties(false))
     m.setFocusId("screenContainer")
   else
     m.setFocusId(m.preScreenFocusId)
@@ -141,7 +147,7 @@ function toggleSubScreen(screen)
   
 end function
 
-private function onsubScreenStateChange(state)
+private function onSubScreenStateChange(state)
   m.logMethod("current screen state change", state, "m.isShowingRegisterScreen", m.isShowingRegisterScreen)
   
   if m.isShowingRegisterScreen and state = "success"
@@ -200,12 +206,14 @@ private function refreshLogin()
   m.authTask = m.createAuthTask("execLoad", m.providerId, "onRefreshComplete")
   
   m.setField("isRefreshing", true)
+  m.setField("isMainGroupVisible", false)
   m.setField("isLoginButtonEnabled", false)
 end function
 
 private function onRefreshComplete(result)
   m.logMethod("onRefreshComplete", result)
   m.setField("isLoading", false)
+  m.setField("isMainGroupVisible", true)
   
   if m.getInstance("user").isLoggedIn
     m.setField("state", "success")
@@ -283,19 +291,8 @@ public function onKeyPressBack() as boolean
     return true
   end if
   
-  if m.focusId = "usernameInput"
-    if not MU.getContentField(m.riversJson, "general.is_flow_blocker", true)
-      m.dismiss("cancel")
-      return true
-    else
-      'TODO - exit app?
-      return false
-    end if
-  else
-    return m.onKeyPressUp()
-  end if
-  
-  return false
+  m.dismiss("cancel")
+  return true
 end function
 
 public function onKeyPressRight() as boolean
@@ -311,6 +308,14 @@ end function
 public function onKeyPressDown() as boolean
   m.logMethod("onKeyPressDown", m.focusId)
   if not m.isSubScreenVisible 
+    m.setFocusId(MU.getItemAtOffset(m.focusIds, m.focusId, 1))
+  end if
+  return true
+end function
+
+public override function onKeyPressUp() as boolean
+  m.logMethod("onKeyPressUp", m.focusId)
+  if not m.isSubScreenVisible
     m.setFocusId(MU.getItemAtOffset(m.focusIds, m.focusId, - 1))
   end if
   return true
@@ -325,13 +330,6 @@ public function onKeyPressOption() as boolean
   return true
 end function
 
-public override function onKeyPressUp() as boolean
-  m.logMethod("onKeyPressUp", m.focusId)
-  if not isSubScreenVisible
-    m.setFocusId(MU.getItemAtOffset(m.focusIds, m.focusId, - 1))
-  end if
-  return true
-end function
 
 end class
 end namespace

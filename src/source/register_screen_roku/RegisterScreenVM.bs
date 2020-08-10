@@ -16,7 +16,8 @@ public confirmPasswordPlaceholderText = ""
 'state
 public isCredsValid = false
 public isRegisterButtonEnabled = false
-public isRefreshing = true
+public isMainGroupVisible = true
+public isDoneGroupVisible = false
 public isLoading = false
 public nameButtonType = "textInput"
 public usernameButtonType = "textInput"
@@ -89,19 +90,6 @@ end function
 '++ callbacks
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-public function onRegisterButtonSelected(value)
-  m.logMethod("onRegisterButtonSelected")
-  
-  if not m.isLoading and m.isCredsValid
-    m.register()
-  else if not m.isCredsValid
-    m.setField("errorText", "Please enter your email address and password")
-    m.setfield("isErrorShowing", true)
-  else
-    m.logWarn("ignoring register button, while loading")
-  end if
-end function
-
 public function onUsernameButtonSelected(value)
   m.showKeyboardDialog("Enter your username", m.username, "onUsernameKeyboardDialogDismissal")
 end function
@@ -117,6 +105,26 @@ end function
 public function onConfirmPasswordButtonSelected(value)
   m.showKeyboardDialog("Enter your password again", m.password, "onConfirmPasswordKeyboardDialogDismissal", true)
 end function
+
+
+public function onRegisterButtonSelected(value)
+  m.logMethod("onRegisterButtonSelected")
+  
+  if not m.isLoading and m.isCredsValid
+    m.register()
+  else if not m.isCredsValid
+    m.setField("errorText", "Please enter your email address and password")
+    m.setfield("isErrorShowing", true)
+  else
+    m.logWarn("ignoring register button, while loading")
+  end if
+end function
+
+public function onDoneButtonSelected(value)
+  m.logMethod("onDoneButtonSelected")
+  m.dismiss("success")
+end function
+
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '++ Keyboard dialog
@@ -226,8 +234,10 @@ public function onRegisterComplete(result)
   m.logMethod("onRegisterComplete", result)
   
   if result <> invalid and result.state = "valid"
-    m.logInfo("logged in succesfull")
-    m.dismiss("success")
+    m.logInfo("Register successful")
+    m.setField("isDoneGroupVisible", true)
+    m.setField("isMainGroupVisible", false)
+    
   else
     m.setField("state", "ready")
     if result <> invalid and result.message <> invalid
@@ -267,19 +277,8 @@ end function
 public function onKeyPressBack() as boolean
   m.logMethod("onKeyPressBack", m.focusId)
   
-  if m.focusId = "usernameInput"
-    if not MU.getContentField(m.riversJson, "general.is_flow_blocker", true)
-      m.dismiss("cancel")
-      return true
-    else
-      'TODO - exit app?
-      return false
-    end if
-  else
-    return m.onKeyPressUp()
-  end if
-  
-  return false
+  m.dismiss("cancel")
+  return true
 end function
 
 public function onKeyPressRight() as boolean

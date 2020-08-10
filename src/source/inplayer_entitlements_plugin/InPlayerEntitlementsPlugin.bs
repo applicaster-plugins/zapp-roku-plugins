@@ -4,7 +4,7 @@ import "pkg:/source/lib/AdminApiModule.bs"
 
 namespace AEAPM
 
-class InplayerEntitlementsPlugin extends BaseEntitlementsPlugin
+class InPlayerEntitlementsPlugin extends BaseEntitlementsPlugin
 
 private validPolicies = ["none", "authOnly", "ICPOnly", "authOrICP", "authAndICP"]
 private validVodModels = ["SVOD", "AVOD", "TVOD", "TVODAndSVOD"]

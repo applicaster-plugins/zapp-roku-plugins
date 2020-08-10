@@ -35,7 +35,7 @@ public override function _verify()
   m.logMethod("_verify")
   
   result = invalid
-
+  
   if not m.isAuthDataExpired()
     params = {
       "grant_type": "refresh_token"
@@ -54,7 +54,7 @@ public override function _verify()
   else
     m.logWarn("Plugin has no valid auth data; could not complete verify")
   end if
-
+  
   m.logError("verify failed")
   return m.createErrorFromResult(result)
 end function
@@ -111,6 +111,21 @@ public override function _logOut()
   
   if MU.getContentField(result, "code", - 1) = 200
     return m.createAuthData()
+  else
+    return m.createErrorFromResult(result)
+  end if
+end function
+
+public override function _forgotPassword(credentials)
+  params = {
+    "merchant_uuid": m.clientId
+    "email": credentials.username
+  }
+  
+  result = m.executeAPIRequest("POST", "/accounts/forgot-password", params)
+  
+  if MU.getContentField(result, "code", - 1) = 200
+    return m.createAuthData("valid")
   else
     return m.createErrorFromResult(result)
   end if

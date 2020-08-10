@@ -7,6 +7,7 @@ import "pkg:/source/login_screen_roku/LoginScreenVM.bs"
 function init()
   m.top.isConsumingOriginEntry = true
   m.top.isForcingMenuHidden = true
+  initializeView(m.top.findNode("screenContainer"))
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
