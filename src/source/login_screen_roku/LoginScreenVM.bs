@@ -80,7 +80,7 @@ function processStyles(styles)
   m.loginButtonStyle = ViewUtils.makeUIBButtonStyle(styles, "login_button", "custom", styles.login_button_text)
   m.registerButtonStyle = ViewUtils.makeUIBButtonStyle(styles, "register_button", "custom", styles.register_button_text)
   m.forgotPasswordButtonStyle = ViewUtils.makeUIBButtonStyle(styles, "forgot_password_button", "custom", styles.forgot_password_button_text)
-  m.maxDebugAccounts = ViewUtils.getUIBInt(styles, "debug_max_acocunts" )
+  m.maxDebugAccounts = ViewUtils.getUIBInt(styles, "debug_max_acocunts")
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -154,7 +154,7 @@ private function onSubScreenStateChange(state)
   
   if m.isShowingRegisterScreen and state = "success"
     m.setField("state", "success")
-  else if state = "cancel"
+  else if state = "success" or state = "cancel"
     m.toggleSubScreen(invalid)
   end if
 end function
@@ -165,37 +165,12 @@ end function
 
 private function onUsernameKeyboardDialogDismissal(text)
   m.logMethod("onKeyboardDialogDismissal")
-  
-  if text.trim() = ""
-    m.setField("usernameText", m.usernamePlaceholderText)
-    m.setField("usernameButtonType", "textInputPlaceholder")
-    m.username = ""
-    m.setField("usernameText", m.usernamePlaceholderText)
-  else
-    m.setField("usernameText", text)
-    m.username = text
-    m.setField("usernameButtonType", "textInput")
-  end if 
-  
-  m.checkCredsValid()
-  
+  KeyboardDialogMixin.setTextFromKeyboard(m, "username", text)
 end function
 
 private function onPasswordKeyboardDialogDismissal(text)
   m.logMethod("onPasswordKeyboardDialogDismissal")
-  
-  if text.trim() = ""
-    m.setField("passwordText", m.passwordPlaceholderText)
-    m.password = ""
-    m.setField("passwordButtonType", "textInputPlaceholder")
-    m.setField("passwordText", m.passwordPlaceholderText)
-  else
-    m.setField("passwordText", KeyboardDialogMixin.getHiddenPasswordText(text))
-    m.password = text
-    m.setField("passwordButtonType", "textInput")
-  end if 
-  
-  m.checkCredsValid()
+  KeyboardDialogMixin.setTextFromKeyboard(m, "password", text, true)
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -208,7 +183,7 @@ private function refreshLogin()
   m.authTask = m.createAuthTask("execLoad", m.providerId, "onRefreshComplete")
   
   m.setField("isRefreshing", true)
-  m.setField("isMainGroupVisible", false)
+  m.setField("isMainGroupVisible")
   m.setField("isLoginButtonEnabled", false)
 end function
 

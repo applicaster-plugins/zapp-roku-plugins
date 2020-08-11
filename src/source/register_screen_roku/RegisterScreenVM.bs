@@ -107,7 +107,7 @@ public function onPasswordButtonSelected(value)
 end function
 
 public function onConfirmPasswordButtonSelected(value)
-  m.showKeyboardDialog("Enter your password again", m.password, "onConfirmPasswordKeyboardDialogDismissal", true)
+  m.showKeyboardDialog("Enter your password again", m.confirmPassword, "onConfirmPasswordKeyboardDialogDismissal", true)
 end function
 
 
@@ -136,72 +136,22 @@ end function
 
 private function onUsernameKeyboardDialogDismissal(text)
   m.logMethod("onKeyboardDialogDismissal")
-  
-  if text.trim() = ""
-    m.setField("usernameText", m.usernamePlaceholderText)
-    m.setField("usernameButtonType", "textInputPlaceholder")
-    m.username = ""
-    m.setField("usernameText", m.usernamePlaceholderText)
-  else
-    m.setField("usernameText", text)
-    m.username = text
-    m.setField("usernameButtonType", "textInput")
-  end if 
-  
-  m.checkCredsValid()
-  
+  KeyboardDialogMixin.setTextFromKeyboard(m, "username", text)
 end function
 
 private function onNameKeyboardDialogDismissal(text)
   m.logMethod("onNameKeyboardDialogDismissal")
-  
-  if text.trim() = ""
-    m.setField("nameText", m.namePlaceholderText)
-    m.setField("nameButtonType", "textInputPlaceholder")
-    m.name = ""
-    m.setField("nameText", m.namePlaceholderText)
-  else
-    m.setField("nameText", text)
-    m.name = text
-    m.setField("nameButtonType", "textInput")
-  end if 
-  
-  m.checkCredsValid()
-  
+  KeyboardDialogMixin.setTextFromKeyboard(m, "name", text)
 end function
 
 private function onPasswordKeyboardDialogDismissal(text)
   m.logMethod("onPasswordKeyboardDialogDismissal")
-  
-  if text.trim() = ""
-    m.setField("passwordText", m.passwordPlaceholderText)
-    m.password = ""
-    m.setField("passwordButtonType", "textInputPlaceholder")
-    m.setField("passwordText", m.passwordPlaceholderText)
-  else
-    m.setField("passwordText", KeyboardDialogMixin.getHiddenPasswordText(text))
-    m.password = text
-    m.setField("passwordButtonType", "textInput")
-  end if 
-  
-  m.checkCredsValid()
+  KeyboardDialogMixin.setTextFromKeyboard(m, "password", text, true)
 end function
 
 private function onConfirmPasswordKeyboardDialogDismissal(text)
   m.logMethod("onConfirmPasswordKeyboardDialogDismissal")
-  
-  if text.trim() = ""
-    m.setField("confirmPasswordText", m.confirmPasswordPlaceholderText)
-    m.confirmPassword = ""
-    m.setField("confirmPasswordButtonType", "textInputPlaceholder")
-    m.setField("confirmPasswordText", m.confirmPasswordPlaceholderText)
-  else
-    m.setField("confirmPasswordText", KeyboardDialogMixin.getHiddenPasswordText(text))
-    m.password = text
-    m.setField("confirmPasswordButtonType", "textInput")
-  end if 
-  
-  m.checkCredsValid()
+  KeyboardDialogMixin.setTextFromKeyboard(m, "confirmPassword", text, true)
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -241,7 +191,7 @@ public function onRegisterComplete(result)
     m.logInfo("Register successful")
     m.setField("isDoneGroupVisible", true)
     m.setField("isMainGroupVisible", false)
-    
+    m.setFocusId("doneButton")
   else
     m.setField("state", "ready")
     if result <> invalid and result.message <> invalid
