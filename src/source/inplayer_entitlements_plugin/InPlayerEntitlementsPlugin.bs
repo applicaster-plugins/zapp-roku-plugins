@@ -130,7 +130,7 @@ public override function loadItem(item) as boolean
   end if
   
   m.logInfo("using args", params)
-  result = m.executeAPIRequest("POST", "items/" + inPlayerId + "/access", invalid, true, token)
+  result = m.executeAPIRequest("FORMPOST", "items/" + inPlayerId + "/access", invalid, true, token)
   
   content = parseJson(MU.getContentField(result, "item.content", "{}"))
   if content.mobile_url <> invalid and content.mobile_url.trim() <> ""
@@ -188,7 +188,7 @@ private function sendPurchasesToInPlayer(purchases)
     params = {
       receipt: formatJson(receipt)
       external_id: receipt.code
-      ' access_fee_id: "TODO" 'TODO - this call does not yet work!
+      access_fee_id: "TODO" 'TODO - this call does not yet work!
     }
     result = m.executeAPIRequest("POST", "external-payments/roku/validate", params, true, token)
     

@@ -13,6 +13,7 @@ public apiUrl = "" ' note this is used by APIMixin
 public function new(plugin)
   super("InPlayerAuthPlugin", plugin)
   m.clientId = plugin.getStringValue("client_id")
+  
   if plugin.getStringValue("environment", "prod") = "prod"
     m.apiUrl = "https://services.inplayer.com" 
   else
@@ -44,7 +45,7 @@ public override function _verify()
     }
     
     m.logInfo("using args", params)
-    result = m.executeAPIRequest("POST", "accounts/authenticate", params)
+    result = m.executeAPIRequest("FORMPOST", "accounts/authenticate", params)
     
     if result <> invalid and result.access_token <> invalid
       m.logInfo("verify successful")
@@ -73,7 +74,7 @@ public override function _register(credentials)
   }
   
   m.logInfo("using args", params)
-  result = m.executeAPIRequest("POST", "accounts", params)
+  result = m.executeAPIRequest("FORMPOST", "accounts", params)
   
   if result <> invalid and result.access_token <> invalid
     m.logInfo("register successful")
@@ -93,9 +94,8 @@ public override function _login(credentials)
     "username": credentials.username
     "password": credentials.password
   }
-  
   m.logInfo("using args", params)
-  result = m.executeAPIRequest("POST", "accounts/authenticate", params)
+  result = m.executeAPIRequest("FORMPOST", "accounts/authenticate", params)
   
   if result <> invalid and result.access_token <> invalid
     m.logInfo("login successful")
@@ -107,6 +107,12 @@ public override function _login(credentials)
 end function
 
 public override function _logOut()
+  m.loadAuthDataFromRegistry()
+  if m.authData = invalid
+    m.logError("cannot log out - not logged in!")
+    return m.createErrorResult("cannot log out: not logged in")
+  end if
+
   result = m.executeAPIRequest("GET", "accounts/logout", invalid, true, m.authData.accessToken)
   
   if MU.getContentField(result, "code", - 1) = 200
@@ -122,7 +128,7 @@ public override function _forgotPassword(credentials)
     "email": credentials.username
   }
   
-  result = m.executeAPIRequest("POST", "/accounts/forgot-password", params)
+  result = m.executeAPIRequest("FORMPOST", "/accounts/forgot-password", params)
   
   if MU.getContentField(result, "code", - 1) = 200
     return m.createAuthData("valid")

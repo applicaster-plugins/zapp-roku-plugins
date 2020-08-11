@@ -35,6 +35,8 @@ private providerId = invalid
 private isShowingRegisterScreen = false
 private preScreenFocusId = "registerButton"
 private focusIds = ["usernameInput", "passwordInput", "loginButton", "registerButton", "forgotPasswordButton"]
+private maxDebugAccounts = 1
+private debugAccountId = 0
 
 public function new(riversJson)
   super(riversJson, "LoginScreenVM")
@@ -78,7 +80,7 @@ function processStyles(styles)
   m.loginButtonStyle = ViewUtils.makeUIBButtonStyle(styles, "login_button", "custom", styles.login_button_text)
   m.registerButtonStyle = ViewUtils.makeUIBButtonStyle(styles, "register_button", "custom", styles.register_button_text)
   m.forgotPasswordButtonStyle = ViewUtils.makeUIBButtonStyle(styles, "forgot_password_button", "custom", styles.forgot_password_button_text)
-  
+  m.maxDebugAccounts = ViewUtils.getUIBInt(styles, "debug_max_acocunts" )
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -131,10 +133,10 @@ function toggleSubScreen(screen)
   if m.currentScreen <> invalid
     m.unbindNodeField(m.currentScreen, "state", "onsubScreenStateChange")
   end if
-  m.setField("currentScreen", invalid)
   
   m.setField("isSubScreenVisible", screen <> invalid)
-  m.setField("isMainContent", screen = invalid)
+  m.setField("isMainGroupVisible", screen = invalid)
+  m.setField("currentScreen", invalid)
   
   if screen <> invalid
     m.setField("currentScreen", screen)
@@ -153,7 +155,7 @@ private function onSubScreenStateChange(state)
   if m.isShowingRegisterScreen and state = "success"
     m.setField("state", "success")
   else if state = "cancel"
-    m.setField("currentScreen", invalid)
+    m.toggleSubScreen(invalid)
   end if
 end function
 
@@ -323,8 +325,12 @@ end function
 
 public function onKeyPressOption() as boolean
   m.logMethod("onKeyPressOption", m.focusId)
-  
-  m.onUsernameKeyboardDialogDismissal(m.riversJson.styles.debug_username)
+  m.debugAccountId++
+  if m.debugAccountId > m.maxDebugAccounts
+    m.debugAccountId = 1
+  end if
+  username = m.riversJson.styles.debug_username.replace("@", str(m.debugAccountId).trim() + "@")
+  m.onUsernameKeyboardDialogDismissal(username)
   m.onPasswordKeyboardDialogDismissal(m.riversJson.styles.debug_password)
   
   return true

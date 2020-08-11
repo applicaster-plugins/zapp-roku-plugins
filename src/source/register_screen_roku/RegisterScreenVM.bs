@@ -38,6 +38,8 @@ public isErrorShowing = false
 
 private providerId = invalid
 private focusIds = ["usernameInput", "nameInput", "passwordInput", "confirmPasswordInput", "registerButton"]
+private maxDebugAccounts = 1
+private debugAccountId = 0
 
 public function new(riversJson)
   super(riversJson, "RegisterScreenVM")
@@ -83,6 +85,8 @@ function processStyles(styles)
   m.setField("inputStyle", inputStyle)
   
   m.registerButtonStyle = ViewUtils.makeUIBButtonStyle(styles, "register_button", "custom", styles.register_button_text)
+  
+  m.maxDebugAccounts = ViewUtils.getUIBInt(styles, "debug_max_acocunts")
   
 end function
 
@@ -301,9 +305,14 @@ end function
 
 public function onKeyPressOption() as boolean
   m.logMethod("onKeyPressOption", m.focusId)
+  m.debugAccountId++
+  if m.debugAccountId > m.maxDebugAccounts
+    m.debugAccountId = 1
+  end if
+  username = m.riversJson.styles.debug_username.replace("@", str(m.debugAccountId).trim() + "@")
   
   m.onUsernameKeyboardDialogDismissal(m.riversJson.styles.debug_username)
-  m.onNameKeyboardDialogDismissal(m.riversJson.styles.debug_username)
+  m.onNameKeyboardDialogDismissal(m.riversJson.styles.debug_name)
   m.onPasswordKeyboardDialogDismissal(m.riversJson.styles.debug_password)
   m.onConfirmPasswordKeyboardDialogDismissal(m.riversJson.styles.debug_password)
   
