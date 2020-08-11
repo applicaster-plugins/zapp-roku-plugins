@@ -7,7 +7,7 @@ class GoogleAnalyticsPlugin extends BaseAnalyticsPlugin
 public isEnabled = false
 public isIdentified = false
 private eventFactory = invalid
-private userName = ""
+private isTrakingUserIdEnabled = false
 
 public function new(plugin)
   super("GoogleAnalyticsPlugin", plugin)
@@ -16,7 +16,13 @@ public function new(plugin)
   m.task.trackingId = plugin.getStringValue("tracking_id")
   m.task.clientId = plugin.getStringValue("client_id")
   
-  userName = plugin.getStringValue("user_name")
+  buildConfig = m.getInstance("buildConfig")
+  versionId = buildConfig.version_id
+  userIdString = plugin.getStringValue("user_id")
+
+  m.isTrakingUserIdEnabled = m.checkIfTrackingUserIdAllowed(userIdString, versionId)
+  
+  
 end function
 
 
@@ -41,7 +47,7 @@ public override function _identify(pluginId, traits = {}, options = {})
       m.logWarn("was previously identified; this is going to idenity with the new plugin")
     end if
     
-    if m.checkIfTrackingUserIdAllowed() <> true 
+    if m.isTrakingUserIdEnabled <> true 
       m.logInfo("traking user is not allowed skip isIdentified")
       return invalid
     end if
@@ -94,14 +100,11 @@ end function
 '++ private impl
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-private function checkIfTrackingUserIdAllowed()
-
-    userId = m.getUserIdString()
-    versionId = m.getAppFamilyId()
+private function checkIfTrackingUserIdAllowed(userIdString, versionId)
 
     prefix = "allow-tracking-user-id-for-app-family-"
     suffix = versionId
-    s = userId
+    s = userIdString
 
     if MU.isString(s) and  MU.isString(prefix) and MU.isString(suffix) 
       if prefix + suffix = s 
@@ -110,14 +113,6 @@ private function checkIfTrackingUserIdAllowed()
     end if
 
     return false 
-end function
-
-private function getAppFamilyId()
-  return "aaaa-bbbb-cccc"
-end function
-
-public function getUserIdString()
-  return m.userName
 end function
 
 end class

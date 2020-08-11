@@ -1,5 +1,4 @@
 '@TestSuite [GAPT] GoogleAnalyticsPluginTests
-
 namespace GAPT
 
 '@BeforeEach
@@ -10,6 +9,8 @@ function beforeEach()
     "user_id": "#u"
   }
   m.modelLocator = createObject("roSGNode", "ModelLocator")
+
+  m.modelLocator.buildConfig = {"version_id": "#vid"}
   
   TU.setModelLocator(m.modelLocator)
   m.pluginData = new BasePlugin({ "configuration_json": config, "identifier": "google_analytics_roku" })
@@ -54,20 +55,48 @@ end function
 '@It tests is tracking user Id allowed
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-'@Only
 '@Test is user id allowed
 '@Params["allow-tracking-user-id-for-app-family-aaaa","aaaa", true ]
 '@Params["allow-tracking-user-id-for-app-familya-aaaa","aaaa", false ]
 '@Params["allow-tracking-user-id-for-app-family-aaaa","aaaac", false ]
-function isTrackingUserIdAllowed(userId, versionId, result)
+function isTrackingUserIdAllowed(userIdString, versionId, result)
 
   versionPrefix = "allow-tracking-user-id-for-app-family-"
 
-   m.expectOnce(m.plugin, "getUserIdString", [], userId)
-   m.expectOnce(m.plugin, "getAppFamilyId", [], versionId)
-
-  fResult = m.plugin.checkIfTrackingUserIdAllowed()
+  fResult = m.plugin.checkIfTrackingUserIdAllowed(userIdString, versionId)
 
   m.assertEqual(result, fResult)
 
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests trackUserIdAllowedFlag
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@BeforeEach
+function beforeEachTrackUserIdAllowedFlag()
+  
+end function
+
+'@Test constructor_trackUser
+'@Params[ "allow-tracking-user-id-for-app-family-aaaa", "aaaa", true ]
+'@Params[ "allow-tracking-user-id-for-app-family-aaac", "aaaa", false ]
+'@Params[ invalid, "aaaa", false ]
+function trackUserIdAllowedFlag(userID, versionId, result)
+
+  config = {
+    "tracking_id": "#t"
+    "client_id": "#c"
+    "user_id": userID
+  }
+  m.modelLocator = createObject("roSGNode", "ModelLocator")
+
+  m.modelLocator.buildConfig = {"version_id": versionId}
+  
+  TU.setModelLocator(m.modelLocator)
+  m.pluginData = new BasePlugin({ "configuration_json": config, "identifier": "google_analytics_roku" })
+  m.plugin = new GoogleAnalyticsPlugin(m.pluginData)
+
+  m.assertEqual(m.plugin.isTrakingUserIdEnabled, result)
+  
 end function
