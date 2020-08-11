@@ -1,5 +1,4 @@
 import "pkg:/source/analytics/BaseAnalyticsPlugin.bs"
-import "pkg:/lib/Utils.bs"
 
 namespace GoogleAnalyticsP
 
@@ -8,7 +7,6 @@ class GoogleAnalyticsPlugin extends BaseAnalyticsPlugin
 public isEnabled = false
 public isIdentified = false
 private eventFactory = invalid
-private isTrackingUserIdAllowd = false
 private userName = ""
 
 public function new(plugin)
@@ -17,9 +15,8 @@ public function new(plugin)
   
   m.task.trackingId = plugin.getStringValue("tracking_id")
   m.task.clientId = plugin.getStringValue("client_id")
-
+  
   userName = plugin.getStringValue("user_name")
-  isTrackingUserIdAllowd = m.checkIfTrackingUserIdAllowd()
 end function
 
 
@@ -32,6 +29,7 @@ public override function start()
   m.setInstance("googleAnalyticsEventFactory", m.eventFactory)
   m.setInstance("googleAnalyticsTask", m.task)
   m.task.control = "run"
+
 end function
 
 public override function _identify(pluginId, traits = {}, options = {})
@@ -43,8 +41,8 @@ public override function _identify(pluginId, traits = {}, options = {})
       m.logWarn("was previously identified; this is going to idenity with the new plugin")
     end if
     
-    if m.isTrackingUserIdAllowd <> true 
-      m.logInfo("traking user not allowd skip isIdentified")
+    if m.checkIfTrackingUserIdAllowed() <> true 
+      m.logInfo("traking user is not allowed skip isIdentified")
       return invalid
     end if
 
@@ -80,7 +78,7 @@ end function
 private function identifyAsAnonymous()
   m.logInfo("identifying as anonymous user")
   m.isIdentified = false
-  recreateTask(plugin.getStringValue("client_id"))
+  recreateTask(m.plugin.getStringValue("client_id"))
 end function
 
 private function recreateTask(accountId)
@@ -96,23 +94,22 @@ end function
 '++ private impl
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-
-private function checkIfTrackingUserIdAllowd()
+private function checkIfTrackingUserIdAllowed()
 
     userId = m.getUserIdString()
     versionId = m.getAppFamilyId()
-    return m.comperStrings(userId, "allow-tracking-user-id-for-app-family-", versionId)
-    
-end function
 
-private function comperStrings(s, prefix, suffix)
-  if MU.isString(s) and  MU.isString(prefix) and MU.isString(suffix) 
-    if prefix + suffix = s 
-      return true
+    prefix = "allow-tracking-user-id-for-app-family-"
+    suffix = versionId
+    s = userId
+
+    if MU.isString(s) and  MU.isString(prefix) and MU.isString(suffix) 
+      if prefix + suffix = s 
+        return true
+      end if
     end if
-  end if
 
-  return false
+    return false 
 end function
 
 private function getAppFamilyId()
