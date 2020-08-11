@@ -80,7 +80,7 @@ function processStyles(styles)
   m.loginButtonStyle = ViewUtils.makeUIBButtonStyle(styles, "login_button", "custom", styles.login_button_text)
   m.registerButtonStyle = ViewUtils.makeUIBButtonStyle(styles, "register_button", "custom", styles.register_button_text)
   m.forgotPasswordButtonStyle = ViewUtils.makeUIBButtonStyle(styles, "forgot_password_button", "custom", styles.forgot_password_button_text)
-  m.maxDebugAccounts = ViewUtils.getUIBInt(styles, "debug_max_acocunts")
+  m.maxDebugAccounts = ViewUtils.getUIBInt(styles, "debug_max_accounts")
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -183,7 +183,7 @@ private function refreshLogin()
   m.authTask = m.createAuthTask("execLoad", m.providerId, "onRefreshComplete")
   
   m.setField("isRefreshing", true)
-  m.setField("isMainGroupVisible")
+  m.setField("isMainGroupVisible", false)
   m.setField("isLoginButtonEnabled", false)
 end function
 

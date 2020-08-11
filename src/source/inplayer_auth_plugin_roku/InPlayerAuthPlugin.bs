@@ -112,7 +112,7 @@ public override function _logOut()
     m.logError("cannot log out - not logged in!")
     return m.createErrorResult("cannot log out: not logged in")
   end if
-
+  
   result = m.executeAPIRequest("GET", "accounts/logout", invalid, true, m.authData.accessToken)
   
   if MU.getContentField(result, "code", - 1) = 200
@@ -142,9 +142,19 @@ end function
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 private function createErrorFromResult(result)
+  m.logMethod("trying to get error from", result)
+  if result = invalid
+    result = {}
+  end if
+  
+  if result.errors <> invalid and result.errors.count() > 0
+    message = result.errors[result.errors.keys()[0]] 
+  else
+    message = MU.getContentField(result, "message", "Unknown error")
+  end if
+  
   code = MU.getContentField(result, "code", - 1)
-  message = MU.getContentField(result, "errors." + str(code).trim(), "Unknown error")
-  return m.createErrorResult(message, code)
+  return m.createErrorResult(message, code, result)
 end function
 
 end class

@@ -86,7 +86,7 @@ function processStyles(styles)
   
   m.registerButtonStyle = ViewUtils.makeUIBButtonStyle(styles, "register_button", "custom", styles.register_button_text)
   
-  m.maxDebugAccounts = ViewUtils.getUIBInt(styles, "debug_max_acocunts")
+  m.maxDebugAccounts = ViewUtils.getUIBInt(styles, "debug_max_accounts")
   
 end function
 
@@ -172,7 +172,7 @@ public function register()
     creds.name = m.nameText
     creds.username = m.usernameText
     creds.password = m.password
-    creds.confirmPassword = m.confirmPassword
+    creds.passwordConfirmation = m.confirmPassword
     m.authTask = m.createAuthTask("execRegister", m.providerId, "onRegisterComplete", creds)
     
     m.setField("isLoginButtonEnabled", false)
@@ -261,7 +261,7 @@ public function onKeyPressOption() as boolean
   end if
   username = m.riversJson.styles.debug_username.replace("@", str(m.debugAccountId).trim() + "@")
   
-  m.onUsernameKeyboardDialogDismissal(m.riversJson.styles.debug_username)
+  m.onUsernameKeyboardDialogDismissal(username)
   m.onNameKeyboardDialogDismissal(m.riversJson.styles.debug_name)
   m.onPasswordKeyboardDialogDismissal(m.riversJson.styles.debug_password)
   m.onConfirmPasswordKeyboardDialogDismissal(m.riversJson.styles.debug_password)
