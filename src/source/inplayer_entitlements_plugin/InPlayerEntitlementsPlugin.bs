@@ -1,0 +1,279 @@
+import "pkg:/source/entitlements/BaseEntitlementsPlugin.bs"
+import "pkg:/source/lib/DateModule.bs"
+import "pkg:/source/lib/AdminApiModule.bs"
+
+namespace AEAPM
+
+class InPlayerEntitlementsPlugin extends BaseEntitlementsPlugin
+
+private validPolicies = ["none", "authOnly", "ICPOnly", "authOrICP", "authAndICP"]
+private validVodModels = ["SVOD", "AVOD", "TVOD", "TVODAndSVOD"]
+
+private entitlementsPolicy = ""
+private vodModel = ""
+
+private authenticationData = invalid
+private date = invalid
+private soonestExpiration = -1
+
+public function new(plugin)
+  super("ApplicasterEntitlementsPlugin", plugin)
+  m.authenticationData = m.getInstance("authenticationData")
+  m.entitlementsPolicy = plugin.getStringValue("entitlements_policy", "none", m.validPolicies)
+  m.vodModel = plugin.getStringValue("vod_model", "AVOD", m.validVodModels)
+  m.isUsingRokuStore = m.entitlementspolicy <> "none" and m.entitlementspolicy <> "authOnly"
+  m.clientId = plugin.getStringValue("client_id")
+  if plugin.getStringValue("environment", "prod") = "prod"
+    m.apiUrl = "https://services.inplayer.com" 
+  else
+    m.apiUrl = "https://staging-v2.inplayer.com"
+  end if
+  
+  APIUtils.mixin(m)
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ overridden
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+public override function getPurchasedItemIds() as object
+  m.logInfo("getPurhcasedItemIds")
+  token = m.getSessionStoreValue("inplayer_auth_plugin_roku", "token")
+  if token = invalid
+    m.logError("not authenticated with inplayer when retrieving item", item)
+    return false
+  end if
+  
+  result = m.executeAPIRequest("GET", "items/access/customers?status=active", invalid, true, token)
+  ids = []
+  
+  collection = MU.getContentField(result, "collection")
+  if MU.isArray(collection)
+    for each fee in collection
+      m.getExternalIds(fee, ids)
+    end for
+    
+  else
+    errors = MU.getContentField(result, "errors", "Unknown error")
+    m.logError("error getting purchased item ids", errors)
+  end if
+  
+  return ids
+end function
+
+public override function postPurchases(purchases) as boolean
+  'TODO probs want better handling/retry scenarios here in future, like on cleeng plugin
+  failedPurchases = m.sendPurchasesToInPlayer(purchases)
+  return failedPurchases.count() = 0
+end function
+
+public override function getAvailableProducts(rokuProducts, purchasedItemIds) as void
+  m.logMethod("getAvailableProducts")
+  'note - available inplayer items are always scoped to an item
+  item = MU.getContentField(m.getInstance("currentSelection"), "currentItem")
+  token = m.getSessionStoreValue("inplayer_auth_plugin_roku", "token")
+  if item = invalid or token = invalid
+    m.logError("these entitlements only work when there is a current selection or user is logged in")
+    m.availableProducts.availableProducts = []
+    return
+  end if
+  inPlayerIds = m.getInPlayerFeeIdsForItem(item, token)
+  
+  products = []
+  for each rokuProduct in rokuProducts
+    for each id in inPlayerIds
+      if id = rokuProduct.code
+        products.push(rokuProduct)
+      else
+        m.logWarn("ignoring roku purchase", rokuProduct.code, "which is irrelevant to item", item)
+      end if
+    end for
+  end for
+  
+  m.availableProducts.availableProducts = products
+end function
+
+public override function getEntitlements() as dynamic
+  entitlements = m.getInstance("entitlements")
+  
+  if entitlements = invalid or entitlements.subType() <> "SimpleEntitlements"
+    m.logInfo("the current IOC registred entitlements object is incompatible with this plugin, creating a new entitlements object")
+    entitlements = createObject("roSGNode", "SimpleEntitlements")
+    entitlements.availableProducts = m.availableProducts
+    entitlements.authenticationData = m.authenticationData
+    m.setInstance("entitlements", entitlements)
+  end if
+  
+  entitlements.policy = m.entitlementsPolicy
+  entitlements.vodModel = m.vodModel
+  entitlements.requiresLoadToAscertainEntitlements = true
+  entitlements@.configure()
+  if m.soonestExpiration <> -1
+    entitlements.expiryTimeInSeconds = m.soonestExpiration
+  end if
+  return entitlements
+end function
+
+public override function loadItem(item) as boolean
+  m.logMethod("loadItem")
+  
+  token = m.getSessionStoreValue("inplayer_auth_plugin_roku", "token")
+  if token = invalid
+    m.logError("not authenticated with inplayer when retrieving item", item)
+    return false
+  end if
+  
+  inPlayerId = MU.getContentField(item, "extensions.external_id")
+  if inPlayerId = invalid
+    m.logError("could not ascertain inplayer id with item", item)
+    return false
+  end if
+  
+  result = m.executeAPIRequest("GET", "items/" + MU.asString(inPlayerId) + "/access", invalid, true, token)
+  
+  content = parseJson(MU.getContentField(result, "item.content", "{}"))
+  if content.mobile_url <> invalid and content.mobile_url.trim() <> ""
+    if item.originalUrl = invalid
+      m.logInfo("this item has never been manipulated; storing it's original url")
+      MU.setOrAddNodeField(item, "originalUrl", item.url)
+    end if
+    item.url = content.mobile_url
+    item.isLoaded = true
+    return true
+  end if
+  
+  errorMessage = m.getErrorMessage(result, "Error loading item: " + item.title)
+  m.logError("could not unlock content:", errorMessage)
+  MU.setOrAddNodeField(item, "errorMessage", errorMessage)
+  return false
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ private impl
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+private function getErrorMessage(result, defaultMessage)
+  if result <> invalid and result.errors <> invalid
+    for each id in result.errors
+      return result.errors[id]
+    end for 
+  end if
+  return defaultMessage
+end function
+
+' /**
+'  * @member sendPurchasesToInPlayer
+'  * @memberof module:InplayerEntiltementsPlugin
+'  * @instance
+'  * @function
+'  * @description description
+'  * @param {paramType} paramDescription
+'  * @returns {returnType} returnDescription
+'  */
+
+private function sendPurchasesToInPlayer(purchases)
+  m.logMethod("postPurchasesImpl")
+  failureCount = 0
+  
+  token = m.getSessionStoreValue("inplayer_auth_plugin_roku", "token")
+  if token = invalid
+    m.logError("not authenticated with inplayer when sending purchases")
+    return []
+  end if
+  
+  failedPurchases = []
+  
+  for each receipt in purchases
+    accessFeeId = m.getAccessFeeId(receipt.code)
+    itemId = m.getItemId(receipt.code)
+    
+    if accessFeeId <> invalid
+      params = {
+        receipt: receipt.purchaseId
+        ' external_id: receipt.code
+        item_id: itemId
+        access_fee_id: accessFeeId
+      }
+      result = m.executeAPIRequest("FORMPOST", "v2/external-payments/roku/validate", params, true, token)
+    else
+      m.logError("Could not ascertain access code id for purchase receipt", receipt)
+      result = invalid
+    end if
+    
+    code = MU.getContentField(result, "code", - 1)
+    'TODO get code for already purchased error and ignore it!
+    if code <> 200
+      m.logError("failed to register receipt code:", code)
+      failedPurchases.push(receipt)
+    end if
+  end for
+  
+  return failedPurchases
+end function
+
+private function getAccessFeeId(rokuCode)
+  return m.getCodePart(rokuCode, 1)
+end function
+
+private function getItemId(rokuCode)
+  return m.getCodePart(rokuCode, 0)
+end function
+
+private function getCodePart(rokuCode, index)
+  if rokuCode <> invalid
+    parts = rokuCode.split("_")
+    
+    if parts.count() = 2
+      value = parts[index].toInt()
+      
+      if value <> 0
+        return value
+      end if
+    end if
+  end if
+  
+  m.logError("rokuCode", rokuCode, "is incorrectly formatted")
+  return invalid
+end function
+
+private function getInPlayerFeeIdsForItem(item, token) as object
+  ids = []
+  inPlayerId = MU.getContentField(item, "extensions.external_id")
+  
+  if inPlayerId <> invalid
+    result = m.executeAPIRequest("GET", "v2/items/" + str(inPlayerId).trim() + "/access-fees", invalid, true, token)
+    
+    if result <> invalid
+      for each item in result
+        m.getExternalIds(item, ids, false)
+      end for
+    end if
+    
+  else
+    m.logWarn("could not ascertain inplayer id with item", item)
+  end if
+  
+  return ids
+end function
+
+private function getExternalIds(item, ids, isOnlyGettingFirst = true)
+  if item.external_fees <> invalid
+    for each externalFee in item.external_fees
+      externalId = MU.getContentField(externalFee, "external_id")
+      
+      if externalId <> invalid
+        ids.push(externalId)
+        if isOnlyGettingFirst
+          exit for
+        end if
+      else
+        m.logError("error finding external ids for item", item)
+      end if
+      
+    end for
+  end if
+end function
+
+end class
+end namespace

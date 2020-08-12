@@ -1,0 +1,437 @@
+'@TestSuite IPET InplayerEntitlementsTests
+
+namespace InplayerEntitlements.Tests
+
+'@BeforeEach
+function beforeEach()
+  m.modelLocator = createObject("roSGNode", "ModelLocator")
+  
+  m.modelLocator = CreateObject("roSGNode", "ModelLocator")
+  m.modelLocator.constants = { id: "constants" }
+  m.modelLocator.plugins = []
+  TU.setModelLocator(m.modelLocator)
+  
+  'dependencies for testing plugin creation
+  
+  plugin = BasePlugin(PPMT.CreatePluginJson("1", {
+    "client_id": "id1234" 
+    "environment": "dev" 
+  }))
+  
+  m.plugin = new InPlayerEntitlementsPlugin(plugin)
+end function
+
+'@AfterEach
+function afterEach()
+  TU.unsetModelLocator()
+  AppService.clearClassInstances()
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests constructor
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test 
+'@Params["prod", "123", "AVOD", "none", false, "https://services.inplayer.com"]
+'@Params["prod", "123", "SVOD", "none", false, "https://services.inplayer.com"]
+'@Params["prod", "1234", "SVOD", "none", false, "https://services.inplayer.com"]
+'@Params["dev", "123", "AVOD", "none", false, "https://staging-v2.inplayer.com"]
+'@Params["dev", "123", "SVOD", "none", false, "https://staging-v2.inplayer.com"]
+'@Params["dev", "1234", "SVOD", "none", false, "https://staging-v2.inplayer.com"]
+'@Params["dev", "a123", "AVOD", "authOnly", false, "https://staging-v2.inplayer.com"]
+'@Params["dev", "b123", "SVOD", "ICPOnly", true, "https://staging-v2.inplayer.com"]
+'@Params["dev", "c1234", "SVOD", "authOrICP", true, "https://staging-v2.inplayer.com"]
+'@Params["dev", "d1234", "SVOD", "authAndICP", true, "https://staging-v2.inplayer.com"]
+function constructor(env, id, vodModel, entitlementsPolicy, expectedIsUsingRokuStore, expectedUrl)
+  plugin = BasePlugin(PPMT.CreatePluginJson("1", {
+    "client_id": id
+    "environment": env
+    "vod_model": vodModel
+    "entitlements_policy": entitlementsPolicy 
+  }))
+  
+  plugin = new InPlayerEntitlementsPlugin(plugin)
+  
+  m.assertEqual(plugin.authenticationData, m.modelLocator.authenticationData)
+  m.assertEqual(plugin.apiUrl, expectedUrl)
+  m.assertEqual(plugin.vodModel, vodModel)
+  m.assertEqual(plugin.entitlementsPolicy, entitlementsPolicy)
+  m.assertEqual(plugin.clientId, id)
+  m.assertEqual(plugin.isUsingRokuStore, expectedIsUsingRokuStore)
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests getPurchasedItemIds
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test not logged in
+function getPurchasedItemIds_not_authd()
+  m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], invalid)
+  m.assertFalse(m.plugin.getPurchasedItemIds())
+end function
+
+'@Test logged in
+'@Params[invalid, []]
+'@Params[{}, []]
+'@Params[[], []]
+'@Params[[{}], []]
+'@Params[[{"errors": {"401": "Invalid auth Token"}}], []]
+'@Params[[{external_fees:invalid}], []]
+'@Params[[{external_fees:[{external_id: invalid}]}], []]
+'@Params[[{external_fees:[{external_id: "1"}]}], ["1"]]
+'@Params[[{external_fees:[{external_id: "1"},{external_id: "2"}]}], ["1"]]
+'@Params[[{external_fees:[{external_id: "1"},{external_id: "2"}]}, {external_fees:[{external_id: "3"}]}], ["1", "3"]]
+function getPurchasedItemIds_invalidScenarios(response, expectedIds) as void
+  m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], "t")
+  m.expectOnce(m.plugin, "executeAPIRequest", ["GET", "items/access/customers?status=active", invalid, true, "t"], response)
+  
+  result = m.plugin.getPurchasedItemIds()
+  m.assertArrayContainsSubset(result, expectedIds)
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests post purchases
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test post Purchases - no failures
+'@Params[[], true]
+'@Params[[{"error": "here"}], false]
+function getEntitlements_postPurchases(response, expectedResult) as void
+  rokuPurchases = {}
+  m.expectOnce(m.plugin, "sendPurchasesToInPlayer", [rokuPurchases], response)
+  
+  result = m.plugin.postPurchases(rokuPurchases)
+  m.assertEqual(result, expectedResult)
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests getAvailableProducts
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test invalid scenarios
+'@Params[invalid, invalid]
+'@Params["t", invalid]
+'@Params[invalid, {"id": "1"}]
+function getAvailableProducts_not_valid(token, item)
+  rokuCatalogItems = [RCSMT_CreateRokuCatalogItem("1"), RCSMT_CreateRokuCatalogItem("2"), RCSMT_CreateRokuCatalogItem("3")]
+  currentSelection = { id: "currentSelection", "currentItem": item }
+  
+  m.expectOnce(m.plugin, "getInstance", ["currentSelection"], currentSelection)
+  m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], token)
+  
+  m.modelLocator.availableProducts.availableProducts = ["something"]
+  m.plugin.getAvailableProducts(rokuCatalogItems, ["1"])
+  m.assertEmpty(m.modelLocator.availableProducts.availableProducts)
+  
+end function
+
+'@Test valid scenarios
+'@Params[[], []]
+'@Params[["1"], ["1"]]
+'@Params[["1", "2"], ["1", "2"]]
+'@Params[["1", "2", "3"], ["1", "2", "3"]]
+'@Params[["4", "2", "3"], [2", "3"]]
+'@Params[["4", "5", "6"], []]
+function getAvailableProducts_valid(feeIds, expectedIds)
+  rokuCatalogItems = [RCSMT_CreateRokuCatalogItem("1"), RCSMT_CreateRokuCatalogItem("2"), RCSMT_CreateRokuCatalogItem("3")]
+  item = { id: "item" }
+  currentSelection = { id: "currentSelection", "currentItem": item }
+  
+  m.expectOnce(m.plugin, "getInstance", ["currentSelection"], currentSelection)
+  m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], "t")
+  
+  m.modelLocator.availableProducts.availableProducts = ["something"]
+  
+  m.expectOnce(m.plugin, "getInPlayerFeeIdsForItem", [item, "t"], feeIds)
+  
+  
+  m.plugin.getAvailableProducts(rokuCatalogItems, purchasedIds)
+  
+  products = m.modelLocator.availableProducts.availableProducts
+  m.assertArrayCount(products, expectedIds.count())
+  
+  productIds = []
+  for each product in products
+    productIds.push(product.code)
+  end for
+  
+  m.assertArrayContainsSubset(productIds, expectedIds)
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests loaItem
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test noToken
+function loadItem_noToken()
+  m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], invalid)
+  
+  item = { 
+    id: "item"
+    extensions: {
+      external_id: "xid"
+    }
+  }
+  m.assertFalse(m.plugin.loadItem(item))
+  
+end function
+
+'@Test invalid item
+'@Params[invalid]
+'@Params[{"id":"item"}]
+'@Params[{"id":"item", extensions: invalid}]
+'@Params[{"id":"item", extensions: {"other": true}}]
+'@Params[{"id":"item", extensions: {"external_id": invalid}}]
+function loadItem_invalid_item(item)
+  m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], "t")
+  m.assertFalse(m.plugin.loadItem(item))
+end function
+
+'@Test valid
+function loadItem_valid()
+  m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], "t")
+  item = createObject("roSGNode", "Node")
+  item.addFields({ 
+    id: "item"
+    extensions: {
+      external_id: "xid"
+    }
+    url: "ourl"
+  })
+  
+  
+  result = { 
+    id: "result"
+    item: {
+      content: formatJson({ mobile_url: "changedUrl" })
+    }
+  }
+  m.expectOnce(m.plugin, "executeAPIRequest", ["GET", "items/xid/access", invalid, true, "t"], result)
+  
+  m.assertTrue(m.plugin.loadItem(item))
+  
+  m.assertInvalid(item.error)
+  m.assertEqual(item.originalUrl, "ourl")
+  m.assertEqual(item.url, "changedUrl")
+  
+end function
+
+'@Test server errors
+'@Params[invalid, "Error loading item: item title"]
+'@Params[{}, "Error loading item: item title"]
+'@Params[{errors:invalid]}, "Error loading item: item title"]
+'@Params[{errors:{}]}, "Error loading item: item title"]
+'@Params[{errors:{"401":"custom error"}}, "custom error"]
+function loadItem_errors(result, expectedErrorMessage)
+  m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], "t")
+  item = createObject("roSGNode", "Node")
+  item.addFields({ 
+    id: "item"
+    title: "item title"
+    extensions: {
+      external_id: "xid"
+    }
+    url: "ourl"
+  })
+  
+  m.expectOnce(m.plugin, "executeAPIRequest", ["GET", "items/xid/access", invalid, true, "t"], result)
+  
+  m.assertFalse(m.plugin.loadItem(item))
+  
+  m.assertEqual(item.errorMessage, expectedErrorMessage)
+  m.assertInvalid(item.originalUrl)
+  m.assertEqual(item.url, "ourl")
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests getEntitlements
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests sendPurchasesToInPlayer
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test no purchase scenarios
+'@Params[invalid]
+'@Params[[]]
+'@Params[[{id:"p1"}]]
+function sendPurchasesToInPlayer_no_purchases(purchases)
+  m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], invalid)
+  
+  m.assertEmpty(m.plugin.sendPurchasesToInPlayer(purchases))
+end function
+
+'@Test one purchase
+'@Params[400, 1]
+'@Params[201, 1]
+'@Params[200, 0]
+function sendPurchasesToInPlayer_one_purchase(code, expectedFailCount)
+  m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], "t")
+  p1 = { code: "99_100", purchaseId: "r1" }
+  purchases = [p1]
+  
+  expectedParams = {
+    receipt: "r1"
+    ' external_id: "99_100"
+    access_fee_id: 100
+    item_id: 99
+  }
+  result = {
+    "code": code
+  }
+  m.expectOnce(m.plugin, "executeAPIRequest", ["FORMPOST", "v2/external-payments/roku/validate", expectedParams, true, "t"], result)
+  
+  m.assertArrayCount(m.plugin.sendPurchasesToInPlayer(purchases), expectedFailCount)
+end function
+
+'@Test multiple purchases
+'@Params[400, 408, 500, ["a_100", "b_101", "c_102"]]
+'@Params[201, 200, 200, ["a_100"]]
+'@Params[200, 200, 400, ["c_102"]]
+function sendPurchasesToInPlayer_multiple_purchases(code1, code2, code3, expectedFailIds)
+  m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], "t")
+  p1 = { code: "99_101", purchaseId: "r1" }
+  p2 = { code: "98_102", purchaseId: "r2" }
+  p3 = { code: "97_103", purchaseId: "r3" }
+  purchases = [p1, p2, p3]
+  
+  expectedParams1 = {
+    receipt: "r1"
+    ' external_id: "99_101"
+    access_fee_id: 101
+    item_id: 99
+  }
+  r1 = { "code": code1}
+  expectedParams2 = {
+    receipt: "r2"
+    ' external_id: "98_102"
+    access_fee_id: 102
+    item_id: 98
+  }
+  r2 = { "code": code2}
+  expectedParams3 = {
+    receipt: "r3"
+    ' external_id: "97_103"
+    access_fee_id: 103
+    item_id: 97
+  }
+  r3 = { "code": code3}
+  
+  m.expectOnce(m.plugin, "executeAPIRequest", ["FORMPOST", "v2/external-payments/roku/validate", expectedParams1, true, "t"], r1)
+  m.expectOnce(m.plugin, "executeAPIRequest", ["FORMPOST", "v2/external-payments/roku/validate", expectedParams2, true, "t"], r2)
+  m.expectOnce(m.plugin, "executeAPIRequest", ["FORMPOST", "v2/external-payments/roku/validate", expectedParams3, true, "t"], r3)
+  
+  failedReceipts = m.plugin.sendPurchasesToInPlayer(purchases)
+  m.assertArrayCount(failedReceipts, expectedFailIds.count())
+  
+  for each id in expectedFailIds
+    m.AssertAAcontainsSubset(failedReceipts, { "code": id })
+  end for
+  
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests getAccessFeeId
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test 
+'@Params[invalid, invalid]
+'@Params["", invalid]
+'@Params["123", invalid]
+'@Params["123_", invalid]
+'@Params["123_0", invalid]
+'@Params["123_4", 4]
+'@Params["123_56789", 56789]
+'@Params["123_456", 456]
+function getAccessFeeId(rokuCode, expected)
+  m.assertEqual(m.plugin.getAccessFeeId(rokuCode), expected)
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It INTEGRATION tests
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@BeforeEach
+function integration_beforeEach()
+  m.superBeforeEach = InplayerEntitlements.Tests.beforeEach
+  m.superBeforeEach()
+  m.item = createObject("roSGNode", "ZPEntry")
+  m.item.extensions = {
+    "external_id": 73823
+  }
+  m.currentSelection = {
+    currentItem: m.item
+  }
+  
+  
+  m.integrationToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImp0aSI6IjE1NTYxMjBjLTE2MWMtNDkzMS05YTNjLWMxODM5NzYwOWY3YSJ9.eyJhdWQiOiI4NjU3NTJhOGY1ODk0MjM1YTA1ZGVjYjZiMDc0MTAxZCIsImp0aSI6IjE1NTYxMjBjLTE2MWMtNDkzMS05YTNjLWMxODM5NzYwOWY3YSIsImlhdCI6MTU5NzA5NTc4NSwibmJmIjoxNTk3MDk1Nzg1LCJleHAiOjE1OTk2OTEzODUsInN1YiI6ImdjdGVzdDFAdGFudGF3b3dhLmNvbSIsInNjb3BlcyI6W10sIm1pZCI6NDUzNzksImFpZCI6NDkxNDEsIm11aSI6IjRiMjg3ODdjLWQ4YjYtNDAzMC05ZTczLTlhMjliMjI0MWE4MSIsImN0eCI6WyJjb25zdW1lciJdLCJ0aWQiOjQ5MTQxLCJ0dXVpZCI6IjE1NTYxMjBjLTE2MWMtNDkzMS05YTNjLWMxODM5NzYwOWY3YSIsIm9pZCI6MH0.32GGcyMBawERXaPKQjdnk1KBnqOG44SgkQO2dnnMB08"
+end function
+
+'@Test
+function integration_makePurhcase()
+  
+  m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], m.integrationToken)
+  
+  purchases = InplayerEntitlements.Tests.make_live_purchase()
+  m.plugin.sendPurchasesToInPlayer(purchases)
+end function
+
+function make_live_purchase(code = "73228_17870")
+  channelStore = new RokuChannelStoreModule(false)
+  rcs = channelStore.getChannelStore()
+  logInfo("MAKING ROKU PURCHASE", code)
+  result = channelStore.doRokuPurchase(invalid, code, 1)
+  logInfo("purhcased", result)
+  return result
+end function
+
+function getProducts()
+  channelStore = new RokuChannelStoreModule(false)
+  rcs = channelStore.getChannelStore()
+  result = channelStore.getRokuCatalog(rcs)
+  logInfo("products", result)
+  return result
+end function
+
+'@Test getAvailableProducts
+function integration_getAvailableProducts()
+  m.expectOnce(m.plugin, "getInstance", ["currentSelection"], m.currentSelection)
+  
+  m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], m.integrationToken)
+  
+  products = InplayerEntitlements.Tests.getProducts()
+  m.plugin.getAvailableProducts(products, [])
+  
+  logInfo("products", m.plugin.availableProducts.availableProducts)
+end function
+
+'@Test loadItem
+function integration_loadItem()
+  m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], m.integrationToken)
+  
+  item = createObject("roSGNode", "ZPEntry")
+  item.extensions = {
+    "external_id": 73823
+  }
+  m.plugin.loadItem(item)
+  logInfo("item", item.url)
+  
+end function
+
+'@Only
+'@Test getPurchasedItemIds
+function integration_getPurchasedItemIds()
+  m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], m.integrationToken)
+  
+  result = m.plugin.getPurchasedItemIds()
+  logInfo("item ids", result)
+  
+end function
+
+
+
+end namespace
