@@ -10,9 +10,10 @@ function initializeGA()
   if gamobile_client_id = invalid or gamobile_client_id = ""
     gamobile_client_id = device.GetRandomUUID()
   end if
+  gamobile_custom_fileds = [m.top.customSessionParams]
   
   ' Init analytics
-  initGAMobile(gamobile_tracking_ids, gamobile_client_id)
+  initGAMobile(gamobile_tracking_ids, gamobile_client_id, gamobile_custom_fileds)
   enableGAMobile(true)
   
   ' Enable or disable debug here for viewing events on the console
@@ -66,6 +67,10 @@ function execGampLoop()
         if data.description = invalid then data.description = ""
         gamobileException(data.description)
       else if field = "trackingId" then
+        initializeGA()
+      else if field = "clientId" then
+        initializeGA()
+      else if field = "customSessionParams" then
         initializeGA()
       end if
     end if

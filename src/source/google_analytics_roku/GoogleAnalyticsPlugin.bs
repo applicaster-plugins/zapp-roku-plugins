@@ -22,7 +22,6 @@ public function new(plugin)
 
   m.isTrakingUserIdEnabled = m.checkIfTrackingUserIdAllowed(userIdString, versionId)
   
-  
 end function
 
 
@@ -62,7 +61,7 @@ public override function _identify(pluginId, traits = {}, options = {})
       if accountInfo.id <> invalid and accountInfo.id.trim() <> ""
         m.logInfo("identifying analytics with the userId", accountInfo.id, "for plugin:", pluginId)
         m.logInfo("recrating GoogleAnalyticsTask with the userId", accountInfo.id, "for plugin:", pluginId)
-        recreateTask(accountId)
+        setGoogleTaskUserId(accountInfo.id)
       else
         m.logError("identify called; but ther id was empty!")
         m.identifyAsAnonymous()
@@ -84,16 +83,14 @@ end function
 private function identifyAsAnonymous()
   m.logInfo("identifying as anonymous user")
   m.isIdentified = false
-  recreateTask(m.plugin.getStringValue("client_id"))
+  setGoogleTaskUserId(invalid)
 end function
 
-private function recreateTask(accountId)
-  m.task.control = "stop"
-  m.task = m.createInstance("GoogleAnalyticsTask", invalid, "googleAnalyticsTask")  
-  m.task.trackingId = plugin.getStringValue("tracking_id")
-  m.task.clientId = accountId
-  m.setInstance("googleAnalyticsTask", m.task)
-  m.task.control = "run"
+private function setGoogleTaskUserId(userId)
+  customSessionParams = {
+    "uid":"userId"
+  }
+  m.task.customSessionParams = customSessionParams
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
