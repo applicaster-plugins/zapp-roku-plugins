@@ -1,0 +1,67 @@
+import "pkg:/source/plugin-support/PluginManager.bs"
+import "pkg:/source/lib/ZBaseClass.bs"
+import "pkg:/source/maestro/lib/Utils.bs"
+import "pkg:/source/lib/request.bs" 
+
+namespace Applicaster
+
+' /**
+'  * @module EntitlementsItemLoader
+'  * @description retrieves the content url from the entitlements manager
+'  */
+class EntitlementsItemLoader extends ZBaseClass
+
+private matchingPath = ""
+private matchingValue = ""
+
+public function new()
+  m.super("EntitlementsItemLoader")
+  m.plugins = m.getClassInstance("PluginManager")
+  
+  plugin = m.plugins.getPluginById("oc_url_token_appender")
+  
+  if plugin.isValid
+    domain = lcase(plugin.getStringValue("domain", ""))
+    m.matchingPath = plugin.getStringValue("matching_path", "")
+    m.matchingValue = plugin.getStringValue("matching_value", "")
+  else
+    m.logError("There was no plugin config!")
+    domain = ""
+    m.matchingPath = ""
+    m.matchingValue = ""
+  end if
+  
+end function
+
+public function execute()
+  currentSelection = m.getInstance("currentSelection")
+  
+  item = currentSelection.currentItem
+  
+  if not m.isItemMatch(item)
+    m.logError("item does not match")
+    return "success"
+  end if
+  
+  entitlementsManager = m.getClassInstance("EntitlementsManager")
+  if entitlementsManager.loadItem(item)
+    return "success"
+  else
+    return "error"
+  end if
+end function
+
+function isItemMatch(item)
+  if m.matchingPath = "all"
+    return true
+  end if
+  
+  value = MU.getContentField(item, m.matchingPath, invalid)
+  if not MU.isString(value)
+    value = formatJson(value)
+  end if
+  return value = m.matchingValue
+end function
+
+end class
+end namespace
