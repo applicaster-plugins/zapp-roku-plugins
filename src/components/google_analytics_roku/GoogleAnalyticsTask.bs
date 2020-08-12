@@ -29,6 +29,8 @@ function execGampLoop()
   m.top.observeField("transaction", port)
   m.top.observeField("exception", port)
   m.top.observeField("trackingId", port)
+  m.top.observeField("clientId", port)
+  m.top.observeField("customSessionParams", port)
   
   initializeGA()
   
