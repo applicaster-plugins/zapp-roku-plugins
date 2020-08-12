@@ -50,6 +50,25 @@ function start()
   m.assertEqual(m.plugin.task.control, "run")
 end function
 
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests unidentify
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test unidenfiy
+function unidentify()
+  m.expectOnce(m.plugin, "identifyAsAnonymous")
+  m.plugin._unidentify("aaaaaa")
+end function
+
+'@Test identifyAsAnonymous
+function identifyAsAnonymous()
+  m.isIdentified = true
+  m.expectOnce(m.plugin, "setGoogleTaskUserId", invalid)
+
+  m.plugin.identifyAsAnonymous()
+
+  m.assertEqual(m.plugin.isIdentified, false)
+end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '@It tests is tracking user Id allowed
@@ -78,7 +97,6 @@ function beforeEachTrackUserIdAllowedFlag()
   
 end function
 
-'@Only
 '@Test constructor_trackUser
 '@Params[ "allow-tracking-user-id-for-app-family-aaaa", "aaaa", true ]
 '@Params[ "allow-tracking-user-id-for-app-family-aaac", "aaaa", false ]
@@ -100,4 +118,31 @@ function trackUserIdAllowedFlag(userID, versionId, result)
 
   m.assertEqual(m.plugin.isTrakingUserIdEnabled, result)
   
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests setGoogleTaskUserId
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test valid
+'@Params["user123", "user123" ]
+'@Params["user 123", "user%20%123" ]
+function setGoogleTaskUserId(userID, encodeUserId)
+  params = {
+      "uid": encodeUserId
+  }
+
+  m.plugin.setGoogleTaskUserId(userID)
+
+  m.assertEqual(m.plugin.task.customSessionParams, params)
+end function
+
+'@Test return invalid
+'@Params[invalid ]
+'@Params[{} ]
+'@Params[123 ]
+function setGoogleTaskUserId_reutrn_invalid(userID)
+  m.plugin.setGoogleTaskUserId(userID)
+
+  m.assertEqual(m.plugin.task.customSessionParams, invalid)
 end function

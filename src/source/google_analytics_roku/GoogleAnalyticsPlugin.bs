@@ -87,16 +87,6 @@ private function identifyAsAnonymous()
   m.setGoogleTaskUserId(invalid)
 end function
 
-private function setGoogleTaskUserId(userId)
-  if(userId <> invalid)
-    m.task.customSessionParams = {
-      "uid": Box(userId).Escape()
-    }
-  else
-     m.task.customSessionParams = invalid
-  end if
-end function
-
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '++ private impl
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -114,6 +104,16 @@ private function checkIfTrackingUserIdAllowed(userIdString, versionId)
     end if
 
     return false 
+end function
+
+private function setGoogleTaskUserId(userId)
+  if MU.isString(userId) 
+    m.task.customSessionParams = {
+      "uid": Box(userId).Escape()
+    }
+  else
+     m.task.customSessionParams = invalid
+  end if
 end function
 
 end class
