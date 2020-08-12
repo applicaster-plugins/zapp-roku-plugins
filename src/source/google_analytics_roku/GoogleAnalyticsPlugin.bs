@@ -4,7 +4,6 @@ namespace GoogleAnalyticsP
 
 class GoogleAnalyticsPlugin extends BaseAnalyticsPlugin
 
-public isEnabled = false
 public isIdentified = false
 private eventFactory = invalid
 private isTrakingUserIdEnabled = false
@@ -56,14 +55,16 @@ public override function _identify(pluginId, traits = {}, options = {})
     else
       accountInfo = invalid
     end if
+
+    m.logInfo("identify accountInfo", accountInfo)
     
     if accountInfo <> invalid 
       if accountInfo.id <> invalid and accountInfo.id.trim() <> ""
         m.logInfo("identifying analytics with the userId", accountInfo.id, "for plugin:", pluginId)
         m.logInfo("recrating GoogleAnalyticsTask with the userId", accountInfo.id, "for plugin:", pluginId)
-        setGoogleTaskUserId(accountInfo.id)
+        m.setGoogleTaskUserId(accountInfo.id)
       else
-        m.logError("identify called; but ther id was empty!")
+        m.logError("identify called; but there id was empty!")
         m.identifyAsAnonymous()
       end if
     else
@@ -83,14 +84,17 @@ end function
 private function identifyAsAnonymous()
   m.logInfo("identifying as anonymous user")
   m.isIdentified = false
-  setGoogleTaskUserId(invalid)
+  m.setGoogleTaskUserId(invalid)
 end function
 
 private function setGoogleTaskUserId(userId)
-  customSessionParams = {
-    "uid":"userId"
-  }
-  m.task.customSessionParams = customSessionParams
+  if(userId <> invalid)
+    m.task.customSessionParams = {
+      "uid": Box(userId).Escape()
+    }
+  else
+     m.task.customSessionParams = invalid
+  end if
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

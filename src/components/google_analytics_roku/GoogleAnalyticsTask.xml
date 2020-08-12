@@ -44,7 +44,7 @@
   <interface>
     <field id="trackingId" type="string"/>
     <field id="clientId" type="string"/>
-    <field id="customSessionParams" type="roAssociativeArray"/>
+    <field id="customSessionParams" type="assocarray"/>
 
     <!-- 
      - Set to true once the execGampLoop function is up and observing the reporting fields
