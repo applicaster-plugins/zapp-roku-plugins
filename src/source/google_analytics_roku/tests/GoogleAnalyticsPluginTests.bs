@@ -10,7 +10,7 @@ function beforeEach()
   }
   m.modelLocator = createObject("roSGNode", "ModelLocator")
 
-  m.modelLocator.buildConfig = {"version_id": "#vid"}
+  m.modelLocator.buildConfig = {"app_family_id": "#vid"}
   
   TU.setModelLocator(m.modelLocator)
   m.pluginData = new BasePlugin({ "configuration_json": config, "identifier": "google_analytics_roku" })
@@ -78,6 +78,7 @@ function beforeEachTrackUserIdAllowedFlag()
   
 end function
 
+'@Only
 '@Test constructor_trackUser
 '@Params[ "allow-tracking-user-id-for-app-family-aaaa", "aaaa", true ]
 '@Params[ "allow-tracking-user-id-for-app-family-aaac", "aaaa", false ]
@@ -91,7 +92,7 @@ function trackUserIdAllowedFlag(userID, versionId, result)
   }
   m.modelLocator = createObject("roSGNode", "ModelLocator")
 
-  m.modelLocator.buildConfig = {"version_id": versionId}
+  m.modelLocator.buildConfig = {"app_family_id": versionId}
   
   TU.setModelLocator(m.modelLocator)
   m.pluginData = new BasePlugin({ "configuration_json": config, "identifier": "google_analytics_roku" })

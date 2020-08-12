@@ -17,7 +17,7 @@ public function new(plugin)
   m.task.clientId = plugin.getStringValue("client_id")
   
   buildConfig = m.getInstance("buildConfig")
-  versionId = buildConfig.version_id
+  versionId = buildConfig.app_family_id
   userIdString = plugin.getStringValue("user_id")
 
   m.isTrakingUserIdEnabled = m.checkIfTrackingUserIdAllowed(userIdString, versionId)
