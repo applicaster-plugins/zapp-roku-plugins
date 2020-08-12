@@ -48,8 +48,9 @@ public override function getPurchasedItemIds() as object
   result = m.executeAPIRequest("GET", "items/access/customers?status=active", invalid, true, token)
   ids = []
   
-  if MU.isArray(result)
-    for each fee in result
+  collection = MU.getContentField(result, "collection")
+  if MU.isArray(collection)
+    for each fee in collection
       m.getExternalIds(fee, ids)
     end for
     
@@ -129,8 +130,7 @@ public override function loadItem(item) as boolean
     return false
   end if
   
-  m.logInfo("using args", params)
-  result = m.executeAPIRequest("FORMPOST", "items/" + inPlayerId + "/access", invalid, true, token)
+  result = m.executeAPIRequest("GET", "items/" + MU.asString(inPlayerId) + "/access", invalid, true, token)
   
   content = parseJson(MU.getContentField(result, "item.content", "{}"))
   if content.mobile_url <> invalid and content.mobile_url.trim() <> ""
@@ -178,23 +178,33 @@ private function sendPurchasesToInPlayer(purchases)
   
   token = m.getSessionStoreValue("inplayer_auth_plugin_roku", "token")
   if token = invalid
-    m.logError("not authenticated with inplayer when retrieving item", item)
-    return false
+    m.logError("not authenticated with inplayer when sending purchases")
+    return []
   end if
   
   failedPurchases = []
   
   for each receipt in purchases
-    params = {
-      receipt: formatJson(receipt)
-      external_id: receipt.code
-      access_fee_id: "TODO" 'TODO - this call does not yet work!
-    }
-    result = m.executeAPIRequest("POST", "external-payments/roku/validate", params, true, token)
+    accessFeeId = m.getAccessFeeId(receipt.code)
+    itemId = m.getItemId(receipt.code)
     
+    if accessFeeId <> invalid
+      params = {
+        receipt: receipt.purchaseId
+        ' external_id: receipt.code
+        item_id: itemId
+        access_fee_id: accessFeeId
+      }
+      result = m.executeAPIRequest("FORMPOST", "v2/external-payments/roku/validate", params, true, token)
+    else
+      m.logError("Could not ascertain access code id for purchase receipt", receipt)
+      result = invalid
+    end if
+    
+    code = MU.getContentField(result, "code", - 1)
     'TODO get code for already purchased error and ignore it!
-    if MU.getContentField(result, "code", - 1) <> 200
-      m.logError("failed to register receipt")
+    if code <> 200
+      m.logError("failed to register receipt code:", code)
       failedPurchases.push(receipt)
     end if
   end for
@@ -202,12 +212,37 @@ private function sendPurchasesToInPlayer(purchases)
   return failedPurchases
 end function
 
+private function getAccessFeeId(rokuCode)
+  return m.getCodePart(rokuCode, 1)
+end function
+
+private function getItemId(rokuCode)
+  return m.getCodePart(rokuCode, 0)
+end function
+
+private function getCodePart(rokuCode, index)
+  if rokuCode <> invalid
+    parts = rokuCode.split("_")
+    
+    if parts.count() = 2
+      value = parts[index].toInt()
+      
+      if value <> 0
+        return value
+      end if
+    end if
+  end if
+  
+  m.logError("rokuCode", rokuCode, "is incorrectly formatted")
+  return invalid
+end function
+
 private function getInPlayerFeeIdsForItem(item, token) as object
   ids = []
   inPlayerId = MU.getContentField(item, "extensions.external_id")
   
   if inPlayerId <> invalid
-    result = m.executeAPIRequest("GET", "items/" + inPlayerId + "/access-fees", invalid, true, token)
+    result = m.executeAPIRequest("GET", "v2/items/" + str(inPlayerId).trim() + "/access-fees", invalid, true, token)
     
     if result <> invalid
       for each item in result
