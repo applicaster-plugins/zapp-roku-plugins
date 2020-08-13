@@ -161,7 +161,7 @@ private function onPollComplete(result)
   m.logMethod("onPollComplete")
   
   if result <> invalid and result.state = "valid"
-    m.analyticsManager@.trackEvent("Login Succesful", "page_loaded", { "provider": m.providerId })
+    m.analyticsManager@.trackEvent("Signed In", "page_loaded", { "provider": m.providerId })
     m.dismiss("success")
   else
     m.togglePollTimer(true)
