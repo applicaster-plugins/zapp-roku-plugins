@@ -1,3 +1,13 @@
+#### 3.1.2 (2020-08-13)
+
+##### New Features
+
+* **warning_message_screen_roku:**  Adds case insensitivity to matching values (4fe79594)
+
+##### Bug Fixes
+
+* **analytics:**  Do not call idenitfy from analytics plugins. (3c6fef44)
+
 #### 3.1.1 (2020-06-02)
 
 ##### New Features
