@@ -51,7 +51,6 @@ private function onRefreshComplete(result)
   
   if m.getInstance("user").isLoggedIn
     analytics = m.getInstance("analyticsManager")
-    analytics@.identify("gigya_login_screen_roku")
     analytics@.trackEvent("Login Succesful", "page_loaded", { "provider": "gigya_login_screen_roku" })
     
     m.dismiss("success")

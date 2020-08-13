@@ -422,7 +422,6 @@ function integration_loadItem()
   
 end function
 
-'@Only
 '@Test getPurchasedItemIds
 function integration_getPurchasedItemIds()
   m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], m.integrationToken)

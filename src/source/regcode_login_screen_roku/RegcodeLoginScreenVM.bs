@@ -16,6 +16,7 @@ private authTask = invalid
 private analyticsManager = invalid 
 private providerId = invalid
 private refreshButtonOpacity = 1
+
 public function new(riversJson)
   super(riversJson, "RegcodeLoginScreenVM")
   m.analyticsManager = m.getInstance("analyticsManager")
@@ -160,7 +161,6 @@ private function onPollComplete(result)
   m.logMethod("onPollComplete")
   
   if result <> invalid and result.state = "valid"
-    m.analyticsManager@.identify(m.providerId)
     m.analyticsManager@.trackEvent("Login Succesful", "page_loaded", { "provider": m.providerId })
     m.dismiss("success")
   else
