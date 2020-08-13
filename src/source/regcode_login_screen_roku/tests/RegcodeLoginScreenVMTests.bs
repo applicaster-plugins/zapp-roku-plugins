@@ -4,13 +4,18 @@ namespace Applicaster.Authentication.RegcodeLoginScreenVMTests
 '@BeforeEach
 function beforeEach()
   localStore = createObject("roSGNode", "ZSessionStore")
-  modelLocator = createObject("roSGNode", "ModelLocator")
-  modelLocator.addfields({ "ZPLocalStore": localStore })
-  TU.setModelLocator(modelLocator)
+  m.modelLocator = {
+    "ZPLocalStore": localStore
+    "locale": "en"
+  }
+  TU.setModelLocator(m.modelLocator)
   
   riversJson = {
     "id": "regcodeScreen"
     styles: {
+    }
+    "localizations": { 
+      "en": {} 
     }
   }
   
@@ -31,9 +36,11 @@ end function
 '@It tests load
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-'@Test not showing
-function load_no_show()
+'@Test displayedInPrehook not showing
+function load_displayedInPrehook_no_show()
   currentSelection = { "id" : "currentSelection" }
+  m.vm.providerId = "pid"
+  m.vm.isDisplayedInPrehook = true
   
   m.expectOnce(m.vm, "getInstance", ["currentSelection"], currentSelection)
   m.expectOnce(m.vm, "shouldDisplayWithContent", [currentSelection], false)
@@ -42,10 +49,12 @@ function load_no_show()
   m.vm.load()
 end function
 
-'@Test showing
-function load_showing()
+'@Test displayedInPrehook showing
+function load_displayedInPrehook_showing()
   currentSelection = { "id" : "currentSelection" }
   m.vm.providerId = "pid"
+  m.vm.isDisplayedInPrehook = true
+  
   m.expectOnce(m.vm, "getInstance", ["currentSelection"], currentSelection)
   m.expectOnce(m.vm, "shouldDisplayWithContent", [currentSelection], true)
   m.expectNone(m.vm, "dismiss")
@@ -56,6 +65,20 @@ function load_showing()
   m.vm.load()
 end function
 
+'@Test not displayedInPrehook
+function load_not_displayedInPrehook()
+  currentSelection = { "id" : "currentSelection" }
+  m.vm.providerId = "pid"
+  m.vm.isDisplayedInPrehook = false
+  
+  m.expectOnce(m.analyticsManager, "callFunc", ["trackEvent", "Waiting Page", "page_loaded", { "Provider": "pid" }])
+  m.expectOnce(m.vm, "loadCode", [])
+  
+  m.vm.load()
+  
+  m.assertTrue(m.vm.isContentGroupVisible)
+end function
+
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '@It tests shouldDisplayWithContent
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -64,10 +87,11 @@ end function
 '@Params[true]
 '@Params[false]
 function shouldDisplayWithContent(expected)
-  currentSelection = { "id" : "currentSelection" }
+  currentItem = { "id" : "currentItem" }
+  currentSelection = { "id" : "currentSelection", "currentItem": currentItem }
   entitlements = { "id" : "entitlements" }
   m.expectOnce(m.vm, "getInstance", ["entitlements"], entitlements)
-  m.expectOnce(entitlements, "callFunc", ["isLocked", currentSelection], expected)
+  m.expectOnce(entitlements, "callFunc", ["isLocked", currentItem], expected)
   
   m.assertEqual(m.vm.shouldDisplayWithContent(currentSelection), expected)
 end function
@@ -228,7 +252,6 @@ end function
 function onPollComplete_valid()
   result = { "state" : "valid" }
   m.vm.providerId = "pid"
-  m.expectOnce(m.vm.analyticsManager, "callFunc", ["identify", "pid"])
   m.expectOnce(m.vm.analyticsManager, "callFunc", ["trackEvent", "Login Succesful", "page_loaded", { "provider": "pid" }])
   m.expectOnce(m.vm, "dismiss", ["success"])
   
