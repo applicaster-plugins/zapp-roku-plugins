@@ -224,7 +224,6 @@ end function
 '@It tests onPollComplete
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-'@Only
 '@Test valid
 function onPollComplete_valid()
   result = { "state" : "valid" }
@@ -236,7 +235,6 @@ function onPollComplete_valid()
   m.vm.onPollComplete(result)
 end function
 
-'@Only
 '@Test fail
 '@Params[invalid]
 '@Params[{}]
