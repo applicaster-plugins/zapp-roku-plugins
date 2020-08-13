@@ -16,6 +16,7 @@ private authTask = invalid
 private analyticsManager = invalid 
 private providerId = invalid
 private refreshButtonOpacity = 1
+
 public function new(riversJson)
   super(riversJson, "RegcodeLoginScreenVM")
   m.analyticsManager = m.getInstance("analyticsManager")
@@ -32,27 +33,6 @@ public function new(riversJson)
   
   if not MU.getContentField(riversJson, "styles.use_refresh_button", true)
     m.refreshButtonOpacity = 0
-  end if
-end function
-
-private function getAuthProviderId()
-  providerId = MU.getContentField(m.riversJson, "styles.provider_id", "")
-  plugins = m.getClassInstance("PluginManager")
-  
-  authPlugin = invalid
-  
-  if providerId <> ""
-    authPlugin = plugins.getPluginById(providerId)
-  else
-    authPlugins = plugins.getPluginsWithInterface("IAuthProvider")
-    
-    if authPlugins.count() > 0
-      authPlugin = authPlugins[0]
-    end if
-  end if
-  
-  if authPlugin <> invalid
-    return authPlugin.id
   end if
 end function
 
@@ -181,7 +161,6 @@ private function onPollComplete(result)
   m.logMethod("onPollComplete")
   
   if result <> invalid and result.state = "valid"
-    m.analyticsManager@.identify(m.providerId)
     m.analyticsManager@.trackEvent("Signed In", "page_loaded", { "provider": m.providerId })
     m.dismiss("success")
   else

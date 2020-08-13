@@ -3,10 +3,19 @@ namespace Applicaster.Gigya.LoginScreenVMTests
 
 '@BeforeEach
 function beforeEach()
+  m.modelLocator = {
+    "User": { "isLoggedIn": false }
+    "locale": "en"
+  }
+  TU.setModelLocator(m.modelLocator)
+
   riversJson = {
     "id": "myAccount"
     "general": { "base_url": "#base_url/" }
-    "styles": {"login_screen": "#lis"}
+    "styles": { "login_screen": "#lis" }
+    "localizations": { 
+      "en": {} 
+    }
   }
   
   m.vm = new ZGigyaLoginScreenVM(riversJson)
@@ -81,7 +90,6 @@ function onRefreshComplete()
   
   m.expectOnce(m.vm, "getInstance", ["user"], user)
   m.expectOnce(m.vm, "getInstance", ["analyticsManager"], analytics)
-  m.expectOnce(analytics, "callFunc", ["identify", "gigya_login_screen_roku"])
   m.expectOnce(analytics, "callFunc", ["trackEvent", "Login Succesful", "page_loaded", { "provider": "gigya_login_screen_roku" }])
   m.expectOnce(m.vm, "dismiss", ["success"])
   
@@ -101,7 +109,7 @@ function onRefreshComplete_failure()
   user = { "id" : "user", isLoggedIn: false }
   m.vm.isContentVisible = false
   m.vm.isRefreshing = true
-
+  
   m.expectOnce(m.vm, "getInstance", ["user"], user)
   m.expectNone(m.vm, "dismiss")
   m.vm.onRefreshComplete({})

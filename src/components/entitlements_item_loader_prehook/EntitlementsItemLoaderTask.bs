@@ -1,0 +1,16 @@
+import "pkg:/source/rLog/rLogMixin.brs"
+import "pkg:/source/entitlements_item_loader_prehook/EntitlementsItemLoader.bs"
+
+
+function init()
+  m.top.functionName = "execRunLoop"
+end function
+
+
+function execRunLoop()
+  registerLogger("EntitlementsItemLoaderTask")
+  logMethod("execRunLoop")
+
+  resolver = new EntitlementsItemLoader()
+  m.top.output = resolver.execute()
+end function
