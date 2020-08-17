@@ -51,7 +51,11 @@ public override function getPurchasedItemIds() as object
   collection = MU.getContentField(result, "collection")
   if MU.isArray(collection)
     for each fee in collection
-      m.getExternalIds(fee, ids)
+      'have to load the item to get the externa_id
+      'inplayer say they will improve this, at which point its hould become 
+      'm.getExternalIDs
+      ' m.getExternalIds(fee, ids)
+      m.getFeeExternalIdsFromServer(fee, ids)
     end for
     
   else
@@ -99,12 +103,12 @@ public override function getEntitlements() as dynamic
   
   if entitlements = invalid or entitlements.subType() <> "SimpleEntitlements"
     m.logInfo("the current IOC registred entitlements object is incompatible with this plugin, creating a new entitlements object")
-    entitlements = createObject("roSGNode", "SimpleEntitlements")
-    entitlements.availableProducts = m.availableProducts
-    entitlements.authenticationData = m.authenticationData
+    entitlements = m.createInstance("SimpleEntitlements", invalid, "entitlements")
     m.setInstance("entitlements", entitlements)
   end if
   
+  entitlements.availableProducts = m.availableProducts
+  entitlements.authenticationData = m.authenticationData
   entitlements.policy = m.entitlementsPolicy
   entitlements.vodModel = m.vodModel
   entitlements.requiresLoadToAscertainEntitlements = true
@@ -191,9 +195,7 @@ private function sendPurchasesToInPlayer(purchases)
     if accessFeeId <> invalid
       params = {
         receipt: receipt.purchaseId
-        ' external_id: receipt.code
-        item_id: itemId
-        access_fee_id: accessFeeId
+        product_name: receipt.code
       }
       result = m.executeAPIRequest("FORMPOST", "v2/external-payments/roku/validate", params, true, token)
     else
@@ -246,7 +248,7 @@ private function getInPlayerFeeIdsForItem(item, token) as object
     
     if result <> invalid
       for each item in result
-        m.getExternalIds(item, ids, false)
+        ids.append(m.getExternalIds(item))
       end for
     end if
     
@@ -257,7 +259,28 @@ private function getInPlayerFeeIdsForItem(item, token) as object
   return ids
 end function
 
-private function getExternalIds(item, ids, isOnlyGettingFirst = true)
+' /**
+'  * @member getFeeExternalIdFromServer
+'  * @memberof module:InPlyaerEntitlementsPlugin
+'  * @instance
+'  * @function
+'  * @description unfortunaltey, we can't get externla ids directly from fees so we have to call this function to laod each purchased fee first, and later get it's external id
+'  * @param {assocarray} blob of json for a fee
+'  * @returns {string} external_id
+'  */
+private function getFeeExternalIdsFromServer(fee)
+  '1 get fee id
+  '2 do request
+  '3 get external ids from it
+  fee = {}
+  ids = []
+  ids = m.getExternalIDs(fee)
+  return ids
+end function
+
+private function getExternalIds(item, isOnlyGettingFirst = false)
+  ids = []
+
   if item.external_fees <> invalid
     for each externalFee in item.external_fees
       externalId = MU.getContentField(externalFee, "external_id")
@@ -273,6 +296,8 @@ private function getExternalIds(item, ids, isOnlyGettingFirst = true)
       
     end for
   end if
+
+  return ids
 end function
 
 end class

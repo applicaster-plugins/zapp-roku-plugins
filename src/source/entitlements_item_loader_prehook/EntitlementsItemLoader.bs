@@ -11,6 +11,7 @@ namespace Applicaster
 '  */
 class EntitlementsItemLoader extends ZBaseClass
 
+public isValid = false
 private matchingPath = ""
 private matchingValue = ""
 
@@ -19,6 +20,7 @@ public function new()
   m.plugins = m.getClassInstance("PluginManager")
   
   plugin = m.plugins.getPluginById("oc_url_token_appender")
+  m.isValid = plugin.isValid
   
   if plugin.isValid
     domain = lcase(plugin.getStringValue("domain", ""))
@@ -34,17 +36,20 @@ public function new()
 end function
 
 public function execute()
-  currentSelection = m.getInstance("currentSelection")
+  item = MU.getContentField(m.getInstance("currentSelection"), "currentItem")
   
-  item = currentSelection.currentItem
-  
+  if item = invalid
+    m.logError("no item - entitlements loader reuires currentSelection.currentItem is populated")
+    return "error"
+  end if
+
   if not m.isItemMatch(item)
     m.logError("item does not match")
     return "success"
   end if
   
-  entitlementsManager = m.getClassInstance("EntitlementsManager")
-  if entitlementsManager.loadItem(item)
+  manager = m.getClassInstance("EntitlementsManager")
+  if manager.loadItem(item)
     return "success"
   else
     return "error"

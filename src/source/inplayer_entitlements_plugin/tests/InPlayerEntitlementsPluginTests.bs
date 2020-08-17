@@ -74,14 +74,14 @@ end function
 '@Test logged in
 '@Params[invalid, []]
 '@Params[{}, []]
-'@Params[[], []]
-'@Params[[{}], []]
-'@Params[[{"errors": {"401": "Invalid auth Token"}}], []]
-'@Params[[{external_fees:invalid}], []]
-'@Params[[{external_fees:[{external_id: invalid}]}], []]
-'@Params[[{external_fees:[{external_id: "1"}]}], ["1"]]
-'@Params[[{external_fees:[{external_id: "1"},{external_id: "2"}]}], ["1"]]
-'@Params[[{external_fees:[{external_id: "1"},{external_id: "2"}]}, {external_fees:[{external_id: "3"}]}], ["1", "3"]]
+'@Params[{collection:[]}, []]
+'@Params[{collection:[{}]}, []]
+'@Params[collection: {[{"errors": {"401": "Invalid auth Token"}}]}, []]
+'@Params[collection: {[{external_fees:invalid}]}, []]
+'@Params[collection: {[{external_fees:[{external_id: invalid}]}]}, []]
+'@Params[collection: {[{external_fees:[{external_id: "1"}]}]}, ["1"]]
+'@Params[collection: {[{external_fees:[{external_id: "1"},{external_id: "2"}]}]}, ["1"]]
+'@Params[collection: {[{external_fees:[{external_id: "1"},{external_id: "2"}]}}, {external_fees:[{external_id: "3"}]}], ["1", "3"]]
 function getPurchasedItemIds_invalidScenarios(response, expectedIds) as void
   m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], "t")
   m.expectOnce(m.plugin, "executeAPIRequest", ["GET", "items/access/customers?status=active", invalid, true, "t"], response)
@@ -98,7 +98,7 @@ end function
 '@Test post Purchases - no failures
 '@Params[[], true]
 '@Params[[{"error": "here"}], false]
-function getEntitlements_postPurchases(response, expectedResult) as void
+function postPurchases(response, expectedResult) as void
   rokuPurchases = {}
   m.expectOnce(m.plugin, "sendPurchasesToInPlayer", [rokuPurchases], response)
   
@@ -251,6 +251,78 @@ end function
 '@It tests getEntitlements
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+'@Test previous existing entitlements
+'@Params["SVOD", "authOnly"]
+'@Params["AVOD", "ICPOnly"]
+function getEntitlemets_pre_existing(vodModel, policy)
+  m.plugin.vodModel = vodModel
+  m.plugin.policy = policy
+  
+  entitlements = { "id" : "entitlements" }
+  m.expectOnce(m.plugin, "getInstance", ["entitlements"], entitlements)
+  m.expectOnce(entitlements, "subType", [], "SimpleEntitlements")
+  m.expectOnce(entitlements, "callFunc", ["configure"])
+  
+  m.expectNone(m.plugin, "setInstance")
+  
+  result = m.plugin.getEntitlements()
+  
+  m.assertEqual(result, entitlements)
+  m.assertTrue(result.requiresLoadToAscertainEntitlements)
+  m.assertEqual(result.authenticationData, m.plugin.authenticationData)
+  m.assertEqual(result.availableProducts, m.plugin.availableProducts)
+  m.assertEqual(result.authenticationData, m.plugin.authenticationData)
+  
+end function
+
+'@Test different pre-existing entitlements
+'@Params["ApplicasterEntitlements","SVOD", "authOnly"]
+'@Params["JWTEntitlements","AVOD", "ICPOnly"]
+function getEntitlemets_different_previous_existing(subType, vodModel, policy)
+  m.plugin.vodModel = vodModel
+  m.plugin.policy = policy
+  
+  oldEntitlements = { "id" : "oldentitlements" }
+  m.expectOnce(m.plugin, "getInstance", ["entitlements"], oldEntitlements)
+  m.expectOnce(oldEntitlements, "subType", [], subType)
+  entitlements = { "id" : "entitlements" }
+  m.expectOnce(m.plugin, "createInstance", ["SimpleEntitlements", invalid, "entitlements"], entitlements)
+  m.expectOnce(entitlements, "callFunc", ["configure"])
+  m.expectOnce(m.plugin, "setInstance", ["entitlements", entitlements])
+  
+  result = m.plugin.getEntitlements()
+  
+  m.assertEqual(result, entitlements)
+  m.assertTrue(result.requiresLoadToAscertainEntitlements)
+  m.assertEqual(result.authenticationData, m.plugin.authenticationData)
+  m.assertEqual(result.availableProducts, m.plugin.availableProducts)
+  m.assertEqual(result.authenticationData, m.plugin.authenticationData)
+  
+end function
+
+'@Test no previous existing entitlements
+'@Params["SVOD", "authOnly"]
+'@Params["AVOD", "ICPOnly"]
+function getEntitlemets_no_previous_existing(vodModel, policy)
+  m.plugin.vodModel = vodModel
+  m.plugin.policy = policy
+  
+  m.expectOnce(m.plugin, "getInstance", ["entitlements"], invalid)
+  entitlements = { "id" : "entitlements" }
+  m.expectOnce(m.plugin, "createInstance", ["SimpleEntitlements", invalid, "entitlements"], entitlements)
+  m.expectOnce(entitlements, "callFunc", ["configure"])
+  m.expectOnce(m.plugin, "setInstance", ["entitlements", entitlements])
+  
+  result = m.plugin.getEntitlements()
+  
+  m.assertEqual(result, entitlements)
+  m.assertTrue(result.requiresLoadToAscertainEntitlements)
+  m.assertEqual(result.authenticationData, m.plugin.authenticationData)
+  m.assertEqual(result.availableProducts, m.plugin.availableProducts)
+  m.assertEqual(result.authenticationData, m.plugin.authenticationData)
+  
+end function
+
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '@It tests sendPurchasesToInPlayer
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -276,9 +348,7 @@ function sendPurchasesToInPlayer_one_purchase(code, expectedFailCount)
   
   expectedParams = {
     receipt: "r1"
-    ' external_id: "99_100"
-    access_fee_id: 100
-    item_id: 99
+    product_name: "99_100"
   }
   result = {
     "code": code
@@ -301,25 +371,19 @@ function sendPurchasesToInPlayer_multiple_purchases(code1, code2, code3, expecte
   
   expectedParams1 = {
     receipt: "r1"
-    ' external_id: "99_101"
-    access_fee_id: 101
-    item_id: 99
+    product_name: "99_101"
   }
-  r1 = { "code": code1}
+  r1 = { "code": code1 }
   expectedParams2 = {
     receipt: "r2"
-    ' external_id: "98_102"
-    access_fee_id: 102
-    item_id: 98
+    product_name: "98_102"
   }
-  r2 = { "code": code2}
+  r2 = { "code": code2 }
   expectedParams3 = {
     receipt: "r3"
-    ' external_id: "97_103"
-    access_fee_id: 103
-    item_id: 97
+    product_name: "97_103"
   }
-  r3 = { "code": code3}
+  r3 = { "code": code3 }
   
   m.expectOnce(m.plugin, "executeAPIRequest", ["FORMPOST", "v2/external-payments/roku/validate", expectedParams1, true, "t"], r1)
   m.expectOnce(m.plugin, "executeAPIRequest", ["FORMPOST", "v2/external-payments/roku/validate", expectedParams2, true, "t"], r2)
@@ -351,6 +415,7 @@ function getAccessFeeId(rokuCode, expected)
   m.assertEqual(m.plugin.getAccessFeeId(rokuCode), expected)
 end function
 
+'@Ignore
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '@It INTEGRATION tests
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -366,7 +431,6 @@ function integration_beforeEach()
   m.currentSelection = {
     currentItem: m.item
   }
-  
   
   m.integrationToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImp0aSI6IjE1NTYxMjBjLTE2MWMtNDkzMS05YTNjLWMxODM5NzYwOWY3YSJ9.eyJhdWQiOiI4NjU3NTJhOGY1ODk0MjM1YTA1ZGVjYjZiMDc0MTAxZCIsImp0aSI6IjE1NTYxMjBjLTE2MWMtNDkzMS05YTNjLWMxODM5NzYwOWY3YSIsImlhdCI6MTU5NzA5NTc4NSwibmJmIjoxNTk3MDk1Nzg1LCJleHAiOjE1OTk2OTEzODUsInN1YiI6ImdjdGVzdDFAdGFudGF3b3dhLmNvbSIsInNjb3BlcyI6W10sIm1pZCI6NDUzNzksImFpZCI6NDkxNDEsIm11aSI6IjRiMjg3ODdjLWQ4YjYtNDAzMC05ZTczLTlhMjliMjI0MWE4MSIsImN0eCI6WyJjb25zdW1lciJdLCJ0aWQiOjQ5MTQxLCJ0dXVpZCI6IjE1NTYxMjBjLTE2MWMtNDkzMS05YTNjLWMxODM5NzYwOWY3YSIsIm9pZCI6MH0.32GGcyMBawERXaPKQjdnk1KBnqOG44SgkQO2dnnMB08"
 end function
