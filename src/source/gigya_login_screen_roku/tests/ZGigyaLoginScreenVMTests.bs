@@ -1,4 +1,3 @@
-'@Only
 '@TestSuite [OCGPSVMT]
 namespace Applicaster.Gigya.LoginScreenVMTests
 
