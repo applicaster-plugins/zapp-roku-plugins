@@ -114,6 +114,9 @@ function playBitmovinItem(playerItem)
   
   m.state = "playing"
   m.player.callFunc(m.playerFunctions.LOAD, playerItem)
+  m.player.callFunc(m.playerFunctions.SET_AUDIO, {
+    "trackID": "audio_stereo"
+  })
   m.player.callFunc(m.playerFunctions.PLAY, invalid)
   videoNode = m.player.getChild(0)
   videoNode.control = "play"
