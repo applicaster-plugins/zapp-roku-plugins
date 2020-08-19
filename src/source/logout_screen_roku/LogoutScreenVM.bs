@@ -77,19 +77,22 @@ end function
 
 function logout()
   m.logMethod("logout")
-  
+    
+  if m.providerId = invalid
+    defaultId = m.getSessionStoreValue("all_zapp_pipes_providers", "default_auth_plugin_id")
+  else
+    defaultId = m.providerId
+  end if
+
+  analyticsManager = m.getInstance("analyticsManager")
+  analyticsManager@.trackEvent("Signed Out", "page_loaded", { "provider": defaultId })
+
   if m.providerId = invalid or m.providerId.trim() = ""
     m.logInfo("logging out all providers")
     m.authTask = m.createAuthTask("execLogOutAll", invalid, "onLogoutComplete")
   else
     m.logInfo("logging out with specific provider", m.providerId)
     m.authTask = m.createAuthTask("execLogOut", m.providerId, "onLogoutComplete")
-  end if
-  
-  if m.providerId = invalid
-    defaultId = m.getSessionStoreValue("all_zapp_pipes_providers", "default_auth_plugin_id")
-  else
-    defaultId = m.providerId
   end if
   
   m.isLoggedOut = true
@@ -99,9 +102,6 @@ end function
 
 function onLogoutComplete(result)
   m.logMethod("onLogoutComplete")
-  analyticsManager = m.getInstance("analyticsManager")
-  analyticsManager@.trackEvent("Signed Out", "page_loaded", { "provider": defaultId })
-  
   m.setField("isShowingLoadingIndicator", false)
   m.setField("isButtonVisible", true)
   m.setField("buttonText", m.signedOutButtonText)
