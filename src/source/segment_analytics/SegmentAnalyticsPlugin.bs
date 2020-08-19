@@ -70,17 +70,12 @@ public override function _identify(pluginId, traits = {}, options = {}) as boole
         m.identifyAsAnonymous()
       end if
     else
-      m.logWarn("idenitfy called; but there is no logged in user; goint to unidentify, to get anonymous analytics")
+      m.logWarn("idenitfy called; but there is no logged in user; identifying as anonymous")
       m.identifyAsAnonymous()
     end if
   end if 
   
   return true
-end function
-
-public override function _unidentify(pluginId)
-  m.logWarn("segment does not have an unidentify api, so we idenitfy as anonymous")
-  m.identifyAsAnonymous()
 end function
 
 private function identifyAsAnonymous()

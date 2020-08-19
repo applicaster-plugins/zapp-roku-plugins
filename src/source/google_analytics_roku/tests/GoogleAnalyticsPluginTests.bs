@@ -51,23 +51,13 @@ function start()
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests unidentify
+'@It tests identifyAsAnonymous
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-'@Test unidenfiy
-function unidentify()
-  m.expectOnce(m.plugin, "identifyAsAnonymous")
-  m.plugin._unidentify("aaaaaa")
-end function
-
-'@Test identifyAsAnonymous
 function identifyAsAnonymous()
-  m.isIdentified = true
   m.expectOnce(m.plugin, "setGoogleTaskUserId", invalid)
 
   m.plugin.identifyAsAnonymous()
-
-  m.assertEqual(m.plugin.isIdentified, false)
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
