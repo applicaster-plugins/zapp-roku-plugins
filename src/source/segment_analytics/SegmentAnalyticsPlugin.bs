@@ -47,12 +47,19 @@ end function
 
 public override function _identify(pluginId, traits = {}, options = {}, isFromLogout = false) as boolean
   m.logInfo("identify", pluginId)
+  if options = invalid
+    options = {}
+  end if
   
+  if traits = invalid
+    traits = {}
+  end if
+
   if isFromLogout and not m.isIdentifyingOnLogout
     m.logInfo("ignoring identify call from logout due to plugin configuration")
     return false
   end if
-
+  
   if m.isEnabled
     
     if pluginId <> invalid
