@@ -86,6 +86,9 @@ function generateMap_none()
     "write_key": "#w"
     "provider_key_1": ""
     "provider_value_1": ""
+
+
+
     "provider_key_2": ""
     "provider_value_2": ""
     "provider_key_3": ""
@@ -96,6 +99,17 @@ function generateMap_none()
 
   m.assertEmpty(m.plugin.generateMap(pluginData, "provider", 3))
   
+end function
+
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests _identify
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test disabled_on_logout
+function _identify_disabled_on_logout()
+  m.plugin.isIdentifyingOnLogout = false
+  m.assertFalse(m.plugin._identify("pid", invalid, invalid, true))
 end function
 
 end namespace
