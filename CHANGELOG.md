@@ -1,12 +1,32 @@
-#### 3.1.2 (2020-08-13)
+#### 3.1.2 (2020-08-20)
+
+##### Chores
+
+* **test:**  Removes errant @only (7f8f3ebe)
 
 ##### New Features
 
+* **analytics:**  Updates plugins to conform to latest API for _identify (a8203e35)
+* **bitmovin:**
+  *  Reverts experimental feature that client no longer wants, to attempt to fix 5.1 issues (6335ab33)
+  *  enables stereo playback by default to avoid 5.1 audio issues (332bb44a)
 * **warning_message_screen_roku:**  Adds case insensitivity to matching values (4fe79594)
 
 ##### Bug Fixes
 
+* **segment_analytics:**
+  *  Fixes crash when trais or options are invalid (245d6c9b)
+  *  Always use anonymousid, and remove unidentify functoin (287b6e08)
+* **logout_screen_roku:**
+  *  Log out screen will now send analytics BEFORE calling auth manager (fa4a6218)
+  *  Do not log sign out analytics until the auth task completes (daecc404)
+* **Regcode login screen:**  login analytics event name (#16) (1a0e8ebc)
 * **analytics:**  Do not call idenitfy from analytics plugins. (3c6fef44)
+
+##### Other Changes
+
+* applicaster-plugins/zapp-roku-plugins into staging (11204364)
+* applicaster-plugins/zapp-roku-plugins into staging (63db7d8c)
 
 #### 3.1.1 (2020-06-02)
 
