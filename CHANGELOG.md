@@ -2,6 +2,7 @@
 
 ##### Chores
 
+* **core:**  updates changelog (376c91c3)
 * **test:**  Removes errant @only (7f8f3ebe)
 
 ##### New Features
