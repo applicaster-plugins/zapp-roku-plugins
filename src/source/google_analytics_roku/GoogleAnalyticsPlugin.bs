@@ -35,7 +35,7 @@ public override function start()
 
 end function
 
-public override function _identify(pluginId, traits = {}, options = {}) as boolean
+public override function _identify(pluginId, traits = {}, options = {}, isFromLogout = false) as boolean
   m.logInfo("identify", pluginId)
   
   if m.isEnabled

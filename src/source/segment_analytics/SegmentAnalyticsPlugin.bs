@@ -19,6 +19,7 @@ public function new(plugin)
   m.applicasterDeviceId = constants.applicasterDeviceId
   m.writeKey = plugin.getStringValue("write_key")
   m.isDebug = plugin.getBoolValue("is_debug") 
+  m.isIdentifyingOnLogout = plugin.getBoolValue("send_identify_on_logout") 
   m.library = SegmentAnalyticsConnector(m.segmentTask)
 end function
 
@@ -36,8 +37,6 @@ public override function start()
   }
   
   m.library.init(config)
-  m.defaultOptions = m.getDefaultOptions()
-  m.defaultProperties = m.getDefaultProperties()
   
 end function
 
@@ -46,9 +45,14 @@ private override function mapPropertyValues(properties)
   return properties
 end function
 
-public override function _identify(pluginId, traits = {}, options = {}) as boolean
+public override function _identify(pluginId, traits = {}, options = {}, isFromLogout = false) as boolean
   m.logInfo("identify", pluginId)
   
+  if isFromLogout and not m.isIdentifyingOnLogout
+    m.logInfo("ignoring identify call from logout due to plugin configuration")
+    return false
+  end if
+
   if m.isEnabled
     
     if pluginId <> invalid
