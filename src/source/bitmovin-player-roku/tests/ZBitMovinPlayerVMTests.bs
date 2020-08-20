@@ -286,9 +286,6 @@ function playBitmovinItem()
   
   
   m.expectOnce(m.player, "callFunc", [m.player.BitmovinFunctions.LOAD, playerData])
-  m.expectOnce(m.player, "callFunc", [m.player.BitmovinFunctions.SET_AUDIO, {
-      "trackID": "audio_stereo"
-  }])
   m.expectOnce(m.player, "callFunc", [m.player.BitmovinFunctions.PLAY, invalid])
   
   m.vm.playBitmovinItem(playerData)
