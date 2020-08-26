@@ -68,7 +68,57 @@ end function
 '@Test not logged in
 function getPurchasedItemIds_not_authd()
   m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], invalid)
-  m.assertFalse(m.plugin.getPurchasedItemIds())
+  m.assertEmpty(m.plugin.getPurchasedItemIds([]))
+end function
+
+'@Test logged in one purchase
+'@Params[[{"code":"fOther"}], invalid, []]
+'@Params[[{"code":"f1"}], invalid, []]
+'@Params[[{"code":"f1"}], [], []]
+'@Params[[{"code":"f1"}], [{external_id:"f1"}], ["f1"]]
+function getPurchasedItemIds_one_purchase(rokuPurchases, externalFees, expectedIds) as void
+  m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], "t")
+  receipt1 = { "id": "f1" }
+  response = { "id": "response", "collection": [receipt1] }
+  fee1 = { "id" : "fee1", external_fees: externalFees }
+  
+  m.expectOnce(m.plugin, "executeAPIRequest", ["GET", "items/access/customers?status=active", invalid, true, "t"], response)
+  m.expectOnce(m.plugin, "getFeeForAccessReceipt", [receipt1, "t"], fee1)
+  
+  result = m.plugin.getPurchasedItemIds(rokuPurchases)
+  m.assertArrayContainsSubset(result, expectedIds)
+  
+end function
+
+'@Test logged in many purchases
+'@Params[invalid, invalid, invalid, []]
+'@Params[{code:"f1"}, invalid, invalid, ["f1"]]
+'@Params[invalid, {code:"f2"}, invalid, ["f2"]]
+'@Params[invalid, {code:"f2"}, {code:"f3"}, ["f2","f3"]]
+'@Params[{code:"f1"}, {code:"f2"}, {code:"f3"}, ["f1",f2","f3"]]
+function getPurchasedItemIds_multiple_purchases(rr1, rr2, rr3, expectedIds) as void
+  rokuPurchases = [{ "code": "f1" }, { "code": "f2" }, { "code": "f3" }]
+  m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], "t")
+  receipt1 = { "id": "f1" }
+  receipt2 = { "id": "f2" }
+  receipt3 = { "id": "f3" }
+  response = { "id": "response", "collection": [receipt1, receipt2, receipt3] }
+  
+  fee1 = { "id" : "fee1" }
+  fee2 = { "id" : "fee2" }
+  fee3 = { "id" : "fee3" }
+  
+  m.expectOnce(m.plugin, "executeAPIRequest", ["GET", "items/access/customers?status=active", invalid, true, "t"], response)
+  m.expectOnce(m.plugin, "getFeeForAccessReceipt", [receipt1, "t"], fee1)
+  m.expectOnce(m.plugin, "getFeeForAccessReceipt", [receipt2, "t"], fee2)
+  m.expectOnce(m.plugin, "getFeeForAccessReceipt", [receipt3, "t"], fee3)
+  m.expectOnce(m.plugin, "getRokuItemForFee", [fee1, rokuPurchases], rr1)
+  m.expectOnce(m.plugin, "getRokuItemForFee", [fee2, rokuPurchases], rr2)
+  m.expectOnce(m.plugin, "getRokuItemForFee", [fee3, rokuPurchases], rr3)
+  
+  result = m.plugin.getPurchasedItemIds(rokuPurchases)
+  m.assertArrayContainsSubset(result, expectedIds)
+  
 end function
 
 '@Test logged in
@@ -86,7 +136,7 @@ function getPurchasedItemIds_invalidScenarios(response, expectedIds) as void
   m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], "t")
   m.expectOnce(m.plugin, "executeAPIRequest", ["GET", "items/access/customers?status=active", invalid, true, "t"], response)
   
-  result = m.plugin.getPurchasedItemIds()
+  result = m.plugin.getPurchasedItemIds([])
   m.assertArrayContainsSubset(result, expectedIds)
   
 end function
@@ -129,12 +179,12 @@ end function
 
 '@Test valid scenarios
 '@Params[[], []]
-'@Params[["1"], ["1"]]
-'@Params[["1", "2"], ["1", "2"]]
-'@Params[["1", "2", "3"], ["1", "2", "3"]]
-'@Params[["4", "2", "3"], [2", "3"]]
-'@Params[["4", "5", "6"], []]
-function getAvailableProducts_valid(feeIds, expectedIds)
+'@Params[[{external_fees:[{external_id:"1"}]}], ["1"]]
+'@Params[[{external_fees:[{external_id:"1"}}, {external_fees:{external_id:"2"}]}], ["1", "2"]]
+'@Params[[{external_fees:[{external_id:"1"}}, {external_fees:{external_id:"2"}}, {external_fees:{external_id:"3"}]}], ["1", "2", "3"]]
+'@Params[[{external_fees:[{external_id:"4"}}, {external_fees:{external_id:"2"}}, {external_fees:{external_id:"3"}]}], [2", "3"]]
+'@Params[[{external_fees:[{external_id:"4"}}, {external_fees:{external_id:"5"}}, {external_fees:{external_id:"6"}]}], []]
+function getAvailableProducts_valid(fees, expectedIds)
   rokuCatalogItems = [RCSMT_CreateRokuCatalogItem("1"), RCSMT_CreateRokuCatalogItem("2"), RCSMT_CreateRokuCatalogItem("3")]
   item = { id: "item" }
   currentSelection = { id: "currentSelection", "currentItem": item }
@@ -144,7 +194,7 @@ function getAvailableProducts_valid(feeIds, expectedIds)
   
   m.modelLocator.availableProducts.availableProducts = ["something"]
   
-  m.expectOnce(m.plugin, "getInPlayerFeeIdsForItem", [item, "t"], feeIds)
+  m.expectOnce(m.plugin, "getInPlayerFeesForItem", [item, "t"], fees)
   
   
   m.plugin.getAvailableProducts(rokuCatalogItems, purchasedIds)
@@ -415,6 +465,61 @@ function getAccessFeeId(rokuCode, expected)
   m.assertEqual(m.plugin.getAccessFeeId(rokuCode), expected)
 end function
 
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests getFeeForAccessReceipt
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test invalid
+'@Params[invalid]
+'@Params[{}]
+'@Params[{id:1}]
+'@Params[{item_id:invalid}]
+function getFeeForAccessReceipt_invalid_receipt(feeReceipt)
+  
+  m.expectNone(m.plugin, "executeAPIRequest")
+  
+  m.assertInvalid(m.plugin.getFeeForAccessReceipt(feeReceipt, "t"))
+
+end function
+
+'@Test valid
+'@Params[1, "items/1/access-fees", [{"merchant_id": 1}], {"merchant_id": 1}]
+'@Params[2, "items/2/access-fees", [{"merchant_id": 1}], invalid]
+'@Params[2, "items/2/access-fees", [{"merchant_id": 1}, {"merchant_id": 2}], {"merchant_id": 2}]
+function getFeeForAccessReceipt_valid(id, endpoint, response, expectedFee)
+  feeReceipt = { "id" : id, item_id: id, merchant_id: id }
+  
+  m.expectOnce(m.plugin, "executeAPIRequest", ["GET", endpoint, invalid, true, "t"], response)
+  
+  fee = m.plugin.getFeeForAccessReceipt(feeReceipt, "t")
+
+  m.assertEqual(fee, expectedFee)
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests isFeeKnown
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests getRokuItemForFee
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test 
+'@Params[invalid, [{"code":"1"}], invalid]
+'@Params[{external_fees:invalid}, [{"code":"1"}], invalid]
+'@Params[{external_fees:[]}, [{"code":"1"}], invalid]
+'@Params[{external_fees:[{external_id:"2"}]}, [{"code":"1"}], invalid]
+'@Params[{external_fees:[{external_id:"2"}]}, [{"code":"2"}], {code:"2"}]
+'@Params[{external_fees:[{external_id:"1"}, {external_id:"2"}, {external_id:"3"}]}, [{"code":"1"}], {code:"1"}]
+'@Params[{external_fees:[{external_id:"1"}, {external_id:"2"}, {external_id:"3"}]}, [{"code":"2"}], {code:"2"}]
+'@Params[{external_fees:[{external_id:"1"}, {external_id:"2"}, {external_id:"3"}]}, [{"code":"3"}], {code:"3"}]
+'@Params[{external_fees:[{external_id:"1"}, {external_id:"2"}, {external_id:"3"}]}, [{"code":"1"}, {"code":"2"}, {"code":"3"}], {code:"1"}]
+'@Params[{external_fees:[{external_id:"1"}, {external_id:"2"}, {external_id:"3"}]}, [{"code":"2"}, {"code":"3"}], {code:"2"}]
+'@Params[{external_id:"3"}]}, [{"code":"1"}, {"code":"2"}, {"code":"3"}], {code:"3"}]
+function getRokuItemForFee(fee, rokuPurchases, expected)
+  m.assertEqual(m.plugin.getRokuItemForFee(fee, rokuPurchases), expected)
+end function
+
 '@Ignore
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '@It INTEGRATION tests
@@ -432,7 +537,8 @@ function integration_beforeEach()
     currentItem: m.item
   }
   
-  m.integrationToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImp0aSI6IjE1NTYxMjBjLTE2MWMtNDkzMS05YTNjLWMxODM5NzYwOWY3YSJ9.eyJhdWQiOiI4NjU3NTJhOGY1ODk0MjM1YTA1ZGVjYjZiMDc0MTAxZCIsImp0aSI6IjE1NTYxMjBjLTE2MWMtNDkzMS05YTNjLWMxODM5NzYwOWY3YSIsImlhdCI6MTU5NzA5NTc4NSwibmJmIjoxNTk3MDk1Nzg1LCJleHAiOjE1OTk2OTEzODUsInN1YiI6ImdjdGVzdDFAdGFudGF3b3dhLmNvbSIsInNjb3BlcyI6W10sIm1pZCI6NDUzNzksImFpZCI6NDkxNDEsIm11aSI6IjRiMjg3ODdjLWQ4YjYtNDAzMC05ZTczLTlhMjliMjI0MWE4MSIsImN0eCI6WyJjb25zdW1lciJdLCJ0aWQiOjQ5MTQxLCJ0dXVpZCI6IjE1NTYxMjBjLTE2MWMtNDkzMS05YTNjLWMxODM5NzYwOWY3YSIsIm9pZCI6MH0.32GGcyMBawERXaPKQjdnk1KBnqOG44SgkQO2dnnMB08"
+  'DO NOT COMMIT THIS TOKEN
+  m.integrationToken = "CHANGE_ME"
 end function
 
 '@Test
@@ -490,11 +596,10 @@ end function
 function integration_getPurchasedItemIds()
   m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], m.integrationToken)
   
-  result = m.plugin.getPurchasedItemIds()
+  products = InplayerEntitlements.Tests.getProducts()
+  result = m.plugin.getPurchasedItemIds(products)
   logInfo("item ids", result)
   
 end function
-
-
 
 end namespace
