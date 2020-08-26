@@ -1,4 +1,3 @@
-'@Only
 '@TestSuite OCURLTAT EntitlementsItemLoader
 
 namespace Applicaster.EntitlementsItemLoader.Tests
