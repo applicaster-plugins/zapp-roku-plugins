@@ -27,7 +27,7 @@
 
     <DynamicContainer
         id='screenContainer'
-        nextView='{{vm.currentScreen}}' />
+        setNextView='{{vm.currentScreen}}' />
     <LoadingIndicator
         id='loadingIndicator'
         width='1920'

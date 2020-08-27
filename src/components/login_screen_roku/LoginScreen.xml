@@ -127,12 +127,11 @@
         backgroundVisible='false'
         text='' />
 
-
     <DynamicContainer
         id='screenContainer'
         visible='{{vm.isSubScreenVisible}}'
         isDestroyingChildViewsOnRemoval='true'
-        nextView='{{vm.currentScreen}}' />
+        setNextView='{{vm.currentScreen}}' />
 
 
   </children>
