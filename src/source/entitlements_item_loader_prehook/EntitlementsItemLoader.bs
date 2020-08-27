@@ -19,16 +19,14 @@ public function new()
   m.super("EntitlementsItemLoader")
   m.plugins = m.getClassInstance("PluginManager")
   
-  plugin = m.plugins.getPluginById("oc_url_token_appender")
+  plugin = m.plugins.getPluginById("entitlements_item_loader_prehook")
   m.isValid = plugin.isValid
   
   if plugin.isValid
-    domain = lcase(plugin.getStringValue("domain", ""))
     m.matchingPath = plugin.getStringValue("matching_path", "")
     m.matchingValue = plugin.getStringValue("matching_value", "")
   else
     m.logError("There was no plugin config!")
-    domain = ""
     m.matchingPath = ""
     m.matchingValue = ""
   end if
@@ -42,13 +40,21 @@ public function execute()
     m.logError("no item - entitlements loader reuires currentSelection.currentItem is populated")
     return "error"
   end if
-
+  
   if not m.isItemMatch(item)
     m.logError("item does not match")
     return "success"
   end if
+
+  entitlements = m.getInstance("entitlements")
+  if not entitlements@.isLocked(item)
+    m.logInfo("item is already unlocked")
+    return "success"
+  end if
   
   manager = m.getClassInstance("EntitlementsManager")
+  
+  
   if manager.loadItem(item)
     return "success"
   else
