@@ -57,8 +57,14 @@ public override function createContent()
 end function
 
 public override function load() as boolean
-  m.logInfo("load - refreshing login")
-  m.refreshLogin() 
+  
+  if m.getInstance("user").isLoggedIn
+    m.logInfo("user is logged in, no need to show")
+    m.setField("state", "success")
+  else
+    m.logInfo("user not logged in - attemping refreshing")
+    m.refreshLogin() 
+  end if
   return true
 end function
 
