@@ -89,11 +89,10 @@ public override function getAvailableProducts(rokuProducts, purchasedItemIds) as
     return
   end if
   inPlayerFees = m.getInPlayerFeesForItem(item)
-  ? formatJson(item.json)
   products = []
   for each fee in inPlayerFees
     rokuProduct = m.getRokuItemForFee(fee, rokuProducts)
-    if rokuProduct <> invalid
+    if rokuProduct <> invalid and MU.getArrayIndex(purchasedItemIds, rokuProduct.code) = -1
       products.push(rokuProduct)
     else
       m.logWarn("ignoring fee", fee.id, fee.description, "which can not be mapped to a roku purchase, on item", item)
@@ -191,19 +190,11 @@ private function sendPurchasesToInPlayer(purchases)
   failedPurchases = []
   
   for each receipt in purchases
-    accessFeeId = m.getAccessFeeId(receipt.code)
-    itemId = m.getItemId(receipt.code)
-    
-    if accessFeeId <> invalid
-      params = {
-        receipt: receipt.purchaseId
-        product_name: receipt.code
-      }
-      result = m.execute("FORMPOST", "v2/external-payments/roku/validate", params)
-    else
-      m.logError("Could not ascertain access code id for purchase receipt", receipt)
-      result = invalid
-    end if
+    params = {
+      receipt: receipt.purchaseId
+      product_name: receipt.code
+    }
+    result = m.execute("FORMPOST", "v2/external-payments/roku/validate", params)
     
     code = MU.getContentField(result, "code", - 1)
     'TODO get code for already purchased error and ignore it!
@@ -266,11 +257,11 @@ private function getInplayerId(item)
     m.logError("invalid item")
     return invalid
   end if
-
+  
   if item.inPlayerId <> invalid
     return item.inPlayerId
   end if
-
+  
   id = MU.getContentField(item, "extensions.inplayer_asset_id")
   
   if id = invalid
