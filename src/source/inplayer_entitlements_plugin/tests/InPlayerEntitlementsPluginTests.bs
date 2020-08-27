@@ -19,12 +19,38 @@ function beforeEach()
   }))
   
   m.plugin = new InPlayerEntitlementsPlugin(plugin)
+  m.plugin.token = "t"
 end function
 
 '@AfterEach
 function afterEach()
   TU.unsetModelLocator()
   AppService.clearClassInstances()
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests execute
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test invalid token
+'@Params["GET", "foo", {"id":"args"}]
+'@Params["PUSH", "foo2", {"id":"args2"}]
+'@Params["PUSH", "foo2", {"id":"args2"}]
+function execute_invalid_token(method, endpoint, args)
+  m.plugin.token = invalid
+  m.expectNone(m.plugin, "executeApiRequest")
+  
+  m.assertInvalid(m.plugin.execute(method, endpoint, args))
+end function
+
+'@Test 
+'@Params["GET", "foo", {"id":"args"}, {"id":"result"}]
+'@Params["PUSH", "foo2", {"id":"args2"}, {"id":"result"}]
+'@Params["PUSH", "foo2", {"id":"args2"}, invalid]
+function execute_valid_token(method, endpoint, args, result)
+  m.expectOnce(m.plugin, "executeApiRequest", [method, endpoint, args, true, "t"], result)
+  
+  m.assertEqual(m.plugin.execute(method, endpoint, args), result)
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -67,7 +93,7 @@ end function
 
 '@Test not logged in
 function getPurchasedItemIds_not_authd()
-  m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], invalid)
+  m.plugin.token = invalid
   m.assertEmpty(m.plugin.getPurchasedItemIds([]))
 end function
 
@@ -77,13 +103,12 @@ end function
 '@Params[[{"code":"f1"}], [], []]
 '@Params[[{"code":"f1"}], [{external_id:"f1"}], ["f1"]]
 function getPurchasedItemIds_one_purchase(rokuPurchases, externalFees, expectedIds) as void
-  m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], "t")
   receipt1 = { "id": "f1" }
   response = { "id": "response", "collection": [receipt1] }
   fee1 = { "id" : "fee1", external_fees: externalFees }
   
-  m.expectOnce(m.plugin, "executeAPIRequest", ["GET", "items/access/customers?status=active", invalid, true, "t"], response)
-  m.expectOnce(m.plugin, "getFeeForAccessReceipt", [receipt1, "t"], fee1)
+  m.expectOnce(m.plugin, "execute", ["GET", "items/access/customers?status=active"], response)
+  m.expectOnce(m.plugin, "getFeeForAccessReceipt", [receipt1], fee1)
   
   result = m.plugin.getPurchasedItemIds(rokuPurchases)
   m.assertArrayContainsSubset(result, expectedIds)
@@ -98,7 +123,6 @@ end function
 '@Params[{code:"f1"}, {code:"f2"}, {code:"f3"}, ["f1",f2","f3"]]
 function getPurchasedItemIds_multiple_purchases(rr1, rr2, rr3, expectedIds) as void
   rokuPurchases = [{ "code": "f1" }, { "code": "f2" }, { "code": "f3" }]
-  m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], "t")
   receipt1 = { "id": "f1" }
   receipt2 = { "id": "f2" }
   receipt3 = { "id": "f3" }
@@ -108,10 +132,10 @@ function getPurchasedItemIds_multiple_purchases(rr1, rr2, rr3, expectedIds) as v
   fee2 = { "id" : "fee2" }
   fee3 = { "id" : "fee3" }
   
-  m.expectOnce(m.plugin, "executeAPIRequest", ["GET", "items/access/customers?status=active", invalid, true, "t"], response)
-  m.expectOnce(m.plugin, "getFeeForAccessReceipt", [receipt1, "t"], fee1)
-  m.expectOnce(m.plugin, "getFeeForAccessReceipt", [receipt2, "t"], fee2)
-  m.expectOnce(m.plugin, "getFeeForAccessReceipt", [receipt3, "t"], fee3)
+  m.expectOnce(m.plugin, "execute", ["GET", "items/access/customers?status=active"], response)
+  m.expectOnce(m.plugin, "getFeeForAccessReceipt", [receipt1], fee1)
+  m.expectOnce(m.plugin, "getFeeForAccessReceipt", [receipt2], fee2)
+  m.expectOnce(m.plugin, "getFeeForAccessReceipt", [receipt3], fee3)
   m.expectOnce(m.plugin, "getRokuItemForFee", [fee1, rokuPurchases], rr1)
   m.expectOnce(m.plugin, "getRokuItemForFee", [fee2, rokuPurchases], rr2)
   m.expectOnce(m.plugin, "getRokuItemForFee", [fee3, rokuPurchases], rr3)
@@ -133,8 +157,7 @@ end function
 '@Params[collection: {[{external_fees:[{external_id: "1"},{external_id: "2"}]}]}, ["1"]]
 '@Params[collection: {[{external_fees:[{external_id: "1"},{external_id: "2"}]}}, {external_fees:[{external_id: "3"}]}], ["1", "3"]]
 function getPurchasedItemIds_invalidScenarios(response, expectedIds) as void
-  m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], "t")
-  m.expectOnce(m.plugin, "executeAPIRequest", ["GET", "items/access/customers?status=active", invalid, true, "t"], response)
+  m.expectOnce(m.plugin, "execute", ["GET", "items/access/customers?status=active"], response)
   
   result = m.plugin.getPurchasedItemIds([])
   m.assertArrayContainsSubset(result, expectedIds)
@@ -169,8 +192,7 @@ function getAvailableProducts_not_valid(token, item)
   currentSelection = { id: "currentSelection", "currentItem": item }
   
   m.expectOnce(m.plugin, "getInstance", ["currentSelection"], currentSelection)
-  m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], token)
-  
+  m.plugin.token = token
   m.modelLocator.availableProducts.availableProducts = ["something"]
   m.plugin.getAvailableProducts(rokuCatalogItems, ["1"])
   m.assertEmpty(m.modelLocator.availableProducts.availableProducts)
@@ -190,11 +212,10 @@ function getAvailableProducts_valid(fees, expectedIds)
   currentSelection = { id: "currentSelection", "currentItem": item }
   
   m.expectOnce(m.plugin, "getInstance", ["currentSelection"], currentSelection)
-  m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], "t")
   
   m.modelLocator.availableProducts.availableProducts = ["something"]
   
-  m.expectOnce(m.plugin, "getInPlayerFeesForItem", [item, "t"], fees)
+  m.expectOnce(m.plugin, "getInPlayerFeesForItem", [item], fees)
   
   
   m.plugin.getAvailableProducts(rokuCatalogItems, purchasedIds)
@@ -217,12 +238,11 @@ end function
 
 '@Test noToken
 function loadItem_noToken()
-  m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], invalid)
-  
+  m.plugin.token = invalid
   item = { 
     id: "item"
     extensions: {
-      external_id: "xid"
+      inplayer_asset_id: "xid"
     }
   }
   m.assertFalse(m.plugin.loadItem(item))
@@ -234,20 +254,18 @@ end function
 '@Params[{"id":"item"}]
 '@Params[{"id":"item", extensions: invalid}]
 '@Params[{"id":"item", extensions: {"other": true}}]
-'@Params[{"id":"item", extensions: {"external_id": invalid}}]
+'@Params[{"id":"item", extensions: {"inplayer_asset_id": invalid}}]
 function loadItem_invalid_item(item)
-  m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], "t")
   m.assertFalse(m.plugin.loadItem(item))
 end function
 
 '@Test valid
 function loadItem_valid()
-  m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], "t")
   item = createObject("roSGNode", "Node")
   item.addFields({ 
     id: "item"
     extensions: {
-      external_id: "xid"
+      inplayer_asset_id: "xid"
     }
     url: "ourl"
   })
@@ -259,7 +277,7 @@ function loadItem_valid()
       content: formatJson({ mobile_url: "changedUrl" })
     }
   }
-  m.expectOnce(m.plugin, "executeAPIRequest", ["GET", "items/xid/access", invalid, true, "t"], result)
+  m.expectOnce(m.plugin, "execute", ["GET", "items/xid/access"], result)
   
   m.assertTrue(m.plugin.loadItem(item))
   
@@ -276,18 +294,17 @@ end function
 '@Params[{errors:{}]}, "Error loading item: item title"]
 '@Params[{errors:{"401":"custom error"}}, "custom error"]
 function loadItem_errors(result, expectedErrorMessage)
-  m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], "t")
   item = createObject("roSGNode", "Node")
   item.addFields({ 
     id: "item"
     title: "item title"
     extensions: {
-      external_id: "xid"
+      inplayer_asset_id: "xid"
     }
     url: "ourl"
   })
   
-  m.expectOnce(m.plugin, "executeAPIRequest", ["GET", "items/xid/access", invalid, true, "t"], result)
+  m.expectOnce(m.plugin, "execute", ["GET", "items/xid/access"], result)
   
   m.assertFalse(m.plugin.loadItem(item))
   
@@ -382,8 +399,7 @@ end function
 '@Params[[]]
 '@Params[[{id:"p1"}]]
 function sendPurchasesToInPlayer_no_purchases(purchases)
-  m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], invalid)
-  
+  m.plugin.token = invalid
   m.assertEmpty(m.plugin.sendPurchasesToInPlayer(purchases))
 end function
 
@@ -392,7 +408,6 @@ end function
 '@Params[201, 1]
 '@Params[200, 0]
 function sendPurchasesToInPlayer_one_purchase(code, expectedFailCount)
-  m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], "t")
   p1 = { code: "99_100", purchaseId: "r1" }
   purchases = [p1]
   
@@ -403,7 +418,7 @@ function sendPurchasesToInPlayer_one_purchase(code, expectedFailCount)
   result = {
     "code": code
   }
-  m.expectOnce(m.plugin, "executeAPIRequest", ["FORMPOST", "v2/external-payments/roku/validate", expectedParams, true, "t"], result)
+  m.expectOnce(m.plugin, "execute", ["FORMPOST", "v2/external-payments/roku/validate", expectedParams], result)
   
   m.assertArrayCount(m.plugin.sendPurchasesToInPlayer(purchases), expectedFailCount)
 end function
@@ -413,7 +428,6 @@ end function
 '@Params[201, 200, 200, ["a_100"]]
 '@Params[200, 200, 400, ["c_102"]]
 function sendPurchasesToInPlayer_multiple_purchases(code1, code2, code3, expectedFailIds)
-  m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], "t")
   p1 = { code: "99_101", purchaseId: "r1" }
   p2 = { code: "98_102", purchaseId: "r2" }
   p3 = { code: "97_103", purchaseId: "r3" }
@@ -435,9 +449,9 @@ function sendPurchasesToInPlayer_multiple_purchases(code1, code2, code3, expecte
   }
   r3 = { "code": code3 }
   
-  m.expectOnce(m.plugin, "executeAPIRequest", ["FORMPOST", "v2/external-payments/roku/validate", expectedParams1, true, "t"], r1)
-  m.expectOnce(m.plugin, "executeAPIRequest", ["FORMPOST", "v2/external-payments/roku/validate", expectedParams2, true, "t"], r2)
-  m.expectOnce(m.plugin, "executeAPIRequest", ["FORMPOST", "v2/external-payments/roku/validate", expectedParams3, true, "t"], r3)
+  m.expectOnce(m.plugin, "execute", ["FORMPOST", "v2/external-payments/roku/validate", expectedParams1], r1)
+  m.expectOnce(m.plugin, "execute", ["FORMPOST", "v2/external-payments/roku/validate", expectedParams2], r2)
+  m.expectOnce(m.plugin, "execute", ["FORMPOST", "v2/external-payments/roku/validate", expectedParams3], r3)
   
   failedReceipts = m.plugin.sendPurchasesToInPlayer(purchases)
   m.assertArrayCount(failedReceipts, expectedFailIds.count())
@@ -476,10 +490,10 @@ end function
 '@Params[{item_id:invalid}]
 function getFeeForAccessReceipt_invalid_receipt(feeReceipt)
   
-  m.expectNone(m.plugin, "executeAPIRequest")
+  m.expectNone(m.plugin, "execute")
   
-  m.assertInvalid(m.plugin.getFeeForAccessReceipt(feeReceipt, "t"))
-
+  m.assertInvalid(m.plugin.getFeeForAccessReceipt(feeReceipt))
+  
 end function
 
 '@Test valid
@@ -489,10 +503,10 @@ end function
 function getFeeForAccessReceipt_valid(id, endpoint, response, expectedFee)
   feeReceipt = { "id" : id, item_id: id, merchant_id: id }
   
-  m.expectOnce(m.plugin, "executeAPIRequest", ["GET", endpoint, invalid, true, "t"], response)
+  m.expectOnce(m.plugin, "execute", ["GET", endpoint], response)
   
-  fee = m.plugin.getFeeForAccessReceipt(feeReceipt, "t")
-
+  fee = m.plugin.getFeeForAccessReceipt(feeReceipt)
+  
   m.assertEqual(fee, expectedFee)
 end function
 
@@ -520,6 +534,31 @@ function getRokuItemForFee(fee, rokuPurchases, expected)
   m.assertEqual(m.plugin.getRokuItemForFee(fee, rokuPurchases), expected)
 end function
 
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests getInplayerId
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test no network calls
+'@Params[invalid, invalid]
+'@Params[{extensions:{"inplayer_asset_id":invalid}}, invalid]
+'@Params[{extensions:{"inplayer_asset_id":"123"}}, "123"]
+function getInplayerId_no_network_calls(item, expected)
+  m.assertEqual(m.plugin.getInplayerId(item), expected)
+end function
+
+'@Test network calls
+'@Params[{id:"1a", extensions:{"inplayer_asset_type":"jw"}}, "items/assets/external/jw/1a", invalid, invalid]
+'@Params[{id:"1a", extensions:{"inplayer_asset_type":"jw"}}, "items/assets/external/jw/1a", {}, invalid]
+'@Params[{id:"1a", extensions:{"inplayer_asset_type":"jw"}}, "items/assets/external/jw/1a", {id:"123"}, "123"]
+'@Params[{id:"2a", extensions:{"inplayer_asset_type":"vimeo"}}, "items/assets/external/vimeo/2a", {id:"111"}, "111"]
+'@Params[{id:"2a", extensions:{"inplayer_asset_type":"vimeo"}}, "items/assets/external/vimeo/2a", invalid, invalid]
+function getInplayerId_network_calls(item, endpoint, result, expected)
+  m.expectOnce(m.plugin, "execute", ["GET", endpoint], result)
+  
+  m.assertEqual(m.plugin.getInplayerId(item), expected)
+end function
+
+
 '@Ignore
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '@It INTEGRATION tests
@@ -531,20 +570,18 @@ function integration_beforeEach()
   m.superBeforeEach()
   m.item = createObject("roSGNode", "ZPEntry")
   m.item.extensions = {
-    "external_id": 73823
+    "inplayer_asset_id": 73823
   }
   m.currentSelection = {
     currentItem: m.item
   }
   
   'DO NOT COMMIT THIS TOKEN
-  m.integrationToken = "CHANGE_ME"
+  m.plugin.token = "CHANGE ME"
 end function
 
 '@Test
 function integration_makePurhcase()
-  
-  m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], m.integrationToken)
   
   purchases = InplayerEntitlements.Tests.make_live_purchase()
   m.plugin.sendPurchasesToInPlayer(purchases)
@@ -571,8 +608,6 @@ end function
 function integration_getAvailableProducts()
   m.expectOnce(m.plugin, "getInstance", ["currentSelection"], m.currentSelection)
   
-  m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], m.integrationToken)
-  
   products = InplayerEntitlements.Tests.getProducts()
   m.plugin.getAvailableProducts(products, [])
   
@@ -581,11 +616,9 @@ end function
 
 '@Test loadItem
 function integration_loadItem()
-  m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], m.integrationToken)
-  
   item = createObject("roSGNode", "ZPEntry")
   item.extensions = {
-    "external_id": 73823
+    "inplayer_asset_id": 73823
   }
   m.plugin.loadItem(item)
   logInfo("item", item.url)
@@ -594,8 +627,6 @@ end function
 
 '@Test getPurchasedItemIds
 function integration_getPurchasedItemIds()
-  m.expectOnce(m.plugin, "getSessionStoreValue", ["inplayer_auth_plugin_roku", "token"], m.integrationToken)
-  
   products = InplayerEntitlements.Tests.getProducts()
   result = m.plugin.getPurchasedItemIds(products)
   logInfo("item ids", result)
