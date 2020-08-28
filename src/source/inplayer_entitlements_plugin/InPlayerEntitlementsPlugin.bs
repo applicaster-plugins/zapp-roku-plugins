@@ -19,6 +19,10 @@ private soonestExpiration = -1
 
 public function new(plugin)
   super("ApplicasterEntitlementsPlugin", plugin)
+  
+  m.isItemRequiredToLoadEntitlements = true
+  m.requiresLoadToAscertainEntitlements = true
+
   m.authenticationData = m.getInstance("authenticationData")
   m.entitlementsPolicy = plugin.getStringValue("entitlements_policy", "none", m.validPolicies)
   m.vodModel = plugin.getStringValue("vod_model", "AVOD", m.validVodModels)
@@ -31,8 +35,9 @@ public function new(plugin)
   else
     m.apiUrl = "https://staging-v2.inplayer.com"
   end if
+
   APIUtils.mixin(m)
-  
+
 end function
 
 private function execute(method, endpoint, args = invalid)
@@ -82,13 +87,12 @@ end function
 public override function getAvailableProducts(rokuProducts, purchasedItemIds) as void
   m.logMethod("getAvailableProducts")
   'note - available inplayer items are always scoped to an item
-  item = MU.getContentField(m.getInstance("currentSelection"), "currentItem")
-  if item = invalid or m.token = invalid
+  if m.currentItem = invalid or m.token = invalid
     m.logError("these entitlements only work when there is a current selection or user is logged in")
     m.availableProducts.availableProducts = []
     return
   end if
-  inPlayerFees = m.getInPlayerFeesForItem(item)
+  inPlayerFees = m.getInPlayerFeesForItem(m.currentItem)
   products = []
   for each fee in inPlayerFees
     rokuProduct = m.getRokuItemForFee(fee, rokuProducts)
@@ -205,31 +209,6 @@ private function sendPurchasesToInPlayer(purchases)
   end for
   
   return failedPurchases
-end function
-
-private function getAccessFeeId(rokuCode)
-  return m.getCodePart(rokuCode, 1)
-end function
-
-private function getItemId(rokuCode)
-  return m.getCodePart(rokuCode, 0)
-end function
-
-private function getCodePart(rokuCode, index)
-  if rokuCode <> invalid
-    parts = rokuCode.split("_")
-    
-    if parts.count() = 2
-      value = parts[index].toInt()
-      
-      if value <> 0
-        return value
-      end if
-    end if
-  end if
-  
-  m.logError("rokuCode", rokuCode, "is incorrectly formatted")
-  return invalid
 end function
 
 private function getInPlayerFeesForItem(item) as object
