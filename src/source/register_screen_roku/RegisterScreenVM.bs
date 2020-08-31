@@ -68,16 +68,16 @@ end function
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 function processStyles(styles)
-  m.setField("usernameText", styles.username_placeholder_text)
+  m.setField("usernameText", m.localizations.username_placeholder_text)
   m.usernamePlaceholderText = m.usernameText
   
-  m.setField("nameText", styles.name_placeholder_text)
+  m.setField("nameText", m.localizations.name_placeholder_text)
   m.namePlaceholderText = m.nameText
   
-  m.setField("passwordText", styles.password_placeholder_text)
+  m.setField("passwordText", m.localizations.password_placeholder_text)
   m.passwordPlaceholderText = m.passwordText
   
-  m.setField("confirmPasswordText", styles.confirm_password_placeholder_text)
+  m.setField("confirmPasswordText", m.localizations.confirm_password_placeholder_text)
   m.confirmPasswordPlaceholderText = m.confirmPasswordText
   
   inputStyle = ViewUtils.makeUIBButtonStyle(styles, "general_input", "textInputPlaceholder")

@@ -7,6 +7,9 @@ import "pkg:/source/register_screen_roku/RegisterScreenVM.bs"
 function init()
   m.top.isConsumingOriginEntry = true
   m.top.isForcingMenuHidden = true
+  initializeView(m.top.findNode("labelsGroup"))
+  initializeView(m.top.findNode("controlsGroup"))
+  initializeView(m.top.findNode("doneGroup"))
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
