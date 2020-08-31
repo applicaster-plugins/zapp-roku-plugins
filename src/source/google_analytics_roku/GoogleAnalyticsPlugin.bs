@@ -11,8 +11,10 @@ public function new(plugin)
   super("GoogleAnalyticsPlugin", plugin)
   m.task = m.createInstance("GoogleAnalyticsTask", invalid, "googleAnalyticsTask")
   
+  constants = m.getInstance("constants")
+
   m.task.trackingId = plugin.getStringValue("tracking_id")
-  m.task.clientId = plugin.getStringValue("client_id")
+  m.task.clientId = constants.googleAnalyticsClientId
   
   buildConfig = m.getInstance("buildConfig")
   versionId = buildConfig.app_family_id
