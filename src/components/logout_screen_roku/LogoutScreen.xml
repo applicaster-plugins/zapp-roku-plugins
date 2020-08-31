@@ -7,8 +7,17 @@
 
   <children>
     <Rectangle
-        id="backgroundRect"
-        color="{{:vm.backgroundColor}}" />
+        id='backgroundRectangle'
+        width='1920'
+        height='1080'
+        color='{{=ViewUtils_UIBColor("background_color")}}' />
+    <ZPoster
+        id='backgroundPoster'
+        style='{{=ViewUtils_UIBBackgroundPoster("background")}}' />
+    <ZPoster
+        id='logoPoster'
+        uri='{{=ViewUtils_getPosterUri(m.top.riversJson.styles.logo_image_url)}}' />
+        
     <Button
         id="focustrap"
         visible="false" />
