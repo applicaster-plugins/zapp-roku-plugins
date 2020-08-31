@@ -8,6 +8,8 @@ function init()
   m.top.isConsumingOriginEntry = true
   m.top.isForcingMenuHidden = true
   initializeView(m.top.findNode("screenContainer"))
+  initializeView(m.top.findNode("labelsGroup"))
+  initializeView(m.top.findNode("controlsGroup"))
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

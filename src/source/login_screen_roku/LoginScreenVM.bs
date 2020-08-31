@@ -73,10 +73,10 @@ end function
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 function processStyles(styles)
-  m.setField("usernameText", styles.username_placeholder_text)
+  m.setField("usernameText", m.localizations.username_placeholder_text)
   m.usernamePlaceholderText = m.usernameText
   
-  m.setField("passwordText", styles.password_placeholder_text)
+  m.setField("passwordText", m.localizations.password_placeholder_text)
   m.passwordPlaceholderText = m.passwordText
   
   inputStyle = ViewUtils.makeUIBButtonStyle(styles, "general_input", "textInputPlaceholder")
