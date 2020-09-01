@@ -54,7 +54,7 @@ public override function _identify(pluginId, traits = {}, options = {}, isFromLo
   if traits = invalid
     traits = {}
   end if
-
+  
   if isFromLogout and not m.isIdentifyingOnLogout
     m.logInfo("ignoring identify call from logout due to plugin configuration")
     return false
@@ -158,15 +158,15 @@ private function getDefaultProperties()
     platform: "roku"
   }
   
-  if accountInfo <> invalid 
-    properties.user_gigya_id = accountInfo.id
+  if accountInfo <> invalid and accountInfo.id <> invalid
+    properties.user_gigya_id = m.hash(accountInfo.id)
   else
     properties.user_gigya_id = "anonymous"
   end if
   
   primetimeAccountInfo = m.getSessionStoreValue("AdobeAccessEnabler", "account", true)
   if primetimeAccountInfo <> invalid 
-    properties.user_adobe_id = primetimeAccountInfo.id
+    properties.user_adobe_id = m.hash(primetimeAccountInfo.id)
   else
     properties.user_adobe_id = "anonymous"
   end if
@@ -174,5 +174,13 @@ private function getDefaultProperties()
   return properties
 end function
 
+private function hash(id)
+  byteArray = CreateObject("roByteArray")
+  byteArray.FromAsciiString(id)
+  
+  digest = CreateObject("roEVPDigest")
+  digest.Setup("sha256")
+  return digest.Process(byteArray)
+end function
 end class
 end namespace
