@@ -57,8 +57,11 @@ public override function createContent()
 end function
 
 public override function load() as boolean
-  
-  if m.getInstance("user").isLoggedIn
+  if not m.isLoginRequired()
+    m.logInfo("no need to show in this case")
+    m.setField("state", "success")
+    
+  else if m.getInstance("user").isLoggedIn
     m.logInfo("user is logged in, no need to show")
     m.setField("state", "success")
   else
@@ -68,6 +71,14 @@ public override function load() as boolean
   return true
 end function
 
+private function isLoginRequired()
+  currentItem = MU.getContentField(m.getInstance("currentSelection"), "currentItem")
+  if currentItem <> invalid and MU.getContentField(currentItem, "extensions.requires_authentication", false) = false
+    return false
+  else
+    return true
+  end if
+end function
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '++ styles
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
