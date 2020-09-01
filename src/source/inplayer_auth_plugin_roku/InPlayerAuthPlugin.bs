@@ -70,6 +70,7 @@ public override function _register(credentials)
     "full_name": credentials.name
     "username": credentials.username
     "password": credentials.password
+    "metadata[surname]": "dummy" 'workaround for sudden requirement to provide surname on backend
     "password_confirmation": credentials.passwordConfirmation
   }
   
