@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version='1.0' encoding='utf-8'?>
 <component
-    name="LogoutScreen"
-    extends="ZUIBScreen">
+    name='LogoutScreen'
+    extends='ZUIBScreen'>
 
   <interface></interface>
 
@@ -17,42 +17,44 @@
     <ZPoster
         id='logoPoster'
         uri='{{=ViewUtils_getPosterUri(m.top.riversJson.styles.logo_image_url)}}' />
-        
+
     <Button
-        id="focustrap"
-        visible="false" />
-        
-    <LayoutGroup
-        id="labelsGroup"
-        layoutDirection="vert"
-        translation="{{:vm.textPosition}}"
-        itemSpacings="[56, 56, 26]">
+        id='focustrap'
+        visible='false' />
+
+    <ZLayoutGroup
+        id='contentGroup'
+        translation='[960, 500]'
+        horizAlignment='center'
+        itemSpacings='[0, 100, 26]'>
+      <Rectangle
+          id=''
+          width='1920' />
       <MLabel
-          id="titleText"
-          style="{{:vm.titleStyle}}"
-          text="{{vm.titleText}}"
-          width="{{vm.textWidth}}"
-          horizAlign="center"
-          wrap="true" />
-    </LayoutGroup>
+          id='titleText'
+          style='{{:vm.titleStyle}}'
+          text='{{vm.titleText}}'
+          width='{{vm.textWidth}}'
+          horizAlign='center'
+          wrap='true' />
 
-    <ZActionButton
-        id="logoutButton"
-        translation="{{:vm.buttonPosition}}"
-        visible="{{:vm.isButtonVisible}}"
-        style="{{:vm.buttonStyle}}"
-        text="{{vm.buttonText}}"
-        selected="{(vm.onLogoutButtonSelected,isSettingInitialValue=false)}"
-        width="610" />
-
+      <ZActionButton
+          id='logoutButton'
+          translation='['
+          visible='{{:vm.isButtonVisible}}'
+          style='{{:vm.buttonStyle}}'
+          text='{{vm.buttonText}}'
+          selected='{(vm.onLogoutButtonSelected,isSettingInitialValue=false)}'
+          width='610' />
+    </ZLayoutGroup>
     <LoadingIndicator
-        id="loadingIndicator"
-        width="1920"
-        height="1080"
-        translation="[0,0]"
-        isActive="{{vm.isShowingLoadingIndicator, isSettingInitialValue=true}}"
-        backgroundVisible="false"
-        text="" />
+        id='loadingIndicator'
+        width='1920'
+        height='1080'
+        translation='[0,0]'
+        isActive='{{vm.isShowingLoadingIndicator, isSettingInitialValue=true}}'
+        backgroundVisible='false'
+        text='' />
 
   </children>
 </component>
