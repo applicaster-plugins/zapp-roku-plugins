@@ -54,7 +54,7 @@ public override function _identify(pluginId, traits = {}, options = {}, isFromLo
   if traits = invalid
     traits = {}
   end if
-
+  
   if isFromLogout and not m.isIdentifyingOnLogout
     m.logInfo("ignoring identify call from logout due to plugin configuration")
     return false
