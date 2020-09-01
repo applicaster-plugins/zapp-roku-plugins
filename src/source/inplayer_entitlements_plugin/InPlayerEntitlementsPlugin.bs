@@ -22,7 +22,7 @@ public function new(plugin)
   
   m.isItemRequiredToLoadEntitlements = true
   m.requiresLoadToAscertainEntitlements = true
-
+  
   m.authenticationData = m.getInstance("authenticationData")
   m.entitlementsPolicy = plugin.getStringValue("entitlements_policy", "none", m.validPolicies)
   m.vodModel = plugin.getStringValue("vod_model", "AVOD", m.validVodModels)
@@ -35,9 +35,9 @@ public function new(plugin)
   else
     m.apiUrl = "https://staging-v2.inplayer.com"
   end if
-
+  
   APIUtils.mixin(m)
-
+  
 end function
 
 private function execute(method, endpoint, args = invalid)
@@ -93,10 +93,13 @@ public override function getAvailableProducts(rokuProducts, purchasedItemIds) as
     return
   end if
   inPlayerFees = m.getInPlayerFeesForItem(m.currentItem)
+  usedProducts = {}
   products = []
   for each fee in inPlayerFees
     rokuProduct = m.getRokuItemForFee(fee, rokuProducts)
-    if rokuProduct <> invalid and MU.getArrayIndex(purchasedItemIds, rokuProduct.code) = -1
+    if rokuProduct <> invalid and MU.getArrayIndex(purchasedItemIds, rokuProduct.code) = -1 and usedProducts[rokuProduct.code] = invalid
+      rokuProduct.fee = fee
+      usedProducts[rokuProduct.code] = true
       products.push(rokuProduct)
     else
       m.logWarn("ignoring fee", fee.id, fee.description, "which can not be mapped to a roku purchase, on item", item)
