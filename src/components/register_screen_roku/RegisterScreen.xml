@@ -74,14 +74,14 @@
             selected='{(vm.onPasswordButtonSelected,isSettingInitialValue=false)}'
             width='{{=ViewUtils_UIBInt("input_w")}}' />
             
-            <ZActionButton
+            <!-- <ZActionButton
             id='confirmPasswordInput'
             text='{{vm.confirmPasswordText}}'
             style='{{:vm.inputStyle}}'
             labelXOffset='9'
             buttonType='{{vm.confirmPasswordButtonType}}'
             selected='{(vm.onConfirmPasswordButtonSelected,isSettingInitialValue=false)}'
-            width='{{=ViewUtils_UIBInt("input_w")}}' />
+            width='{{=ViewUtils_UIBInt("input_w")}}' /> -->
             
             <ZActionButton
             id='registerButton'
