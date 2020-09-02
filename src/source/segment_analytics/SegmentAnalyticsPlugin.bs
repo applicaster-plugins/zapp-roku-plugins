@@ -75,7 +75,7 @@ public override function _identify(pluginId, traits = {}, options = {}, isFromLo
       options.append(m.defaultOptions)
       if accountInfo.id <> invalid and accountInfo.id.trim() <> ""
         m.logInfo("identifying analytics with the userId", accountInfo.id, "for plugin:", pluginId)
-        m.library.identify(accountInfo.id, traits, options)
+        m.library.identify(m.hash(accountInfo.id), traits, options)
       else
         m.logError("identify called; but ther id was empty!")
         m.identifyAsAnonymous()
