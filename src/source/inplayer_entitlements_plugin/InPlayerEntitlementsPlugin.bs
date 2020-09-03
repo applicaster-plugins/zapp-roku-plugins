@@ -199,7 +199,8 @@ private function sendPurchasesToInPlayer(purchases)
   for each receipt in purchases
     params = {
       receipt: receipt.purchaseId
-      product_name: receipt.code
+      'NOTE: inplayer (wrongly imo), use receipt.name here. We've flagged this to them. it should be receipt.code. they are considering changing it. For now, this means that duplicate product names are not supported on roku.
+      product_name: receipt.name
     }
     result = m.execute("FORMPOST", "v2/external-payments/roku/validate", params)
     
