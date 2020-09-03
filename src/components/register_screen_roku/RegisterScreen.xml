@@ -131,9 +131,9 @@
 
     <LoadingIndicator
         id='loadingIndicator'
-        width='100'
-        height='100'
-        translation='[1000,500]'
+        width='1920'
+        height='1080'
+        translation='[0,0]'
         isActive='{{vm.isLoading, isSettingInitialValue=true}}'
         backgroundVisible='false'
         text='' />
