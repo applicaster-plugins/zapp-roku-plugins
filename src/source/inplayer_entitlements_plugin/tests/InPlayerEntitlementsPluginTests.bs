@@ -463,23 +463,6 @@ function sendPurchasesToInPlayer_multiple_purchases(code1, code2, code3, expecte
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests getAccessFeeId
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-'@Test 
-'@Params[invalid, invalid]
-'@Params["", invalid]
-'@Params["123", invalid]
-'@Params["123_", invalid]
-'@Params["123_0", invalid]
-'@Params["123_4", 4]
-'@Params["123_56789", 56789]
-'@Params["123_456", 456]
-function getAccessFeeId(rokuCode, expected)
-  m.assertEqual(m.plugin.getAccessFeeId(rokuCode), expected)
-end function
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '@It tests getFeeForAccessReceipt
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
