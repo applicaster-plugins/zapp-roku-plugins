@@ -136,7 +136,9 @@ private function onUsernameKeyboardDialogDismissal(text)
     m.setField("usernameText", m.usernamePlaceholderText)
   else
     m.setField("usernameText", text)
-    m.username = text
+    'set the username to lower case letters
+    lCaseUserName = LCase(text)
+    m.username = lCaseUserName
     m.setField("usernameButtonType", "textInput")
   end if 
   
@@ -190,7 +192,7 @@ end function
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 public function checkCredsValid()
-  m.setField("isCredsValid", m.usernameText <> invalid and m.usernameText.trim() <> "" and m.password <> invalid and m.password.trim() <> "")
+  m.setField("isCredsValid", m.username <> invalid and m.username.trim() <> "" and m.password <> invalid and m.password.trim() <> "")
   
   m.setField("isLoginButtonEnabled", m.isCredsValid and not m.isLoading)
 end function
@@ -200,7 +202,7 @@ public function processLogin()
   
   if m.isCredsValid
     creds = m.createInstance("AuthenticationCredentials")
-    creds.username = m.usernameText
+    creds.username = m.userName
     creds.password = m.password
     m.authTask = m.createAuthTask("execLogIn", "aws_cognito_auth_plugin", "onLoginComplete", creds)
     
