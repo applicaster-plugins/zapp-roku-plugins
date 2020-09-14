@@ -77,7 +77,7 @@ public override function _identify(pluginId, traits = {}, options = {}, isFromLo
         m.logInfo("identifying analytics with the userId", accountInfo.id, "for plugin:", pluginId)
         m.library.identify(m.hash(accountInfo.id), traits, options)
       else
-        m.logError("identify called; but ther id was empty!")
+        m.logError("identify called; but the id was empty!")
         m.identifyAsAnonymous()
       end if
     else
@@ -90,10 +90,11 @@ public override function _identify(pluginId, traits = {}, options = {}, isFromLo
 end function
 
 private function identifyAsAnonymous()
-  m.logInfo("identifying as anonymous user")
-  m.defaultOptions = m.getDefaultOptions()
-  m.defaultProperties = m.getDefaultProperties()
-  m.library.identify("anonymous", m.defaultOptions, m.defaultProperties)
+  m.logInfo("identifying as anonymous user is disabled for segment analytics")
+  return invalid
+  ' m.defaultOptions = m.getDefaultOptions()
+  ' m.defaultProperties = m.getDefaultProperties()
+  ' m.library.identify("anonymous", m.defaultOptions, m.defaultProperties)
 end function
 
 public override function _track(eventName, properties = {}, options = {})
