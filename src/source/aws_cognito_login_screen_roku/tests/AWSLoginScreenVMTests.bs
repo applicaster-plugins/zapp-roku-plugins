@@ -51,7 +51,15 @@ function beforeEach()
       "input_placeholder_color": "#ff0000ff"
       "background_color": "#ff0000ff"
     }
+    "localizations":{}
   }
+
+  m.modelLocator = CreateObject("roSGNode", "ModelLocator")
+  
+  m.locale = "en"
+  m.modelLocator.locale = m.locale
+
+  TU.setModelLocator(m.modelLocator)
   
   m.vm = AWSLoginScreenVM(m.riversJson)
   m.vm.initialize()
@@ -60,6 +68,7 @@ end function
 
 '@AfterEach
 function afterEach()
+  TU.unsetModelLocator()
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -195,10 +204,12 @@ end function
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 '@Test 
-'@Params["", "placeholder", "textInputPlaceholder"]
-'@Params["   ", "placeholder", "textInputPlaceholder"]
-'@Params["george@foo.bar", "george@foo.bar", "textInput"]
-function onUsernameKeyboardDialogDismissal(text, expectedText, expectedButtonStyle)
+'@Params["", "placeholder", "textInputPlaceholder", ""]
+'@Params["   ", "placeholder", "textInputPlaceholder", ""]
+'@Params["george@foo.bar", "george@foo.bar", "textInput", "george@foo.bar"]
+'@Params["abcd1234", "abcd1234", "textInput", "abcd1234"]
+'@Params["aBCd1234", "aBCd1234", "textInput", "abcd1234"]
+function onUsernameKeyboardDialogDismissal(text, expectedText, expectedButtonStyle, expectedUserName)
   
   m.expectOnce(m.vm, "checkCredsValid")
   
@@ -207,6 +218,7 @@ function onUsernameKeyboardDialogDismissal(text, expectedText, expectedButtonSty
   m.vm.onUsernameKeyboardDialogDismissal(text)
   
   m.assertEqual(m.vm.usernameText, expectedText)
+  m.assertEqual(m.vm.username, expectedUserName)
   m.assertEqual(m.vm.usernameButtonType, expectedButtonStyle)
 end function
 
@@ -300,7 +312,7 @@ end function
 '@Params["  ","valid", false]
 '@Params["valid", "valid", true]
 function checkCredsValid(username, password, expectedValue)
-  m.vm.usernameText = username
+  m.vm.username = username
   m.vm.password = password
   
   m.vm.checkCredsValid()
@@ -328,7 +340,7 @@ end function
 '@Test valid creds
 function processLogin_valid_creds()
   m.vm.isCredsValid = true
-  m.vm.usernameText = "user"
+  m.vm.username = "user"
   m.vm.password = "pass"
   authTask = { "id": "authTask" }
   creds = { "id": "creds" }
@@ -395,7 +407,7 @@ end function
 '@Test valid creds
 function processLogin_integration_test()
   m.vm.isCredsValid = true
-  m.vm.usernameText = "SOME_USER@email.com"
+  m.vm.username = "SOME_USER@email.com"
   m.vm.password = "SOME_PASSWORD"
   
   m.expectOnce(m.vm, "createInstance", ["AuthenticationCredentials"], createObject("roSGNode", "AuthenticationCredentials"))
@@ -412,7 +424,7 @@ end function
 function processLogin_integration_test_invalid()
   
   m.vm.isCredsValid = true
-  m.vm.usernameText = "user"
+  m.vm.username = "user"
   m.vm.password = "pass"
   
   m.expectOnce(m.vm, "createInstance", ["AuthenticationCredentials"], createObject("roSGNode", "AuthenticationCredentials"))
