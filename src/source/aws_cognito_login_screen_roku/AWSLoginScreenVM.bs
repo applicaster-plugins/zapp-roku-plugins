@@ -38,7 +38,6 @@ public backgroundColor = "#000000ff"
 
 public function new(riversJson)
   super(riversJson, "AWSLoginScreenVM")
-  
   m.focusId = "usernameInput"
   KeyboardDialogMixin.mixin(m)
   m.processStyles(m.riversJson.styles)
@@ -179,7 +178,7 @@ private function onRefreshComplete(result)
   m.setField("isLoading", false)
   
   if m.getInstance("user").isLoggedIn
-    m.setField("state", "success")
+    m.dismiss("success")
   end if
   
   m.setField("isRefreshing", false)
