@@ -413,7 +413,7 @@ function sendPurchasesToInPlayer_one_purchase(code, expectedFailCount)
   
   expectedParams = {
     receipt: "r1"
-    product_name: "99_100"
+    product_code: "99_100"
   }
   result = {
     "code": code
@@ -435,17 +435,17 @@ function sendPurchasesToInPlayer_multiple_purchases(code1, code2, code3, expecte
   
   expectedParams1 = {
     receipt: "r1"
-    product_name: "99_101"
+    product_code: "99_101"
   }
   r1 = { "code": code1 }
   expectedParams2 = {
     receipt: "r2"
-    product_name: "98_102"
+    product_code: "98_102"
   }
   r2 = { "code": code2 }
   expectedParams3 = {
     receipt: "r3"
-    product_name: "97_103"
+    product_code: "97_103"
   }
   r3 = { "code": code3 }
   
