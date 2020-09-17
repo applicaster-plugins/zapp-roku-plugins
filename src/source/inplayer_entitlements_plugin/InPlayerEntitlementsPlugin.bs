@@ -296,8 +296,7 @@ function getRokuItemForFee(fee, rokuItems)
   if fee <> invalid and fee.external_fees <> invalid
     for each externalFee in fee.external_fees
       for each rokuItem in rokuItems 
-        'Inplayer map the external id to name. It's cleary wrong. I've raised this with them.
-        if externalFee.external_id = rokuItem.name
+        if externalFee.external_id = rokuItem.code
           return rokuItem
         end if
       end for
