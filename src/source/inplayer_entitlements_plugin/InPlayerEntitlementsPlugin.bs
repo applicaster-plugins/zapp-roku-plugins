@@ -199,14 +199,14 @@ private function sendPurchasesToInPlayer(purchases)
   for each receipt in purchases
     params = {
       receipt: receipt.purchaseId
-      product_code: receipt.code
+      product_name: receipt.code
     }
     result = m.execute("FORMPOST", "v2/external-payments/roku/validate", params)
     
     code = MU.getContentField(result, "code", - 1)
     'TODO get code for already purchased error and ignore it!
     if code <> 200
-      m.logError("failed to register receipt code:", code)
+      m.logError("failed to register receipt code:", code, result)
       failedPurchases.push(receipt)
     end if
   end for
@@ -280,7 +280,7 @@ private function getFeeForAccessReceipt(feeReceipt)
     
     if MU.isArray(result)
       for each fee in result
-        if fee.merchant_id = feeReceipt.merchant_id
+        if fee.id = feeReceipt.purchased_access_fee_id
           return fee
         end if
       end for

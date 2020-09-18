@@ -189,9 +189,8 @@ end function
 '@Params[invalid, {"id": "1"}]
 function getAvailableProducts_not_valid(token, item)
   rokuCatalogItems = [RCSMT_CreateRokuCatalogItem("1"), RCSMT_CreateRokuCatalogItem("2"), RCSMT_CreateRokuCatalogItem("3")]
-  currentSelection = { id: "currentSelection", "currentItem": item }
+  m.plugin.currentItem = item
   
-  m.expectOnce(m.plugin, "getInstance", ["currentSelection"], currentSelection)
   m.plugin.token = token
   m.modelLocator.availableProducts.availableProducts = ["something"]
   m.plugin.getAvailableProducts(rokuCatalogItems, ["1"])
@@ -209,9 +208,7 @@ end function
 function getAvailableProducts_valid(fees, expectedIds)
   rokuCatalogItems = [RCSMT_CreateRokuCatalogItem("1"), RCSMT_CreateRokuCatalogItem("2"), RCSMT_CreateRokuCatalogItem("3")]
   item = { id: "item" }
-  currentSelection = { id: "currentSelection", "currentItem": item }
-  
-  m.expectOnce(m.plugin, "getInstance", ["currentSelection"], currentSelection)
+  m.plugin.currentItem = item
   
   m.modelLocator.availableProducts.availableProducts = ["something"]
   
@@ -413,7 +410,7 @@ function sendPurchasesToInPlayer_one_purchase(code, expectedFailCount)
   
   expectedParams = {
     receipt: "r1"
-    product_code: "99_100"
+    product_name: "99_100"
   }
   result = {
     "code": code
@@ -435,17 +432,17 @@ function sendPurchasesToInPlayer_multiple_purchases(code1, code2, code3, expecte
   
   expectedParams1 = {
     receipt: "r1"
-    product_code: "99_101"
+    product_name: "99_101"
   }
   r1 = { "code": code1 }
   expectedParams2 = {
     receipt: "r2"
-    product_code: "98_102"
+    product_name: "98_102"
   }
   r2 = { "code": code2 }
   expectedParams3 = {
     receipt: "r3"
-    product_code: "97_103"
+    product_name: "97_103"
   }
   r3 = { "code": code3 }
   
@@ -480,11 +477,11 @@ function getFeeForAccessReceipt_invalid_receipt(feeReceipt)
 end function
 
 '@Test valid
-'@Params[1, "items/1/access-fees", [{"merchant_id": 1}], {"merchant_id": 1}]
-'@Params[2, "items/2/access-fees", [{"merchant_id": 1}], invalid]
-'@Params[2, "items/2/access-fees", [{"merchant_id": 1}, {"merchant_id": 2}], {"merchant_id": 2}]
+'@Params[1, "items/1/access-fees", [{"id": 1}], {"id": 1}]
+'@Params[2, "items/2/access-fees", [{"id": 1}], invalid]
+'@Params[2, "items/2/access-fees", [{"id": 1}, {"id": 2}], {"id": 2}]
 function getFeeForAccessReceipt_valid(id, endpoint, response, expectedFee)
-  feeReceipt = { "id" : id, item_id: id, merchant_id: id }
+  feeReceipt = { "id" : id, item_id: id, purchased_access_fee_id: id }
   
   m.expectOnce(m.plugin, "execute", ["GET", endpoint], response)
   
@@ -555,11 +552,8 @@ function integration_beforeEach()
   m.item.extensions = {
     "inplayer_asset_id": 73823
   }
-  m.currentSelection = {
-    currentItem: m.item
-  }
-  
   'DO NOT COMMIT THIS TOKEN
+  m.plugin.currentItem = m.item
   m.plugin.token = "CHANGE ME"
 end function
 
@@ -589,8 +583,6 @@ end function
 
 '@Test getAvailableProducts
 function integration_getAvailableProducts()
-  m.expectOnce(m.plugin, "getInstance", ["currentSelection"], m.currentSelection)
-  
   products = InplayerEntitlements.Tests.getProducts()
   m.plugin.getAvailableProducts(products, [])
   
