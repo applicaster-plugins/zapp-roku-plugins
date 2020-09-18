@@ -498,13 +498,13 @@ end function
 function onRefreshComplete()
   user = { "id" : "user", isLoggedIn: true }
   m.expectOnce(m.vm, "getInstance", ["user"], user)
+  m.expectOnce(m.vm, "dismiss", ["success"])
   
   m.vm.isLoading = true
   m.vm.isRefreshing = true
   
   m.vm.onRefreshComplete({})
   
-  m.assertEqual(m.vm.state, "success")
   
   m.assertFalse(m.vm.isRefreshing)
   m.assertFalse(m.vm.isLoading)
@@ -516,11 +516,10 @@ end function
 function onRefreshComplete_failure()
   user = { "id" : "user", isLoggedIn: false }
   m.expectOnce(m.vm, "getInstance", ["user"], user)
+  m.expectOnce(m.vm, "dismiss", ["success"])
   m.vm.isLoading = true
   m.vm.isRefreshing = true
   m.vm.onRefreshComplete({})
-  
-  m.assertNotEqual(m.vm.state, "success")
   
   m.assertFalse(m.vm.isRefreshing)
   m.assertFalse(m.vm.isLoading)
