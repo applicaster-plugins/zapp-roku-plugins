@@ -75,46 +75,49 @@ function execute_item_no_match()
 end function
 
 '@Test item - is match - invalid
-'@Params["u1", "e/?domain=d&url=u1", invalid, "u1", "error"]
-'@Params["u2", "e/?domain=d&url=u2", "", "u2", "error"]
-function execute_item_invalid(url, serviceUrl, response, finalUrl, result)
+'@Params[false, "error"]
+'@Params[false, "error"]
+'@Params[true, "success"]
+'@Params[true, "success"]
+function execute_item_invalid(response, expectedResult)
   currentSelection = { "id" : "currentSelection" }
   item = { 
     id : "item"
-    url: url
     title: "t"
   }
   currentSelection.currentItem = item
   m.expectOnce(m.loader, "getInstance", ["currentSelection"], currentSelection)
   m.expectOnce(m.loader, "isItemMatch", [item], true)
+  
+  entitlements = { "id" : "entitlements" }
+  m.expectOnce(m.loader, "getInstance", ["entitlements"], entitlements)
+  m.expectOnce(entitlements, "callFunc", ["isLocked", item], true)
+  
   manager = { "id" : "manager" }
   m.expectOnce(m.loader, "getClassInstance", ["EntitlementsManager"], manager)
-  m.expectOnce(manager, "loadItem", [item], false)
-  m.expectNone(item, "addFields")
+  m.expectOnce(manager, "loadItem", [item], response)
   
-  m.assertEqual(m.loader.execute(), result)
-  m.assertEqual(item.url, finalUrl)
+  m.assertEqual(m.loader.execute(), expectedResult)
 end function
 
-'@Test item - is match - valid
-'@Params["u3", "e/?domain=d&url=u3", "newUrl", "newUrl", "success"]
-'@Params["u3", "e/?domain=d&url=u3", "someotherUrl", "someotherUrl", "success"]
-function execute_item_valid(url, serviceUrl, response, finalUrl, result)
-  response = formatJson(response) ' this is the weird format the service gives us
+'@Test item - is match - Already unlocked
+function execute_item_already_loaded()
   currentSelection = { "id" : "currentSelection" }
   item = { 
     id : "item"
-    url: url
     title: "t"
   }
   currentSelection.currentItem = item
   m.expectOnce(m.loader, "getInstance", ["currentSelection"], currentSelection)
   m.expectOnce(m.loader, "isItemMatch", [item], true)
-  manager = { "id" : "manager" }
-  m.expectOnce(m.loader, "getClassInstance", ["EntitlementsManager"], manager)
-  m.expectOnce(manager, "loadItem", [item], true)
   
-  m.assertEqual(m.loader.execute(), result)
+  entitlements = { "id" : "entitlements" }
+  m.expectOnce(m.loader, "getInstance", ["entitlements"], entitlements)
+  m.expectOnce(entitlements, "callFunc", ["isLocked", item], false)
+  
+  m.expectNone(m.loader, "getClassInstance")
+  
+  m.assertEqual(m.loader.execute(), "success")
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
