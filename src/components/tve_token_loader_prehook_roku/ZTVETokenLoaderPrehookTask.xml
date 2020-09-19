@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component
+    name="ZTVETokenLoaderPrehookTask"
+    extends="Task">
+  <interface>
+    <!-- loads url/other metadata required for currentSelection.currentItem
+    and sets output to "success" or "error", based on the result -->
+    <field
+        id="output"
+        type="string" />
+  </interface>
+</component>
