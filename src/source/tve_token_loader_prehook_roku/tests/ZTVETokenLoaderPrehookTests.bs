@@ -209,7 +209,6 @@ function loadTokens_only_short(shortResult, expectedResult)
   m.assertEqual(m.plugin.loadTokens(), expectedResult)
 end function
 
-'@Only
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '@It tests loadShortToken
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
