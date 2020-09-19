@@ -2,6 +2,7 @@ import "pkg:/source/plugin-support/PluginManager.bs"
 import "pkg:/source/lib/ZBaseClass.bs"
 import "pkg:/source/maestro/lib/Utils.bs"
 import "pkg:/source/lib/request.bs" 
+import "pkg:/source/lib/uri.bs" 
 
 namespace Applicaster
 
@@ -15,6 +16,7 @@ private isValid = false
 private matchingPath = ""
 private matchingValue = ""
 private isLoadingShortToken = false
+private isUsingResourceXml = false
 private tveConfig = invalid
 
 private request = invalid
@@ -33,6 +35,7 @@ public function new()
   m.matchingPath = plugin.getStringValue("matching_path", "")
   m.matchingValue = plugin.getStringValue("matching_value", "")
   m.isLoadingShortToken = plugin.getBoolValue("request_short_media_token")
+  m.isUsingResourceXml = plugin.getBoolValue("use_rss_format_resource_id")
   
 end function
 
@@ -76,7 +79,7 @@ public function execute()
     return "success"
   end if
   
-  if m.loadTokens()
+  if m.loadTokens(item)
     return "success"
   else
     return "error"
@@ -95,7 +98,7 @@ function isItemMatch(item)
   return value = m.matchingValue
 end function
 
-private function loadTokens()
+private function loadTokens(item)
   token = m.getSessionStoreValue("AdobeAccessEnabler", "token")
   
   m.setSessionStoreValue("tve", "short-token", invalid)
@@ -103,7 +106,7 @@ private function loadTokens()
   isError = false
   if token <> invalid
     if m.isLoadingShortToken
-      isError = not m.loadShortToken(token) or isError
+      isError = not m.loadShortToken(item) or isError
     end if
   else
     m.logInfo("there is no token for AdobeAccessEnabler - not logged in")
@@ -115,34 +118,40 @@ end function
 private function loadShortToken(item)
   m.logMethod("loadShortToken")
   
-  requestPath = "/api/v1/mediatoken"
+  requestPath = "/api/v1/tokens/media"
   
   headers = {
     "Accept": "application/json"
     "Authorization": m.signRequest("GET", requestPath)
   }
   params = {
-    "deviceId": m.tveConfig.deviceId
+    ' "deviceId": m.tveConfig.deviceId
     "requestor": m.tveConfig.requestorID
     "deviceId": m.tveConfig.deviceId
-    "resource": m.getResourcexText(item)
+    "resource": m.getResourceText(item)
   }
   
   url = m.tveConfig.baseUrl + requestPath + "?" + m.uri.encodeParams(params)
   result = m.request.getJsonSync(url, headers)
   m.logInfo("result is:", result)
-  
   shortToken = invalid
   
-  if result <> invalid
-    shortToken = result
+  if result <> invalid and result.serializedToken <> invalid
+    shortToken = m.decodeBase64(result.serializedToken)
   else
     m.logError("invalid result")
   end if
   
+  m.logInfo("setting short-token to", shortToken)
   m.setSessionStoreValue("tve", "short-token", shortToken)
   
   return shortToken <> invalid
+end function
+
+private function decodeBase64(encodedString)
+  ba = CreateObject("roByteArray")
+  ba.FromBase64String(encodedString)
+  return ba.ToAsciiString()
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -182,12 +191,16 @@ private function signRequest(method, path, nonce = invalid, timestamp = 0)
   return header
 end function
 
-private function getResourceText(requestorId, item)
-  template = ReadAsciiFile("pkg:/source/AdobeAccessEnabler/adobeAuthorizationTemplate.xml")
-  template = template.replace("{REQUESTOR_ID}", requestorID)
-  template = template.replace("{ASSET_ID}", item.id)
-  template = template.replace("{ASSET_NAME}", item.title)
-  return template
+private function getResourceText(item)
+  if m.isUsingResourceXml
+    template = ReadAsciiFile("pkg:/source/AdobeAccessEnabler/adobeAuthorizationTemplate.xml")
+    template = template.replace("{REQUESTOR_ID}", m.tveConfig.requestorID.escape())
+    template = template.replace("{ASSET_ID}", item.id.escape())
+    template = template.replace("{ASSET_NAME}", item.title.escape())
+    return template
+  else
+    return m.tveConfig.requestorId
+  end if
 end function
 
 end class
