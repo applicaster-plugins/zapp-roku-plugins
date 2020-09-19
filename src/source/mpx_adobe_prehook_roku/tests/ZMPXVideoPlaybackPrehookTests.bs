@@ -1,0 +1,114 @@
+'@TestSuite OCURLTAT ZMPXVideoPlaybackPrehook
+
+namespace Applicaster.ZMPXVideoPlaybackPrehook.Tests
+
+'@BeforeEach
+function BeforeEach()
+  AppService.clearClassInstances()
+  m.modelLocator = CreateObject("roSGNode", "ModelLocator")
+  m.modelLocator.plugins = [PPMT_CreatePluginJson("mpx_video_playback_prehook_roku", {
+      "matching_path": "itemType"
+      "matching_value": "video" 
+  })] 
+  
+  TU.setModelLocator(m.modelLocator)
+  
+  m.plugin = new ZMPXVideoPlaybackPrehook()
+end function
+
+'@AfterEach
+function afterEach()
+  TU.unsetModelLocator()
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests constructor
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test no plugin
+function constructor_noPlugin()
+  m.modelLocator.plugins = [] 
+  AppService.clearClassInstances()
+  
+  m.plugin = new ZMPXVideoPlaybackPrehook()
+  
+  m.assertNotInvalid(m.plugin.plugins)
+end function
+
+function constructor_valid()
+  m.assertTrue(m.plugin.isValid)
+  m.assertEqual(m.plugin.endpoint, "e/?domain=d")
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests execute
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test no item
+'@Params[invalid]
+'@Params[{"currentItem": invalid}]
+function execute_no_item(currentSelection)
+  m.expectOnce(m.plugin, "getInstance", ["currentSelection"], currentSelection)
+  m.expectNone(m.plugin, "isItemMatch")
+  m.expectNone(m.plugin, "loadMPXUrl")
+  
+  m.assertEqual(m.plugin.execute(), "error")
+  
+end function
+
+'@Test no match
+function execute_item_no_match()
+  currentSelection = { "id" : "currentSelection" }
+  item = { 
+    id : "item"
+    url: "url"
+    title: "t"
+  }
+  currentSelection.currentItem = item 
+  
+  m.expectOnce(m.plugin, "getInstance", ["currentSelection"], currentSelection)
+  m.expectOnce(m.plugin, "isItemMatch", [item], false)
+  m.expectNone(m.plugin, "loadMPXUrl")
+  
+  m.assertEqual(m.plugin.execute(), "success")
+  
+end function
+
+'@Test is match
+'@Params[false, "error"]
+'@Params[true, "success"]
+function execute_is_match(response, expectedResult)
+  currentSelection = { "id" : "currentSelection" }
+  item = { 
+    id : "item"
+    title: "t"
+  }
+  currentSelection.currentItem = item
+  m.expectOnce(m.plugin, "getInstance", ["currentSelection"], currentSelection)
+  m.expectOnce(m.plugin, "isItemMatch", [item], true)
+  m.expectOnce(m.plugin, "loadMPXURL", [item], response)
+  
+  m.assertEqual(m.plugin.execute(), expectedResult)
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'@It tests isItemMatch
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+'@Test 
+'@Params["all", "", {}, true]
+'@Params["all", "", {"id":"stuff"}, true]
+'@Params["", "", {"id":"stuff"}, false]
+'@Params["json.free", "true", {"id":"stuff"}, false]
+'@Params["json.free", "true", {"id":"stuff", "json": {"free": false}}, false]
+'@Params["json.free", "true", {"id":"stuff", "json": {"free": true}}, true]
+'@Params["itemType", "channel", {"id":"stuff", "itemType": "video"}, false]
+'@Params["itemType", "video", {"id":"stuff", "itemType": "video"}, true]
+function isItemMatch(path, value, item, isMatch)
+  m.plugin.matchingPath = path
+  m.plugin.matchingValue = value
+  m.assertEqual(m.plugin.isItemMatch(item), isMatch)
+  
+end function
+
+end namespace
