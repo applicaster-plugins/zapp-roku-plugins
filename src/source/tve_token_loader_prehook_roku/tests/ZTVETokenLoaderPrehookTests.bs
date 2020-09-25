@@ -1,4 +1,4 @@
-'@TestSuite OCURLTAT ZTVETokenLoaderPrehook
+'@TestSuite ZTVETL ZTVETokenLoaderPrehook
 
 namespace Applicaster.ZTVETokenLoaderPrehook.Tests
 
@@ -125,13 +125,7 @@ function execute(response, expectedResult)
   m.expectOnce(m.plugin, "getInstance", ["currentSelection"], currentSelection)
   m.expectOnce(m.plugin, "isItemMatch", [item], true)
   
-  entitlements = { "id" : "entitlements" }
-  m.expectOnce(m.plugin, "getInstance", ["entitlements"], entitlements)
-  m.expectOnce(entitlements, "callFunc", ["isLocked", item], true)
-  
-  manager = { "id" : "manager" }
-  m.expectOnce(m.plugin, "getClassInstance", ["EntitlementsManager"], manager)
-  m.expectOnce(manager, "loadTokens", [], response)
+  m.expectOnce(m.plugin, "loadTokens", [item], response)
   
   m.assertEqual(m.plugin.execute(), expectedResult)
 end function
@@ -162,7 +156,15 @@ end function
 '@Test
 function getResourceText()
   item = { "id": "id1", "title": "t1" }
-  text = m.plugin.getResourceText("rqd", item)
+  m.assertEqual(m.plugin.getResourceText(item), "rqd")
+  
+end function
+
+'@Test using resource xml
+function getResourceText_using_xml()
+  m.plugin.isUsingResourceXml = true
+  item = { "id": "id1", "title": "t1" }
+  text = m.plugin.getResourceText(item)
   
   expected = "<rss"
   expected += chr(10) + "    version=""2.0"""
@@ -200,13 +202,15 @@ end function
 '@Params[false, false]
 '@Params[true, true]
 function loadTokens_only_short(shortResult, expectedResult)
+  item = { "id" : "item" }
+  
   m.expectOnce(m.plugin, "getSessionStoreValue", ["AdobeAccessEnabler", "token"], "t")
   m.expectOnce(m.plugin, "setSessionStoreValue", ["tve", "short-token", invalid])
-  m.expectOnce(m.plugin, "loadShortToken", ["t"], shortResult)
+  m.expectOnce(m.plugin, "loadShortToken", [item], shortResult)
   
   m.plugin.isLoadingShortToken = true
   
-  m.assertEqual(m.plugin.loadTokens(), expectedResult)
+  m.assertEqual(m.plugin.loadTokens(item), expectedResult)
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -215,18 +219,19 @@ end function
 
 '@Test
 '@Params[invalid, invalid, false]
-'@Params["st" ,"st", true]
+'@Params[{}, invalid, false]
+'@Params[{serializedToken: "c3Q="}, "st", true]
 function loadShortToken(response, shortToken, expectedResult)
   item = { "id" : "item" }
   
-  m.expectOnce(m.plugin, "signRequest", ["GET", "/api/v1/mediatoken"], "aut")
+  m.expectOnce(m.plugin, "signRequest", ["GET", "/api/v1/tokens/media"], "aut")
   expectedHeaders = {
     "Accept": "application/json"
     "Authorization": "aut"
   }
-  m.expectOnce(m.plugin, "getResourcexText", [item], "rt")
+  m.expectOnce(m.plugin, "getResourceText", [item], "rt")
   
-  url = "#url/api/v1/mediatoken?deviceId=did&requestor=rqd&resource=rt"
+  url = "#url/api/v1/tokens/media?deviceId=did&requestor=rqd&resource=rt"
   m.expectOnce(m.plugin.request, "getJsonSync", [url, expectedHeaders], response)
   
   m.expectOnce(m.plugin, "setSessionStoreValue", ["tve", "short-token", shortToken])

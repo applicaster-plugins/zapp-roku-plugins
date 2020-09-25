@@ -53,7 +53,17 @@ end function
 
 '@Test
 function getAccountInfo()
-  m.fail("todo")
+  m.plugin.authData = {
+    "user": {
+      userId: "id"
+    }
+  }
+  m.assertEqual(m.plugin._getAccountInfo(), {
+    id: "id"
+    email: "anonymous@anon.com"
+    username: "anonymous"
+  })
+  
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -232,17 +242,19 @@ function getResourceText_selection()
   m.expectOnce(m.plugin, "getInstance", ["currentSelection"], { "currentItem": { "id": "id1", "title": "t1" } })
   
   text = m.plugin.getResourceText()
-  expected = "<rss"
-  expected += chr(10) + "    version=""2.0"""
-  expected += chr(10) + "    xmlns:media=""http://search.yahoo.com/mrss/"">"
-  expected += chr(10) + "  <channel>"
-  expected += chr(10) + "    <title>rqd</title>"
-  expected += chr(10) + "    <item>"
-  expected += chr(10) + "      <title>t1</title>"
-  expected += chr(10) + "      <guid>id1</guid>"
-  expected += chr(10) + "    </item>"
-  expected += chr(10) + "  </channel>"
-  expected += chr(10) + "</rss>"
+  ' expected = "<rss"
+  ' expected += chr(10) + "    version=""2.0"""
+  ' expected += chr(10) + "    xmlns:media=""http://search.yahoo.com/mrss/"">"
+  ' expected += chr(10) + "  <channel>"
+  ' expected += chr(10) + "    <title>rqd</title>"
+  ' expected += chr(10) + "    <item>"
+  ' expected += chr(10) + "      <title>t1</title>"
+  ' expected += chr(10) + "      <guid>id1</guid>"
+  ' expected += chr(10) + "    </item>"
+  ' expected += chr(10) + "  </channel>"
+  ' expected += chr(10) + "</rss>"
+  
+  expected = "rqd"
   m.assertEqual(text, expected)
 end function
 
@@ -268,12 +280,12 @@ function getAuthorization(lastResponseCode, expectedCode)
     "expires": "1589402085000"
   }
   m.expectOnce(m.plugin.request, "getJsonSync", [url, expectedHeaders], response)
-  m.expectOnce(m.plugin.date, "getSecondsUntil", [MU.strToLong("1589402085000")/ 1000], 9999)
+  m.expectOnce(m.plugin.date, "getSecondsUntil", [MU.strToLong("1589402085000") / 1000], 9999)
   m.plugin.pollResult = { "id" : "pollResult" }
   
   result = { "id" : "result" }
   token = formatJson(response)
-  m.expectOnce(m.plugin, "createAuthData", ["valid", token, token, token, m.plugin.pollResult, 9999, expectedCode], result)
+  m.expectOnce(m.plugin, "createAuthData", ["valid", token, token, token, response, 9999, expectedCode,  "", m.plugin.pollResult], result)
   
   m.expectNone(m.plugin, "createErrorResult")
   

@@ -44,6 +44,10 @@ function start()
   task = { "id" : "task" }
   m.plugin.task = task
   
+  factory = { "id" : "factory" }
+  m.expectOnce(m.plugin, "createInstance", ["AnalyticsEventFactory", invalid, "googleAnalyticsEventFactory"], factory)
+  
+  m.expectOnce(m.plugin, "setInstance", ["googleAnalyticsEventFactory", factory])
   m.expectOnce(m.plugin, "setInstance", ["googleAnalyticsTask", task])
 
   m.plugin.start()
@@ -100,6 +104,7 @@ function trackUserIdAllowedFlag(userID, versionId, result)
   m.modelLocator = createObject("roSGNode", "ModelLocator")
 
   m.modelLocator.buildConfig = {"app_family_id": versionId}
+  m.modelLocator.constants = {}
   
   TU.setModelLocator(m.modelLocator)
   m.pluginData = new BasePlugin({ "configuration_json": config, "identifier": "google_analytics_roku" })
@@ -115,7 +120,7 @@ end function
 
 '@Test valid
 '@Params["user123", "user123" ]
-'@Params["user 123", "user%20%123" ]
+'@Params["user 123", "user%20123" ]
 function setGoogleTaskUserId(userID, encodeUserId)
   params = {
       "uid": encodeUserId

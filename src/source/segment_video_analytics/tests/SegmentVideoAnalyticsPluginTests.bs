@@ -266,6 +266,7 @@ function getProperties(action)
     position: 50
     height: 1080
     width: 1920
+    duration: 100
   }
   
   m.plugin.videoResolution = "1920x1080"

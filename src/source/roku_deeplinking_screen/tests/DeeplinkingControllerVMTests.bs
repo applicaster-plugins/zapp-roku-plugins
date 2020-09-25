@@ -4,6 +4,12 @@ namespace Applicaster.Deeplinking.DeeplinkingControllerVMTests
 
 '@BeforeEach
 function BeforeEach()
+  m.modelLocator = {
+    "User": { "isLoggedIn": false }
+    "locale": "en"
+  }
+  TU.setModelLocator(m.modelLocator)
+  
   m.riversJson = {
     styles: {
       detail_screen: "detailScreen"
@@ -228,6 +234,7 @@ function applyDeeplinking_onlyVideo_parent_screen(isLaunchDeeplink)
   m.expectOnce(m.vm, "getDeeplinkingSelectionWithData", [deeplinkingData], selection)
   m.expectOnce(m.vm, "getParentScreen", ["series", parentEntry], parentScreen)
   m.expectOnce(m.vm, "playSelection", [selection])
+  m.expectOnce(m.vm, "setInstance", ["currentSelection", selection])
   m.expectOnceOrNone(m.vm, "signalAppLaunchComplete", isLaunchDeeplink, [])
   
   m.vm.applyDeepLinking(deeplinkingData)
@@ -254,6 +261,7 @@ function applyDeeplinking_onlyVideo(isLaunchDeeplink)
   m.vm.isLiveDeeplink = not isLaunchDeeplink
   m.expectOnce(m.vm, "getDeeplinkingSelectionWithData", [deeplinkingData], selection)
   m.expectOnce(m.vm, "getParentScreen", ["series", parentEntry], invalid)
+  m.expectOnce(m.vm, "setInstance", ["currentSelection", selection])
   m.expectOnce(m.vm, "playSelection", [selection])
   m.expectOnceOrNone(m.vm, "signalAppLaunchComplete", isLaunchDeeplink, [])
   

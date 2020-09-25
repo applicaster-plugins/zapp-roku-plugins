@@ -8,6 +8,7 @@ function BeforeEach()
   m.modelLocator.collectionBookmarks = CreateObject("roSGNode", "Bookmarks")
   m.modelLocator.vodItemBookmarks = CreateObject("roSGNode", "Bookmarks")
   m.modelLocator.plugins = [] 
+  m.modelLocator.locale = "en"
   m.BitmovinPlayerState = { "PLAYING": "playing", "STALLING": "stalling", "PAUSED": "paused", "FINISHED": "finished", "ERROR": "error", "NONE": "none", "SETUP": "setup", "READY": "ready" }
   
   

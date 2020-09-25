@@ -6,6 +6,8 @@ function beforeEach()
   localStore = createObject("roSGNode", "ZSessionStore")
   modelLocator = createObject("roSGNode", "ModelLocator")
   modelLocator.addfields({ "ZPLocalStore": localStore })
+  modelLocator.locale = "en"
+  
   TU.setModelLocator(modelLocator)
   
   riversJson = {
