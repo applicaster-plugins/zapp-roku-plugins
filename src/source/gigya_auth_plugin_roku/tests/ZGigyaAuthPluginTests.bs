@@ -97,7 +97,6 @@ end function
 '@It tests poll
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-
 '@Test valid resposne
 function onPollResponse_valid()
   m.expectOnce(m.plugin, "getSessionStoreValue", [m.plugin.id, "regcode"], "pin")
@@ -108,7 +107,7 @@ function onPollResponse_valid()
   }
   m.expectOnce(m.plugin.request, "getJsonSync", ["host/GetDeviceByPin/pin"], response)
   
-  m.expectOnce(m.plugin, "createAuthData", ["valid", "t", "t", "t", response.data, 99999])
+  m.expectOnce(m.plugin, "createAuthData", ["valid", "t", "t", "t", response, 99999])
   
   m.plugin._poll()
   

@@ -5,6 +5,12 @@ namespace TAAWSLSVMT
 
 '@BeforeEach
 function beforeEach()
+  m.modelLocator = {
+    "User": { "isLoggedIn": false }
+    "locale": "en"
+  }
+  TU.setModelLocator(m.modelLocator)
+
   m.riversJson = {
     "name": "SmallSystemFont"
     "id": "11937f34-a364-4601-a0du3-1dace40fe0ed"
@@ -378,6 +384,7 @@ function processLogin_beforeEach()
   m.modelLocator.buildConfig = {}
   m.user = CreateObject("roSGNode", "User")
   m.modelLocator.user = m.user
+  m.modelLocator.locale = "en"
   m.modelLocator.plugins = [{
       "identifier": "aws_cognito_auth_plugin",
       "api": {
@@ -504,7 +511,6 @@ function onRefreshComplete()
   m.vm.isRefreshing = true
   
   m.vm.onRefreshComplete({})
-  
   
   m.assertFalse(m.vm.isRefreshing)
   m.assertFalse(m.vm.isLoading)

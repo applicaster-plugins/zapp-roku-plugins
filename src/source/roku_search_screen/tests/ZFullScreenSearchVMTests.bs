@@ -4,6 +4,13 @@ namespace Applicaster.ZFullScreenSearchVM.Tests
 
 '@BeforeEach
 function beforeEach()
+  
+  m.modelLocator = {
+    "User": { "isLoggedIn": false }
+    "locale": "en"
+  }
+  TU.setModelLocator(m.modelLocator)
+  
   m.riversJson = {
     data : { source: "#myLink" }
     styles: {

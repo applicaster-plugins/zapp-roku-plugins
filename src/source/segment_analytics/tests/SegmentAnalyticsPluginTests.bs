@@ -109,7 +109,7 @@ end function
 '@Test disabled_on_logout
 function _identify_disabled_on_logout()
   m.plugin.isIdentifyingOnLogout = false
-  m.assertFalse(m.plugin._identify("pid", invalid, invalid, true))
+  m.assertTrue(m.plugin._identify("pid", invalid, invalid, true))
 end function
 
 end namespace

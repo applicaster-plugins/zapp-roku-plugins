@@ -3,6 +3,12 @@ namespace LogoutSVMT
 
 '@BeforeEach
 function beforeEach()
+  m.modelLocator = {
+    "User": { "isLoggedIn": false }
+    "locale": "en"
+  }
+  TU.setModelLocator(m.modelLocator)
+
   m.riversJson = {
     "id": "logoutscreen"
     styles: {
