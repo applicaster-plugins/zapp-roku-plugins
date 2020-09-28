@@ -5,7 +5,7 @@ function init()
 end function
 
 function onControlChange()
-  logInfo("onControlChange", m.top.control)
+  m.logInfo("onControlChange", m.top.control)
   
   if m.top.control = "play"
     m.vm.player.callFunc(m.vm.playerFunctions.PLAY, invalid)
@@ -14,12 +14,12 @@ function onControlChange()
 end function
 
 function initialize(args)
-  logInfo("initialize")
+  m.logInfo("initialize")
   createVM()
 end function
 
 function createVM()
-  logMethod("createVM")
+  m.logMethod("createVM")
   
   m.vm = ZBitMovinPlayerVM(m.top)
   m.vm.initialize()

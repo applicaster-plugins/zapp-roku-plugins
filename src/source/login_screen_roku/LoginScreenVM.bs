@@ -139,7 +139,7 @@ end function
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 function toggleSubScreen(screen)
-  logMethod("toggleSubScreen")
+  m.logMethod("toggleSubScreen")
   
   if m.focusId <> "screenContainer"
     m.preScreenFocusId = m.focusId

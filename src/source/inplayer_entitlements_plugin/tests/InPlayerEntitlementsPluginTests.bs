@@ -567,9 +567,9 @@ end function
 function make_live_purchase(code = "73228_17870")
   channelStore = new RokuChannelStoreModule(false)
   rcs = channelStore.getChannelStore()
-  logInfo("MAKING ROKU PURCHASE", code)
+  m.logInfo("MAKING ROKU PURCHASE", code)
   result = channelStore.doRokuPurchase(invalid, code, 1)
-  logInfo("purhcased", result)
+  m.logInfo("purhcased", result)
   return result
 end function
 
@@ -577,7 +577,7 @@ function getProducts()
   channelStore = new RokuChannelStoreModule(false)
   rcs = channelStore.getChannelStore()
   result = channelStore.getRokuCatalog(rcs)
-  logInfo("products", result)
+  m.logInfo("products", result)
   return result
 end function
 
@@ -586,7 +586,7 @@ function integration_getAvailableProducts()
   products = InplayerEntitlements.Tests.getProducts()
   m.plugin.getAvailableProducts(products, [])
   
-  logInfo("products", m.plugin.availableProducts.availableProducts)
+  m.logInfo("products", m.plugin.availableProducts.availableProducts)
 end function
 
 '@Test loadItem
@@ -596,7 +596,7 @@ function integration_loadItem()
     "inplayer_asset_id": 73823
   }
   m.plugin.loadItem(item)
-  logInfo("item", item.url)
+  m.logInfo("item", item.url)
   
 end function
 
@@ -604,7 +604,7 @@ end function
 function integration_getPurchasedItemIds()
   products = InplayerEntitlements.Tests.getProducts()
   result = m.plugin.getPurchasedItemIds(products)
-  logInfo("item ids", result)
+  m.logInfo("item ids", result)
   
 end function
 

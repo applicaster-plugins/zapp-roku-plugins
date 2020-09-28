@@ -14,7 +14,7 @@ function getControlName()
 end function
 
 function createVM()
-  logInfo("m.top.riversJson", m.top.riversJson)
+  m.logInfo("m.top.riversJson", m.top.riversJson)
   vm = new DeeplinkingControllerVM(m.top.riversJson)
   MVMM.initializeBindings(true)
   initializeView(m.top.findNode("screenContainer"))
@@ -22,7 +22,7 @@ function createVM()
 end function
 
 function getDefaultRiversJson()
-  logInfo("getDefaultRiversJson")
+  m.logInfo("getDefaultRiversJson")
   
   return {
     "id": "deeplinkingcontroller"

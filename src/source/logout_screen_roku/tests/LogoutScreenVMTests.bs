@@ -19,7 +19,7 @@ function beforeEach()
       button_y: 400
       title_text: "are you sure"
       signed_out_text: "you are signed out"
-      logout_button_text: "signe out"
+  m.logout_button_text: "signe out"
       signed_out_button_text: "ok"
     }
   }

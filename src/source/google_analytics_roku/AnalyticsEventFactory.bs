@@ -67,7 +67,7 @@ public function getAnalyticsEvent(eventName, arg1 = invalid, arg2 = invalid, arg
   else if eventName = "loginDoesNotSucceed"
     return m.loginDoesNotSucceed(arg1, arg2, arg3, arg4)
   else
-    logError("unknown analytics event", eventName)
+  m.logError("unknown analytics event", eventName)
   end if
 
   return invalid
@@ -85,7 +85,7 @@ public function propertiesToLabel(properties)
       if FindMemberFunction(value, "toStr") <> invalid then
         value = value.toStr()
       else
-        logWarn("Could not convert '", sortedKeys[i], "' to a string; type = ", type(value))
+  m.logWarn("Could not convert '", sortedKeys[i], "' to a string; type = ", type(value))
         value = ""
       end if
     end if
