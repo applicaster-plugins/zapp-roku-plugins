@@ -16,6 +16,7 @@ private vodModel = ""
 private authenticationData = invalid
 private date = invalid
 private soonestExpiration = -1
+private pluginInplayerAssetKey = ""
 
 public function new(plugin)
   super("ApplicasterEntitlementsPlugin", plugin)
@@ -24,11 +25,12 @@ public function new(plugin)
   m.requiresLoadToAscertainEntitlements = true
   
   m.authenticationData = m.getInstance("authenticationData")
+  m.assetKey = plugin.getStringValue("inplayer_custom_asset_key", "")
   m.entitlementsPolicy = plugin.getStringValue("entitlements_policy", "none", m.validPolicies)
   m.vodModel = plugin.getStringValue("vod_model", "AVOD", m.validVodModels)
   m.isUsingRokuStore = m.entitlementspolicy <> "none" and m.entitlementspolicy <> "authOnly"
   m.clientId = plugin.getStringValue("client_id")
-  m.token = m.getSessionStoreValue("inplayer_auth_plugin_roku", "token")
+  m.pluginInplayerAssetKey = plugin.getStringValue("inplayer_custom_asset_key", invalid)
   
   if plugin.getStringValue("environment", "prod") = "prod"
     m.apiUrl = "https://services.inplayer.com" 
@@ -132,15 +134,23 @@ end function
 
 public override function loadItem(item) as boolean
   m.logMethod("loadItem")
-  
+  if item = invalid
+    return false
+  end if
+
   if m.token = invalid
-    m.logError("not authenticated with inplayer when retrieving item", item)
+    errorMessage = "not authenticated with inplayer when retrieving item: " + item.id
+    m.logError(errorMessage, item)
+    MU.setOrAddNodeField(item, "errorMessage", errorMessage)
     return false
   end if
   
   inPlayerId = m.getInplayerId(item)
   if inPlayerId = invalid
-    m.logError("could not ascertain inplayer id with item", item)
+    errorMessage = "Could not ascertain inplayer id with item: " + item.id
+    m.logError(errorMessage, item)
+    MU.setOrAddNodeField(item, "errorMessage", errorMessage)
+    
     return false
   end if
   
@@ -153,11 +163,18 @@ public override function loadItem(item) as boolean
       MU.setOrAddNodeField(item, "originalUrl", item.url)
     end if
     item.url = content.mobile_url
+    if content.cookies <> invalid
+      cookieText = "Cookie:"
+      cookieText += "CloudFront-Policy=" + MU.getContentField(content.cookies, "CloudFront-Policy", "") + "; "
+      cookieText += "CloudFront-Signature=" + MU.getContentField(content.cookies, "CloudFront-Signature", "") + "; "
+      cookieText += "CloudFront-Key-Pair-Id=" + MU.getContentField(content.cookies, "CloudFront-Key-Pair-Id", "") + ";"
+      item.HttpHeaders = [cookieText]
+    end if
     item.isLoaded = true
     return true
   end if
   
-  errorMessage = m.getErrorMessage(result, "Error loading item: " + item.title)
+  errorMessage = m.getErrorMessage(result, "Error loading item: " + item.id)
   m.logError("could not unlock content:", errorMessage)
   MU.setOrAddNodeField(item, "errorMessage", errorMessage)
   return false
@@ -244,7 +261,11 @@ private function getInplayerId(item)
     return item.inPlayerId
   end if
   
-  id = MU.getContentField(item, "extensions.inplayer_asset_id")
+  id = MU.getContentField(item, m.pluginInplayerAssetKey)
+  
+  if id = invalid
+    id = MU.getContentField(item, "extensions.inplayer_asset_id")
+  end if
   
   if id = invalid
     assetType = MU.getContentField(item, "extensions.inplayer_asset_type")

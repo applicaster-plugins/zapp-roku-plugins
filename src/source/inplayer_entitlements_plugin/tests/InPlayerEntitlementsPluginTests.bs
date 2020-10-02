@@ -168,7 +168,7 @@ end function
 '@It tests post purchases
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-'@Test post Purchases - no failures
+'@Test post Purchases-no failures
 '@Params[[], true]
 '@Params[[{"error": "here"}], false]
 function postPurchases(response, expectedResult) as void
@@ -256,9 +256,9 @@ function loadItem_invalid_item(item)
   m.assertFalse(m.plugin.loadItem(item))
 end function
 
-'@Test valid
-function loadItem_valid()
-  item = createObject("roSGNode", "Node")
+'@Test valid-just url
+function loadItem_valid_just_url()
+  item = createObject("roSGNode", "ZPEntry")
   item.addFields({ 
     id: "item"
     extensions: {
@@ -274,6 +274,8 @@ function loadItem_valid()
       content: formatJson({ mobile_url: "changedUrl" })
     }
   }
+  m.expectOnce(m.plugin, "getInplayerId", [item], "xid")
+  
   m.expectOnce(m.plugin, "execute", ["GET", "items/xid/access"], result)
   
   m.assertTrue(m.plugin.loadItem(item))
@@ -284,23 +286,63 @@ function loadItem_valid()
   
 end function
 
-'@Test server errors
-'@Params[invalid, "Error loading item: item title"]
-'@Params[{}, "Error loading item: item title"]
-'@Params[{errors:invalid]}, "Error loading item: item title"]
-'@Params[{errors:{}]}, "Error loading item: item title"]
-'@Params[{errors:{"401":"custom error"}}, "custom error"]
-function loadItem_errors(result, expectedErrorMessage)
-  item = createObject("roSGNode", "Node")
+'@Test valid-cookies
+function loadItem_valid_cookies()
+  item = createObject("roSGNode", "ZPEntry")
   item.addFields({ 
     id: "item"
-    title: "item title"
     extensions: {
       inplayer_asset_id: "xid"
     }
     url: "ourl"
   })
   
+  
+  result = { 
+    id: "result"
+    item: {
+      content: formatJson({ 
+        mobile_url: "changedUrl" 
+        cookies: { 
+          "CloudFront-Policy": "cfpolicy"
+          "CloudFront-Signature": "cfsig"
+          "CloudFront-Key-Pair-Id": "cfid" 
+        }
+      })
+    }
+  }
+  m.expectOnce(m.plugin, "getInplayerId", [item], "xid")
+  
+  m.expectOnce(m.plugin, "execute", ["GET", "items/xid/access"], result)
+  
+  m.assertTrue(m.plugin.loadItem(item))
+  
+  m.assertInvalid(item.error)
+  m.assertEqual(item.originalUrl, "ourl")
+  m.assertEqual(item.url, "changedUrl")
+  m.assertArrayContains(item.HttpHeaders, "Cookie:CloudFront-Policy=cfpolicy; CloudFront-Signature=cfsig; CloudFront-Key-Pair-Id=cfid;")
+  
+end function
+
+'@Test server errors
+'@Params[invalid, "Error loading item: cid"]
+'@Params[{}, "Error loading item: cid"]
+'@Params[{errors:invalid]}, "Error loading item: item title"]
+'@Params[{errors:{}]}, "Error loading item: item title"]
+'@Params[{errors:{"401":"custom error"}}, "custom error"]
+function loadItem_errors(result, expectedErrorMessage)
+  
+  item = createObject("roSGNode", "ZPEntry")
+  item.id = "cid"
+  item.title = "item title"
+  item.addFields({ 
+    extensions: {
+      inplayer_asset_id: "xid"
+    }
+    url: "ourl"
+  })
+  
+  m.expectOnce(m.plugin, "getInplayerId", [item], "xid")
   m.expectOnce(m.plugin, "execute", ["GET", "items/xid/access"], result)
   
   m.assertFalse(m.plugin.loadItem(item))
@@ -519,10 +561,13 @@ end function
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 '@Test no network calls
-'@Params[invalid, invalid]
-'@Params[{extensions:{"inplayer_asset_id":invalid}}, invalid]
-'@Params[{extensions:{"inplayer_asset_id":"123"}}, "123"]
-function getInplayerId_no_network_calls(item, expected)
+'@Params[invalid, invalid, invalid]
+'@Params[invalid, {extensions:{"inplayer_asset_id":invalid}}, invalid]
+'@Params[invalid, {extensions:{"inplayer_asset_id":"123"}}, "123"]
+'@Params["extensions.custom_id", invalid, invalid]
+'@Params["extensions.custom_id", {extensions:{"custom_id", "cid", "inplayer_asset_id":"123"}}, "cid"]
+function getInplayerId_no_network_calls(pluginKey, item, expected)
+  m.plugin.pluginInplayerAssetkey = pluginKey
   m.assertEqual(m.plugin.getInplayerId(item), expected)
 end function
 
