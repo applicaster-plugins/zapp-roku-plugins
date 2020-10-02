@@ -75,25 +75,34 @@ end function
 private function loadMPXUrl(item)
   shortMediaToken = m.getSessionStoreValue("tve", "short-token")
   
-  if shortMediaToken <> invalid
-    params = {
-      "apt": shortMediaToken
-      "format": "smil"
-      "formats": "M3U,MPEG4"
-    }
-    
-    url = item.link + "?" + m.uri.encodeParams(params)
-    result = m.getXMLSync(url)
-    m.logInfo("got result", result)
-    'what a monstrosity - this will be so much better when we have try/catch
-    if result <> invalid and result.body <> invalid and result.body.seq <> invalid and result.body.seq.switch <> invalid and result.body.seq.switch.count() > 0 and result.body.seq.switch[0] <> invalid and result.body.seq.switch[0].video <> invalid
+  if shortMediaToken = invalid
+    m.logError("there was no short media token for this item.")
+    return false
+  end if
+  
+  params = {
+    "apt": shortMediaToken
+    "format": "smil"
+    "formats": "M3U,MPEG4"
+  }
+  
+  url = item.link + "?" + m.uri.encodeParams(params)
+  result = m.getXMLSync(url)
+  m.logInfo("got result", result)
+  'what a monstrosity - this will be so much better when we have try/catch
+  if result <> invalid and result.body <> invalid and result.body.seq <> invalid 
+    if result.body.seq.switch <> invalid and result.body.seq.switch.count() > 0 and result.body.seq.switch[0] <> invalid and result.body.seq.switch[0].video <> invalid
       item.url = result.body.seq.switch[0].video@src
       item.isLoaded = true
       return true
+    else if result.body.seq.par <> invalid and result.body.seq.par.switch <> invalid and result.body.seq.par.switch.count() > 0 and result.body.seq.par.switch[0] <> invalid and result.body.seq.par.switch[0].video <> invalid
+      item.url = result.body.seq.par.switch[0].video@src
+      item.isLoaded = true
+      return true
     end if
-  else
-    m.logError("there was no short media token for this item.")
   end if
+  
+  m.logError("MPX result did not yield any playable streams")
   return false
 end function
 
