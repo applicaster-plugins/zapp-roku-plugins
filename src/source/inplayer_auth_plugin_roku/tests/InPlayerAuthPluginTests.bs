@@ -108,7 +108,7 @@ function _verify_has_token_service_invalid(serviceResponse)
     "refresh_token": "rt"
   }
   
-  m.expectOnce(m.plugin, "executeAPIRequest", ["POST", "accounts/authenticate", expectedParams], serviceResponse)
+  m.expectOnce(m.plugin, "executeAPIRequest", ["FORMPOST", "accounts/authenticate", expectedParams], serviceResponse)
   
   authData = m.plugin._verify()
   
@@ -131,7 +131,7 @@ function _verify_has_token_service_valid()
   }
   
   result = m.validResponse
-  m.expectOnce(m.plugin, "executeAPIRequest", ["POST", "accounts/authenticate", expectedParams], result)
+  m.expectOnce(m.plugin, "executeAPIRequest", ["FORMPOST", "accounts/authenticate", expectedParams], result)
   authData = { "id" : "authData" }
   m.expectOnce(m.plugin, "createAuthData", ["valid", "at", "at", "rt", result, result.expires, 200, "", result.account], authData)
   
@@ -157,13 +157,14 @@ function _register_invalid(serviceResponse)
     "grant_type": "password"
     "type": "consumer"
     "client_id": "cid"
-    "full_name": "n"
+    "metadata[surname]": "dummy"
     "username": "u"
+    "full_name": "n"
     "password": "p"
     "password_confirmation": "pc"
   }
-  
-  m.expectOnce(m.plugin, "executeAPIRequest", ["POST", "accounts", expectedParams], serviceResponse)
+
+  m.expectOnce(m.plugin, "executeAPIRequest", ["FORMPOST", "accounts", expectedParams], serviceResponse)
   
   m.expectNone(m.plugin, "createAuthData")
   
@@ -185,12 +186,13 @@ function _register_valid()
     "grant_type": "password"
     "type": "consumer"
     "client_id": "cid"
-    "full_name": "n"
+    "metadata[surname]": "dummy"
     "username": "u"
+    "full_name": "n"
     "password": "p"
     "password_confirmation": "pc"
   }
-  m.expectOnce(m.plugin, "executeAPIRequest", ["POST", "accounts", expectedParams], m.validResponse)
+  m.expectOnce(m.plugin, "executeAPIRequest", ["FORMPOST", "accounts", expectedParams], m.validResponse)
   
   m.expectNone(m.plugin, "createErrorFromResult")
   
@@ -223,7 +225,7 @@ function _login_invalid(serviceResponse)
     "password": "p"
   }
   
-  m.expectOnce(m.plugin, "executeAPIRequest", ["POST", "accounts/authenticate", expectedParams], serviceResponse)
+  m.expectOnce(m.plugin, "executeAPIRequest", ["FORMPOST", "accounts/authenticate", expectedParams], serviceResponse)
   
   m.expectNone(m.plugin, "createAuthData")
   
@@ -247,7 +249,7 @@ function _login_valid()
     "username": "u"
     "password": "p"
   }
-  m.expectOnce(m.plugin, "executeAPIRequest", ["POST", "accounts/authenticate", expectedParams], m.validResponse)
+  m.expectOnce(m.plugin, "executeAPIRequest", ["FORMPOST", "accounts/authenticate", expectedParams], m.validResponse)
   
   m.expectNone(m.plugin, "createErrorFromResult")
   
@@ -263,8 +265,18 @@ end function
 '@It tests logout
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+'@Test not logged in
+function _logout_not_logged_in()
+  
+  authData = { "id" : "authData" }
+  
+  m.expectOnce(m.plugin, "createErrorResult", ["cannot log out: not logged in"], authData)
+  
+  m.assertEqual(m.plugin._logout(), authData)
+  
+end function
+
 '@Test cannot logout on backend
-'@Params[invalid]
 '@Params[{}]
 '@Params[{"code": invalid}]
 '@Params[{"code": 400}]
@@ -273,6 +285,8 @@ function _logout_bad_response(serviceResponse)
   m.plugin.authData = {
     "accessToken": "at"
   }
+  m.expectOnce(m.plugin, "loadAuthDataFromRegistry", [])
+  
   m.expectOnce(m.plugin, "executeAPIRequest", ["GET", "accounts/logout", invalid, true, "at"], serviceResponse)
   m.expectNone(m.plugin, "createAuthData")
   
@@ -286,6 +300,8 @@ end function
 
 '@Test can logout on backend
 function _logout_valid_response()
+  m.expectOnce(m.plugin, "loadAuthDataFromRegistry", [])
+  
   serviceResponse = { "id" : "serviceResponse", "code": 200 }
   m.plugin.authData = {
     "accessToken": "at"
@@ -308,8 +324,8 @@ end function
 '@Test 
 '@Params[invalid, "Unknown error", -1]
 '@Params[{}, "Unknown error", -1]
-'@Params[{"errors": {"1":"one"}}, "Unknown error", -1]
-'@Params[{"errors": {"1":"one"}, "code": 403}, "Unknown error", 403]
+'@Params[{"errors": {"1":"one"}}, "one", -1]
+'@Params[{"errors": {"1":"one"}, "code": 403}, "one", 403]
 '@Params[{"errors": {"403":"m403"}, "code": 403}, "m403", 403]
 function createErrorFromResult(result, expectedMessage, expectedCode)
   error = m.plugin.createErrorFromResult(result)
