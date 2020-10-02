@@ -8,7 +8,7 @@ function beforeEach()
     "locale": "en"
   }
   TU.setModelLocator(m.modelLocator)
-
+  
   m.riversJson = {
     "id": "logoutscreen"
     styles: {
@@ -19,7 +19,7 @@ function beforeEach()
       button_y: 400
       title_text: "are you sure"
       signed_out_text: "you are signed out"
-  m.logout_button_text: "signe out"
+      logout_button_text: "signed out"
       signed_out_button_text: "ok"
     }
   }
@@ -88,7 +88,7 @@ function logout()
   m.expectOnce(m.vm, "getInstance", ["analyticsManager"], analyticsManager)
   
   m.expectOnce(m.vm, "createAuthTask", ["execLogOutAll", invalid, "onLogoutComplete"], authTask)
-
+  
   m.vm.logout()
   
   m.assertEqual(m.vm.authTask, authTask)
@@ -113,7 +113,7 @@ function logout_specific_provider(providerId)
   
   m.expectOnce(m.vm, "createAUthTask", ["execLogOut", providerId, "onLogoutComplete"], authTask)
   m.vm.providerId = providerid
-
+  
   m.vm.logout()
   
   m.assertEqual(m.vm.authTask, authTask)
