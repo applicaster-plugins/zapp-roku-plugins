@@ -1,3 +1,22 @@
+#### 3.2.0 (2020-10-02)
+
+##### Chores
+
+* **tests:**  Fixes failing tests (cdc3acd7)
+* **roku_deeplinking_screen:**  Uses new nextview API for dynamic container (4e594278)
+
+##### New Features
+
+* **mpx_adobe_prehook_roku:**  Adds prehook for doing mpx url resolution, using tve short media token (3b74a1f1)
+* **tve_token_loader_prehook_roku:**
+  *  Adds ability to specify if using rss template resource ID or simple resourceID (ba9598dd)
+  *  Adds new ZTVETokenLoaderPrehook plugin, which can load adobe tokens into the session store for use downstream (222b417f)
+
+##### Bug Fixes
+
+* **mpx_adobe_prehook_roku:**  Adds additional response format to fix issue where some videos failed to play. MPX url can be at result.body.seq.par.switch and result.body.seq.switch (b6e4a889)
+* **tve_token_loader_prehook_roku:**  Adds missing task wrapper for prehook (3678a618)
+
 #### 3.1.2 (2020-08-20)
 
 ##### Chores
