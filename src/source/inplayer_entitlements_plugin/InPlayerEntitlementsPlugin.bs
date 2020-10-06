@@ -32,6 +32,8 @@ public function new(plugin)
   m.clientId = plugin.getStringValue("client_id")
   m.pluginInplayerAssetKey = plugin.getStringValue("inplayer_custom_asset_key", invalid)
   
+  m.token = m.getSessionStoreValue("inplayer_auth_plugin_roku", "token")
+  
   if plugin.getStringValue("environment", "prod") = "prod"
     m.apiUrl = "https://services.inplayer.com" 
   else
@@ -137,7 +139,7 @@ public override function loadItem(item) as boolean
   if item = invalid
     return false
   end if
-
+  
   if m.token = invalid
     errorMessage = "not authenticated with inplayer when retrieving item: " + item.id
     m.logError(errorMessage, item)
@@ -261,6 +263,7 @@ private function getInplayerId(item)
     return item.inPlayerId
   end if
   
+  m.logInfo("extensions", item.extensions)
   id = MU.getContentField(item, m.pluginInplayerAssetKey)
   
   if id = invalid
