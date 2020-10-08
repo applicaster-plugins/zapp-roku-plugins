@@ -1,135 +1,134 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version='1.0' encoding='utf-8'?>
 <component
-    name="AWSLoginScreen"
-    extends="ZUIBScreen">
+    name='AWSLoginScreen'
+    extends='ZUIBScreen'>
 
   <interface></interface>
 
   <children>
     <Rectangle
-        id="backgroundRect"
-        color="{{:vm.backgroundColor}}" />
+        id='backgroundRect'
+        color='{{:vm.backgroundColor}}' />
     <Poster
-        id="backgroundPoster"
-        uri="{{:vm.backgroundUrl}}"
-        loadSync="true"
-        loadDisplayMode="scaleToFill"
-        loadWidth="1920"
-        loadHeight="1080"
-        width="1920"
-        height="1080" />
+        id='backgroundPoster'
+        uri='{{:vm.backgroundUrl}}'
+        loadSync='true'
+        loadDisplayMode='scaleToFill'
+        loadWidth='1920'
+        loadHeight='1080'
+        width='1920'
+        height='1080' />
     <Poster
-        id="logoPoster"
-        loadSync="true"
-        translation="{{:vm.logoPosition}}"
-        loadWidth="{{:vm.logoWidth}}"
-        loadHeight="{{:vm.logoHeight}}"
-        width="{{:vm.logoWidth}}"
-        height="{{:vm.logoHeight}}"
-        uri="{{:vm.logoImageUrl}}"
-         />
+        id='logoPoster'
+        loadSync='true'
+        translation='{{:vm.logoPosition}}'
+        loadWidth='{{:vm.logoWidth}}'
+        loadHeight='{{:vm.logoHeight}}'
+        width='{{:vm.logoWidth}}'
+        height='{{:vm.logoHeight}}'
+        uri='{{:vm.logoImageUrl}}' />
     <Group
-        id="loginGroup"
-        visible="{{vm.isRefreshing, isSettingInitialValue=true,transform=MOM_transform_invertBoolean}}">
+        id='loginGroup'
+        visible='{{vm.isRefreshing, isSettingInitialValue=true,transform=MOM_transform_invertBoolean}}'>
       <LayoutGroup
-          id="labelsGroup"
-          layoutDirection="vert"
-          translation="[230,310]"
-          itemSpacings="[56, 56, 26]">
+          id='labelsGroup'
+          layoutDirection='vert'
+          translation='[230,310]'
+          itemSpacings='[56, 56, 26]'>
         <MLabel
-            id="titleText"
-            style="{{:vm.titleStyle}}"
-            wrap="true"
-            width="610" />
+            id='titleText'
+            style='{{:vm.titleStyle}}'
+            wrap='true'
+            width='610' />
 
         <MLabel
-            id="descriptionText"
-            style="{{:vm.descriptionStyle}}"
-            wrap="true"
-            width="610" />
+            id='descriptionText'
+            style='{{:vm.descriptionStyle}}'
+            wrap='true'
+            width='610' />
 
         <MLabel
-            id="optional1Text"
-            style="{{:vm.optional1Style}}"
-            wrap="true"
-            width="610" />
+            id='optional1Text'
+            style='{{:vm.optional1Style}}'
+            wrap='true'
+            width='610' />
 
         <MLabel
-            id="optional2Text"
-            style="{{:vm.optional2Style}}"
-            wrap="true"
-            width="610" />
+            id='optional2Text'
+            style='{{:vm.optional2Style}}'
+            wrap='true'
+            width='610' />
 
       </LayoutGroup>
 
       <LayoutGroup
-          id="controlsGroup"
-          translation="[1040,300]"
-          itemSpacings="[10, 45, 52]">
+          id='controlsGroup'
+          translation='[1040,300]'
+          itemSpacings='[10, 45, 52]'>
         <ZActionButton
-            id="usernameInput"
-            style="{{:vm.inputStyle}}"
-            labelXOffset="9"
-            text="{{vm.usernameText}}"
-            buttonType="{{vm.usernameButtonType}}"
-            selected="{(vm.onUsernameButtonSelected,isSettingInitialValue=false)}"
-            width="610" />
+            id='usernameInput'
+            style='{{:vm.inputStyle}}'
+            labelXOffset='9'
+            text='{{vm.usernameText}}'
+            buttonType='{{vm.usernameButtonType}}'
+            selected='{(vm.onUsernameButtonSelected,isSettingInitialValue=false)}'
+            width='610' />
 
         <ZActionButton
-            id="passwordInput"
-            text="{{vm.passwordText}}"
-            style="{{:vm.inputStyle}}"
-            labelXOffset="9"
-            buttonType="{{vm.passwordButtonType}}"
-            selected="{(vm.onPasswordButtonSelected,isSettingInitialValue=false)}"
-            width="610" />
+            id='passwordInput'
+            text='{{vm.passwordText}}'
+            style='{{:vm.inputStyle}}'
+            labelXOffset='9'
+            buttonType='{{vm.passwordButtonType}}'
+            selected='{(vm.onPasswordButtonSelected,isSettingInitialValue=false)}'
+            width='610' />
 
         <ZActionButton
-            id="loginButton"
-            style="{{:vm.loginButtonStyle}}"
-            visible="{{vm.isLoading,  isSettingInitialValue=true,transform=MOM_transform_invertBoolean}}"
-            selected="{(vm.onLoginButtonSelected,isSettingInitialValue=false)}"
-            width="610" />
+            id='loginButton'
+            style='{{:vm.loginButtonStyle}}'
+            visible='{{vm.isLoading,  isSettingInitialValue=true,transform=MOM_transform_invertBoolean}}'
+            selected='{(vm.onLoginButtonSelected,isSettingInitialValue=false)}'
+            width='610' />
 
       </LayoutGroup>
 
       <Group
-          id="errorGroup"
-          translation="[1720,0.0]"
-          visible="{{vm.isErrorShowing}}">
+          id='errorGroup'
+          translation='[1720,0.0]'
+          visible='{{vm.isErrorShowing}}'>
         <Poster
-            id="errorBackground"
-            blendColor="#42454A"
-            uri="pkg:/asset-bundle/button-backgrounds.9.png"
-            width="500"
-            height="180" />
+            id='errorBackground'
+            blendColor='#42454A'
+            uri='pkg:/asset-bundle/button-backgrounds.9.png'
+            width='500'
+            height='180' />
         <MLabel
-            id="errorText"
-            width="500"
-            height="180"
-            vertAlign="center"
-            horizAlign="center"
-            style="{{vm.errorStyle}}"
-            text="{{vm.errorText}}" />
+            id='errorText'
+            width='500'
+            height='180'
+            vertAlign='center'
+            horizAlign='center'
+            style='{{vm.errorStyle}}'
+            text='{{vm.errorText}}' />
       </Group>
     </Group>
 
     <LoadingIndicator
-        id="loadingIndicator"
-        width="100"
-        height="100"
-        translation="[1000,500]"
-        isActive="{{vm.isLoading, isSettingInitialValue=true}}"
-        backgroundVisible="false"
-        text="" />
+        id='loadingIndicator'
+        width='100'
+        height='100'
+        translation='[1000,500]'
+        isActive='{{vm.isLoading, isSettingInitialValue=true}}'
+        backgroundVisible='false'
+        text='' />
 
     <LoadingIndicator
-        id="refreshLoadingIndicator"
-        width="1920"
-        height="1080"
-        translation="[0,0]"
-        isActive="{{vm.isRefreshing, isSettingInitialValue=true}}"
-        backgroundVisible="false"
-        text="" />
+        id='refreshLoadingIndicator'
+        width='1920'
+        height='1080'
+        translation='[0,0]'
+        isActive='{{vm.isRefreshing, isSettingInitialValue=true}}'
+        backgroundVisible='false'
+        text='' />
   </children>
 </component>

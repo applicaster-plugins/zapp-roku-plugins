@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version='1.0' encoding='utf-8'?>
 <!-- *********************************************************
 -  ** The MIT License (MIT)
 -  **
@@ -36,20 +36,29 @@
  - these fields in order to trigger the Task thread to send the 
  - event on the network.
  -
- --> 
-<component name="GoogleAnalyticsTask" extends="Task" >
-  <script type="text/brightscript" uri="pkg:/source/maestro/lib/ThreadUtils.brs" />
-<script type="text/brightscript" uri="googleAnalytics.brs"/>
- 
+ -->
+<component
+    name='GoogleAnalyticsTask'
+    extends='Task'>
+
   <interface>
-    <field id="trackingId" type="string"/>
-    <field id="clientId" type="string"/>
-    <field id="customSessionParams" type="assocarray"/>
+    <field
+        id='trackingId'
+        type='string' />
+    <field
+        id='clientId'
+        type='string' />
+    <field
+        id='customSessionParams'
+        type='assocarray' />
 
     <!-- 
      - Set to true once the execGampLoop function is up and observing the reporting fields
      -->
-    <field id="ready" type="boolean" value="false"/>
+    <field
+        id='ready'
+        type='boolean'
+        value='false' />
 
     <!--
       -
@@ -61,7 +70,9 @@
       -   }
       -
       -->
-    <field id="pageView" type="assocarray"/>
+    <field
+        id='pageView'
+        type='assocarray' />
 
     <!-- 
       -
@@ -74,7 +85,9 @@
       -   }
       -
       -->
-    <field id="event" type="assocarray"/>
+    <field
+        id='event'
+        type='assocarray' />
 
     <!-- 
       -
@@ -84,7 +97,9 @@
       -   }
       -
       -->
-    <field id="screenView" type="assocarray"/>
+    <field
+        id='screenView'
+        type='assocarray' />
 
     <!-- 
       -
@@ -98,7 +113,9 @@
       -   }
       -
       -->
-    <field id="transaction" type="assocarray"/>
+    <field
+        id='transaction'
+        type='assocarray' />
 
     <!-- 
       -
@@ -108,6 +125,8 @@
       -   }
       -
       -->
-    <field id="exception" type="assocarray"/>
+    <field
+        id='exception'
+        type='assocarray' />
   </interface>
 </component>

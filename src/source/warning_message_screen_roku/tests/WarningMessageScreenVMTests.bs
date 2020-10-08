@@ -10,7 +10,7 @@ function beforeEach()
   
   riversJson = {
     "id": "warningScreen"
-    styles:{
+    styles: {
       condition_path: ""
       condition_value: ""
     }
@@ -46,7 +46,7 @@ function load_matching(entry, path, condition)
   m.expectOnce(m.vm, "load_ZUIBContentVM")
   m.expectNone(m.vm, "dismiss")
   m.vm.originEntry = entry
-
+  
   m.vm.load() 
   
   m.assertNotEqual(m.vm.state, "success")

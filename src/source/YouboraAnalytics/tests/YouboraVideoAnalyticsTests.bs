@@ -11,7 +11,7 @@ function beforeEach()
     "is_debug": 1
     "task_name": "Node"
   }
-
+  
   m.pluginData = new BasePlugin({ "configuration_json": m.config, "identifier": "youbora" })
   
   m.plugin = new YouboraVideoAnalytics(m.pluginData)

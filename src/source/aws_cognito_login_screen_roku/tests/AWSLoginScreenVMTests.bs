@@ -10,7 +10,7 @@ function beforeEach()
     "locale": "en"
   }
   TU.setModelLocator(m.modelLocator)
-
+  
   m.riversJson = {
     "name": "SmallSystemFont"
     "id": "11937f34-a364-4601-a0du3-1dace40fe0ed"
@@ -57,14 +57,14 @@ function beforeEach()
       "input_placeholder_color": "#ff0000ff"
       "background_color": "#ff0000ff"
     }
-    "localizations":{}
+    "localizations": {}
   }
-
+  
   m.modelLocator = CreateObject("roSGNode", "ModelLocator")
   
   m.locale = "en"
   m.modelLocator.locale = m.locale
-
+  
   TU.setModelLocator(m.modelLocator)
   
   m.vm = AWSLoginScreenVM(m.riversJson)

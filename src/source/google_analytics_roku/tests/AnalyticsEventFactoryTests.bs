@@ -12,13 +12,13 @@ function setUp()
   m.testItem.addField("free", "boolean", false)
   m.testItem.free = true
   m.testItem.itemType = "vod"
-
+  
   m.testCategory = CreateObject("roSGNode", "ContentNode")
   m.testCategory.id = "54321"
   m.testCategory.title = "Test Category"
   m.testCategory.addField("nature", "string", false)
   m.testCategory.nature = "Season"
-
+  
   m.testVoucher = {
     voucherType: "App"
     code: "Test Product"
@@ -55,10 +55,10 @@ function AMT_propertiesToLabel_nonString()
   properties["integer"] = 42%
   properties["longinteger"] = 2349823492&
   properties["float"] = 243.573!
-  properties["double"] = 1.23456789D-12#
+  properties["double"] = 1.23456789D - 12#
   properties["string"] = "hi"
-  properties["array"] = [1,2,3]
-  properties["assocarray"] = {a: 1}
+  properties["array"] = [1, 2, 3]
+  properties["assocarray"] = { a: 1 }
   properties["invalid"] = invalid
   m.assertEqual(m.analytics.propertiesToLabel(properties), "array=;assocarray=;boolean=true;double=1.23457e-12;float=243.573;integer=42;invalid=;longinteger=2349823492;string=hi")
 end function
@@ -106,7 +106,7 @@ end function
 function AMT_voucherDictionary_noGracePeriod()
   voucher = {}
   voucher.append(m.testVoucher)
-  voucher["freeTrialType"] =  "None"
+  voucher["freeTrialType"] = "None"
   voucher["freeTrialQuantity"] = ""
   dictionary = m.analytics.voucherDictionary(false, voucher)
   m.assertEqual(dictionary["Grace Period"], "N/A")
@@ -116,7 +116,7 @@ end function
 function AMT_voucherDictionary_monthlyGracePeriod()
   voucher = {}
   voucher.append(m.testVoucher)
-  voucher["freeTrialType"] =  "Days"
+  voucher["freeTrialType"] = "Days"
   voucher["freeTrialQuantity"] = "7"
   dictionary = m.analytics.voucherDictionary(false, voucher)
   m.assertEqual(dictionary["Grace Period"], "7 Days")
@@ -126,7 +126,7 @@ end function
 function AMT_voucherDictionary_dailyGracePeriod()
   voucher = {}
   voucher.append(m.testVoucher)
-  voucher["freeTrialType"] =  "Months"
+  voucher["freeTrialType"] = "Months"
   voucher["freeTrialQuantity"] = "1"
   dictionary = m.analytics.voucherDictionary(false, voucher)
   m.assertEqual(dictionary["Grace Period"], "1 Months")

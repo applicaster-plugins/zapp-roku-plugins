@@ -163,7 +163,7 @@ function _register_invalid(serviceResponse)
     "password": "p"
     "password_confirmation": "pc"
   }
-
+  
   m.expectOnce(m.plugin, "executeAPIRequest", ["FORMPOST", "accounts", expectedParams], serviceResponse)
   
   m.expectNone(m.plugin, "createAuthData")

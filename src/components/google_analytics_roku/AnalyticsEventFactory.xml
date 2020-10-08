@@ -1,8 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<component name="AnalyticsEventFactory" extends="Node" >
+<?xml version='1.0' encoding='UTF-8'?>
+<component
+    name='AnalyticsEventFactory'
+    extends='Node'>
 
   <interface>
-     <function name="getAnalyticsEvent" />
+    <function name='getAnalyticsEvent' />
   </interface>
 
 </component>

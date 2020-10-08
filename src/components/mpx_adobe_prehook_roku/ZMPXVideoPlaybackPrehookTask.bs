@@ -10,7 +10,7 @@ end function
 function execRunLoop()
   registerLogger("ZMPXVideoPlaybackPrehookTask")
   m.logMethod("execRunLoop")
-
+  
   resolver = new ZMPXVideoPlaybackPrehook()
   m.top.output = resolver.execute()
 end function

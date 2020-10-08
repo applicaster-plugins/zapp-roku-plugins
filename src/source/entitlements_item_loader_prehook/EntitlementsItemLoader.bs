@@ -45,7 +45,7 @@ public function execute()
     m.logError("item does not match")
     return "success"
   end if
-
+  
   entitlements = m.getInstance("entitlements")
   if not entitlements@.isLocked(item)
     m.logInfo("item is already unlocked")

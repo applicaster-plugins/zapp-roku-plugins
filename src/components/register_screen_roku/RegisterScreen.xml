@@ -64,8 +64,8 @@
             buttonType='{{vm.nameButtonType}}'
             selected='{(vm.onNameButtonSelected,isSettingInitialValue=false)}'
             width='{{=ViewUtils_UIBInt("input_w")}}' />
-            
-            <ZActionButton
+
+        <ZActionButton
             id='passwordInput'
             text='{{vm.passwordText}}'
             style='{{:vm.inputStyle}}'
@@ -73,8 +73,8 @@
             buttonType='{{vm.passwordButtonType}}'
             selected='{(vm.onPasswordButtonSelected,isSettingInitialValue=false)}'
             width='{{=ViewUtils_UIBInt("input_w")}}' />
-            
-            <!-- <ZActionButton
+
+        <!-- <ZActionButton
             id='confirmPasswordInput'
             text='{{vm.confirmPasswordText}}'
             style='{{:vm.inputStyle}}'
@@ -82,15 +82,15 @@
             buttonType='{{vm.confirmPasswordButtonType}}'
             selected='{(vm.onConfirmPasswordButtonSelected,isSettingInitialValue=false)}'
             width='{{=ViewUtils_UIBInt("input_w")}}' /> -->
-            
-            <ZActionButton
+
+        <ZActionButton
             id='registerButton'
             style='{{:vm.registerButtonStyle}}'
             visible='{{vm.isLoading, isSettingInitialValue=true,transform=MOM_transform_invertBoolean}}'
             selected='{(vm.onRegisterButtonSelected,isSettingInitialValue=false)}'
             width='{{=ViewUtils_UIBInt("input_w")}}' />
-            
-          </ZLayoutGroup>
+
+      </ZLayoutGroup>
 
       <Group
           id='errorGroup'

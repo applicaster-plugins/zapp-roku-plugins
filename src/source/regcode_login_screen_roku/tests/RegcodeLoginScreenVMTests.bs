@@ -252,9 +252,9 @@ end function
 function onPollComplete_valid()
   result = { "state" : "valid" }
   m.vm.providerId = "pid"
-
+  
   m.expectOnce(m.vm.analyticsManager, "callFunc", ["trackEvent", "Signed In", "page_loaded", { "provider": "pid" }])
-
+  
   m.expectOnce(m.vm, "dismiss", ["success"])
   
   m.vm.onPollComplete(result)

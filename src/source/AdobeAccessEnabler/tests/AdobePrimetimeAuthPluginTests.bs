@@ -285,7 +285,7 @@ function getAuthorization(lastResponseCode, expectedCode)
   
   result = { "id" : "result" }
   token = formatJson(response)
-  m.expectOnce(m.plugin, "createAuthData", ["valid", token, token, token, response, 9999, expectedCode,  "", m.plugin.pollResult], result)
+  m.expectOnce(m.plugin, "createAuthData", ["valid", token, token, token, response, 9999, expectedCode, "", m.plugin.pollResult], result)
   
   m.expectNone(m.plugin, "createErrorResult")
   

@@ -118,7 +118,7 @@ public function isCapturingAnyKeyPress(key, press)
 end function
 
 public function onKeyPressDown()
-    m.setFocusId("skipButton")
+  m.setFocusId("skipButton")
 end function
 
 public override function onKeyPressUp()

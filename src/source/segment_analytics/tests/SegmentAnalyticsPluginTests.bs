@@ -12,7 +12,7 @@ function beforeEach()
     "applicasterDeviceId": "#a"
   }
   TU.setModelLocator(m.modelLocator)
-
+  
   m.pluginData = new BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
   
   m.plugin = new SegmentAnalyticsPlugin(m.pluginData)
@@ -47,12 +47,12 @@ function start()
   m.plugin.library = library
   
   m.expectOnce(library, "init", [{
-    "writeKey": "#w"
-    "debug": true
-    "queueSize": 3
-    "retryLimit": 0
+      "writeKey": "#w"
+      "debug": true
+      "queueSize": 3
+      "retryLimit": 0
   }])
-
+  
   m.plugin.start()
 end function
 
@@ -71,9 +71,9 @@ function generateMap_some()
     "provider_key_3": ""
     "provider_value_3": ""
   }
-
+  
   pluginData = new BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
-
+  
   map = m.plugin.generateMap(pluginData, "provider", 3)
   
   m.assertEqual(map["AdobePrimetime"], "Adobe")
@@ -86,17 +86,17 @@ function generateMap_none()
     "write_key": "#w"
     "provider_key_1": ""
     "provider_value_1": ""
-
-
-
+    
+    
+    
     "provider_key_2": ""
     "provider_value_2": ""
     "provider_key_3": ""
     "provider_value_3": ""
   }
-
+  
   pluginData = new BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
-
+  
   m.assertEmpty(m.plugin.generateMap(pluginData, "provider", 3))
   
 end function

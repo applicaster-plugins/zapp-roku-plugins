@@ -307,7 +307,7 @@ function postSegementEvent(eventName)
     end function
     "eventName": eventName 
   }
-
+  
   m.expectOnce(m.plugin.analyticsManager, "callFunc", ["track", eventName, matcher])
   
   m.plugin.postSegmentEvent(eventName)

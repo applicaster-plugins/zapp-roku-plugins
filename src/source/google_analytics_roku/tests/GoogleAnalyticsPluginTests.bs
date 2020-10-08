@@ -8,9 +8,9 @@ function beforeEach()
     "user_id": "#u"
   }
   m.modelLocator = createObject("roSGNode", "ModelLocator")
-
-  m.modelLocator.buildConfig = {"app_family_id": "#vid"}
-  m.modelLocator.constants = { "googleAnalyticsClientId" : "#c"}
+  
+  m.modelLocator.buildConfig = { "app_family_id": "#vid" }
+  m.modelLocator.constants = { "googleAnalyticsClientId" : "#c" }
   
   TU.setModelLocator(m.modelLocator)
   m.pluginData = new BasePlugin({ "configuration_json": config, "identifier": "google_analytics_roku" })
@@ -49,7 +49,7 @@ function start()
   
   m.expectOnce(m.plugin, "setInstance", ["googleAnalyticsEventFactory", factory])
   m.expectOnce(m.plugin, "setInstance", ["googleAnalyticsTask", task])
-
+  
   m.plugin.start()
   m.assertEqual(m.plugin.task.control, "run")
 end function
@@ -60,7 +60,7 @@ end function
 
 function identifyAsAnonymous()
   m.expectOnce(m.plugin, "setGoogleTaskUserId", invalid)
-
+  
   m.plugin.identifyAsAnonymous()
 end function
 
@@ -73,13 +73,13 @@ end function
 '@Params["allow-tracking-user-id-for-app-familya-aaaa","aaaa", false ]
 '@Params["allow-tracking-user-id-for-app-family-aaaa","aaaac", false ]
 function isTrackingUserIdAllowed(userIdString, versionId, result)
-
+  
   versionPrefix = "allow-tracking-user-id-for-app-family-"
-
+  
   fResult = m.plugin.checkIfTrackingUserIdAllowed(userIdString, versionId)
-
+  
   m.assertEqual(result, fResult)
-
+  
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -96,20 +96,20 @@ end function
 '@Params[ "allow-tracking-user-id-for-app-family-aaac", "aaaa", false ]
 '@Params[ invalid, "aaaa", false ]
 function trackUserIdAllowedFlag(userID, versionId, result)
-
+  
   config = {
     "tracking_id": "#t"
     "user_id": userID
   }
   m.modelLocator = createObject("roSGNode", "ModelLocator")
-
-  m.modelLocator.buildConfig = {"app_family_id": versionId}
+  
+  m.modelLocator.buildConfig = { "app_family_id": versionId }
   m.modelLocator.constants = {}
   
   TU.setModelLocator(m.modelLocator)
   m.pluginData = new BasePlugin({ "configuration_json": config, "identifier": "google_analytics_roku" })
   m.plugin = new GoogleAnalyticsPlugin(m.pluginData)
-
+  
   m.assertEqual(m.plugin.isTrakingUserIdEnabled, result)
   
 end function
@@ -123,11 +123,11 @@ end function
 '@Params["user 123", "user%20123" ]
 function setGoogleTaskUserId(userID, encodeUserId)
   params = {
-      "uid": encodeUserId
+    "uid": encodeUserId
   }
-
+  
   m.plugin.setGoogleTaskUserId(userID)
-
+  
   m.assertEqual(m.plugin.task.customSessionParams, params)
 end function
 
@@ -137,6 +137,6 @@ end function
 '@Params[123 ]
 function setGoogleTaskUserId_reutrn_invalid(userID)
   m.plugin.setGoogleTaskUserId(userID)
-
+  
   m.assertEqual(m.plugin.task.customSessionParams, invalid)
 end function

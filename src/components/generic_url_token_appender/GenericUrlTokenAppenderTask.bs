@@ -11,7 +11,7 @@ end function
 function execRunLoop()
   registerLogger("ZGenericUrlTokenAppenderTask")
   m.logMethod("execRunLoop")
-
+  
   resolver = new ZGenericUrlTokenAppender()
   m.top.output = resolver.execute()
 end function

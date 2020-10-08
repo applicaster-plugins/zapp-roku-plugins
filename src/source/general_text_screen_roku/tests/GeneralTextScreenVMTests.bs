@@ -12,7 +12,7 @@ function beforeEach()
   
   riversJson = {
     "id": "generalTextScreen"
-    styles:{
+    styles: {
     }
   }
   
@@ -33,7 +33,7 @@ end function
 '@Test 
 function onButtonSelected()
   m.expectOnce(m.vm, "dismiss", ["cancel"])
-
+  
   m.vm.onButtonSelected(true)
   
 end function
@@ -45,7 +45,7 @@ end function
 '@Test 
 function onKeyPressBack()
   m.expectOnce(m.vm, "dismiss", ["cancel"])
-
+  
   m.vm.onKeyPressBack()
   
 end function

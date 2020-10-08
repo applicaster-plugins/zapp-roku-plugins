@@ -6,19 +6,19 @@
 ' Required params:
 ' task SegmentAnalyticsTask node instance
 
-function SegmentAnalyticsConnector(task as Object)
+function SegmentAnalyticsConnector(task as object)
   return {
     init: _SegmentAnalyticsConnector_init
-
+    
     identify: _SegmentAnalyticsConnector_identify
     track: _SegmentAnalyticsConnector_track
     screen: _SegmentAnalyticsConnector_screen
     group: _SegmentAnalyticsConnector_group
     alias: _SegmentAnalyticsConnector_alias
-
+    
     'private
     _task: task
-
+    
     _callEvent: _SegmentAnalyticsConnector_callEvent
   }
 end function
@@ -27,7 +27,7 @@ end function
 ' Required params:
 ' @config an associative array that contains a writeKey property for the segment analytics library
 
-sub _SegmentAnalyticsConnector_init(config as Object)
+sub _SegmentAnalyticsConnector_init(config as object)
   m._task.config = config
   m._task.control = "run"
 end sub
@@ -39,7 +39,7 @@ end sub
 ' @traits
 ' @options
 
-sub _SegmentAnalyticsConnector_identify(userId as String, traits = invalid as Dynamic, options = invalid as Dynamic)
+sub _SegmentAnalyticsConnector_identify(userId as string, traits = invalid as dynamic, options = invalid as dynamic)
   m._callEvent("identify", {
     userId: userId
     traits: traits
@@ -54,7 +54,7 @@ end sub
 ' Optional params:
 ' @properties
 
-sub _SegmentAnalyticsConnector_track(event as Object, properties = invalid as Dynamic, options = {} as Object)
+sub _SegmentAnalyticsConnector_track(event as object, properties = invalid as dynamic, options = {} as object)
   m._callEvent("track", {
     event: event
     properties: properties
@@ -70,7 +70,7 @@ end sub
 ' @category
 ' @properties
 
-sub _SegmentAnalyticsConnector_screen(name as String, category = invalid as Dynamic, properties = invalid as Dynamic, options = {} as Object)
+sub _SegmentAnalyticsConnector_screen(name as string, category = invalid as dynamic, properties = invalid as dynamic, options = {} as object)
   m._callEvent("screen", {
     name: name
     category: category
@@ -86,7 +86,7 @@ end sub
 ' Optional params:
 ' @traits
 
-sub _SegmentAnalyticsConnector_group(userId as String, groupId as String, traits = invalid as Dynamic, options = {} as Object)
+sub _SegmentAnalyticsConnector_group(userId as string, groupId as string, traits = invalid as dynamic, options = {} as object)
   m._callEvent("group", {
     userId: userId
     groupId: groupId
@@ -100,21 +100,21 @@ end sub
 ' @newId
 ' @options
 
-sub _SegmentAnalyticsConnector_alias(userId as String, options = {} as Object)
+sub _SegmentAnalyticsConnector_alias(userId as string, options = {} as object)
   m._callEvent("alias", {
     userId: userId
     options: options
   })
 end sub
 
-sub _SegmentAnalyticsConnector_callEvent(name as String, payload as Object)
+sub _SegmentAnalyticsConnector_callEvent(name as string, payload as object)
   if payload.options = invalid
     payload.options = {}
   end if
-
+  
   if payload.options.timestamp = invalid
     dateTime = createObject("roDateTime")
     payload.options.timestamp = dateTime.ToIsoString()
   end if
-  m._task.event = {name: name, payload: payload}
+  m._task.event = { name: name, payload: payload }
 end sub

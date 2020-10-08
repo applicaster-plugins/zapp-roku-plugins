@@ -69,7 +69,7 @@ public override function _regcode()
   }
   url = m.baseUrl + requestPath
   m.logInfo("url ", url, "headers", headers, "params", params)
-
+  
   result = m.request.post(url, params, headers)
   
   m.logInfo("result is ", result)
@@ -191,7 +191,7 @@ private function getAuthorization()
     else
       user = m.authData.user
     end if
-
+    
     return m.createAuthData("valid", token, token, token, result, secondsTillExpire, errorCode, "", user)
   end if
   

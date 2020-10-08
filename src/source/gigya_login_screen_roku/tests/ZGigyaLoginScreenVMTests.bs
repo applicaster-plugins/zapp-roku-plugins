@@ -8,7 +8,7 @@ function beforeEach()
     "locale": "en"
   }
   TU.setModelLocator(m.modelLocator)
-
+  
   riversJson = {
     "id": "myAccount"
     "general": { "base_url": "#base_url/" }

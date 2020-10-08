@@ -67,29 +67,29 @@ public function getAnalyticsEvent(eventName, arg1 = invalid, arg2 = invalid, arg
   else if eventName = "loginDoesNotSucceed"
     return m.loginDoesNotSucceed(arg1, arg2, arg3, arg4)
   else
-  m.logError("unknown analytics event", eventName)
+    m.logError("unknown analytics event", eventName)
   end if
-
+  
   return invalid
 end function
 
 public function propertiesToLabel(properties)
   if type(properties) <> "roAssociativeArray" then return ""
-
+  
   label = ""
   sortedKeys = properties.keys()
-  for i=0 to sortedKeys.count()-1
+  for i = 0 to sortedKeys.count() - 1
     ' be careful only to include string values here. Necessary conversions should happen in the public methods
     value = properties[sortedKeys[i]]
     if type(value) <> "String" and type(value) <> "roString"
       if FindMemberFunction(value, "toStr") <> invalid then
         value = value.toStr()
       else
-  m.logWarn("Could not convert '", sortedKeys[i], "' to a string; type = ", type(value))
+        m.logWarn("Could not convert '", sortedKeys[i], "' to a string; type = ", type(value))
         value = ""
       end if
     end if
-
+    
     if i > 0
       label = label + ";"
     end if
@@ -123,7 +123,7 @@ public function itemDictionary(item)
   dict["Season Name"] = "N/A"
   dict["Season ID"] = "N/A"
   dict["ATOM feed name"] = "N/A"
-
+  
   if type(item) <> "roAssociativeArray" and type(item) <> "roSGNode" then return dict
   if item.free <> invalid then dict["Free"] = m.booleanString(item.free)
   if item.itemType <> invalid
@@ -135,7 +135,7 @@ public function itemDictionary(item)
       dict["Item Type"] = "VOD - ATOM"
     end if
   end if
-  if item.title <> invalid and item.title <> "" then  dict["Item Name"] = item.title
+  if item.title <> invalid and item.title <> "" then dict["Item Name"] = item.title
   if item.id <> invalid and item.id <> "" then dict["Item ID"] = item.id
   if item.parentCategoryId <> invalid and item.parentCategoryId <> "" then dict["Parent Category ID"] = item.parentCategoryId
   if item.parentCategoryName <> invalid and item.parentCategoryName <> "" then dict["Parent Category Name"] = item.parentCategoryName
@@ -154,7 +154,7 @@ public function categoryDictionary(category)
   dict["Category Type"] = "N/A"
   dict["Category Name"] = "N/A"
   dict["Category ID"] = "N/A"
-
+  
   if type(category) <> "roAssociativeArray" and type(category) <> "roSGNode" then return dict
   if category.id <> invalid and category.id <> "" then dict["Category ID"] = category.id
   if category.title <> invalid and category.title <> "" then dict["Category Name"] = category.title
@@ -176,13 +176,13 @@ public function voucherDictionary(subscriber, product)
   dict["Purchase Entity"] = "N/A"
   dict["Grace Period"] = "N/A"
   dict["Voucher Template Type"] = "N/A"
-
+  
   if subscriber
     dict["Subscriber"] = "Yes"
   end if
-
+  
   if type(product) <> "roAssociativeArray" then return dict
-
+  
   if product.code <> invalid then dict["Product ID"] = product.code
   if product.voucherType <> invalid then dict["Voucher Template Type"] = product.voucherType
   ' TODO: Other fields need support from the roku purchases API to be filled out
@@ -196,17 +196,17 @@ end function
 
 public function padString(s as string, width as integer, c as string)
   result = s.trim()
-
+  
   ' don't get stuck in a while loop if pad characters are empty
   if c = "" return result
-
+    
     while result.len() < width
       difference = width - result.len()
       result = right(c, difference) + result
     end while
     return result
   end function
-
+  
   public function timeFormat(length as dynamic) as string
     if type(length) = "roFloat" or type(length) = "Double" then length = Int(length)
     if (type(length) = "Integer" or type(length) = "roInteger") then
@@ -219,8 +219,8 @@ public function padString(s as string, width as integer, c as string)
       return ""
     end if
   end function
-
-
+  
+  
   ' VOD Item loads until user exits the video
   '
   ' trigger             Where user accessed the video from
@@ -244,8 +244,8 @@ public function padString(s as string, width as integer, c as string)
       label: m.propertiesToLabel(properties)
     }
   end function
-
-
+  
+  
   ' User clicks an item
   '
   ' trigger              Where the user clicks from.
@@ -265,8 +265,8 @@ public function padString(s as string, width as integer, c as string)
       label: m.propertiesToLabel(properties)
     }
   end function
-
-
+  
+  
   ' User clicks a category
   '
   public function clickCategory(trigger, category)
@@ -279,8 +279,8 @@ public function padString(s as string, width as integer, c as string)
       label: m.propertiesToLabel(properties)
     }
   end function
-
-
+  
+  
   ' Launch App
   public function launchApp()
     return {
@@ -289,8 +289,8 @@ public function padString(s as string, width as integer, c as string)
       label: m.propertiesToLabel({})
     }
   end function
-
-
+  
+  
   ' Triggered when one of the actions related to the "Action" property occurs
   '
   public function viewStorefront(trigger, item, action)
@@ -304,8 +304,8 @@ public function padString(s as string, width as integer, c as string)
       label: m.propertiesToLabel(properties)
     }
   end function
-
-
+  
+  
   ' Tap Storefront Button
   '
   public function tapStorefrontButton(buttonName, item)
@@ -318,8 +318,8 @@ public function padString(s as string, width as integer, c as string)
       label: m.propertiesToLabel(properties)
     }
   end function
-
-
+  
+  
   ' Triggered when the store purchase process initiates with iTunes/Google Play
   '
   public function startPurchase(subscriber, voucher)
@@ -332,8 +332,8 @@ public function padString(s as string, width as integer, c as string)
       label: m.propertiesToLabel(properties)
     }
   end function
-
-
+  
+  
   ' Triggered when the stores return that the purchase was completed successfully
   '
   public function completePurchase(subscriber, voucher)
@@ -346,8 +346,8 @@ public function padString(s as string, width as integer, c as string)
       label: m.propertiesToLabel(properties)
     }
   end function
-
-
+  
+  
   ' Triggered when user actively cancels the purchase process
   '
   public function cancelPurchase(subscriber, voucher)
@@ -360,8 +360,8 @@ public function padString(s as string, width as integer, c as string)
       label: m.propertiesToLabel(properties)
     }
   end function
-
-
+  
+  
   ' Triggered when error received while trying to purchase an item or subscriptions
   '
   public function purchaseError(errorCodeID, errorMessage, subscriber, voucher)
@@ -376,8 +376,8 @@ public function padString(s as string, width as integer, c as string)
       label: m.propertiesToLabel(properties)
     }
   end function
-
-
+  
+  
   ' When user taps on the menu button
   public function openMenu()
     return {
@@ -386,8 +386,8 @@ public function padString(s as string, width as integer, c as string)
       label: m.propertiesToLabel({})
     }
   end function
-
-
+  
+  
   ' Measures tapping on the Search text field in the Side Menu.
   public function openSearch()
     return {
@@ -396,8 +396,8 @@ public function padString(s as string, width as integer, c as string)
       label: m.propertiesToLabel({})
     }
   end function
-
-
+  
+  
   ' Measures tapping on a search result.
   '
   ' searchedString         What the user input into search
@@ -412,7 +412,7 @@ public function padString(s as string, width as integer, c as string)
       label: m.propertiesToLabel(properties)
     }
   end function
-
+  
   ' When user clicks on item from the menu such that a new screen loads
   '
   ' selectedMenuItem      The name of the menu item selected
@@ -425,8 +425,8 @@ public function padString(s as string, width as integer, c as string)
       label: m.propertiesToLabel(properties)
     }
   end function
-
-
+  
+  
   ' When user clicks pause on a video item
   '
   ' itemDictionary
@@ -445,8 +445,8 @@ public function padString(s as string, width as integer, c as string)
       label: m.propertiesToLabel(properties)
     }
   end function
-
-
+  
+  
   ' When user clicks play on a paused video item
   '
   ' itemDictionary
@@ -465,8 +465,8 @@ public function padString(s as string, width as integer, c as string)
       label: m.propertiesToLabel(properties)
     }
   end function
-
-
+  
+  
   ' User initializes login process
   '
   ' trigger            What entity type triggers the login
@@ -483,7 +483,7 @@ public function padString(s as string, width as integer, c as string)
       label: m.propertiesToLabel(properties)
     }
   end function
-
+  
   ' Login process returns a success
   '
   ' trigger            What entity type triggers the login
@@ -500,7 +500,7 @@ public function padString(s as string, width as integer, c as string)
       label: m.propertiesToLabel(properties)
     }
   end function
-
+  
   ' Login process is started but ends without a success
   '
   ' trigger            What entity type triggers the login
@@ -521,6 +521,6 @@ public function padString(s as string, width as integer, c as string)
       label: m.propertiesToLabel(properties)
     }
   end function
-
-end class
-end namespace
+  
+  end class
+  end namespace

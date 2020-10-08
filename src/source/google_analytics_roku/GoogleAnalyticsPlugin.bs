@@ -12,14 +12,14 @@ public function new(plugin)
   m.task = m.createInstance("GoogleAnalyticsTask", invalid, "googleAnalyticsTask")
   
   constants = m.getInstance("constants")
-
+  
   m.task.trackingId = plugin.getStringValue("tracking_id")
   m.task.clientId = constants.googleAnalyticsClientId
   
   buildConfig = m.getInstance("buildConfig")
   versionId = buildConfig.app_family_id
   userIdString = plugin.getStringValue("user_id")
-
+  
   m.isTrakingUserIdEnabled = m.checkIfTrackingUserIdAllowed(userIdString, versionId)
   
 end function
@@ -34,7 +34,7 @@ public override function start()
   m.setInstance("googleAnalyticsEventFactory", m.eventFactory)
   m.setInstance("googleAnalyticsTask", m.task)
   m.task.control = "run"
-
+  
 end function
 
 public override function _identify(pluginId, traits = {}, options = {}, isFromLogout = false) as boolean
@@ -46,13 +46,13 @@ public override function _identify(pluginId, traits = {}, options = {}, isFromLo
       m.logInfo("traking user is not allowed skip isIdentified")
       return true
     end if
-
+    
     if pluginId <> invalid
       accountInfo = m.getSessionStoreValue(pluginId, "account", true)
     else
       accountInfo = invalid
     end if
-
+    
     m.logInfo("identify accountInfo", accountInfo)
     
     if accountInfo <> invalid 
@@ -83,18 +83,18 @@ end function
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 private function checkIfTrackingUserIdAllowed(userIdString, versionId)
-
-    prefix = "allow-tracking-user-id-for-app-family-"
-    suffix = versionId
-    s = userIdString
-
-    if MU.isString(s) and  MU.isString(prefix) and MU.isString(suffix) 
-      if prefix + suffix = s 
-        return true
-      end if
+  
+  prefix = "allow-tracking-user-id-for-app-family-"
+  suffix = versionId
+  s = userIdString
+  
+  if MU.isString(s) and MU.isString(prefix) and MU.isString(suffix) 
+    if prefix + suffix = s 
+      return true
     end if
-
-    return false 
+  end if
+  
+  return false 
 end function
 
 private function setGoogleTaskUserId(userId)
@@ -103,7 +103,7 @@ private function setGoogleTaskUserId(userId)
       "uid": Box(userId).Escape()
     }
   else
-     m.task.customSessionParams = invalid
+    m.task.customSessionParams = invalid
   end if
 end function
 
