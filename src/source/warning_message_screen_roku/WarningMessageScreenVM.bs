@@ -52,7 +52,7 @@ public override function load() as boolean
   isShowingWarning = false
   
   if m.originEntry <> invalid and MU.isString(m.conditionPath) and MU.isString(m.conditionValue) 
-    value = MU.getContentField(m.originEntry, m.conditionPath, invalid)
+    value = MU.getContentField(m.originEntry.json, m.conditionPath, invalid)
     
     if MU.isString(value) and lcase(value) = lcase(m.conditionValue)
       m.logInfo("this content has a value that matches the locking condition")
@@ -127,7 +127,7 @@ private function showMessage(entry)
   m.setField("isContentGroupVisible", true)
   m.setField("isShowingLoadingIndicator", false)
   
-  titleText = MU.getContentField(entry, "title", "")
+  titleText = MU.getContentField(entry.json, "title", "")
   
   if titleText = ""
     titleText = "This content cannot be displayed"
@@ -135,8 +135,8 @@ private function showMessage(entry)
   
   m.setField("titleText", titleText)
   
-  m.setField("descriptionText", MU.getContentField(entry, "description", ""))
-  m.setField("optional1Text", MU.getContentField(entry, "extensions.extra_text", ""))
+  m.setField("descriptionText", MU.getContentField(entry.json, "description", ""))
+  m.setField("optional1Text", MU.getContentField(entry.json, "extensions.extra_text", ""))
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

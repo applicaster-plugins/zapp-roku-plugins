@@ -71,7 +71,7 @@ end function
 
 private function isLoginRequired()
   currentItem = MU.getContentField(m.getInstance("currentSelection"), "currentItem")
-  if currentItem <> invalid and MU.getContentField(currentItem, "extensions.requires_authentication", false) = false
+  if currentItem <> invalid and MU.getContentField(currentItem.json, "extensions.requires_authentication", false) = false
     return false
   else
     return true

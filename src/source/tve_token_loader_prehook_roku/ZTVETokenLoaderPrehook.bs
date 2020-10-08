@@ -91,7 +91,7 @@ function isItemMatch(item)
     return true
   end if
   
-  value = MU.getContentField(item, m.matchingPath, invalid)
+  value = MU.getContentField(item.json, m.matchingPath, invalid)
   if not MU.isString(value)
     value = formatJson(value)
   end if

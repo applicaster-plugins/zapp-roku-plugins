@@ -264,14 +264,14 @@ private function getInplayerId(item)
   end if
   
   m.logInfo("extensions", item.extensions)
-  id = MU.getContentField(item, m.pluginInplayerAssetKey)
+  id = MU.getContentField(item.json, m.pluginInplayerAssetKey)
   
   if id = invalid
-    id = MU.getContentField(item, "extensions.inplayer_asset_id")
+    id = MU.getContentField(item.json, "extensions.inplayer_asset_id")
   end if
   
   if id = invalid
-    assetType = MU.getContentField(item, "extensions.inplayer_asset_type")
+    assetType = MU.getContentField(item.json, "extensions.inplayer_asset_type")
     m.logInfo("trying to retrieve inplayer external id with inplayer_asset_type", assetType, "and id", item.id)
     if assetType <> invalid
       result = m.execute("GET", "items/assets/external/" + assetType + "/" + item.id)
