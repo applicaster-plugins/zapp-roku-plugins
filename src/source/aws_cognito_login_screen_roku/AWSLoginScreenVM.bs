@@ -247,15 +247,16 @@ public function isCapturingAnyKeyPress(key, press)
 end function
 
 public function onKeyPressBack() as boolean
-  m.logMethod("onKeyPressBack", m.focusId)
+  isDismissable = m.getTopField("isDismissable")
+  m.logMethod("onKeyPressBack", m.focusId, isDismissable)
   
   if m.focusId = "usernameInput"
-    if not MU.getContentField(m.riversJson, "general.is_flow_blocker", true)
+    if isDismissable = true
       m.dismiss("cancel")
       return true
     else
-      'TODO - exit app?
-      return false
+      m.exitApp(invlaid, true)
+      return true
     end if
   else
     return m.onKeyPressUp()
