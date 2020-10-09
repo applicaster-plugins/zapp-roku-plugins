@@ -41,7 +41,6 @@ public function new(riversJson)
   m.focusId = "usernameInput"
   KeyboardDialogMixin.mixin(m)
   m.processStyles(m.riversJson.styles)
-  
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -181,9 +180,11 @@ private function onRefreshComplete(result)
   
   if m.getInstance("user").isLoggedIn
     m.dismiss("success")
+  else
+    m.setField("isRefreshing", false)
+    m.signalAppLaunchDialog(false)
   end if
   
-  m.setField("isRefreshing", false)
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -219,6 +220,7 @@ public function onLoginComplete(result)
   
   if result <> invalid and result.state = "valid"
     m.logInfo("logged in succesfull")
+    m.signalAppLaunchDialog(true)
     m.dismiss("success")
   else
     m.setField("state", "ready")
@@ -233,6 +235,15 @@ public function onLoginComplete(result)
   
   m.setField("isLoading", false)
   
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ launch support
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+override function sendLaunchBecaon()
+  'we handle this manually
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

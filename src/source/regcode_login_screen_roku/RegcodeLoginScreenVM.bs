@@ -95,6 +95,7 @@ private function onRefreshLoginComplete(result)
     m.dismiss("success")
   else
     m.setField("isContentGroupVisible", true)
+    m.signalAppLaunchDialog(false)
     m.loadCode()
   end if
   
@@ -162,12 +163,24 @@ private function onPollComplete(result)
   
   if result <> invalid and result.state = "valid"
     m.analyticsManager@.trackEvent("Signed In", "page_loaded", { "provider": m.providerId })
+    m.signalAppLaunchDialog(true)
     m.dismiss("success")
   else
     m.togglePollTimer(true)
   end if
   
 end function
+
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ launch support
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+override function sendLaunchBecaon()
+  'we handle this manually
+end function
+
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '++ Key Handling
