@@ -1,429 +1,428 @@
-import "pkg:/source/lib/ZBaseClass.bs"
+
+import "pkg:/source/lib/BaseClass.bs"
 import "pkg:/source/plugin-support/BasePlugin.bs"
 import "pkg:/source/plugin-support/PluginManager.bs"
 import "pkg:/source/lib/country.bs"
 import "pkg:/source/video/analytics/BaseVideoAnalyticsPlugin.bs"
 
-namespace SegmentA
-  class SegmentVideoAnalyticsPlugin extends BaseVideoAnalyticsPlugin
+class SegmentVideoAnalyticsPlugin extends BaseVideoAnalyticsPlugin
 
-    private contentNode = invalid
+  private contentNode = invalid
 
-    public function new(pluginJson)
-      super("SegmentVideoAnalyticsPlugin")
-      m.analyticsManager = m.getInstance("analyticsManager")
-      m.heartbeatInterval = 15
-      constants = m.getInstance("constants")
-      m.deviceInfo = constants.deviceInfo
-      m.videoHeight = m.deviceInfo.videoMode.left(len(m.deviceInfo.videoMode) - 1)
-      m.videoResolution = m.getVideoResolution(m.videoHeight)
-      m.createCountryCodeMap()
-    end function
+  public function new(pluginJson)
+    super("SegmentVideoAnalyticsPlugin")
+    m.analyticsManager = m.getInstance("analyticsManager")
+    m.heartbeatInterval = 15
+    constants = m.getInstance("constants")
+    m.deviceInfo = constants.deviceInfo
+    m.videoHeight = m.deviceInfo.videoMode.left(len(m.deviceInfo.videoMode) - 1)
+    m.videoResolution = m.getVideoResolution(m.videoHeight)
+    m.createCountryCodeMap()
+  end function
 
-    public function createCountryCodeMap()
-      m.countryISOMapping = {
-        "aar": "aa"
-        "abk": "ab"
-        "afr": "af"
-        "aka": "ak"
-        "alb": "sq"
-        "sqi": "sq"
-        "amh": "am"
-        "ara": "ar"
-        "arg": "an"
-        "arm": "hy"
-        "hye": "hy"
-        "asm": "as"
-        "ava": "av"
-        "ave": "ae"
-        "aym": "ay"
-        "aze": "az"
-        "bak": "ba"
-        "bam": "bm"
-        "eus": "eu"
-        "bel": "be"
-        "ben": "bn"
-        "bih": "bh"
-        "bis": "bi"
-        "tib": "bo"
-        "bod": "bo"
-        "bos": "bs"
-        "bre": "br"
-        "bul": "bg"
-        "bur": "my"
-        "mya": "my"
-        "cat": "ca"
-        "cze": "cs"
-        "ces": "cs"
-        "cha": "ch"
-        "che": "ce"
-        "chi": "zh"
-        "zho": "zh"
-        "chu": "cu"
-        "chv": "cv"
-        "cor": "kw"
-        "cos": "co"
-        "cre": "cr"
-        "wel": "cy"
-        "cym": "cy"
-        "cze": "cs"
-        "ces": "cs"
-        "dan": "da"
-        "ger": "de"
-        "deu": "de"
-        "div": "dv"
-        "dut": "nl"
-        "nld": "nl"
-        "dzo": "dz"
-        "gre": "el"
-        "ell": "el"
-        "eng": "en"
-        "epo": "eo"
-        "est": "et"
-        "baq": "eu"
-        "eus": "eu"
-        "ewe": "ee"
-        "fao": "fo"
-        "per": "fa"
-        "fas": "fa"
-        "fij": "fj"
-        "fin": "fi"
-        "fre": "fr"
-        "fra": "fr"
-        "fre": "fr"
-        "fra": "fr"
-        "fry": "fy"
-        "ful": "ff"
-        "geo": "ka"
-        "kat": "ka"
-        "ger": "de"
-        "deu": "de"
-        "gla": "gd"
-        "gle": "ga"
-        "glg": "gl"
-        "glv": "gv"
-        "gre": "el"
-        "ell": "el"
-        "grn": "gn"
-        "guj": "gu"
-        "hat": "ht"
-        "hau": "ha"
-        "heb": "he"
-        "her": "hz"
-        "hin": "hi"
-        "hmo": "ho"
-        "hrv": "hr"
-        "hun": "hu"
-        "arm": "hy"
-        "hye": "hy"
-        "ibo": "ig"
-        "ice": "is"
-        "isl": "is"
-        "ido": "io"
-        "iii": "ii"
-        "iku": "iu"
-        "ile": "ie"
-        "ina": "ia"
-        "ind": "id"
-        "ipk": "ik"
-        "ice": "is"
-        "isl": "is"
-        "ita": "it"
-        "jav": "jv"
-        "jpn": "ja"
-        "kal": "kl"
-        "kan": "kn"
-        "kas": "ks"
-        "geo": "ka"
-        "kat": "ka"
-        "kau": "kr"
-        "kaz": "kk"
-        "khm": "km"
-        "kik": "ki"
-        "kin": "rw"
-        "kir": "ky"
-        "kom": "kv"
-        "kon": "kg"
-        "kor": "ko"
-        "kua": "kj"
-        "kur": "ku"
-        "lao": "lo"
-        "lat": "la"
-        "lav": "lv"
-        "lim": "li"
-        "lin": "ln"
-        "lit": "lt"
-        "ltz": "lb"
-        "lub": "lu"
-        "lug": "lg"
-        "mac": "mk"
-        "mkd": "mk"
-        "mah": "mh"
-        "mal": "ml"
-        "mao": "mi"
-        "mri": "mi"
-        "mar": "mr"
-        "may": "ms"
-        "msa": "ms"
-        "mac": "mk"
-        "mkd": "mk"
-        "mlg": "mg"
-        "mlt": "mt"
-        "mon": "mn"
-        "mao": "mi"
-        "mri": "mi"
-        "may": "ms"
-        "msa": "ms"
-        "bur": "my"
-        "mya": "my"
-        "nau": "na"
-        "nav": "nv"
-        "nbl": "nr"
-        "nde": "nd"
-        "ndo": "ng"
-        "nep": "ne"
-        "dut": "nl"
-        "nld": "nl"
-        "nno": "nn"
-        "nob": "nb"
-        "nor": "no"
-        "nya": "ny"
-        "oci": "oc"
-        "oji": "oj"
-        "ori": "or"
-        "orm": "om"
-        "oss": "os"
-        "pan": "pa"
-        "per": "fa"
-        "fas": "fa"
-        "pli": "pi"
-        "pol": "pl"
-        "por": "pt"
-        "pus": "ps"
-        "que": "qu"
-        "roh": "rm"
-        "rum": "ro"
-        "ron": "ro"
-        "rum": "ro"
-        "ron": "ro"
-        "run": "rn"
-        "rus": "ru"
-        "sag": "sg"
-        "san": "sa"
-        "sin": "si"
-        "slo": "sk"
-        "slk": "sk"
-        "slo": "sk"
-        "slk": "sk"
-        "slv": "sl"
-        "sme": "se"
-        "smo": "sm"
-        "sna": "sn"
-        "snd": "sd"
-        "som": "so"
-        "sot": "st"
-        "spa": "es"
-        "alb": "sq"
-        "sqi": "sq"
-        "srd": "sc"
-        "srp": "sr"
-        "ssw": "ss"
-        "sun": "su"
-        "swa": "sw"
-        "swe": "sv"
-        "tah": "ty"
-        "tam": "ta"
-        "tat": "tt"
-        "tel": "te"
-        "tgk": "tg"
-        "tgl": "tl"
-        "tha": "th"
-        "tib": "bo"
-        "bod": "bo"
-        "tir": "ti"
-        "ton": "to"
-        "tsn": "tn"
-        "tso": "ts"
-        "tuk": "tk"
-        "tur": "tr"
-        "twi": "tw"
-        "uig": "ug"
-        "ukr": "uk"
-        "urd": "ur"
-        "uzb": "uz"
-        "ven": "ve"
-        "vie": "vi"
-        "vol": "vo"
-        "wel": "cy"
-        "cym": "cy"
-        "wln": "wa"
-        "wol": "wo"
-        "xho": "xh"
-        "yid": "yi"
-        "yor": "yo"
-        "zha": "za"
-        "chi": "zh"
-        "zho": "zh"
-        "zul": "zu"
-      }
-    end function
+  public function createCountryCodeMap()
+    m.countryISOMapping = {
+      "aar": "aa"
+      "abk": "ab"
+      "afr": "af"
+      "aka": "ak"
+      "alb": "sq"
+      "sqi": "sq"
+      "amh": "am"
+      "ara": "ar"
+      "arg": "an"
+      "arm": "hy"
+      "hye": "hy"
+      "asm": "as"
+      "ava": "av"
+      "ave": "ae"
+      "aym": "ay"
+      "aze": "az"
+      "bak": "ba"
+      "bam": "bm"
+      "eus": "eu"
+      "bel": "be"
+      "ben": "bn"
+      "bih": "bh"
+      "bis": "bi"
+      "tib": "bo"
+      "bod": "bo"
+      "bos": "bs"
+      "bre": "br"
+      "bul": "bg"
+      "bur": "my"
+      "mya": "my"
+      "cat": "ca"
+      "cze": "cs"
+      "ces": "cs"
+      "cha": "ch"
+      "che": "ce"
+      "chi": "zh"
+      "zho": "zh"
+      "chu": "cu"
+      "chv": "cv"
+      "cor": "kw"
+      "cos": "co"
+      "cre": "cr"
+      "wel": "cy"
+      "cym": "cy"
+      "cze": "cs"
+      "ces": "cs"
+      "dan": "da"
+      "ger": "de"
+      "deu": "de"
+      "div": "dv"
+      "dut": "nl"
+      "nld": "nl"
+      "dzo": "dz"
+      "gre": "el"
+      "ell": "el"
+      "eng": "en"
+      "epo": "eo"
+      "est": "et"
+      "baq": "eu"
+      "eus": "eu"
+      "ewe": "ee"
+      "fao": "fo"
+      "per": "fa"
+      "fas": "fa"
+      "fij": "fj"
+      "fin": "fi"
+      "fre": "fr"
+      "fra": "fr"
+      "fre": "fr"
+      "fra": "fr"
+      "fry": "fy"
+      "ful": "ff"
+      "geo": "ka"
+      "kat": "ka"
+      "ger": "de"
+      "deu": "de"
+      "gla": "gd"
+      "gle": "ga"
+      "glg": "gl"
+      "glv": "gv"
+      "gre": "el"
+      "ell": "el"
+      "grn": "gn"
+      "guj": "gu"
+      "hat": "ht"
+      "hau": "ha"
+      "heb": "he"
+      "her": "hz"
+      "hin": "hi"
+      "hmo": "ho"
+      "hrv": "hr"
+      "hun": "hu"
+      "arm": "hy"
+      "hye": "hy"
+      "ibo": "ig"
+      "ice": "is"
+      "isl": "is"
+      "ido": "io"
+      "iii": "ii"
+      "iku": "iu"
+      "ile": "ie"
+      "ina": "ia"
+      "ind": "id"
+      "ipk": "ik"
+      "ice": "is"
+      "isl": "is"
+      "ita": "it"
+      "jav": "jv"
+      "jpn": "ja"
+      "kal": "kl"
+      "kan": "kn"
+      "kas": "ks"
+      "geo": "ka"
+      "kat": "ka"
+      "kau": "kr"
+      "kaz": "kk"
+      "khm": "km"
+      "kik": "ki"
+      "kin": "rw"
+      "kir": "ky"
+      "kom": "kv"
+      "kon": "kg"
+      "kor": "ko"
+      "kua": "kj"
+      "kur": "ku"
+      "lao": "lo"
+      "lat": "la"
+      "lav": "lv"
+      "lim": "li"
+      "lin": "ln"
+      "lit": "lt"
+      "ltz": "lb"
+      "lub": "lu"
+      "lug": "lg"
+      "mac": "mk"
+      "mkd": "mk"
+      "mah": "mh"
+      "mal": "ml"
+      "mao": "mi"
+      "mri": "mi"
+      "mar": "mr"
+      "may": "ms"
+      "msa": "ms"
+      "mac": "mk"
+      "mkd": "mk"
+      "mlg": "mg"
+      "mlt": "mt"
+      "mon": "mn"
+      "mao": "mi"
+      "mri": "mi"
+      "may": "ms"
+      "msa": "ms"
+      "bur": "my"
+      "mya": "my"
+      "nau": "na"
+      "nav": "nv"
+      "nbl": "nr"
+      "nde": "nd"
+      "ndo": "ng"
+      "nep": "ne"
+      "dut": "nl"
+      "nld": "nl"
+      "nno": "nn"
+      "nob": "nb"
+      "nor": "no"
+      "nya": "ny"
+      "oci": "oc"
+      "oji": "oj"
+      "ori": "or"
+      "orm": "om"
+      "oss": "os"
+      "pan": "pa"
+      "per": "fa"
+      "fas": "fa"
+      "pli": "pi"
+      "pol": "pl"
+      "por": "pt"
+      "pus": "ps"
+      "que": "qu"
+      "roh": "rm"
+      "rum": "ro"
+      "ron": "ro"
+      "rum": "ro"
+      "ron": "ro"
+      "run": "rn"
+      "rus": "ru"
+      "sag": "sg"
+      "san": "sa"
+      "sin": "si"
+      "slo": "sk"
+      "slk": "sk"
+      "slo": "sk"
+      "slk": "sk"
+      "slv": "sl"
+      "sme": "se"
+      "smo": "sm"
+      "sna": "sn"
+      "snd": "sd"
+      "som": "so"
+      "sot": "st"
+      "spa": "es"
+      "alb": "sq"
+      "sqi": "sq"
+      "srd": "sc"
+      "srp": "sr"
+      "ssw": "ss"
+      "sun": "su"
+      "swa": "sw"
+      "swe": "sv"
+      "tah": "ty"
+      "tam": "ta"
+      "tat": "tt"
+      "tel": "te"
+      "tgk": "tg"
+      "tgl": "tl"
+      "tha": "th"
+      "tib": "bo"
+      "bod": "bo"
+      "tir": "ti"
+      "ton": "to"
+      "tsn": "tn"
+      "tso": "ts"
+      "tuk": "tk"
+      "tur": "tr"
+      "twi": "tw"
+      "uig": "ug"
+      "ukr": "uk"
+      "urd": "ur"
+      "uzb": "uz"
+      "ven": "ve"
+      "vie": "vi"
+      "vol": "vo"
+      "wel": "cy"
+      "cym": "cy"
+      "wln": "wa"
+      "wol": "wo"
+      "xho": "xh"
+      "yid": "yi"
+      "yor": "yo"
+      "zha": "za"
+      "chi": "zh"
+      "zho": "zh"
+      "zul": "zu"
+    }
+  end function
 
-    public function getVideoResolution(height)
-      if height = "1080"
-        return "1920x1080"
-      else if height = "2160"
-        return "3840x2160"
-      else if height = "720"
-        return "1280x720"
-      else if height = "480"
-        return "640x480"
-      else
-        return "unknown"
+  public function getVideoResolution(height)
+    if height = "1080"
+      return "1920x1080"
+    else if height = "2160"
+      return "3840x2160"
+    else if height = "720"
+      return "1280x720"
+    else if height = "480"
+      return "640x480"
+    else
+      return "unknown"
+    end if
+  end function
+
+  public override function videoStart(videoNode, contentNode)
+    super.videoStart(videoNode, contentNode)
+    m.contentNode = contentNode
+
+    m.postSegmentEvent("Video Content Started")
+  end function
+
+  public override function videoEnd()
+    super.videoEnd()
+    m.postSegmentEvent("Video Completed")
+  end function
+
+  public override function videoPause()
+    super.videoPause()
+    m.postSegmentEvent("Video Paused")
+  end function
+
+  public override function videoResume()
+    super.videoResume()
+    m.postSegmentEvent("Video Playback Resume")
+  end function
+
+  public override function videoContentStarted()
+    m.postSegmentEvent("Video Content Started")
+  end function
+
+  public override function videoSeek(position)
+    m.postSegmentEvent("Player Seek")
+  end function
+
+  public override function videoHeartbeat()
+    super.videoHeartbeat()
+
+    if m.isInAdBreak
+      eventName = "Video Ad Playing (Heartbeat)"
+    else 
+      eventName = "Video Heartbeat"
+    end if
+
+    m.postSegmentEvent(eventName)
+  end function
+
+  public override function adBreakStart()
+    super.adBreakStart()
+    m.postSegmentEvent("Video Ad Play")
+  end function
+
+  public override function adBreakEnd()
+    super.adBreakEnd()
+    m.postSegmentEvent("Video Ad Completed")
+  end function
+
+  public override function onSubtitleChange()
+    super.onSubtitleChange()
+    m.postSegmentEvent("Subtitle Languge Changed")
+  end function
+
+  public override function onAudioChange()
+    super.onAudioChange()
+    m.postSegmentEvent("Audio Language Selected")
+  end function
+
+  private function getProperties(contentNode, action = invalid)
+    'not available
+    ' release_date_local_utc: "todo"
+    ' event: "todo"
+    ' months_since_release: "todo"
+    ' days_since_release: "todo"
+    ' page_hostname: "todo"
+    ' page_type: "todo"
+    ' language: "todo"
+    ' nation: "todo"
+    ' video_weeks_since_release: "todo"
+    ' watch_time: "todo"
+
+
+    if contentNode.LIVE = true
+      videoType = "Live"
+    else
+      videoType = "VOD"
+    end if
+
+    if m.videoNode.duration <> 0
+      progress = m.videoNode.position / m.videoNode.duration
+      progress = int(progress * 100)
+    else
+      progress = 0
+    end if
+
+    properties = {
+      audio_language: m.getAudioLanguage()
+      content_title: contentNode.title 
+      height: str(m.videoNode.height).trim()
+      resolution: m.videoResolution
+      subtitle_language: m.getSubtitleLanguage()
+      video_length: str(m.videoNode.duration).trim()
+      video_progress: str(progress).trim() + "%"
+      video_type: videoType
+      width: str(m.videoNode.width).trim()
+      cms_content_id: contentNode.id
+    }
+
+    if m.videoNode.streamInfo <> invalid
+      properties.bitrate = m.videoNode.streamInfo.streamBitrate
+    end if
+
+    if action <> invalid
+      properties.action = action
+    end if
+
+    return properties
+  end function
+
+  private function getAudioLanguage()
+    tracks = m.videoNode.availableAudioTracks
+    for each track in tracks
+      ' m.logInfo("track.Language", track.Language, " currentTrack ", m.videoNode.currentAudioTrack, " LANG ", track.Language)
+      if track.Track = m.videoNode.currentAudioTrack
+        return m.countryISOMapping[track.Language]
       end if
-    end function
+    end for
 
-    public override function videoStart(videoNode, contentNode)
-      super.videoStart(videoNode, contentNode)
-      m.contentNode = contentNode
+    return "en"
+  end function
 
-      m.postSegmentEvent("Video Content Started")
-    end function
-
-    public override function videoEnd()
-      super.videoEnd()
-      m.postSegmentEvent("Video Completed")
-    end function
-
-    public override function videoPause()
-      super.videoPause()
-      m.postSegmentEvent("Video Paused")
-    end function
-
-    public override function videoResume()
-      super.videoResume()
-      m.postSegmentEvent("Video Playback Resume")
-    end function
-
-    public override function videoContentStarted()
-      m.postSegmentEvent("Video Content Started")
-    end function
-
-    public override function videoSeek(position)
-      m.postSegmentEvent("Player Seek")
-    end function
-
-    public override function videoHeartbeat()
-      super.videoHeartbeat()
-
-      if m.isInAdBreak
-        eventName = "Video Ad Playing (Heartbeat)"
-      else 
-        eventName = "Video Heartbeat"
+  private function getSubtitleLanguage()
+    tracks = m.videoNode.availableSubtitleTracks
+    for each track in tracks
+      ' m.logInfo("track.TrackName", track.TrackName, " currentTrack ", m.videoNode.currentSubtitleTrack, " LANG ", track.Language)
+      if track.TrackName = m.videoNode.currentSubtitleTrack
+        return m.countryISOMapping[track.Language]
       end if
+    end for
 
-      m.postSegmentEvent(eventName)
-    end function
+    return "EN"
+  end function
 
-    public override function adBreakStart()
-      super.adBreakStart()
-      m.postSegmentEvent("Video Ad Play")
-    end function
+  public function postSegmentEvent(eventName)
+    properties = m.getProperties(m.contentNode)
+    properties.name = eventName
+    m.analyticsManager@.track(eventName, properties)
+  end function
 
-    public override function adBreakEnd()
-      super.adBreakEnd()
-      m.postSegmentEvent("Video Ad Completed")
-    end function
-
-    public override function onSubtitleChange()
-      super.onSubtitleChange()
-      m.postSegmentEvent("Subtitle Languge Changed")
-    end function
-
-    public override function onAudioChange()
-      super.onAudioChange()
-      m.postSegmentEvent("Audio Language Selected")
-    end function
-
-    private function getProperties(contentNode, action = invalid)
-      'not available
-      ' release_date_local_utc: "todo"
-      ' event: "todo"
-      ' months_since_release: "todo"
-      ' days_since_release: "todo"
-      ' page_hostname: "todo"
-      ' page_type: "todo"
-      ' language: "todo"
-      ' nation: "todo"
-      ' video_weeks_since_release: "todo"
-      ' watch_time: "todo"
-
-
-      if contentNode.LIVE = true
-        videoType = "Live"
-      else
-        videoType = "VOD"
-      end if
-
-      if m.videoNode.duration <> 0
-        progress = m.videoNode.position / m.videoNode.duration
-        progress = int(progress * 100)
-      else
-        progress = 0
-      end if
-
-      properties = {
-        audio_language: m.getAudioLanguage()
-        content_title: contentNode.title 
-        height: str(m.videoNode.height).trim()
-        resolution: m.videoResolution
-        subtitle_language: m.getSubtitleLanguage()
-        video_length: str(m.videoNode.duration).trim()
-        video_progress: str(progress).trim() + "%"
-        video_type: videoType
-        width: str(m.videoNode.width).trim()
-        cms_content_id: contentNode.id
-      }
-
-      if m.videoNode.streamInfo <> invalid
-        properties.bitrate = m.videoNode.streamInfo.streamBitrate
-      end if
-
-      if action <> invalid
-        properties.action = action
-      end if
-
-      return properties
-    end function
-
-    private function getAudioLanguage()
-      tracks = m.videoNode.availableAudioTracks
-      for each track in tracks
-        ' m.logInfo("track.Language", track.Language, " currentTrack ", m.videoNode.currentAudioTrack, " LANG ", track.Language)
-        if track.Track = m.videoNode.currentAudioTrack
-          return m.countryISOMapping[track.Language]
-        end if
-      end for
-
-      return "en"
-    end function
-
-    private function getSubtitleLanguage()
-      tracks = m.videoNode.availableSubtitleTracks
-      for each track in tracks
-        ' m.logInfo("track.TrackName", track.TrackName, " currentTrack ", m.videoNode.currentSubtitleTrack, " LANG ", track.Language)
-        if track.TrackName = m.videoNode.currentSubtitleTrack
-          return m.countryISOMapping[track.Language]
-        end if
-      end for
-
-      return "EN"
-    end function
-
-    public function postSegmentEvent(eventName)
-      properties = m.getProperties(m.contentNode)
-      properties.name = eventName
-      m.analyticsManager@.track(eventName, properties)
-    end function
-
-  end class
-end namespace
+end class

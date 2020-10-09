@@ -1,136 +1,135 @@
-import "pkg:/source/UIBuilder/view/ZUIBScreenVM.bs"
+
+import "pkg:/source/UIBuilder/view/ScreenVM.bs"
 import "pkg:/source/lib/ViewUtils.bs"
 
-namespace LogoutSVM
-  class LogoutScreenVM extends ZUIBScreenVM
+class LogoutScreenVM extends ScreenVM
 
-    public isButtonVisible = true
-    public isShowingLoadingIndicator = false
+  public isButtonVisible = true
+  public isShowingLoadingIndicator = false
 
-    'styles
-    public titleStyle = invalid
-    public titleText = "Are you sure you want to sign out?"
-    public buttonText = "Sign out"
-    public buttonStyle = invalid
-    public backgroundColor = "#000000ff"
-    public textPosition = [0, 310]
-    public buttonPosition = [0, 310]
+  'styles
+  public titleStyle = invalid
+  public titleText = "Are you sure you want to sign out?"
+  public buttonText = "Sign out"
+  public buttonStyle = invalid
+  public backgroundColor = "#000000ff"
+  public textPosition = [0, 310]
+  public buttonPosition = [0, 310]
 
-    private isLoggedOut = false
-    private signedOutButtonText = ""
-    private signedOutTitle = ""
-    private providerId = invalid
+  private isLoggedOut = false
+  private signedOutButtonText = ""
+  private signedOutTitle = ""
+  private providerId = invalid
 
-    public function new(riversJson)
-      super(riversJson, "LogoutScreenVM")
+  public function new(riversJson)
+    super(riversJson, "LogoutScreenVM")
 
-      m.focusId = "button"
-      m.processStyles(m.riversJson.styles)
+    m.focusId = "button"
+    m.processStyles(m.riversJson.styles)
 
-    end function
+  end function
 
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '++ Overridden
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Overridden
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    public override function createContent()
-      m.logInfo("createContent is overridden in this screen")
-    end function
+  public override function createContent()
+    m.logInfo("createContent is overridden in this screen")
+  end function
 
-    public override function load() as boolean
-      return true
-    end function
+  public override function load() as boolean
+    return true
+  end function
 
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '++ styles
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ styles
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    function processStyles(styles)
-      m.logInfo("converting rivers json styles into a format our UI controls can consume")
+  function processStyles(styles)
+    m.logInfo("converting rivers json styles into a format our UI controls can consume")
 
-      m.titleStyle = ViewUtils.makeUIBTextStyle(styles, "title")
-      m.titleText = m.titleStyle.text
-      m.backgroundColor = ViewUtils.transposeUIBColor(styles.background_color)
+    m.titleStyle = ViewUtils.makeUIBTextStyle(styles, "title")
+    m.titleText = m.titleStyle.text
+    m.backgroundColor = ViewUtils.transposeUIBColor(styles.background_color)
 
-      m.buttonStyle = ViewUtils.makeUIBButtonStyle(styles, "logout_button", "custom")
-      m.buttonStyle.normal.delete("text")
-      m.textPosition = ViewUtils.makeUIBPosition(styles, "text", 0, 310)
-      m.buttonPosition = ViewUtils.makeUIBPosition(styles, "button", 400, 600)
-      m.textWidth = ViewUtils.getUIBInt(styles, "text_w", 1920)
-      m.signedOutButtonText = styles.signed_out_button_text
-      m.signedOutTitle = styles.signed_out_text
-      m.providerId = MU.getContentField(styles, "provider_id", invalid)
-    end function
+    m.buttonStyle = ViewUtils.makeUIBButtonStyle(styles, "logout_button", "custom")
+    m.buttonStyle.normal.delete("text")
+    m.textPosition = ViewUtils.makeUIBPosition(styles, "text", 0, 310)
+    m.buttonPosition = ViewUtils.makeUIBPosition(styles, "button", 400, 600)
+    m.textWidth = ViewUtils.getUIBInt(styles, "text_w", 1920)
+    m.signedOutButtonText = styles.signed_out_button_text
+    m.signedOutTitle = styles.signed_out_text
+    m.providerId = mc.getContentField(styles, "provider_id", invalid)
+  end function
 
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '++ callbacks
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ callbacks
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    public function onLogoutButtonSelected(value)
-      m.logMethod("onLogoutButtonSelected")
-      if m.isLoggedOut
-        m.restartApp()
-      else
-        m.logout()
-      end if
-    end function
+  public function onLogoutButtonSelected(value)
+    m.logMethod("onLogoutButtonSelected")
+    if m.isLoggedOut
+      m.restartApp()
+    else
+      m.logout()
+    end if
+  end function
 
-    function logout()
-      m.logMethod("logout")
+  function logout()
+    m.logMethod("logout")
 
-      if m.providerId = invalid
-        defaultId = m.getSessionStoreValue("all_zapp_pipes_providers", "default_auth_plugin_id")
-      else
-        defaultId = m.providerId
-      end if
+    if m.providerId = invalid
+      defaultId = m.getSessionStoreValue("all_zapp_pipes_providers", "default_auth_plugin_id")
+    else
+      defaultId = m.providerId
+    end if
 
-      analyticsManager = m.getInstance("analyticsManager")
-      analyticsManager@.trackEvent("Signed Out", "page_loaded", { "provider": defaultId })
+    analyticsManager = m.getInstance("analyticsManager")
+    analyticsManager@.trackEvent("Signed Out", "page_loaded", { "provider": defaultId })
 
-      if m.providerId = invalid or m.providerId.trim() = ""
-        m.logInfo("logging out all providers")
-        m.authTask = m.createAuthTask("execLogOutAll", invalid, "onLogoutComplete")
-      else
-        m.logInfo("logging out with specific provider", m.providerId)
-        m.authTask = m.createAuthTask("execLogOut", m.providerId, "onLogoutComplete")
-      end if
+    if m.providerId = invalid or m.providerId.trim() = ""
+      m.logInfo("logging out all providers")
+      m.authTask = m.createAuthTask("execLogOutAll", invalid, "onLogoutComplete")
+    else
+      m.logInfo("logging out with specific provider", m.providerId)
+      m.authTask = m.createAuthTask("execLogOut", m.providerId, "onLogoutComplete")
+    end if
 
-      m.isLoggedOut = true
-      m.setField("isShowingLoadingIndicator", true)
-      m.setField("isButtonVisible", false) 
-    end function
+    m.isLoggedOut = true
+    m.setField("isShowingLoadingIndicator", true)
+    m.setField("isButtonVisible", false) 
+  end function
 
-    function onLogoutComplete(result)
-      m.logMethod("onLogoutComplete")
-      m.setField("isShowingLoadingIndicator", false)
-      m.setField("isButtonVisible", true)
-      m.setField("buttonText", m.signedOutButtonText)
-      m.setField("titleText", m.signedOutTitle)
-    end function
+  function onLogoutComplete(result)
+    m.logMethod("onLogoutComplete")
+    m.setField("isShowingLoadingIndicator", false)
+    m.setField("isButtonVisible", true)
+    m.setField("buttonText", m.signedOutButtonText)
+    m.setField("titleText", m.signedOutTitle)
+  end function
 
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '++ Key Handling
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Key Handling
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    public function isCapturingAnyKeyPress(key, press)
-      'do not anyone escape this screen!
-      return true
-    end function
+  public function isCapturingAnyKeyPress(key, press)
+    'do not anyone escape this screen!
+    return true
+  end function
 
-    public function onKeyPressBack() as boolean
+  public function onKeyPressBack() as boolean
 
-      if not m.isLoggedOut
-        m.pop()
-      else
-        m.logInfo("cannot go back when logout is in process")
-      end if
+    if not m.isLoggedOut
+      m.pop()
+    else
+      m.logInfo("cannot go back when logout is in process")
+    end if
 
-      return true
-    end function
+    return true
+  end function
 
-    public override function onKeyPressUp() as boolean
-      return true
-    end function
+  public override function onKeyPressUp() as boolean
+    return true
+  end function
 
-  end class
-end namespace
+end class

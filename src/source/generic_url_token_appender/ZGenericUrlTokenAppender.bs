@@ -1,56 +1,54 @@
+
 import "pkg:/source/plugin-support/PluginManager.bs"
-import "pkg:/source/lib/ZBaseClass.bs"
+import "pkg:/source/lib/BaseClass.bs"
 import "pkg:/source/maestro/lib/Utils.bs"
 
-namespace Applicaster
+' /**
+'  * @module ZGenericUrlTokenAppender
+'  * @description appends the spcified token to the url
+'  */
+class ZGenericUrlTokenAppender extends zc.BaseClass
 
-  ' /**
-  '  * @module ZGenericUrlTokenAppender
-  '  * @description appends the spcified token to the url
-  '  */
-  class ZGenericUrlTokenAppender extends ZBaseClass
+  private providerId = ""
+  private tokenKey = ""
 
-    private providerId = ""
-    private tokenKey = ""
+  public function new()
+    m.super("ZGenericUrlTokenAppender")
+    m.plugins = m.getClassInstance("PluginManager")
 
-    public function new()
-      m.super("ZGenericUrlTokenAppender")
-      m.plugins = m.getClassInstance("PluginManager")
+    plugin = m.plugins.getPluginById("generic_url_token_appender")
 
-      plugin = m.plugins.getPluginById("generic_url_token_appender")
+    if plugin.isValid
+      m.providerId = plugin.getStringValue("provider_id", "all_zapp_pipes_providers")
+      m.tokenKey = lcase(plugin.getStringValue("token_key", "token"))
+    else
+      m.logError("There was no plugin config!")
+    end if
 
-      if plugin.isValid
-        m.providerId = plugin.getStringValue("provider_id", "all_zapp_pipes_providers")
-        m.tokenKey = lcase(plugin.getStringValue("token_key", "token"))
-      else
-        m.logError("There was no plugin config!")
-      end if
+    m.isValid = m.providerId <> "" and m.tokenKey <> ""
 
-      m.isValid = m.providerId <> "" and m.tokenKey <> ""
+  end function
 
-    end function
+  public function execute()
+    currentSelection = m.getInstance("currentSelection")
 
-    public function execute()
-      currentSelection = m.getInstance("currentSelection")
+    url = mc.getContentField(currentSelection, "currentItem.url", "")
+    if url.trim() = ""
+      m.logError("there is no current item, or no url set")
+      return "error"
+    end if
 
-      url = MU.getContentField(currentSelection, "currentItem.url", "")
-      if url.trim() = ""
-        m.logError("there is no current item, or no url set")
-        return "error"
-      end if
+    item = currentSelection.currentItem
+    token = m.getSessionStoreValue(m.providerId, "token")
 
-      item = currentSelection.currentItem
-      token = m.getSessionStoreValue(m.providerId, "token")
+    if item.url.instr("?") = -1
+      sep = "?"
+    else
+      sep = "&"
+    end if
 
-      if item.url.instr("?") = -1
-        sep = "?"
-      else
-        sep = "&"
-      end if
+    item.url = item.url + sep + m.tokenKey + "=" + token
+    return "success"
+  end function
 
-      item.url = item.url + sep + m.tokenKey + "=" + token
-      return "success"
-    end function
-
-  end class
-end namespace
+end class

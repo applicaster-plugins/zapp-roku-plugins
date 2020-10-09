@@ -43,7 +43,7 @@ namespace WMSVMT
   function load_matching(entry, path, condition)
     m.vm.conditionPath = path
     m.vm.conditionValue = condition
-    m.expectOnce(m.vm, "load_ZUIBContentVM")
+    m.expectOnce(m.vm, "load_ComponentVM")
     m.expectNone(m.vm, "dismiss")
     m.vm.originEntry = entry
 

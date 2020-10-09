@@ -39,7 +39,5 @@ end function
 
 function createVM()
   vm = new AWSLoginScreenVM(m.top.riversJson)
-  applyStyleJsonToScreen()
-
   return vm
 end function

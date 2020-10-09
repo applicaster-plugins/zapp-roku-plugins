@@ -1,207 +1,205 @@
+
 import "pkg:/source/plugin-support/PluginManager.bs"
-import "pkg:/source/lib/ZBaseClass.bs"
+import "pkg:/source/lib/BaseClass.bs"
 import "pkg:/source/maestro/lib/Utils.bs"
 import "pkg:/source/lib/request.bs" 
 import "pkg:/source/lib/uri.bs" 
 
-namespace Applicaster
+' /**
+'  * @module ZTVETokenLoaderPrehook
+'  * @description retrieves the specified tokens for TVE account. Requires that Adobe Primetime auth plugin is used, and is logged in via to this prehook running.
+'  */
+class ZTVETokenLoaderPrehook extends zc.BaseClass
 
-  ' /**
-  '  * @module ZTVETokenLoaderPrehook
-  '  * @description retrieves the specified tokens for TVE account. Requires that Adobe Primetime auth plugin is used, and is logged in via to this prehook running.
-  '  */
-  class ZTVETokenLoaderPrehook extends ZBaseClass
+  private isValid = false
+  private matchingPath = ""
+  private matchingValue = ""
+  private isLoadingShortToken = false
+  private isUsingResourceXml = false
+  private tveConfig = invalid
 
-    private isValid = false
-    private matchingPath = ""
-    private matchingValue = ""
-    private isLoadingShortToken = false
-    private isUsingResourceXml = false
-    private tveConfig = invalid
+  private request = invalid
+  private uri = invalid
 
-    private request = invalid
-    private uri = invalid
+  public function new()
+    m.super("ZTVETokenLoaderPrehook")
+    m.plugins = m.getClassInstance("PluginManager")
+    m.request = m.getClassInstance("RequestModule")
+    m.uri = m.getClassInstance("UriModule")
 
-    public function new()
-      m.super("ZTVETokenLoaderPrehook")
-      m.plugins = m.getClassInstance("PluginManager")
-      m.request = m.getClassInstance("RequestModule")
-      m.uri = m.getClassInstance("UriModule")
+    plugin = m.plugins.getPluginById("tve_token_loader_prehook_roku")
+    m.tveConfig = m.getTVEConfig()
+    m.isValid = plugin.isValid and m.tveConfig <> invalid
 
-      plugin = m.plugins.getPluginById("tve_token_loader_prehook_roku")
-      m.tveConfig = m.getTVEConfig()
-      m.isValid = plugin.isValid and m.tveConfig <> invalid
+    m.matchingPath = plugin.getStringValue("matching_path", "")
+    m.matchingValue = plugin.getStringValue("matching_value", "")
+    m.isLoadingShortToken = plugin.getBoolValue("request_short_media_token")
+    m.isUsingResourceXml = plugin.getBoolValue("use_rss_format_resource_id")
 
-      m.matchingPath = plugin.getStringValue("matching_path", "")
-      m.matchingValue = plugin.getStringValue("matching_value", "")
-      m.isLoadingShortToken = plugin.getBoolValue("request_short_media_token")
-      m.isUsingResourceXml = plugin.getBoolValue("use_rss_format_resource_id")
+  end function
 
-    end function
-
-    private function getTVEConfig()
-      plugin = m.plugins.getPluginById("AdobeAccessEnabler")
-      if plugin <> invalid
-        constants = m.getInstance("constants")
-        return {
-          requestorID: plugin.getStringValue("requestorID", "")
-          secret: plugin.getStringValue("secret", "")
-          publicKey: plugin.getStringValue("publicKey", "")
-          baseUrl: plugin.getStringValue("base_url", "https://api.auth.adobe.com")
-          deviceId: constants.applicasterDeviceId
-        }
-      else
-        m.logError("there was no plugin found for AdobeAccessEnabler. It is required that you use AdobeAccessEnabler auth (tve) for this plugin to work")
-        return invalid
-      end if
-    end function
-
-
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '++ lifecycle
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    public function execute()
-      if not m.isValid
-        m.logError("plugin configuration is not valid. Is Adobe Primetime auth plugin present and configured?")
-        return "error"
-      end if
-
-      item = MU.getContentField(m.getInstance("currentSelection"), "currentItem")
-
-      if item = invalid
-        m.logError("no item - tve token loader prehook requires currentSelection.currentItem is populated")
-        return "error"
-      end if
-
-      if not m.isItemMatch(item)
-        m.logError("item does not match")
-        return "success"
-      end if
-
-      if m.loadTokens(item)
-        return "success"
-      else
-        return "error"
-      end if
-    end function
-
-    function isItemMatch(item)
-      if m.matchingPath = "all"
-        return true
-      end if
-
-      value = MU.getContentField(item.json, m.matchingPath, invalid)
-      if not MU.isString(value)
-        value = formatJson(value)
-      end if
-      return value = m.matchingValue
-    end function
-
-    private function loadTokens(item)
-      token = m.getSessionStoreValue("AdobeAccessEnabler", "token")
-
-      m.setSessionStoreValue("tve", "short-token", invalid)
-
-      isError = false
-      if token <> invalid
-        if m.isLoadingShortToken
-          isError = not m.loadShortToken(item) or isError
-        end if
-      else
-        m.logInfo("there is no token for AdobeAccessEnabler - not logged in")
-      end if
-
-      return not isError
-    end function
-
-    private function loadShortToken(item)
-      m.logMethod("loadShortToken")
-
-      requestPath = "/api/v1/tokens/media"
-
-      headers = {
-        "Accept": "application/json"
-        "Authorization": m.signRequest("GET", requestPath)
+  private function getTVEConfig()
+    plugin = m.plugins.getPluginById("AdobeAccessEnabler")
+    if plugin <> invalid
+      constants = m.getInstance("constants")
+      return {
+        requestorID: plugin.getStringValue("requestorID", "")
+        secret: plugin.getStringValue("secret", "")
+        publicKey: plugin.getStringValue("publicKey", "")
+        baseUrl: plugin.getStringValue("base_url", "https://api.auth.adobe.com")
+        deviceId: constants.applicasterDeviceId
       }
-      params = {
-        ' "deviceId": m.tveConfig.deviceId
-        "requestor": m.tveConfig.requestorID
-        "deviceId": m.tveConfig.deviceId
-        "resource": m.getResourceText(item)
-      }
+    else
+      m.logError("there was no plugin found for AdobeAccessEnabler. It is required that you use AdobeAccessEnabler auth (tve) for this plugin to work")
+      return invalid
+    end if
+  end function
 
-      url = m.tveConfig.baseUrl + requestPath + "?" + m.uri.encodeParams(params)
-      result = m.request.getJsonSync(url, headers)
-      m.logInfo("result is:", result)
-      shortToken = invalid
 
-      if result <> invalid and result.serializedToken <> invalid
-        shortToken = m.decodeBase64(result.serializedToken)
-      else
-        m.logError("invalid result")
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ lifecycle
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public function execute()
+    if not m.isValid
+      m.logError("plugin configuration is not valid. Is Adobe Primetime auth plugin present and configured?")
+      return "error"
+    end if
+
+    item = mc.getContentField(m.getInstance("currentSelection"), "currentItem")
+
+    if item = invalid
+      m.logError("no item - tve token loader prehook requires currentSelection.currentItem is populated")
+      return "error"
+    end if
+
+    if not m.isItemMatch(item)
+      m.logError("item does not match")
+      return "success"
+    end if
+
+    if m.loadTokens(item)
+      return "success"
+    else
+      return "error"
+    end if
+  end function
+
+  function isItemMatch(item)
+    if m.matchingPath = "all"
+      return true
+    end if
+
+    value = mc.getContentField(item.json, m.matchingPath, invalid)
+    if not mc.isString(value)
+      value = formatJson(value)
+    end if
+    return value = m.matchingValue
+  end function
+
+  private function loadTokens(item)
+    token = m.getSessionStoreValue("AdobeAccessEnabler", "token")
+
+    m.setSessionStoreValue("tve", "short-token", invalid)
+
+    isError = false
+    if token <> invalid
+      if m.isLoadingShortToken
+        isError = not m.loadShortToken(item) or isError
       end if
+    else
+      m.logInfo("there is no token for AdobeAccessEnabler - not logged in")
+    end if
 
-      m.logInfo("setting short-token to", shortToken)
-      m.setSessionStoreValue("tve", "short-token", shortToken)
+    return not isError
+  end function
 
-      return shortToken <> invalid
-    end function
+  private function loadShortToken(item)
+    m.logMethod("loadShortToken")
 
-    private function decodeBase64(encodedString)
-      ba = CreateObject("roByteArray")
-      ba.FromBase64String(encodedString)
-      return ba.ToAsciiString()
-    end function
+    requestPath = "/api/v1/tokens/media"
 
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '++ private impl
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    headers = {
+      "Accept": "application/json"
+      "Authorization": m.signRequest("GET", requestPath)
+    }
+    params = {
+      ' "deviceId": m.tveConfig.deviceId
+      "requestor": m.tveConfig.requestorID
+      "deviceId": m.tveConfig.deviceId
+      "resource": m.getResourceText(item)
+    }
 
-    private function signRequest(method, path, nonce = invalid, timestamp = 0)
-      di = CreateObject("roDeviceInfo")
-      if nonce = invalid
-        nonce = di.GetRandomUUID()
-      end if
+    url = m.tveConfig.baseUrl + requestPath + "?" + m.uri.encodeParams(params)
+    result = m.request.getJsonSync(url, headers)
+    m.logInfo("result is:", result)
+    shortToken = invalid
 
-      if timestamp = 0
-        timestamp = CreateObject("roDateTime").AsSeconds()
-      end if
-      timeString = stri(timestamp, 10) + "000"
-      stringToSign = method
-      stringToSign += " requestor_id=" + m.tveConfig.requestorID
-      stringToSign += ", nonce=" + nonce
-      stringToSign += ", signature_method=HMAC-SHA1"
-      stringToSign += ", request_time=" + timeString
-      stringToSign += ", request_uri=" + path
-      byteArray = CreateObject("roByteArray")
-      byteArray.FromAsciiString(stringToSign)
-      digest = CreateObject("roHMAC")
-      privateKey = CreateObject("roByteArray")
-      privateKey.fromAsciiString(m.tveConfig.secret)
-      if digest.setup("sha1", privateKey) <> 0
-        m.logError("signRequest: failed to set up HMAC digest")
-        return invalid
-      end if
-      signature = digest.process(byteArray)
-      signatureBase64 = signature.toBase64String()
-      header = stringToSign
-      header += ", public_key=" + m.tveConfig.publicKey
-      header += ", signature=" + signatureBase64
-      return header
-    end function
+    if result <> invalid and result.serializedToken <> invalid
+      shortToken = m.decodeBase64(result.serializedToken)
+    else
+      m.logError("invalid result")
+    end if
 
-    private function getResourceText(item)
-      if m.isUsingResourceXml
-        template = ReadAsciiFile("pkg:/source/AdobeAccessEnabler/adobeAuthorizationTemplate.xml")
-        template = template.replace("{REQUESTOR_ID}", m.tveConfig.requestorID.escape())
-        template = template.replace("{ASSET_ID}", item.id.escape())
-        template = template.replace("{ASSET_NAME}", item.title.escape())
-        return template
-      else
-        return m.tveConfig.requestorId
-      end if
-    end function
+    m.logInfo("setting short-token to", shortToken)
+    m.setSessionStoreValue("tve", "short-token", shortToken)
 
-  end class
-end namespace
+    return shortToken <> invalid
+  end function
+
+  private function decodeBase64(encodedString)
+    ba = CreateObject("roByteArray")
+    ba.FromBase64String(encodedString)
+    return ba.ToAsciiString()
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ private impl
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function signRequest(method, path, nonce = invalid, timestamp = 0)
+    di = CreateObject("roDeviceInfo")
+    if nonce = invalid
+      nonce = di.GetRandomUUID()
+    end if
+
+    if timestamp = 0
+      timestamp = CreateObject("roDateTime").AsSeconds()
+    end if
+    timeString = stri(timestamp, 10) + "000"
+    stringToSign = method
+    stringToSign += " requestor_id=" + m.tveConfig.requestorID
+    stringToSign += ", nonce=" + nonce
+    stringToSign += ", signature_method=HMAC-SHA1"
+    stringToSign += ", request_time=" + timeString
+    stringToSign += ", request_uri=" + path
+    byteArray = CreateObject("roByteArray")
+    byteArray.FromAsciiString(stringToSign)
+    digest = CreateObject("roHMAC")
+    privateKey = CreateObject("roByteArray")
+    privateKey.fromAsciiString(m.tveConfig.secret)
+    if digest.setup("sha1", privateKey) <> 0
+      m.logError("signRequest: failed to set up HMAC digest")
+      return invalid
+    end if
+    signature = digest.process(byteArray)
+    signatureBase64 = signature.toBase64String()
+    header = stringToSign
+    header += ", public_key=" + m.tveConfig.publicKey
+    header += ", signature=" + signatureBase64
+    return header
+  end function
+
+  private function getResourceText(item)
+    if m.isUsingResourceXml
+      template = ReadAsciiFile("pkg:/source/AdobeAccessEnabler/adobeAuthorizationTemplate.xml")
+      template = template.replace("{REQUESTOR_ID}", m.tveConfig.requestorID.escape())
+      template = template.replace("{ASSET_ID}", item.id.escape())
+      template = template.replace("{ASSET_NAME}", item.title.escape())
+      return template
+    else
+      return m.tveConfig.requestorId
+    end if
+  end function
+
+end class

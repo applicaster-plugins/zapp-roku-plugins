@@ -162,7 +162,7 @@ namespace Applicaster.Deeplinking.DeeplinkingControllerVMTests
 
 
     m.vm.riversJson = riversJson
-    hooks = MU.getContentField(riversJson, "hooks.preload_plugins") 
+    hooks = mc.getContentField(riversJson, "hooks.preload_plugins") 
     mockScreen = { "id": "screen" }
 
     m.expectOnce(m.vm, "createInstance", ["ScreenHookController", invalid, "prehooksController"], mockScreen)

@@ -280,7 +280,7 @@ namespace Applicaster.m.plugin.AdobePrimetimeAuthPluginTests
       "expires": "1589402085000"
     }
     m.expectOnce(m.plugin.request, "getJsonSync", [url, expectedHeaders], response)
-    m.expectOnce(m.plugin.date, "getSecondsUntil", [MU.strToLong("1589402085000") / 1000], 9999)
+    m.expectOnce(m.plugin.date, "getSecondsUntil", [mc.strToLong("1589402085000") / 1000], 9999)
     m.plugin.pollResult = { "id": "pollResult" }
 
     result = { "id": "result" }

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <component
     name='WarningMessageScreen'
-    extends='ZUIBScreen'>
+    extends='zuib_Screen'>
 
   <interface></interface>
 

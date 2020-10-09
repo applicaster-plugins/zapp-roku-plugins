@@ -1,111 +1,109 @@
+
 import "pkg:/source/analytics/BaseAnalyticsPlugin.bs"
 
-namespace GoogleAnalyticsP
+class GoogleAnalyticsPlugin extends BaseAnalyticsPlugin
 
-  class GoogleAnalyticsPlugin extends BaseAnalyticsPlugin
+  private eventFactory = invalid
+  private isTrakingUserIdEnabled = false
 
-    private eventFactory = invalid
-    private isTrakingUserIdEnabled = false
+  public function new(plugin)
+    super("GoogleAnalyticsPlugin", plugin)
+    m.task = m.createInstance("GoogleAnalyticsTask", invalid, "googleAnalyticsTask")
 
-    public function new(plugin)
-      super("GoogleAnalyticsPlugin", plugin)
-      m.task = m.createInstance("GoogleAnalyticsTask", invalid, "googleAnalyticsTask")
+    constants = m.getInstance("constants")
 
-      constants = m.getInstance("constants")
+    m.task.trackingId = plugin.getStringValue("tracking_id")
+    m.task.clientId = constants.googleAnalyticsClientId
 
-      m.task.trackingId = plugin.getStringValue("tracking_id")
-      m.task.clientId = constants.googleAnalyticsClientId
+    buildConfig = m.getInstance("buildConfig")
+    versionId = buildConfig.app_family_id
+    userIdString = plugin.getStringValue("user_id")
 
-      buildConfig = m.getInstance("buildConfig")
-      versionId = buildConfig.app_family_id
-      userIdString = plugin.getStringValue("user_id")
+    m.isTrakingUserIdEnabled = m.checkIfTrackingUserIdAllowed(userIdString, versionId)
 
-      m.isTrakingUserIdEnabled = m.checkIfTrackingUserIdAllowed(userIdString, versionId)
-
-    end function
+  end function
 
 
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '++ overridden methods
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ overridden methods
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    public override function start()
-      m.eventFactory = m.createInstance("AnalyticsEventFactory", invalid, "googleAnalyticsEventFactory")
-      m.setInstance("googleAnalyticsEventFactory", m.eventFactory)
-      m.setInstance("googleAnalyticsTask", m.task)
-      m.task.control = "run"
+  public override function start()
+    m.eventFactory = m.createInstance("AnalyticsEventFactory", invalid, "googleAnalyticsEventFactory")
+    m.setInstance("googleAnalyticsEventFactory", m.eventFactory)
+    m.setInstance("googleAnalyticsTask", m.task)
+    m.task.control = "run"
 
-    end function
+  end function
 
-    public override function _identify(pluginId, traits = {}, options = {}, isFromLogout = false) as boolean
-      m.logInfo("identify", pluginId)
+  public override function _identify(pluginId, traits = {}, options = {}, isFromLogout = false) as boolean
+    m.logInfo("identify", pluginId)
 
-      if m.isEnabled
+    if m.isEnabled
 
-        if m.isTrakingUserIdEnabled <> true 
-          m.logInfo("traking user is not allowed skip isIdentified")
-          return true
-        end if
+      if m.isTrakingUserIdEnabled <> true 
+        m.logInfo("traking user is not allowed skip isIdentified")
+        return true
+      end if
 
-        if pluginId <> invalid
-          accountInfo = m.getSessionStoreValue(pluginId, "account", true)
+      if pluginId <> invalid
+        accountInfo = m.getSessionStoreValue(pluginId, "account", true)
+      else
+        accountInfo = invalid
+      end if
+
+      m.logInfo("identify accountInfo", accountInfo)
+
+      if accountInfo <> invalid 
+        if accountInfo.id <> invalid and accountInfo.id.trim() <> ""
+          m.logInfo("identifying analytics with the userId", accountInfo.id, "for plugin:", pluginId)
+          m.logInfo("recrating GoogleAnalyticsTask with the userId", accountInfo.id, "for plugin:", pluginId)
+          m.setGoogleTaskUserId(accountInfo.id)
         else
-          accountInfo = invalid
-        end if
-
-        m.logInfo("identify accountInfo", accountInfo)
-
-        if accountInfo <> invalid 
-          if accountInfo.id <> invalid and accountInfo.id.trim() <> ""
-            m.logInfo("identifying analytics with the userId", accountInfo.id, "for plugin:", pluginId)
-            m.logInfo("recrating GoogleAnalyticsTask with the userId", accountInfo.id, "for plugin:", pluginId)
-            m.setGoogleTaskUserId(accountInfo.id)
-          else
-            m.logError("identify called; but there id was empty!")
-            m.identifyAsAnonymous()
-          end if
-        else
-          m.logWarn("idenitfy called; but there is no logged in user; goint to unidentify, to get anonymous analytics")
+          m.logError("identify called; but there id was empty!")
           m.identifyAsAnonymous()
         end if
-      end if 
-
-      return true
-    end function
-
-    private function identifyAsAnonymous()
-      m.logInfo("identifying as anonymous user")
-      m.setGoogleTaskUserId(invalid)
-    end function
-
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '++ private impl
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    private function checkIfTrackingUserIdAllowed(userIdString, versionId)
-
-      prefix = "allow-tracking-user-id-for-app-family-"
-      suffix = versionId
-      s = userIdString
-
-      if MU.isString(s) and MU.isString(prefix) and MU.isString(suffix) 
-        if prefix + suffix = s 
-          return true
-        end if
-      end if
-
-      return false 
-    end function
-
-    private function setGoogleTaskUserId(userId)
-      if MU.isString(userId) 
-        m.task.customSessionParams = {
-          "uid": Box(userId).Escape()
-        }
       else
-        m.task.customSessionParams = invalid
+        m.logWarn("idenitfy called; but there is no logged in user; goint to unidentify, to get anonymous analytics")
+        m.identifyAsAnonymous()
       end if
-    end function
+    end if 
 
-  end class
-end namespace
+    return true
+  end function
+
+  private function identifyAsAnonymous()
+    m.logInfo("identifying as anonymous user")
+    m.setGoogleTaskUserId(invalid)
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ private impl
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function checkIfTrackingUserIdAllowed(userIdString, versionId)
+
+    prefix = "allow-tracking-user-id-for-app-family-"
+    suffix = versionId
+    s = userIdString
+
+    if mc.isString(s) and mc.isString(prefix) and mc.isString(suffix) 
+      if prefix + suffix = s 
+        return true
+      end if
+    end if
+
+    return false 
+  end function
+
+  private function setGoogleTaskUserId(userId)
+    if mc.isString(userId) 
+      m.task.customSessionParams = {
+        "uid": Box(userId).Escape()
+      }
+    else
+      m.task.customSessionParams = invalid
+    end if
+  end function
+
+end class
