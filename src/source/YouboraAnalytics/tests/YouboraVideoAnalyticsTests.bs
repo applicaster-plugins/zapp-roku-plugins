@@ -4,7 +4,7 @@ namespace YVAMTests
 
   '@BeforeEach
   function beforeEach()
-    AppService.clearClassInstances()
+    zc.AppService.clearClassInstances()
 
     m.config = {
       "account_code": "#ac"

@@ -4,7 +4,7 @@ namespace Applicaster.OpenSource.ZGenericUrlTokenAppenderTests
 
   '@BeforeEach
   function BeforeEach()
-    AppService.clearClassInstances()
+    zc.AppService.clearClassInstances()
     m.modelLocator = CreateObject("roSGNode", "ModelLocator")
     m.modelLocator.plugins = [PPMT_CreatePluginJson("generic_url_token_appender", { "provider_id": "pid", "token_key": "t" })] 
 
@@ -25,7 +25,7 @@ namespace Applicaster.OpenSource.ZGenericUrlTokenAppenderTests
   '@Test no plugin
   function constructor_noPlugin()
     m.modelLocator.plugins = [] 
-    AppService.clearClassInstances()
+    zc.AppService.clearClassInstances()
 
     m.appender = new ZGenericUrlTokenAppender()
 

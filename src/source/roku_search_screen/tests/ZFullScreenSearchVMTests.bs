@@ -1,4 +1,4 @@
-'@TestSuite ZUIBSSVMT 
+'@TestSuite SSVMT 
 
 namespace Applicaster.ZFullScreenSearchVM.Tests
 

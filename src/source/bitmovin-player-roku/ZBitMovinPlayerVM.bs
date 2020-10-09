@@ -2,7 +2,7 @@
 import "pkg:/source/zapp/BaseZappVM.bs"
 import "pkg:/source/plugin-support/PluginManager.bs"
 
-class ZBitMovinPlayerVM extends BaseZappVM
+class ZBitMovinPlayerVM extends zc.BaseZappVM
 
   private view = invalid
   private themeColor = "#ffffff"

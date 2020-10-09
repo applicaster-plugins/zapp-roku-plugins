@@ -25,7 +25,7 @@ namespace InplayerEntitlements.Tests
   '@AfterEach
   function afterEach()
     TU.unsetModelLocator()
-    AppService.clearClassInstances()
+    zc.AppService.clearClassInstances()
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

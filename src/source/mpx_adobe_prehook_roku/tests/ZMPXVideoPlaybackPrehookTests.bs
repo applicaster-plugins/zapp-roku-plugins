@@ -4,7 +4,7 @@ namespace Applicaster.ZMPXVideoPlaybackPrehook.Tests
 
   '@BeforeEach
   function BeforeEach()
-    AppService.clearClassInstances()
+    zc.AppService.clearClassInstances()
     m.modelLocator = CreateObject("roSGNode", "ModelLocator")
     m.modelLocator.plugins = [PPMT_CreatePluginJson("mpx_video_playback_prehook_roku", {
         "matching_path": "itemType"
@@ -28,7 +28,7 @@ namespace Applicaster.ZMPXVideoPlaybackPrehook.Tests
   '@Test no plugin
   function constructor_noPlugin()
     m.modelLocator.plugins = [] 
-    AppService.clearClassInstances()
+    zc.AppService.clearClassInstances()
 
     m.plugin = new ZMPXVideoPlaybackPrehook()
 

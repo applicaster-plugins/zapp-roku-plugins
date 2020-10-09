@@ -4,7 +4,7 @@ namespace Applicaster.EntitlementsItemLoader.Tests
 
   '@BeforeEach
   function BeforeEach()
-    AppService.clearClassInstances()
+    zc.AppService.clearClassInstances()
     m.modelLocator = CreateObject("roSGNode", "ModelLocator")
     m.modelLocator.plugins = [PPMT_CreatePluginJson("oc_url_token_loader", {
         "endpoint": "e/"
@@ -30,7 +30,7 @@ namespace Applicaster.EntitlementsItemLoader.Tests
   '@Test no plugin
   function constructor_noPlugin()
     m.modelLocator.plugins = [] 
-    AppService.clearClassInstances()
+    zc.AppService.clearClassInstances()
 
     m.loader = new EntitlementsItemLoader()
 

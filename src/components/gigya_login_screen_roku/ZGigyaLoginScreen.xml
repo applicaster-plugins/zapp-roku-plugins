@@ -29,11 +29,11 @@
       <MLabel
           id='title'
           style='{{=ViewUtils_UIBLabel("title")}}' />
-      <ZActionButton
+      <StylableButton
           id='loginButton'
           style='{{=ViewUtils_UIBButton("login_button")}}'
           selected='{(vm.onLoginButtonSelected(), isSettingInitialValue=false)}' />
-      <ZActionButton
+      <StylableButton
           id='skipButton'
           style='{{=ViewUtils_UIBButton("skip_button")}}'
           selected='{(vm.onSkipButtonSelected(), isSettingInitialValue=false)}' />

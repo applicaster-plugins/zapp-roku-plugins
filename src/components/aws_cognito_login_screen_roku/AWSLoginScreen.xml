@@ -65,7 +65,7 @@
           id='controlsGroup'
           translation='[1040,300]'
           itemSpacings='[10, 45, 52]'>
-        <ZActionButton
+        <StylableButton
             id='usernameInput'
             style='{{:vm.inputStyle}}'
             labelXOffset='9'
@@ -74,7 +74,7 @@
             selected='{(vm.onUsernameButtonSelected,isSettingInitialValue=false)}'
             width='610' />
 
-        <ZActionButton
+        <StylableButton
             id='passwordInput'
             text='{{vm.passwordText}}'
             style='{{:vm.inputStyle}}'
@@ -83,7 +83,7 @@
             selected='{(vm.onPasswordButtonSelected,isSettingInitialValue=false)}'
             width='610' />
 
-        <ZActionButton
+        <StylableButton
             id='loginButton'
             style='{{:vm.loginButtonStyle}}'
             visible='{{vm.isLoading,  isSettingInitialValue=true,transform=MOM_transform_invertBoolean}}'

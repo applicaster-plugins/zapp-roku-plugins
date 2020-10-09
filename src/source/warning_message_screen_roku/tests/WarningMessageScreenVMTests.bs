@@ -55,7 +55,7 @@ namespace WMSVMT
 
   '@Test no entry
   function load_no_entry()
-    m.expectNone(m.vm, "ZUIBCVM_load")
+    m.expectNone(m.vm, "CVM_load")
     m.expectOnce(m.vm, "dismiss", ["success"])
 
     m.vm.originEntry = invalid
@@ -77,7 +77,7 @@ namespace WMSVMT
   function load_not_matching(entry, path, condition)
     m.vm.conditionPath = path
     m.vm.conditionValue = condition
-    m.expectNone(m.vm, "ZUIBCVM_load")
+    m.expectNone(m.vm, "CVM_load")
     m.expectOnce(m.vm, "dismiss", ["success"])
     m.vm.originEntry = entry
 

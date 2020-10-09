@@ -47,7 +47,7 @@
           id='controlsGroup'
           translation='{{=ViewUtils_UIBPosition("controls",1040,300)}}'
           itemSpacings='[10, 10, 10]'>
-        <ZActionButton
+        <StylableButton
             id='usernameInput'
             style='{{:vm.inputStyle}}'
             labelXOffset='9'
@@ -56,7 +56,7 @@
             selected='{(vm.onUsernameButtonSelected,isSettingInitialValue=false)}'
             width='610' />
 
-        <ZActionButton
+        <StylableButton
             id='passwordInput'
             text='{{vm.passwordText}}'
             style='{{:vm.inputStyle}}'
@@ -65,21 +65,21 @@
             selected='{(vm.onPasswordButtonSelected,isSettingInitialValue=false)}'
             width='610' />
 
-        <ZActionButton
+        <StylableButton
             id='loginButton'
             style='{{:vm.loginButtonStyle}}'
             visible='{{vm.isLoading, isSettingInitialValue=true,transform=MOM_transform_invertBoolean}}'
             selected='{(vm.onLoginButtonSelected,isSettingInitialValue=false)}'
             width='610' />
 
-        <ZActionButton
+        <StylableButton
             id='registerButton'
             style='{{:vm.registerButtonStyle}}'
             visible='{{vm.isLoading, isSettingInitialValue=true,transform=MOM_transform_invertBoolean}}'
             selected='{(vm.onRegisterButtonSelected,isSettingInitialValue=false)}'
             width='610' />
 
-        <ZActionButton
+        <StylableButton
             id='forgotPasswordButton'
             style='{{:vm.forgotPasswordButtonStyle}}'
             visible='{{vm.isLoading, isSettingInitialValue=true,transform=MOM_transform_invertBoolean}}'

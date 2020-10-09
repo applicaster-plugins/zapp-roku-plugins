@@ -62,7 +62,7 @@
 
       </LayoutGroup>
 
-      <ZActionButton
+      <StylableButton
           id='doneButton'
           translation='{{:vm.buttonPosition}}'
           style='{{:vm.doneButtonStyle}}'

@@ -235,7 +235,7 @@ class DeeplinkingControllerVM extends ScreenVM
   end function
 
   function exitFromDeeplinking()
-    AppService.exitFromDeeplinking()
+    zc.AppService.exitFromDeeplinking()
   end function
 
 

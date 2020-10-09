@@ -16,7 +16,7 @@
         visible='{{vm.isNotFoundLabelVisible}}'
         style='{{=ViewUtils_UIBLabel("not_found")}}' />
 
-    <ZActionButton
+    <StylableButton
         id='textInput'
         style='{{:vm.inputStyle}}'
         labelXOffset='9'
