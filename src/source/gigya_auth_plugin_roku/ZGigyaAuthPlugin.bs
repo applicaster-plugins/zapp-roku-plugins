@@ -7,110 +7,110 @@ import "pkg:/source/authorization/BaseAuthPlugin.bs"
 
 namespace Applicaster.Authentication.Gigya
 
-class ZGigyaAuthPlugin extends BaseAuthPlugin
+  class ZGigyaAuthPlugin extends BaseAuthPlugin
 
-public baseUrl = ""
+    public baseUrl = ""
 
-public function new(plugin)
-  super("ZGigyaAuthPlugin", plugin)
-  m.baseUrl = plugin.getStringValue("base_url")
-  m.request = m.getClassInstance("RequestModule")
-end function
+    public function new(plugin)
+      super("ZGigyaAuthPlugin", plugin)
+      m.baseUrl = plugin.getStringValue("base_url")
+      m.request = m.getClassInstance("RequestModule")
+    end function
 
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'++ Overridden
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '++ Overridden
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-public override function _getAccountInfo()
-  'FIXME - verify these values
-  return {
-    id: m.authData.rawAuthData.uid
-    email: "anonymous@anon.com"
-    username: m.authData.rawAuthData.firstName
-  }
-end function
+    public override function _getAccountInfo()
+      'FIXME - verify these values
+      return {
+        id: m.authData.rawAuthData.uid
+        email: "anonymous@anon.com"
+        username: m.authData.rawAuthData.firstName
+      }
+    end function
 
-public override function _verify()
-  m.logMethod("_verify")
-  
-  if not m.isAuthDataExpired()
-    return m.authData
-  end if
-  
-  return m.createErrorResult("Invalid token for verification")
-end function
+    public override function _verify()
+      m.logMethod("_verify")
 
-public override function _regcode()
-  m.logMethod("_regcode")
-  
-  constants = m.getInstance("constants")
-  url = m.baseUrl + "CreateDevice"
-  
-  params = { "deviceId": constants.applicasterdeviceid }
-  headers = { "Accept": "application/json", "Content-Type": "application/json" }
-  response = m.request.post(url, params, headers)
-  
-  if response <> invalid and response.devicePinCode <> invalid
-    m.logInfo("succesfully got code", response.devicePinCode)
-    'store in session store; so we can use it in the get call later
-    m.setSessionStoreValue("gigya_auth_plugin_roku", "regcode", response.devicePinCode)
-    return m.createRegCodeResult(response.devicePinCode)
-  else
-    m.logError("received illegal regcode", response)
-    m.setSessionStoreValue("gigya_auth_plugin_roku", "regcode", invalid)
-    return m.createRegCodeResult(invalid, - 1, "could not retrieve regcode")
-  end if
-  
-end function
-
-public override function _poll()
-  m.logMethod("_poll")
-  pinCode = m.getSessionStoreValue(m.id, "regcode")
-  url = m.baseUrl + "GetDeviceByPin/" + pinCode
-  response = m.request.getJsonSync(url)
-  
-  if response <> invalid 
-    
-    if response.access_token <> invalid
-      token = response.access_token
-      expiresIn = 99999 ' TODO where do we get this from?
-      'TODO - double check these values
-      'Especially result and if we need to manipulate parsed.expires
-      return m.createAuthData("valid", token, token, token, response, expiresIn)
-    else 
-      
-      if response.ErrorCode <> invalid
-        error = response.ErrorCode
-      else 
-        error = "Unknown error"
+      if not m.isAuthDataExpired()
+        return m.authData
       end if
-      
-      result = m.createErrorResult(error)
-      'it's not an actula error
-      result.state = "none"
-      return result
-    end if
-  end if
-  
-  return m.createErrorResult("could not complete poll")
-end function
 
-public override function _logOut()
-  m.logMethod("_logOut")
-  
-  url = m.baseUrl + "Logout"
-  
-  if m.authData <> invalid
-    params = { "access_token": m.authData.access_token }
-    headers = { "Accept": "application/json" }
-    request = m.request.post(url, params)
-    
-    if request.response = invalid or request.response.code = invalid or request.response.code <> 204
-      m.logError("error logging out")
-    end if
-  end if
-  return m.createAuthData()
-end function
+      return m.createErrorResult("Invalid token for verification")
+    end function
 
-end class
+    public override function _regcode()
+      m.logMethod("_regcode")
+
+      constants = m.getInstance("constants")
+      url = m.baseUrl + "CreateDevice"
+
+      params = { "deviceId": constants.applicasterdeviceid }
+      headers = { "Accept": "application/json", "Content-Type": "application/json" }
+      response = m.request.post(url, params, headers)
+
+      if response <> invalid and response.devicePinCode <> invalid
+        m.logInfo("succesfully got code", response.devicePinCode)
+        'store in session store; so we can use it in the get call later
+        m.setSessionStoreValue("gigya_auth_plugin_roku", "regcode", response.devicePinCode)
+        return m.createRegCodeResult(response.devicePinCode)
+      else
+        m.logError("received illegal regcode", response)
+        m.setSessionStoreValue("gigya_auth_plugin_roku", "regcode", invalid)
+        return m.createRegCodeResult(invalid, -1, "could not retrieve regcode")
+      end if
+
+    end function
+
+    public override function _poll()
+      m.logMethod("_poll")
+      pinCode = m.getSessionStoreValue(m.id, "regcode")
+      url = m.baseUrl + "GetDeviceByPin/" + pinCode
+      response = m.request.getJsonSync(url)
+
+      if response <> invalid 
+
+        if response.access_token <> invalid
+          token = response.access_token
+          expiresIn = 99999 ' TODO where do we get this from?
+          'TODO - double check these values
+          'Especially result and if we need to manipulate parsed.expires
+          return m.createAuthData("valid", token, token, token, response, expiresIn)
+        else 
+
+          if response.ErrorCode <> invalid
+            error = response.ErrorCode
+          else 
+            error = "Unknown error"
+          end if
+
+          result = m.createErrorResult(error)
+          'it's not an actula error
+          result.state = "none"
+          return result
+        end if
+      end if
+
+      return m.createErrorResult("could not complete poll")
+    end function
+
+    public override function _logOut()
+      m.logMethod("_logOut")
+
+      url = m.baseUrl + "Logout"
+
+      if m.authData <> invalid
+        params = { "access_token": m.authData.access_token }
+        headers = { "Accept": "application/json" }
+        request = m.request.post(url, params)
+
+        if request.response = invalid or request.response.code = invalid or request.response.code <> 204
+          m.logError("error logging out")
+        end if
+      end if
+      return m.createAuthData()
+    end function
+
+  end class
 end namespace

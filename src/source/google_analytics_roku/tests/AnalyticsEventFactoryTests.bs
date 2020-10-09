@@ -2,532 +2,532 @@
 
 namespace AEFT
 
-'@SetUp
-function setUp()
-  m.analytics = new AnalyticsEventFactory()
-  m.testItem = CreateObject("roSGNode", "GridContent")
-  m.testItem.id = "12345"
-  m.testItem.title = "Test Item"
-  m.testItem.length = 120
-  m.testItem.addField("free", "boolean", false)
-  m.testItem.free = true
-  m.testItem.itemType = "vod"
-  
-  m.testCategory = CreateObject("roSGNode", "ContentNode")
-  m.testCategory.id = "54321"
-  m.testCategory.title = "Test Category"
-  m.testCategory.addField("nature", "string", false)
-  m.testCategory.nature = "Season"
-  
-  m.testVoucher = {
-    voucherType: "App"
-    code: "Test Product"
-  }
-end function
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests booleanString
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-'@Test
-function booleanString()
-  m.AssertEqual(m.analytics.booleanString(true), "True")
-  m.AssertEqual(m.analytics.booleanString(false), "False")
-end function
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests propertiesToLabel
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-'@Test
-function AMT_propertiesToLabel()
-  properties = {}
-  properties["Trigger"] = "A - B"
-  properties["Free"] = "True"
-  properties["Item ID"] = "12345"
-  m.assertEqual(m.analytics.propertiesToLabel(properties), "Free=True;Item ID=12345;Trigger=A - B")
-end function
-
-'@Test non string
-function AMT_propertiesToLabel_nonString()
-  properties = {}
-  properties["boolean"] = true
-  properties["integer"] = 42%
-  properties["longinteger"] = 2349823492&
-  properties["float"] = 243.573!
-  properties["double"] = 1.23456789D - 12#
-  properties["string"] = "hi"
-  properties["array"] = [1, 2, 3]
-  properties["assocarray"] = { a: 1 }
-  properties["invalid"] = invalid
-  m.assertEqual(m.analytics.propertiesToLabel(properties), "array=;assocarray=;boolean=true;double=1.23457e-12;float=243.573;integer=42;invalid=;longinteger=2349823492;string=hi")
-end function
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests padString
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-'@Test
-function AMT_padString()
-  
-  m.assertEqual(m.analytics.padString("9", 2, "0"), "09")
-  m.assertEqual(m.analytics.padString("26", 2, "0"), "26")
-  m.assertEqual(m.analytics.padString("", 2, "0"), "00")
-  
-end function
-
-'@Test empty
-function AMT_padString_emptyPad()
-  
-  m.assertEqual(m.analytics.padString("original ", 40, ""), "original")
-  
-end function
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests timeFormat
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-'@Test
-function AMT_timeFormat()
-  
-  m.assertEqual(m.analytics.timeFormat(0), "00:00:00")
-  m.assertEqual(m.analytics.timeFormat(59), "00:00:59")
-  m.assertEqual(m.analytics.timeFormat(60), "00:01:00")
-  m.assertEqual(m.analytics.timeFormat(3599), "00:59:59")
-  m.assertEqual(m.analytics.timeFormat(3600), "01:00:00")
-  
-end function
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests voucherDictionary
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-'@Test no grace period
-function AMT_voucherDictionary_noGracePeriod()
-  voucher = {}
-  voucher.append(m.testVoucher)
-  voucher["freeTrialType"] = "None"
-  voucher["freeTrialQuantity"] = ""
-  dictionary = m.analytics.voucherDictionary(false, voucher)
-  m.assertEqual(dictionary["Grace Period"], "N/A")
-end function
-
-'@Test monthly grace period
-function AMT_voucherDictionary_monthlyGracePeriod()
-  voucher = {}
-  voucher.append(m.testVoucher)
-  voucher["freeTrialType"] = "Days"
-  voucher["freeTrialQuantity"] = "7"
-  dictionary = m.analytics.voucherDictionary(false, voucher)
-  m.assertEqual(dictionary["Grace Period"], "7 Days")
-end function
-
-'@Test daily grace period
-function AMT_voucherDictionary_dailyGracePeriod()
-  voucher = {}
-  voucher.append(m.testVoucher)
-  voucher["freeTrialType"] = "Months"
-  voucher["freeTrialQuantity"] = "1"
-  dictionary = m.analytics.voucherDictionary(false, voucher)
-  m.assertEqual(dictionary["Grace Period"], "1 Months")
-end function
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests itemDictionary
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-'@Test channelItemType
-function AMT_itemDictionary_channelItemType()
-  dictionary = m.analytics.itemDictionary({ itemType: "channel" })
-  m.assertEqual(dictionary["Item Type"], "Channel - Applicaster Model")
-end function
-
-'@Test vod 
-function AMT_itemDictionary_vodItemType()
-  dictionary = m.analytics.itemDictionary({ itemType: "vod" })
-  m.assertEqual(dictionary["Item Type"], "VOD - Applicaster Model")
-end function
-
-'@Test atom
-function AMT_itemDictionary_atomItemType()
-  dictionary = m.analytics.itemDictionary({ itemType: "atom" })
-  m.assertEqual(dictionary["Item Type"], "VOD - ATOM")
-end function
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests playVOD
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-'@Test
-function AMT_playVOD()
-  event = m.analytics.playVOD("Test Case", m.testItem, 75)
-  
-  m.assertEqual(event.category, "Play VOD")
-  m.assertEqual(event.action, "Play VOD")
-  m.assertEqual(event.label, "ATOM feed name=N/A;Duration=00:02:00;Duration Played=00:01:15;Free=True;Item ID=12345;Item Name=Test Item;Item Type=VOD - Applicaster Model;Parent Category ID=N/A;Parent Category Name=N/A;Path To=Test Case;Percent Complete=62;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A")
-  
-end function
-
-'@Test invalid item
-function AMT_playVOD_invalidItem()
-  event = m.analytics.playVOD("Test Case", invalid, 75)
-  
-  m.assertEqual(event.category, "Play VOD")
-  m.assertEqual(event.action, "Play VOD")
-  m.assertEqual(event.label, "ATOM feed name=N/A;Duration=Not Provided;Duration Played=00:01:15;Free=False;Item ID=N/A;Item Name=N/A;Item Type=N/A;Parent Category ID=N/A;Parent Category Name=N/A;Path To=Test Case;Percent Complete=0;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A")
-  
-end function
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests clickItem
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-'@Test
-function AMT_clickItem()
-  event = m.analytics.clickItem("Test Case", m.testItem)
-  
-  m.assertEqual(event.category, "Click Item")
-  m.assertEqual(event.action, "Click Item")
-  m.assertEqual(event.label, "ATOM feed name=N/A;Free=True;Item ID=12345;Item Name=Test Item;Item Type=VOD - Applicaster Model;Parent Category ID=N/A;Parent Category Name=N/A;Path To=Test Case;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A")
-  
-end function
-
-'@Test invalid item
-function AMT_clickItem_invalidItem()
-  event = m.analytics.clickItem("Test Case", invalid)
-  
-  m.assertEqual(event.category, "Click Item")
-  m.assertEqual(event.action, "Click Item")
-  m.assertEqual(event.label, "ATOM feed name=N/A;Free=False;Item ID=N/A;Item Name=N/A;Item Type=N/A;Parent Category ID=N/A;Parent Category Name=N/A;Path To=Test Case;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A")
-  
-end function
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests clickCategory
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-'@Test
-function AMT_clickCategory()
-  event = m.analytics.clickCategory("Test Case", m.testCategory)
-  
-  m.assertEqual(event.category, "Click Category")
-  m.assertEqual(event.action, "Click Category")
-  m.assertEqual(event.label, "Category ID=54321;Category Name=Test Category;Category Type=Season;Path To=Test Case")
-  
-end function
-
-'@Test invalid category
-function AMT_clickCategory_invalidCategory()
-  event = m.analytics.clickCategory("Test Case", invalid)
-  
-  m.assertEqual(event.category, "Click Category")
-  m.assertEqual(event.action, "Click Category")
-  m.assertEqual(event.label, "Category ID=N/A;Category Name=N/A;Category Type=N/A;Path To=Test Case")
-  
-end function
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests launchApp
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-'@Test
-function AMT_launchApp()
-  event = m.analytics.launchApp()
-  
-  m.assertEqual(event.category, "Launch App")
-  m.assertEqual(event.action, "Launch App")
-  m.assertEqual(event.label, "")
-  
-end function
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests viewStoreFront
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-'@Test
-function AMT_viewStorefront()
-  event = m.analytics.viewStoreFront("Test Case", m.testItem, "Authorization")
-  
-  m.assertEqual(event.category, "View Storefront")
-  m.assertEqual(event.action, "View Storefront")
-  m.assertEqual(event.label, "Action=Authorization;ATOM feed name=N/A;Free=True;Item ID=12345;Item Name=Test Item;Item Type=VOD - Applicaster Model;Parent Category ID=N/A;Parent Category Name=N/A;Path To=Test Case;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A")
-  
-end function
-
-'@Test invalid item
-function AMT_viewStorefront_invalidItem()
-  event = m.analytics.viewStoreFront("Test Case", invalid, "Authorization")
-  
-  m.assertEqual(event.category, "View Storefront")
-  m.assertEqual(event.action, "View Storefront")
-  m.assertEqual(event.label, "Action=Authorization;ATOM feed name=N/A;Free=False;Item ID=N/A;Item Name=N/A;Item Type=N/A;Parent Category ID=N/A;Parent Category Name=N/A;Path To=Test Case;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A")
-  
-end function
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests tapStoreFrontButton
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-'@Test
-function AMT_tapStorefrontButton()
-  event = m.analytics.tapStorefrontButton("Purchase Button", m.testItem)
-  
-  m.assertEqual(event.category, "Tap Storefront Button")
-  m.assertEqual(event.action, "Tap Storefront Button")
-  m.assertEqual(event.label, "ATOM feed name=N/A;Button Name=Purchase Button;Free=True;Item ID=12345;Item Name=Test Item;Item Type=VOD - Applicaster Model;Parent Category ID=N/A;Parent Category Name=N/A;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A")
-  
-end function
-
-'@Test invalid item
-function AMT_tapStorefrontButton_invalidItem()
-  event = m.analytics.tapStorefrontButton("Purchase Button", invalid)
-  
-  m.assertEqual(event.category, "Tap Storefront Button")
-  m.assertEqual(event.action, "Tap Storefront Button")
-  m.assertEqual(event.label, "ATOM feed name=N/A;Button Name=Purchase Button;Free=False;Item ID=N/A;Item Name=N/A;Item Type=N/A;Parent Category ID=N/A;Parent Category Name=N/A;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A")
-  
-end function
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests startPurchase
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-'@Test
-function AMT_startPurchase()
-  event = m.analytics.startPurchase(false, m.testVoucher)
-  
-  m.assertEqual(event.category, "Start Purchase")
-  m.assertEqual(event.action, "Start Purchase")
-  m.assertEqual(event.label, "Grace Period=N/A;Permitted Countries=N/A;Price=N/A;Product ID=Test Product;Purchase Entity=N/A;Subscriber=No;Subscription Duration=N/A;Transaction ID=N/A;Trial Period=N/A;Voucher Name=N/A;Voucher Template Type=App")
-  
-end function
-
-'@Test invalid voucher
-function AMT_startPurchase_invalidVoucher()
-  event = m.analytics.startPurchase(false, invalid)
-  
-  m.assertEqual(event.category, "Start Purchase")
-  m.assertEqual(event.action, "Start Purchase")
-  m.assertEqual(event.label, "Grace Period=N/A;Permitted Countries=N/A;Price=N/A;Product ID=N/A;Purchase Entity=N/A;Subscriber=No;Subscription Duration=N/A;Transaction ID=N/A;Trial Period=N/A;Voucher Name=N/A;Voucher Template Type=N/A")
-  
-end function
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests completePurchase
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-'@Test 
-function AMT_completePurchase()
-  event = m.analytics.completePurchase(false, m.testVoucher)
-  
-  m.assertEqual(event.category, "Complete Purchase")
-  m.assertEqual(event.action, "Complete Purchase")
-  m.assertEqual(event.label, "Grace Period=N/A;Permitted Countries=N/A;Price=N/A;Product ID=Test Product;Purchase Entity=N/A;Subscriber=No;Subscription Duration=N/A;Transaction ID=N/A;Trial Period=N/A;Voucher Name=N/A;Voucher Template Type=App")
-  
-end function
-
-'@Test invalid voucher
-function AMT_completePurchase_invalidVoucher()
-  event = m.analytics.completePurchase(false, invalid)
-  
-  m.assertEqual(event.category, "Complete Purchase")
-  m.assertEqual(event.action, "Complete Purchase")
-  m.assertEqual(event.label, "Grace Period=N/A;Permitted Countries=N/A;Price=N/A;Product ID=N/A;Purchase Entity=N/A;Subscriber=No;Subscription Duration=N/A;Transaction ID=N/A;Trial Period=N/A;Voucher Name=N/A;Voucher Template Type=N/A")
-  
-end function
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests canclePurchase
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-'@Test
-function AMT_cancelPurchase()
-  event = m.analytics.cancelPurchase(false, m.testVoucher)
-  
-  m.assertEqual(event.category, "Cancel Purchase")
-  m.assertEqual(event.action, "Cancel Purchase")
-  m.assertEqual(event.label, "Grace Period=N/A;Permitted Countries=N/A;Price=N/A;Product ID=Test Product;Purchase Entity=N/A;Subscriber=No;Subscription Duration=N/A;Transaction ID=N/A;Trial Period=N/A;Voucher Name=N/A;Voucher Template Type=App")
-  
-end function
-
-'@Test invalid voucher
-function AMT_cancelPurchase_invalidVoucher()
-  event = m.analytics.cancelPurchase(false, invalid)
-  
-  m.assertEqual(event.category, "Cancel Purchase")
-  m.assertEqual(event.action, "Cancel Purchase")
-  m.assertEqual(event.label, "Grace Period=N/A;Permitted Countries=N/A;Price=N/A;Product ID=N/A;Purchase Entity=N/A;Subscriber=No;Subscription Duration=N/A;Transaction ID=N/A;Trial Period=N/A;Voucher Name=N/A;Voucher Template Type=N/A")
-  
-end function
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests purchaseError
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-'@Test 
-function AMT_purchaseError()
-  event = m.analytics.purchaseError("A125", "Payment Method Declined", false, m.testVoucher)
-  
-  m.assertEqual(event.category, "Receive Error in Purchase Process")
-  m.assertEqual(event.action, "Receive Error in Purchase Process")
-  m.assertEqual(event.label, "Error Code ID=A125;Error Message=Payment Method Declined;Grace Period=N/A;Permitted Countries=N/A;Price=N/A;Product ID=Test Product;Purchase Entity=N/A;Subscriber=No;Subscription Duration=N/A;Transaction ID=N/A;Trial Period=N/A;Voucher Name=N/A;Voucher Template Type=App")
-  
-end function
-
-'@Test invalid voucher
-function AMT_purchaseError_invalidVoucher()
-  event = m.analytics.purchaseError("A125", "Payment Method Declined", false, invalid)
-  
-  m.assertEqual(event.category, "Receive Error in Purchase Process")
-  m.assertEqual(event.action, "Receive Error in Purchase Process")
-  m.assertEqual(event.label, "Error Code ID=A125;Error Message=Payment Method Declined;Grace Period=N/A;Permitted Countries=N/A;Price=N/A;Product ID=N/A;Purchase Entity=N/A;Subscriber=No;Subscription Duration=N/A;Transaction ID=N/A;Trial Period=N/A;Voucher Name=N/A;Voucher Template Type=N/A")
-  
-end function
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests openMenu
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-'@Test
-function AMT_openMenu()
-  event = m.analytics.openMenu()
-  
-  m.assertEqual(event.category, "Menu")
-  m.assertEqual(event.action, "Open Menu")
-  m.assertEqual(event.label, "")
-  
-end function
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests openSearch
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-'@Test
-function AMT_openSearch()
-  event = m.analytics.openSearch()
-  
-  m.assertEqual(event.category, "Menu")
-  m.assertEqual(event.action, "Open Search")
-  m.assertEqual(event.label, "")
-  
-end function
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests clickSearchResults
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-'@Test
-function AMT_clickSearchResults()
-  event = m.analytics.clickSearchResults("be", "beaches")
-  
-  m.assertEqual(event.category, "Menu")
-  m.assertEqual(event.action, "Click Search Results")
-  m.assertEqual(event.label, "Searched string=be;Show Name=beaches")
-  
-end function
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests selectMenuItem
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-'@Test
-function AMT_selectMenuItem()
-  event = m.analytics.selectMenuItem("About")
-  
-  m.assertEqual(event.category, "Menu")
-  m.assertEqual(event.action, "Select Menu Item")
-  m.assertEqual(event.label, "Selected Menu Item=About")
-  
-end function
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests pauseVOD
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-'@Test
-function AMT_pauseVOD()
-  event = m.analytics.pauseVOD(m.testItem, 125)
-  
-  m.assertEqual(event.category, "Pause VOD")
-  m.assertEqual(event.action, "Pause VOD")
-  m.assertEqual(event.label, "ATOM feed name=N/A;Free=True;Item ID=12345;Item Name=Test Item;Item Type=VOD - Applicaster Model;Parent Category ID=N/A;Parent Category Name=N/A;Pause Timecode=00:02:05;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A;Video Duration=00:02:00")
-  
-end function
-
-'@Test invalid item
-function AMT_pauseVOD_invalidItem()
-  event = m.analytics.pauseVOD(invalid, 125)
-  
-  m.assertEqual(event.category, "Pause VOD")
-  m.assertEqual(event.action, "Pause VOD")
-  m.assertEqual(event.label, "ATOM feed name=N/A;Free=False;Item ID=N/A;Item Name=N/A;Item Type=N/A;Parent Category ID=N/A;Parent Category Name=N/A;Pause Timecode=00:02:05;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A;Video Duration=00:00:00")
-  
-end function
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests unpauseVOD
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-'@Test
-function AMT_unpauseVOD()
-  event = m.analytics.unpauseVOD(m.testItem, 125)
-  
-  m.assertEqual(event.category, "Unpause VOD")
-  m.assertEqual(event.action, "Unpause VOD")
-  m.assertEqual(event.label, "ATOM feed name=N/A;Free=True;Item ID=12345;Item Name=Test Item;Item Type=VOD - Applicaster Model;Parent Category ID=N/A;Parent Category Name=N/A;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A;Unpause Timecode=00:02:05;Video Duration=00:02:00")
-  
-end function
-
-'@Test invalid item
-function AMT_unpauseVOD_invalidItem()
-  event = m.analytics.unpauseVOD(invalid, 125)
-  
-  m.assertEqual(event.category, "Unpause VOD")
-  m.assertEqual(event.action, "Unpause VOD")
-  m.assertEqual(event.label, "ATOM feed name=N/A;Free=False;Item ID=N/A;Item Name=N/A;Item Type=N/A;Parent Category ID=N/A;Parent Category Name=N/A;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A;Unpause Timecode=00:02:05;Video Duration=00:00:00")
-  
-end function
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests startLogin
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-'@Test
-function startLogin()
-  event = m.analytics.startLogin("Test Case", "username")
-  
-  m.assertEqual(event.category, "Start Login")
-  m.assertEqual(event.action, "Start Login")
-  m.assertEqual(event.label, "Login Name=username;Optional Fields=;Path To=Test Case;Required Fields=Username|Password")
-  
-end function
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests login succeeds
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-'@Test
-function loginSucceeds()
-  event = m.analytics.loginSucceeds("Test Case", "username")
-  
-  m.assertEqual(event.category, "Login Succeeds")
-  m.assertEqual(event.action, "Login Succeeds")
-  m.assertEqual(event.label, "Login Name=username;Optional Fields=;Path To=Test Case;Required Fields=User Name|Password")
-  
-end function
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests loginDoesNotSucceed
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-'@Test
-function loginDoesNotSucceed()
-  event = m.analytics.loginDoesNotSucceed("Test Case", "username", "Error Returned", "Invald username or password")
-  
-  m.assertEqual(event.category, "Login Does Not Succeed")
-  m.assertEqual(event.action, "Login Does Not Succeed")
-  m.assertEqual(event.label, "Error Message=Invald username or password;Login Name=username;Optional Fields=;Path To=Test Case;Reason=Error Returned;Required Fields=User Name|Password")
-  
-end function
+  '@SetUp
+  function setUp()
+    m.analytics = new AnalyticsEventFactory()
+    m.testItem = CreateObject("roSGNode", "GridContent")
+    m.testItem.id = "12345"
+    m.testItem.title = "Test Item"
+    m.testItem.length = 120
+    m.testItem.addField("free", "boolean", false)
+    m.testItem.free = true
+    m.testItem.itemType = "vod"
+
+    m.testCategory = CreateObject("roSGNode", "ContentNode")
+    m.testCategory.id = "54321"
+    m.testCategory.title = "Test Category"
+    m.testCategory.addField("nature", "string", false)
+    m.testCategory.nature = "Season"
+
+    m.testVoucher = {
+      voucherType: "App"
+      code: "Test Product"
+    }
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '@It tests booleanString
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  '@Test
+  function booleanString()
+    m.AssertEqual(m.analytics.booleanString(true), "True")
+    m.AssertEqual(m.analytics.booleanString(false), "False")
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '@It tests propertiesToLabel
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  '@Test
+  function AMT_propertiesToLabel()
+    properties = {}
+    properties["Trigger"] = "A - B"
+    properties["Free"] = "True"
+    properties["Item ID"] = "12345"
+    m.assertEqual(m.analytics.propertiesToLabel(properties), "Free=True;Item ID=12345;Trigger=A - B")
+  end function
+
+  '@Test non string
+  function AMT_propertiesToLabel_nonString()
+    properties = {}
+    properties["boolean"] = true
+    properties["integer"] = 42%
+    properties["longinteger"] = 2349823492&
+    properties["float"] = 243.573!
+    properties["double"] = 1.23456789D - 12#
+    properties["string"] = "hi"
+    properties["array"] = [1, 2, 3]
+    properties["assocarray"] = { a: 1 }
+    properties["invalid"] = invalid
+    m.assertEqual(m.analytics.propertiesToLabel(properties), "array=;assocarray=;boolean=true;double=1.23457e-12;float=243.573;integer=42;invalid=;longinteger=2349823492;string=hi")
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '@It tests padString
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  '@Test
+  function AMT_padString()
+
+    m.assertEqual(m.analytics.padString("9", 2, "0"), "09")
+    m.assertEqual(m.analytics.padString("26", 2, "0"), "26")
+    m.assertEqual(m.analytics.padString("", 2, "0"), "00")
+
+  end function
+
+  '@Test empty
+  function AMT_padString_emptyPad()
+
+    m.assertEqual(m.analytics.padString("original ", 40, ""), "original")
+
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '@It tests timeFormat
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  '@Test
+  function AMT_timeFormat()
+
+    m.assertEqual(m.analytics.timeFormat(0), "00:00:00")
+    m.assertEqual(m.analytics.timeFormat(59), "00:00:59")
+    m.assertEqual(m.analytics.timeFormat(60), "00:01:00")
+    m.assertEqual(m.analytics.timeFormat(3599), "00:59:59")
+    m.assertEqual(m.analytics.timeFormat(3600), "01:00:00")
+
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '@It tests voucherDictionary
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  '@Test no grace period
+  function AMT_voucherDictionary_noGracePeriod()
+    voucher = {}
+    voucher.append(m.testVoucher)
+    voucher["freeTrialType"] = "None"
+    voucher["freeTrialQuantity"] = ""
+    dictionary = m.analytics.voucherDictionary(false, voucher)
+    m.assertEqual(dictionary["Grace Period"], "N/A")
+  end function
+
+  '@Test monthly grace period
+  function AMT_voucherDictionary_monthlyGracePeriod()
+    voucher = {}
+    voucher.append(m.testVoucher)
+    voucher["freeTrialType"] = "Days"
+    voucher["freeTrialQuantity"] = "7"
+    dictionary = m.analytics.voucherDictionary(false, voucher)
+    m.assertEqual(dictionary["Grace Period"], "7 Days")
+  end function
+
+  '@Test daily grace period
+  function AMT_voucherDictionary_dailyGracePeriod()
+    voucher = {}
+    voucher.append(m.testVoucher)
+    voucher["freeTrialType"] = "Months"
+    voucher["freeTrialQuantity"] = "1"
+    dictionary = m.analytics.voucherDictionary(false, voucher)
+    m.assertEqual(dictionary["Grace Period"], "1 Months")
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '@It tests itemDictionary
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  '@Test channelItemType
+  function AMT_itemDictionary_channelItemType()
+    dictionary = m.analytics.itemDictionary({ itemType: "channel" })
+    m.assertEqual(dictionary["Item Type"], "Channel - Applicaster Model")
+  end function
+
+  '@Test vod 
+  function AMT_itemDictionary_vodItemType()
+    dictionary = m.analytics.itemDictionary({ itemType: "vod" })
+    m.assertEqual(dictionary["Item Type"], "VOD - Applicaster Model")
+  end function
+
+  '@Test atom
+  function AMT_itemDictionary_atomItemType()
+    dictionary = m.analytics.itemDictionary({ itemType: "atom" })
+    m.assertEqual(dictionary["Item Type"], "VOD - ATOM")
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '@It tests playVOD
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  '@Test
+  function AMT_playVOD()
+    event = m.analytics.playVOD("Test Case", m.testItem, 75)
+
+    m.assertEqual(event.category, "Play VOD")
+    m.assertEqual(event.action, "Play VOD")
+    m.assertEqual(event.label, "ATOM feed name=N/A;Duration=00:02:00;Duration Played=00:01:15;Free=True;Item ID=12345;Item Name=Test Item;Item Type=VOD - Applicaster Model;Parent Category ID=N/A;Parent Category Name=N/A;Path To=Test Case;Percent Complete=62;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A")
+
+  end function
+
+  '@Test invalid item
+  function AMT_playVOD_invalidItem()
+    event = m.analytics.playVOD("Test Case", invalid, 75)
+
+    m.assertEqual(event.category, "Play VOD")
+    m.assertEqual(event.action, "Play VOD")
+    m.assertEqual(event.label, "ATOM feed name=N/A;Duration=Not Provided;Duration Played=00:01:15;Free=False;Item ID=N/A;Item Name=N/A;Item Type=N/A;Parent Category ID=N/A;Parent Category Name=N/A;Path To=Test Case;Percent Complete=0;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A")
+
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '@It tests clickItem
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  '@Test
+  function AMT_clickItem()
+    event = m.analytics.clickItem("Test Case", m.testItem)
+
+    m.assertEqual(event.category, "Click Item")
+    m.assertEqual(event.action, "Click Item")
+    m.assertEqual(event.label, "ATOM feed name=N/A;Free=True;Item ID=12345;Item Name=Test Item;Item Type=VOD - Applicaster Model;Parent Category ID=N/A;Parent Category Name=N/A;Path To=Test Case;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A")
+
+  end function
+
+  '@Test invalid item
+  function AMT_clickItem_invalidItem()
+    event = m.analytics.clickItem("Test Case", invalid)
+
+    m.assertEqual(event.category, "Click Item")
+    m.assertEqual(event.action, "Click Item")
+    m.assertEqual(event.label, "ATOM feed name=N/A;Free=False;Item ID=N/A;Item Name=N/A;Item Type=N/A;Parent Category ID=N/A;Parent Category Name=N/A;Path To=Test Case;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A")
+
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '@It tests clickCategory
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  '@Test
+  function AMT_clickCategory()
+    event = m.analytics.clickCategory("Test Case", m.testCategory)
+
+    m.assertEqual(event.category, "Click Category")
+    m.assertEqual(event.action, "Click Category")
+    m.assertEqual(event.label, "Category ID=54321;Category Name=Test Category;Category Type=Season;Path To=Test Case")
+
+  end function
+
+  '@Test invalid category
+  function AMT_clickCategory_invalidCategory()
+    event = m.analytics.clickCategory("Test Case", invalid)
+
+    m.assertEqual(event.category, "Click Category")
+    m.assertEqual(event.action, "Click Category")
+    m.assertEqual(event.label, "Category ID=N/A;Category Name=N/A;Category Type=N/A;Path To=Test Case")
+
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '@It tests launchApp
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  '@Test
+  function AMT_launchApp()
+    event = m.analytics.launchApp()
+
+    m.assertEqual(event.category, "Launch App")
+    m.assertEqual(event.action, "Launch App")
+    m.assertEqual(event.label, "")
+
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '@It tests viewStoreFront
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  '@Test
+  function AMT_viewStorefront()
+    event = m.analytics.viewStoreFront("Test Case", m.testItem, "Authorization")
+
+    m.assertEqual(event.category, "View Storefront")
+    m.assertEqual(event.action, "View Storefront")
+    m.assertEqual(event.label, "Action=Authorization;ATOM feed name=N/A;Free=True;Item ID=12345;Item Name=Test Item;Item Type=VOD - Applicaster Model;Parent Category ID=N/A;Parent Category Name=N/A;Path To=Test Case;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A")
+
+  end function
+
+  '@Test invalid item
+  function AMT_viewStorefront_invalidItem()
+    event = m.analytics.viewStoreFront("Test Case", invalid, "Authorization")
+
+    m.assertEqual(event.category, "View Storefront")
+    m.assertEqual(event.action, "View Storefront")
+    m.assertEqual(event.label, "Action=Authorization;ATOM feed name=N/A;Free=False;Item ID=N/A;Item Name=N/A;Item Type=N/A;Parent Category ID=N/A;Parent Category Name=N/A;Path To=Test Case;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A")
+
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '@It tests tapStoreFrontButton
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  '@Test
+  function AMT_tapStorefrontButton()
+    event = m.analytics.tapStorefrontButton("Purchase Button", m.testItem)
+
+    m.assertEqual(event.category, "Tap Storefront Button")
+    m.assertEqual(event.action, "Tap Storefront Button")
+    m.assertEqual(event.label, "ATOM feed name=N/A;Button Name=Purchase Button;Free=True;Item ID=12345;Item Name=Test Item;Item Type=VOD - Applicaster Model;Parent Category ID=N/A;Parent Category Name=N/A;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A")
+
+  end function
+
+  '@Test invalid item
+  function AMT_tapStorefrontButton_invalidItem()
+    event = m.analytics.tapStorefrontButton("Purchase Button", invalid)
+
+    m.assertEqual(event.category, "Tap Storefront Button")
+    m.assertEqual(event.action, "Tap Storefront Button")
+    m.assertEqual(event.label, "ATOM feed name=N/A;Button Name=Purchase Button;Free=False;Item ID=N/A;Item Name=N/A;Item Type=N/A;Parent Category ID=N/A;Parent Category Name=N/A;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A")
+
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '@It tests startPurchase
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  '@Test
+  function AMT_startPurchase()
+    event = m.analytics.startPurchase(false, m.testVoucher)
+
+    m.assertEqual(event.category, "Start Purchase")
+    m.assertEqual(event.action, "Start Purchase")
+    m.assertEqual(event.label, "Grace Period=N/A;Permitted Countries=N/A;Price=N/A;Product ID=Test Product;Purchase Entity=N/A;Subscriber=No;Subscription Duration=N/A;Transaction ID=N/A;Trial Period=N/A;Voucher Name=N/A;Voucher Template Type=App")
+
+  end function
+
+  '@Test invalid voucher
+  function AMT_startPurchase_invalidVoucher()
+    event = m.analytics.startPurchase(false, invalid)
+
+    m.assertEqual(event.category, "Start Purchase")
+    m.assertEqual(event.action, "Start Purchase")
+    m.assertEqual(event.label, "Grace Period=N/A;Permitted Countries=N/A;Price=N/A;Product ID=N/A;Purchase Entity=N/A;Subscriber=No;Subscription Duration=N/A;Transaction ID=N/A;Trial Period=N/A;Voucher Name=N/A;Voucher Template Type=N/A")
+
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '@It tests completePurchase
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  '@Test 
+  function AMT_completePurchase()
+    event = m.analytics.completePurchase(false, m.testVoucher)
+
+    m.assertEqual(event.category, "Complete Purchase")
+    m.assertEqual(event.action, "Complete Purchase")
+    m.assertEqual(event.label, "Grace Period=N/A;Permitted Countries=N/A;Price=N/A;Product ID=Test Product;Purchase Entity=N/A;Subscriber=No;Subscription Duration=N/A;Transaction ID=N/A;Trial Period=N/A;Voucher Name=N/A;Voucher Template Type=App")
+
+  end function
+
+  '@Test invalid voucher
+  function AMT_completePurchase_invalidVoucher()
+    event = m.analytics.completePurchase(false, invalid)
+
+    m.assertEqual(event.category, "Complete Purchase")
+    m.assertEqual(event.action, "Complete Purchase")
+    m.assertEqual(event.label, "Grace Period=N/A;Permitted Countries=N/A;Price=N/A;Product ID=N/A;Purchase Entity=N/A;Subscriber=No;Subscription Duration=N/A;Transaction ID=N/A;Trial Period=N/A;Voucher Name=N/A;Voucher Template Type=N/A")
+
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '@It tests canclePurchase
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  '@Test
+  function AMT_cancelPurchase()
+    event = m.analytics.cancelPurchase(false, m.testVoucher)
+
+    m.assertEqual(event.category, "Cancel Purchase")
+    m.assertEqual(event.action, "Cancel Purchase")
+    m.assertEqual(event.label, "Grace Period=N/A;Permitted Countries=N/A;Price=N/A;Product ID=Test Product;Purchase Entity=N/A;Subscriber=No;Subscription Duration=N/A;Transaction ID=N/A;Trial Period=N/A;Voucher Name=N/A;Voucher Template Type=App")
+
+  end function
+
+  '@Test invalid voucher
+  function AMT_cancelPurchase_invalidVoucher()
+    event = m.analytics.cancelPurchase(false, invalid)
+
+    m.assertEqual(event.category, "Cancel Purchase")
+    m.assertEqual(event.action, "Cancel Purchase")
+    m.assertEqual(event.label, "Grace Period=N/A;Permitted Countries=N/A;Price=N/A;Product ID=N/A;Purchase Entity=N/A;Subscriber=No;Subscription Duration=N/A;Transaction ID=N/A;Trial Period=N/A;Voucher Name=N/A;Voucher Template Type=N/A")
+
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '@It tests purchaseError
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  '@Test 
+  function AMT_purchaseError()
+    event = m.analytics.purchaseError("A125", "Payment Method Declined", false, m.testVoucher)
+
+    m.assertEqual(event.category, "Receive Error in Purchase Process")
+    m.assertEqual(event.action, "Receive Error in Purchase Process")
+    m.assertEqual(event.label, "Error Code ID=A125;Error Message=Payment Method Declined;Grace Period=N/A;Permitted Countries=N/A;Price=N/A;Product ID=Test Product;Purchase Entity=N/A;Subscriber=No;Subscription Duration=N/A;Transaction ID=N/A;Trial Period=N/A;Voucher Name=N/A;Voucher Template Type=App")
+
+  end function
+
+  '@Test invalid voucher
+  function AMT_purchaseError_invalidVoucher()
+    event = m.analytics.purchaseError("A125", "Payment Method Declined", false, invalid)
+
+    m.assertEqual(event.category, "Receive Error in Purchase Process")
+    m.assertEqual(event.action, "Receive Error in Purchase Process")
+    m.assertEqual(event.label, "Error Code ID=A125;Error Message=Payment Method Declined;Grace Period=N/A;Permitted Countries=N/A;Price=N/A;Product ID=N/A;Purchase Entity=N/A;Subscriber=No;Subscription Duration=N/A;Transaction ID=N/A;Trial Period=N/A;Voucher Name=N/A;Voucher Template Type=N/A")
+
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '@It tests openMenu
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  '@Test
+  function AMT_openMenu()
+    event = m.analytics.openMenu()
+
+    m.assertEqual(event.category, "Menu")
+    m.assertEqual(event.action, "Open Menu")
+    m.assertEqual(event.label, "")
+
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '@It tests openSearch
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  '@Test
+  function AMT_openSearch()
+    event = m.analytics.openSearch()
+
+    m.assertEqual(event.category, "Menu")
+    m.assertEqual(event.action, "Open Search")
+    m.assertEqual(event.label, "")
+
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '@It tests clickSearchResults
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  '@Test
+  function AMT_clickSearchResults()
+    event = m.analytics.clickSearchResults("be", "beaches")
+
+    m.assertEqual(event.category, "Menu")
+    m.assertEqual(event.action, "Click Search Results")
+    m.assertEqual(event.label, "Searched string=be;Show Name=beaches")
+
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '@It tests selectMenuItem
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  '@Test
+  function AMT_selectMenuItem()
+    event = m.analytics.selectMenuItem("About")
+
+    m.assertEqual(event.category, "Menu")
+    m.assertEqual(event.action, "Select Menu Item")
+    m.assertEqual(event.label, "Selected Menu Item=About")
+
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '@It tests pauseVOD
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  '@Test
+  function AMT_pauseVOD()
+    event = m.analytics.pauseVOD(m.testItem, 125)
+
+    m.assertEqual(event.category, "Pause VOD")
+    m.assertEqual(event.action, "Pause VOD")
+    m.assertEqual(event.label, "ATOM feed name=N/A;Free=True;Item ID=12345;Item Name=Test Item;Item Type=VOD - Applicaster Model;Parent Category ID=N/A;Parent Category Name=N/A;Pause Timecode=00:02:05;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A;Video Duration=00:02:00")
+
+  end function
+
+  '@Test invalid item
+  function AMT_pauseVOD_invalidItem()
+    event = m.analytics.pauseVOD(invalid, 125)
+
+    m.assertEqual(event.category, "Pause VOD")
+    m.assertEqual(event.action, "Pause VOD")
+    m.assertEqual(event.label, "ATOM feed name=N/A;Free=False;Item ID=N/A;Item Name=N/A;Item Type=N/A;Parent Category ID=N/A;Parent Category Name=N/A;Pause Timecode=00:02:05;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A;Video Duration=00:00:00")
+
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '@It tests unpauseVOD
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  '@Test
+  function AMT_unpauseVOD()
+    event = m.analytics.unpauseVOD(m.testItem, 125)
+
+    m.assertEqual(event.category, "Unpause VOD")
+    m.assertEqual(event.action, "Unpause VOD")
+    m.assertEqual(event.label, "ATOM feed name=N/A;Free=True;Item ID=12345;Item Name=Test Item;Item Type=VOD - Applicaster Model;Parent Category ID=N/A;Parent Category Name=N/A;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A;Unpause Timecode=00:02:05;Video Duration=00:02:00")
+
+  end function
+
+  '@Test invalid item
+  function AMT_unpauseVOD_invalidItem()
+    event = m.analytics.unpauseVOD(invalid, 125)
+
+    m.assertEqual(event.category, "Unpause VOD")
+    m.assertEqual(event.action, "Unpause VOD")
+    m.assertEqual(event.label, "ATOM feed name=N/A;Free=False;Item ID=N/A;Item Name=N/A;Item Type=N/A;Parent Category ID=N/A;Parent Category Name=N/A;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A;Unpause Timecode=00:02:05;Video Duration=00:00:00")
+
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '@It tests startLogin
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  '@Test
+  function startLogin()
+    event = m.analytics.startLogin("Test Case", "username")
+
+    m.assertEqual(event.category, "Start Login")
+    m.assertEqual(event.action, "Start Login")
+    m.assertEqual(event.label, "Login Name=username;Optional Fields=;Path To=Test Case;Required Fields=Username|Password")
+
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '@It tests login succeeds
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  '@Test
+  function loginSucceeds()
+    event = m.analytics.loginSucceeds("Test Case", "username")
+
+    m.assertEqual(event.category, "Login Succeeds")
+    m.assertEqual(event.action, "Login Succeeds")
+    m.assertEqual(event.label, "Login Name=username;Optional Fields=;Path To=Test Case;Required Fields=User Name|Password")
+
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '@It tests loginDoesNotSucceed
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  '@Test
+  function loginDoesNotSucceed()
+    event = m.analytics.loginDoesNotSucceed("Test Case", "username", "Error Returned", "Invald username or password")
+
+    m.assertEqual(event.category, "Login Does Not Succeed")
+    m.assertEqual(event.action, "Login Does Not Succeed")
+    m.assertEqual(event.label, "Error Message=Invald username or password;Login Name=username;Optional Fields=;Path To=Test Case;Reason=Error Returned;Required Fields=User Name|Password")
+
+  end function
 
 end namespace

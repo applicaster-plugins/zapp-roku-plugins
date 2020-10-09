@@ -10,15 +10,15 @@ function SegmentAnalytics(config as object, port as object) as object
   if _SegmentAnalytics_checkInvalidConfig(config) then
     return invalid
   end if
-  
+
   if config.queueSize = invalid or (type(config.queueSize) <> "roInteger" and type(config.queueSize) <> "roInt") or config.queueSize < 1 then
     config.queueSize = 1
   end if
-  
+
   if config.retryLimit = invalid or (type(config.retryLimit) <> "roInteger" and type(config.retryLimit) <> "roInt") or config.retryLimit < -1 then
     config.retryLimit = 1
   end if
-  
+
   return {
     'public functions
     identify: _SegmentAnalytics_identify
@@ -29,7 +29,7 @@ function SegmentAnalytics(config as object, port as object) as object
     handleRequestMessage: _SegmentAnalytics_handleRequestMessage
     flush: _SegmentAnalytics_flush
     checkRequestQueue: _SegmentAnalytics_checkRequestQueue
-    
+
     'private functions
     _createRequest: _SegmentAnalytics_createRequest
     _createPostOptions: _Segment_createPostOptions
@@ -42,7 +42,7 @@ function SegmentAnalytics(config as object, port as object) as object
     _queueMessage: _SegmentAnalytics_queueMessage
     _getDataBodySize: _SegmentAnalytics_getDataBodySize
     _minNumber: _SegmentAnalytics_minNumber
-    
+
     'private variables
     _config: config
     _port: port
@@ -62,7 +62,7 @@ end function
 
 function _SegmentAnalytics_checkInvalidConfig(config)
   isInvalid = false
-  
+
   if config = invalid then
     _SegmentAnalytics_log("No config found", "ERROR")
     isInvalid = true
@@ -82,7 +82,7 @@ function _SegmentAnalytics_checkInvalidConfig(config)
     _SegmentAnalytics_log("Empty writeKey string in config object", "ERROR")
     isInvalid = true
   end if
-  
+
   return isInvalid
 end function
 
@@ -97,12 +97,12 @@ sub _SegmentAnalytics_identify(userId as string, traits = invalid as dynamic, op
     "type": "identify"
     "userId": userId
   }
-  
+
   m._addValidFieldToAA(data, "traits", traits)
   m._addValidFieldsToAA(data, ["anonymousId", "context", "integrations", "messageId", "timestamp"], options)
-  
+
   if not m._checkValidId(data) then return
-  
+
   m._queueMessage(data)
 end sub
 
@@ -117,12 +117,12 @@ sub _SegmentAnalytics_track(event as string, properties = invalid as dynamic, op
     "type": "track"
     "event": event
   }
-  
+
   m._addValidFieldToAA(data, "properties", properties)
   m._addValidFieldsToAA(data, ["userId", "anonymousId", "context", "integrations", "messageId", "timestamp"], options)
-  
+
   if not m._checkValidId(data) then return
-  
+
   m._queueMessage(data)
 end sub
 
@@ -139,19 +139,19 @@ sub _SegmentAnalytics_screen(name = invalid as dynamic, category = invalid as dy
   data = {
     "type": "screen"
   }
-  
+
   if name = invalid and category = invalid
     m._log("Error missing name or category in screen call", "Error")
     return
   end if
-  
+
   m._addValidFieldToAA(data, "name", name)
   m._addValidFieldToAA(data, "category", category)
   m._addValidFieldToAA(data, "properties", properties)
   m._addValidFieldsToAA(data, ["userId", "anonymousId", "context", "integrations", "messageId", "timestamp"], options)
-  
+
   if not m._checkValidId(data) then return
-  
+
   m._queueMessage(data)
 end sub
 
@@ -168,12 +168,12 @@ sub _SegmentAnalytics_group(userId as string, groupId as string, traits = invali
     "userId": userId
     "groupId": groupId
   }
-  
+
   m._addValidFieldToAA(data, "traits", traits)
   m._addValidFieldsToAA(data, ["anonymousId", "context", "integrations", "messageId", "timestamp"], options)
-  
+
   if not m._checkValidId(data) then return
-  
+
   m._queueMessage(data)
 end sub
 
@@ -186,21 +186,21 @@ sub _SegmentAnalytics_alias(userId as string, options = {} as object)
     "type": "alias"
     "userId": userId
   }
-  
+
   m._addValidFieldsToAA(data, ["previousId", "anonymousId", "context", "integrations", "messageId", "timestamp"], options)
-  
+
   if not m._checkValidId(data) then return
-  
+
   m._queueMessage(data)
 end sub
 
 sub _SegmentAnalytics_handleRequestMessage(message as object, currentTime as integer)
   if m._serverRequestsById = invalid then return
-  
+
   responseCode = message.getResponseCode()
   requestId = strI(message.getSourceIdentity(), 10)
   request = m._serverRequestsById[requestId]
-  
+
   if (responseCode = 429 or responseCode >= 500) and request <> invalid and request.retryCount < m._config.retryLimit then
     m._setRequestAsRetry(request, currentTime)
   else if request <> invalid then
@@ -212,24 +212,24 @@ end sub
 
 sub _SegmentAnalytics_sendRequest(messageQueue as object)
   requestOptions = m._createPostOptions(messageQueue)
-  
+
   request = m._createRequest(requestOptions)
-  
+
   request.success(function(request, response)
     m.service._log("Successful request", "DEBUG")
   end function)
-  
+
   request.error(function(request, response)
     m.service._log("Failed request", "DEBUG")
   end function)
-  
+
   if m._serverRequestsById.count() >= 1000 then
     firstKey = m._serverRequestsById.keys()[0]
     m._log("----- Request queue is too full dropping request -----", "DEBUG")
     m._log(formatJSON(m._serverRequestsById[firstKey].data), "DEBUG")
     m._serverRequestsById.delete(firstKey)
   end if
-  
+
   m._log("----- Adding request to send queue-----", "DEBUG")
   m._serverRequestsById.addReplace(request.id.toStr(), request)
 end sub
@@ -237,7 +237,7 @@ end sub
 function _Segment_createPostOptions(batchData)
   ba = createObject("roByteArray")
   ba.fromAsciiString(m._config.writeKey)
-  
+
   return {
     method: "POST"
     url: m._apiUrl
@@ -267,7 +267,7 @@ sub _SegmentAnalytics_log(message as string, logLevel = "NONE" as string)
   if m._config <> invalid then
     showDebugLog = m._config.debug
   end if
-  
+
   if logLevel = "DEBUG" and (showDebugLog = invalid or not showDebugLog) then
     return
   end if
@@ -278,34 +278,34 @@ end sub
 function _SegmentAnalytics_checkValidId(data as dynamic) as boolean
   hasUserId = false
   hasAnonId = false
-  
+
   if data.userId <> invalid and (type(data.userId) = "roString" or type(data.userId) = "String") then
     hasUserId = data.userId.len() > 0
   end if
-  
+
   if data.anonymousId <> invalid and (type(data.anonymousId) <> "roString" or type(data.anonymousId) <> "String") then
     hasAnonId = data.anonymousId.len() > 0
   end if
-  
+
   if not hasUserId and not hasAnonId then
     callType = "unknown"
     if not data.type = invalid and (type(data.type) = "roString" or type(data.type) = "String")
       callType = data.type
     end if
-    m._log("No user or anonymous id found in [" + callType + "] call" , "ERROR")
+    m._log("No user or anonymous id found in [" + callType + "] call", "ERROR")
     return false
   end if
-  
+
   return true
 end function
 
 'Adds multiple fields to the data request body being for
 sub _SegmentAnalytics_addValidFieldsToAA(data as object, fields as object, inputData as object)
-  
+
   if data = invalid or not type(data) = "roAssociativeArray" then return
   if fields = invalid or not type(fields) = "roArray" or fields.count() = 0 then return
   if inputData = invalid or not type(inputData) = "roAssociativeArray" or inputData.count() = 0 then return
-  
+
   for each field in fields
     m._addValidFieldToAA(data, field, inputData[field])
   end for
@@ -326,12 +326,12 @@ sub _SegmentAnalytics_addValidFieldToAA(map as object, field as string, value as
     if field <> invalid and (type(field) = "roString" or type(field) = "String") then
       fieldType = field
     end if
-    
+
     if map <> invalid and map.type <> invalid and (type(map.type) = "roString" or type(map.type) = "String") then
       mapType = map.type
     end if
-    
-    m._log("No field (" + fieldType + ") for (" + mapType + ") call to add in data request" , "DEBUG")
+
+    m._log("No field (" + fieldType + ") for (" + mapType + ") call to add in data request", "DEBUG")
   end if
 end sub
 
@@ -343,11 +343,11 @@ sub _SegmentAnalytics_queueMessage(data as object)
     m._log("Error missing either a user or anonymous ID for (" + data.type + ") call", "ERROR")
     return
   end if
-  
+
   if data["messageId"] = invalid
     data["messageId"] = CreateObject("roDeviceInfo").GetRandomUUID()
   end if
-  
+
   if m._getDataBodySize(data) > m._maxMessageByteSize then
     m._log("Message size over 32KB", "ERROR")
   else
@@ -358,11 +358,11 @@ sub _SegmentAnalytics_queueMessage(data as object)
     m._log(strI(m._getDataBodySize(m._messageQueue)), "DEBUG")
     m._log("New batch size is: ", "DEBUG")
     m._log(strI(m._getDataBodySize(tempQueue)), "DEBUG")
-    
+
     if m._messageQueue.count() > 0 and m._getDataBodySize(tempQueue) > m._maxBatchByteSize then
       m._sendRequest(m._messageQueue)
       m._messageQueue = []
-      
+
       m._log("---- Queueing message after sending a request -----", "DEBUG")
       m._log(formatJSON(data), "DEBUG")
       m._messageQueue.push(data)
@@ -370,7 +370,7 @@ sub _SegmentAnalytics_queueMessage(data as object)
       m._log("---- Queueing message -----", "DEBUG")
       m._log(formatJSON(data), "DEBUG")
       m._messageQueue.push(data)
-      
+
       if m._messageQueue.count() = m._queueSize then
         m._sendRequest(m._messageQueue)
         m._messageQueue = []
@@ -389,7 +389,7 @@ function _SegmentAnalytics_getDataBodySize(data as object) as integer
       }
     }
   }
-  
+
   return formatJSON(body).len()
 end function
 
@@ -407,9 +407,9 @@ sub _SegmentAnalytics_checkRequestQueue(currentTime as integer)
       nextRetryTime = m._serverRequestsById[requestId].nextRetryTime
       if currentTime > nextRetryTime
         if nextRetryTime > 0
-          m._log("Retrying send request: " + requestId , "DEBUG")
+          m._log("Retrying send request: " + requestId, "DEBUG")
         else
-          m._log("Sending request: " + requestId , "DEBUG")
+          m._log("Sending request: " + requestId, "DEBUG")
         end if
         m._log(formatJSON(m._serverRequestsById[requestId]._data), "DEBUG")
         m._serverRequestsById[requestId].send()
@@ -434,7 +434,7 @@ function _SegmentAnalytics_minNumber(numberOne as integer, numberTwo as integer)
   if numberOne > numberTwo
     return numberTwo
   end if
-  
+
   return numberOne
 end function
 
@@ -445,7 +445,7 @@ function _SegmentAnalytics_Request(options as object, port as object, config as 
     id: invalid
     retryCount: 0
     nextRetryTime: 0
-    
+
     'private variables
     _method: UCase(options.method)
     _url: options.url
@@ -459,15 +459,15 @@ function _SegmentAnalytics_Request(options as object, port as object, config as 
     _log: _SegmentAnalytics_log
     _config: config
   }
-  
+
   this.success = function(handler)
     m._successHandlers.push(handler)
   end function
-  
+
   this.error = function(handler)
     m._errorHandlers.push(handler)
   end function
-  
+
   this.send = function()
     m._log("Sending out request", "DEBUG")
     requested = false
@@ -487,30 +487,30 @@ function _SegmentAnalytics_Request(options as object, port as object, config as 
     end if
     return requested
   end function
-  
+
   this.cancel = function()
     m._urlTransfer.asyncCancel()
     m._successHandlers.clear()
     m._errorHandlers.clear()
   end function
-  
+
   this.handleMessage = function(message)
     if type(message) <> "roUrlEvent" then return false
-    
+
     requestId = message.getSourceIdentity()
     if requestId <> m.id then return false
-    
+
     state = message.getInt()
     if state <> 1 then return false
-    
+
     responseCode = message.getResponseCode()
     m._responseCode = responseCode
-    
+
     rawResponse = message.getString()
     if rawResponse = invalid then
       rawResponse = ""
     end if
-    
+
     contentType = message.getResponseHeaders()["content-type"]
     if contentType = invalid or LCase(contentType).instr("json") >= 0 then
       if rawResponse <> "" then
@@ -521,7 +521,7 @@ function _SegmentAnalytics_Request(options as object, port as object, config as 
     else
       parsedResponse = {}
     end if
-    
+
     if responseCode >= 200 and responseCode <= 299 and parsedResponse <> invalid then
       for each handler in m._successHandlers
         handler(parsedResponse, m)
@@ -529,28 +529,28 @@ function _SegmentAnalytics_Request(options as object, port as object, config as 
     else
       errorReason = message.getFailureReason()
       error = { url: m._url, reason: errorReason, response: rawResponse, responseCode: responseCode }
-      
+
       for each handler in m._errorHandlers
         handler(error, m)
       end for
     end if
-    
+
     m._successHandlers.clear()
     m._errorHandlers.clear()
-    
+
     return true
   end function
-  
+
   this.id = this._urlTransfer.getIdentity()
   this._urlTransfer.setUrl(this._url)
   this._urlTransfer.setRequest(this._method)
   this._urlTransfer.retainBodyOnError(true)
   this._urlTransfer.setMessagePort(port)
   this._urlTransfer.setCertificatesFile("common:/certs/ca-bundle.crt")
-  
+
   if this._headers <> invalid then
     this._urlTransfer.setHeaders(this._headers)
   end if
-  
+
   return this
 end function

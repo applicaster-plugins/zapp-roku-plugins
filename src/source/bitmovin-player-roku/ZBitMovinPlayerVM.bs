@@ -3,199 +3,199 @@ import "pkg:/source/plugin-support/PluginManager.bs"
 
 namespace ZBMPVM
 
-class ZBitMovinPlayerVM extends BaseZappVM
+  class ZBitMovinPlayerVM extends BaseZappVM
 
-private view = invalid
-private themeColor = "#ffffff"
-private player = invalid
-private currentItem = invalid
-private licenseKey = ""
-private overrideVideoUrl = ""
-private isValid = false
-private state = "none"
-private pendingPlayerItem = invalid
-private playMode = "default"
+    private view = invalid
+    private themeColor = "#ffffff"
+    private player = invalid
+    private currentItem = invalid
+    private licenseKey = ""
+    private overrideVideoUrl = ""
+    private isValid = false
+    private state = "none"
+    private pendingPlayerItem = invalid
+    private playMode = "default"
 
-public function new(view)
-  super("ZBitMovinPlayerVM")
-  m.view = view
-  
-  m.licenseKey = MU.getContentField(view.riversJson, "general.license_key", "")
-  m.overrideVideoUrl = MU.getContentField(view.riversJson, "general.override_video_url", "")
-  themeColor = MU.getContentField(view.riversJson, "styles.theme_color")
-  
-  if themeColor = invalid
-    m.themeColor = "#ffffff"
-  else
-    m.themeColor = ViewUtils.transposeUIBColor(themeColor)
-  end if
-  
-  m.isValid = m.licenseKey <> ""
-end function
+    public function new(view)
+      super("ZBitMovinPlayerVM")
+      m.view = view
 
-private function _initialize()
-  m.createPlayer()
-end function
+      m.licenseKey = MU.getContentField(view.riversJson, "general.license_key", "")
+      m.overrideVideoUrl = MU.getContentField(view.riversJson, "general.override_video_url", "")
+      themeColor = MU.getContentField(view.riversJson, "styles.theme_color")
 
-private function createPlayer()
-  m.state = "creatingPlayer"
-  m.bitmovinPlayerSDK = m.view.createChild("ComponentLibrary")
-  m.bitmovinPlayerSDK.id = "BitmovinPlayerSDK"
-  m.bitmovinPlayerSDK.uri = "https://cdn.bitmovin.com/player/roku/1.22.0/bitmovinplayer.zip"
-  ' Adding the ComponentLibrary node to the scene will start the download of the library
-  m.view.appendChild(m.bitmovinPlayerSDK)
-  m.bindNodeField(m.bitmovinPlayerSDK, "loadStatus", "onSDKLoadStatusChange", MOM_createBindingProperties())
-end function
+      if themeColor = invalid
+        m.themeColor = "#ffffff"
+      else
+        m.themeColor = ViewUtils.transposeUIBColor(themeColor)
+      end if
 
-private function onSDKLoadStatusChange(status)
-  m.logInfo("sdk status is now", status)
-  
-  if status = "ready"
-    m.state = "ready"
-    m.logInfo("creating player")
-    m.player = m.view.createChild("BitmovinPlayerSDK:BitmovinPlayer")
-    m.player.id = "player"
-    
-    m.playerFunctions = m.player.BitmovinFunctions
-    m.playerFields = m.player.BitmovinFields
-    m.playerState = m.player.BitmovinPlayerState
-    m.setVideoChromeStyle() 
-    bindingProperties = MOM.createBindingProperties(false)
-    m.bindNodeField(m.player, m.playerFields.PLAYER_STATE, "onPlayerStateChange", bindingProperties)
-    m.bindNodeField(m.player, m.playerFields.ERROR, "onPlayerVideoError", bindingProperties)
-    m.bindNodeField(m.player, m.playerFields.CURRENT_TIME, "onPlayerCurrentTimeChange", bindingProperties)
-    m.bindNodeField(m.player, m.playerFields.SOURCE_LOADED, "onPlayerSourceLoadedChange", bindingProperties)
-    ' m.bindNodeField(m.playerFields.SEEK, "onPlayerSeek", bindingProperties)
-    ' m.bindNodeField(m.playerFields.SEEKED, "onPlayerSeeked", bindingProperties)
-    m.player.callFunc(m.playerFunctions.SETUP, {
-      key: m.licenseKey
-    })
-    if m.pendingPlayerItem <> invalid
-      m.logInfo("there was an item pending to play, playing it now")
-      m.playBitmovinItem(m.pendingPlayerItem)
+      m.isValid = m.licenseKey <> ""
+    end function
+
+    private function _initialize()
+      m.createPlayer()
+    end function
+
+    private function createPlayer()
+      m.state = "creatingPlayer"
+      m.bitmovinPlayerSDK = m.view.createChild("ComponentLibrary")
+      m.bitmovinPlayerSDK.id = "BitmovinPlayerSDK"
+      m.bitmovinPlayerSDK.uri = "https://cdn.bitmovin.com/player/roku/1.22.0/bitmovinplayer.zip"
+      ' Adding the ComponentLibrary node to the scene will start the download of the library
+      m.view.appendChild(m.bitmovinPlayerSDK)
+      m.bindNodeField(m.bitmovinPlayerSDK, "loadStatus", "onSDKLoadStatusChange", MOM_createBindingProperties())
+    end function
+
+    private function onSDKLoadStatusChange(status)
+      m.logInfo("sdk status is now", status)
+
+      if status = "ready"
+        m.state = "ready"
+        m.logInfo("creating player")
+        m.player = m.view.createChild("BitmovinPlayerSDK:BitmovinPlayer")
+        m.player.id = "player"
+
+        m.playerFunctions = m.player.BitmovinFunctions
+        m.playerFields = m.player.BitmovinFields
+        m.playerState = m.player.BitmovinPlayerState
+        m.setVideoChromeStyle() 
+        bindingProperties = MOM.createBindingProperties(false)
+        m.bindNodeField(m.player, m.playerFields.PLAYER_STATE, "onPlayerStateChange", bindingProperties)
+        m.bindNodeField(m.player, m.playerFields.ERROR, "onPlayerVideoError", bindingProperties)
+        m.bindNodeField(m.player, m.playerFields.CURRENT_TIME, "onPlayerCurrentTimeChange", bindingProperties)
+        m.bindNodeField(m.player, m.playerFields.SOURCE_LOADED, "onPlayerSourceLoadedChange", bindingProperties)
+        ' m.bindNodeField(m.playerFields.SEEK, "onPlayerSeek", bindingProperties)
+        ' m.bindNodeField(m.playerFields.SEEKED, "onPlayerSeeked", bindingProperties)
+        m.player.callFunc(m.playerFunctions.SETUP, {
+          key: m.licenseKey
+        })
+        if m.pendingPlayerItem <> invalid
+          m.logInfo("there was an item pending to play, playing it now")
+          m.playBitmovinItem(m.pendingPlayerItem)
+          m.pendingPlayerItem = invalid
+        end if
+      end if
+    end function
+
+    private function setVideoChromeStyle()
+      videoNode = m.player.getChild(0)
+      videoNode.retrievingBar.filledBarBlendColor = m.themeColor
+      videoNode.bufferingBar.filledBarBlendColor = m.themeColor
+      videoNode.trickPlayBar.filledBarBlendColor = m.themeColor
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '++ Public api
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    public function playItem(item, playMode = "default")
+      m.logMethod("playItem ", item.id)
+
+      m.currentItem = item
+      m.playMode = playMode
+      playerItem = m.getPlayerItem(m.currentItem)
+      playerItem.options = {
+        "startOffset": m.currentItem.PlayStart
+      }
+      m.logInfo("playing with player item", formatJson(playerItem))
+
+      if m.player <> invalid
+        m.pendingPlayerItem = invalid
+        m.playBitmovinItem(playerItem)
+      else
+        m.logWarn("player is not ready yet; settig this item as pending")
+        m.pendingPlayerItem = playerItem
+      end if
+    end function
+
+    function playBitmovinItem(playerItem)
+      m.logMethod("playBitmovinItem")
+
+      m.state = "playing"
+      m.player.callFunc(m.playerFunctions.LOAD, playerItem)
+      m.player.callFunc(m.playerFunctions.PLAY, invalid)
+      videoNode = m.player.getChild(0)
+      videoNode.control = "play"
+      if m.playMode = "default"
+        m.setFocus(m.player)
+      end if
+      m.setVideoChromeStyle()
+    end function
+
+    public function getPlayerItem(item)
+
+      if item.playbackData <> invalid
+        return item.playbackData
+
+      else
+        return {
+          hls: item.url
+          title: item.title
+        }
+      end if
+    end function
+
+    public function stopItem()
+      m.logMethod("stopItem")
+      if m.player <> invalid
+        m.player.callFunc(m.playerFunctions.UNLOAD, invalid)
+      end if
       m.pendingPlayerItem = invalid
-    end if
-  end if
-end function
+      m.currentItem = invalid
+      m.view.isPlaybackFinished = true
+      m.state = "ready"
+    end function
 
-private function setVideoChromeStyle()
-  videoNode = m.player.getChild(0)
-  videoNode.retrievingBar.filledBarBlendColor = m.themeColor
-  videoNode.bufferingBar.filledBarBlendColor = m.themeColor
-  videoNode.trickPlayBar.filledBarBlendColor = m.themeColor
-end function
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '++ Player callbacks
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'++ Public api
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    private function onPlayerStateChange(state) as void
+      m.logInfo("player state change", state)
 
-public function playItem(item, playMode = "default")
-  m.logMethod("playItem ", item.id)
-  
-  m.currentItem = item
-  m.playMode = playMode
-  playerItem = m.getPlayerItem(m.currentItem)
-  playerItem.options = {
-    "startOffset": m.currentItem.PlayStart
-  }
-  m.logInfo("playing with player item", formatJson(playerItem))
-  
-  if m.player <> invalid
-    m.pendingPlayerItem = invalid
-    m.playBitmovinItem(playerItem)
-  else
-    m.logWarn("player is not ready yet; settig this item as pending")
-    m.pendingPlayerItem = playerItem
-  end if
-end function
+      if state = m.playerState.FINISHED
+        m.view.playbackResult = m.makeResult("finished", "")
+        m.view.isPlaybackFinished = true
+        m.state = "ready"
+      else if state = m.playerState.ERROR
+        m.view.playbackResult = m.makeResult("error", "error during playback")
+        m.view.isPlaybackFinished = true
+        m.state = "error"
+      else 
+        'ignore this state ; but check if we'v got a duration yet
+        videoNode = m.player.getChild(0)
 
-function playBitmovinItem(playerItem)
-  m.logMethod("playBitmovinItem")
-  
-  m.state = "playing"
-  m.player.callFunc(m.playerFunctions.LOAD, playerItem)
-  m.player.callFunc(m.playerFunctions.PLAY, invalid)
-  videoNode = m.player.getChild(0)
-  videoNode.control = "play"
-  if m.playMode = "default"
-    m.setFocus(m.player)
-  end if
-  m.setVideoChromeStyle()
-end function
+        if videoNode <> invalid
+          m.view.duration = videoNode.duration
+        else
+          m.view.duration = 0
+        end if
+      end if
+    end function
 
-public function getPlayerItem(item)
-  
-  if item.playbackData <> invalid
-    return item.playbackData
-    
-  else
-    return {
-      hls: item.url
-      title: item.title
-    }
-  end if
-end function
+    private function onPlayerVideoError(error)
+      m.logMethod("onPlayVideoError", error)
+      m.view.playbackResult = m.makeResult("error", error.message)
+      m.state = "ready"
+    end function
 
-public function stopItem()
-  m.logMethod("stopItem")
-  if m.player <> invalid
-    m.player.callFunc(m.playerFunctions.UNLOAD, invalid)
-  end if
-  m.pendingPlayerItem = invalid
-  m.currentItem = invalid
-  m.view.isPlaybackFinished = true
-  m.state = "ready"
-end function
+    private function onPlayerCurrentTimeChange(currentTime)
+      m.view.position = currentTime
+    end function
 
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'++ Player callbacks
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '++ private impl
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-private function onPlayerStateChange(state) as void
-  m.logInfo("player state change", state)
-  
-  if state = m.playerState.FINISHED
-    m.view.playbackResult = m.makeResult("finished", "")
-    m.view.isPlaybackFinished = true
-    m.state = "ready"
-  else if state = m.playerState.ERROR
-    m.view.playbackResult = m.makeResult("error", "error during playback")
-    m.view.isPlaybackFinished = true
-    m.state = "error"
-  else 
-    'ignore this state ; but check if we'v got a duration yet
-    videoNode = m.player.getChild(0)
-    
-    if videoNode <> invalid
-      m.view.duration = videoNode.duration
-    else
-      m.view.duration = 0
-    end if
-  end if
-end function
+    private function makeResult(state, message)
+      return { "state": state, "message": message }
+    end function
 
-private function onPlayerVideoError(error)
-  m.logMethod("onPlayVideoError", error)
-  m.view.playbackResult = m.makeResult("error", error.message)
-  m.state = "ready"
-end function
+    public override function destroy()
+      'video player is never destroyed
+    end function
 
-private function onPlayerCurrentTimeChange(currentTime)
-  m.view.position = currentTime
-end function
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'++ private impl
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-private function makeResult(state, message)
-  return { "state": state, "message": message }
-end function
-
-public override function destroy()
-  'video player is never destroyed
-end function
-
-end class
+  end class
 end namespace
 

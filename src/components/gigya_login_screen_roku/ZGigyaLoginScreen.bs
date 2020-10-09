@@ -8,7 +8,7 @@ function init()
   m.top.isConsumingOriginEntry = true
   m.top.isForcingMenuHidden = true
   M_createNodeVars()
-  
+
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -37,17 +37,17 @@
 '*****************************
 function initGAMobile(tracking_ids as dynamic, client_id as string, custom_session_params = {} as object) as void
   gamobile = CreateObject("roAssociativeArray")
-  
+
   if type(tracking_ids) <> "roArray" then
     tracking_ids = [tracking_ids]
   end if
-  
+
   ' Set up some invariants
   gamobile.url = "http://www.google-analytics.com/collect"
   gamobile.version = "1"
   gamobile.tracking_ids = tracking_ids
   gamobile.next_z = 1
-  
+
   ' Default session params
   app_info = CreateObject("roAppInfo")
   device = createObject("roDeviceInfo")
@@ -58,19 +58,19 @@ function initGAMobile(tracking_ids as dynamic, client_id as string, custom_sessi
     cid: Box(client_id).Escape() ' Client Id
     aiid: Box(device.getModel()).Escape() ' App Installer Id.
   }
-  
+
   ' Allow any arbitrary params to be sent with the hits
   if custom_session_params <> invalid and type(custom_session_params) = "roAssociativeArray" then
     gamobile.session_params.append(custom_session_params)
   end if
-  
+
   ' single point of on/off for analytics
   gamobile.enable = false
   gamobile.asyncReqById = {} ' Since we async HTTP metric requests, hold onto objects so they dont go out of scope (and get killed)
   gamobile.asyncMsgPort = CreateObject("roMessagePort")
-  
+
   gamobile.debug = false
-  
+
   'set global attributes
   m.gamobile = gamobile
 end function
@@ -104,7 +104,7 @@ function gamobilePageView(hostname = "" as string, page = "" as string, title = 
   if m.gamobile.debug
     ? "[GA] PageView: " + page
   end if
-  
+
   hit_params = {
     t: "pageview"
     dh: Box(hostname).Escape() ' Document hostname
@@ -129,7 +129,7 @@ function gamobileEvent(category as string, action as string, label = "" as strin
   if m.gamobile.debug
     ? "[GA] Event: " + category + "/" + action
   end if
-  
+
   hit_params = {
     t: "event"
     ec: Box(category).Escape() ' Event Category. Required.
@@ -153,7 +153,7 @@ function gamobileScreenView(screen_name as string) as void
   if m.gamobile.debug
     ? "[GA] Screen: " + screen_name
   end if
-  
+
   hit_params = {
     t: "screenview"
     cd: Box(screen_name).Escape() ' Screen name / content description.
@@ -178,7 +178,7 @@ function gamobileTransaction(transaction_id as string, affiliation = "" as strin
   if m.gamobile.debug
     ? "[GA] transaction: " + transaction_id
   end if
-  
+
   hit_params = {
     t: "transaction"
     ti: Box(transaction_id).Escape() ' Transaction ID
@@ -206,7 +206,7 @@ function gamobileException(description as string) as void
   if m.gamobile.debug
     ? "[GA] Exception: "
   end if
-  
+
   hit_params = {
     t: "exception" 
     exd: Box(description).Escape() ' Exception description.
@@ -227,47 +227,47 @@ function gamobileSendHit(hit_params as object) as void
     end if
     return
   end if
-  
+
   url = m.gamobile.url
-  
+
   ' first set immutables  
   full_params = "v=" + m.gamobile.version ' Measurement Protocol Version
-  
+
   ' next set session and hit params.  hit params can override session params
   merged_params = {}
   for each sp in m.gamobile.session_params
     merged_params[sp] = m.gamobile.session_params[sp]
   end for
   merged_params.Append(hit_params)
-  
+
   for each mp in merged_params
     full_params = full_params + "&" + mp + "=" + merged_params[mp]
   end for
-  
+
   for each tracking_id in m.gamobile.tracking_ids
     'New xfer obj needs to be made each request and ref held on to per https://sdkdocs.roku.com/display/sdkdoc/ifUrlTransfer
     request = CreateObject("roURLTransfer")
     request.SetUrl(url)
     request.SetMessagePort(m.gamobile.asyncMsgPort)
-    
+
     postStr = full_params + "&tid=" + Box(tracking_id).Escape()
-    
+
     ' Cache buster; docs say this should be last
     postStr = postStr + "&z=" + Box(m.gamobile.next_z).toStr()
     m.gamobile.next_z = m.gamobile.next_z + 1
-    
+
     didSend = request.AsyncPostFromString(postStr)
     requestId = request.GetIdentity().ToStr()
     m.gamobile.asyncReqById[requestId] = request
-    
+
     if m.gamobile.debug
       ? "[GA] sendHit POSTed (" + requestId + ")";postStr
       ? "[GA] pending req";getGaPendingRequestsMap()
     end if
   end for
-  
+
   gamobileCleanupAsyncReq()
-  
+
 end function
 
 ' Garbage collect async requests that have completed
@@ -282,7 +282,7 @@ function gamobileCleanupAsyncReq()
       m.gamobile.asyncReqById.Delete(requestId)
     end if
   end for
-  
+
   if m.gamobile.debug
     ? "[GA] gamobileCleanupAsyncReq pending ";getGaPendingRequestsMap()
   end if

@@ -14,11 +14,11 @@ function initializeGA()
     gamobile_client_id = device.GetRandomUUID()
   end if
   gamobile_custom_fileds = m.top.customSessionParams
-  
+
   ' Init analytics
   initGAMobile(gamobile_tracking_ids, gamobile_client_id, gamobile_custom_fileds)
   enableGAMobile(true)
-  
+
   ' Enable or disable debug here for viewing events on the console
   setGADebug(true)
 end function
@@ -34,14 +34,14 @@ function execGampLoop()
   m.top.observeField("trackingId", port)
   m.top.observeField("clientId", port)
   m.top.observeField("customSessionParams", port)
-  
+
   initializeGA()
-  
+
   ' Apps which use this long-lived task should delay any writes to the reporting fields (pageView, etc.)
   ' until this is set to true.  This is because there is a non-zero time from setting control = "RUN"
   ' until the time when the reporting fields are being observed.
   m.top.ready = true
-  
+
   while true
     msg = MTU_waitPort(0, port)
     if type(msg) = "roSGNodeEvent" then
@@ -80,5 +80,5 @@ function execGampLoop()
       end if
     end if
   end while
-  
+
 end function

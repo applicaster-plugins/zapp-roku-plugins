@@ -2,96 +2,96 @@ import "pkg:/source/UIBuilder/view/ZUIBScreenVM.bs"
 import "pkg:/source/lib/ViewUtils.bs"
 
 namespace GTSVM
-class GeneralTextScreenVM extends ZUIBScreenVM
+  class GeneralTextScreenVM extends ZUIBScreenVM
 
-'styles
-public titleStyle = invalid
-public descriptionStyle = invalid
-public optional1Style = invalid
-public titleText = ""
-public descriptionText = ""
-public optional1Text = ""
-public buttonStyle = invalid
+    'styles
+    public titleStyle = invalid
+    public descriptionStyle = invalid
+    public optional1Style = invalid
+    public titleText = ""
+    public descriptionText = ""
+    public optional1Text = ""
+    public buttonStyle = invalid
 
-public backgroundColor = "#000000ff"
-public backgroundUrl = ""
-public textPosition = [0, 310]
-public buttonPosition = [655, 688]
-public logoPosition = [100, 33]
-public logoWidth = 350
-public logoHeight = 100
-public logoImageUrl = ""
+    public backgroundColor = "#000000ff"
+    public backgroundUrl = ""
+    public textPosition = [0, 310]
+    public buttonPosition = [655, 688]
+    public logoPosition = [100, 33]
+    public logoWidth = 350
+    public logoHeight = 100
+    public logoImageUrl = ""
 
-public function new(riversJson)
-  super(riversJson, "WarningMessageScreenVM")
-  
-  m.focusId = "usernameInput"
-  m.processStyles(m.riversJson.styles)
-  
-end function
+    public function new(riversJson)
+      super(riversJson, "WarningMessageScreenVM")
 
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'++ Overridden
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      m.focusId = "usernameInput"
+      m.processStyles(m.riversJson.styles)
 
-public override function createContent()
-  m.logInfo("createContent is overridden in this screen")
-end function
+    end function
 
-public override function load() as boolean
-  return true
-end function
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '++ Overridden
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'++ styles
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    public override function createContent()
+      m.logInfo("createContent is overridden in this screen")
+    end function
 
-function processStyles(styles)
-  m.logInfo("converting rivers json styles into a format our UI controls can consume")
-  
-  m.titleStyle = ViewUtils.makeUIBTextStyle(styles, "title")
-  
-  m.descriptionStyle = ViewUtils.makeUIBTextStyle(styles, "description")
-  m.optional1Style = ViewUtils.makeUIBTextStyle(styles, "optional_text1")
-  m.backgroundColor = ViewUtils.transposeUIBColor(styles.background_color)
-  m.backgroundUrl = styles.background_url
-  m.logoImageUrl = styles.logo_image_url
-  
-  m.buttonStyle = ViewUtils.makeUIBButtonStyle(styles, "done_button", "custom", styles.done_button_text)
-  
-  m.logoImageUrl = styles.logo_url
-  m.logoPosition = ViewUtils.makeUIBPosition(styles, "logo", 100, 33)
-  m.textPosition = ViewUtils.makeUIBPosition(styles, "text", 0, 310)
-  m.textWidth = ViewUtils.getUIBInt(styles, "text_w", 1920)
-  m.buttonPosition = ViewUtils.makeUIBPosition(styles, "button", 100, 33)
-  logoSize = ViewUtils.makeUIBSize(styles, "logo", 350, 100)
-  m.logoWidth = logoSize[0]
-  m.logoHeight = logoSize[1]
-  
-end function
+    public override function load() as boolean
+      return true
+    end function
 
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'++ callbacks
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '++ styles
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-public function onButtonSelected(value)
-  m.logMethod("onButtonSelected")
-  m.dismiss("cancel")
-end function
+    function processStyles(styles)
+      m.logInfo("converting rivers json styles into a format our UI controls can consume")
 
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'++ Key Handling
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      m.titleStyle = ViewUtils.makeUIBTextStyle(styles, "title")
 
-public function isCapturingAnyKeyPress(key, press)
-  'do not anyone escape this screen!
-  return true
-end function
+      m.descriptionStyle = ViewUtils.makeUIBTextStyle(styles, "description")
+      m.optional1Style = ViewUtils.makeUIBTextStyle(styles, "optional_text1")
+      m.backgroundColor = ViewUtils.transposeUIBColor(styles.background_color)
+      m.backgroundUrl = styles.background_url
+      m.logoImageUrl = styles.logo_image_url
 
-public function onKeyPressBack() as boolean
-  m.dismiss("cancel")
-  return true
-end function
+      m.buttonStyle = ViewUtils.makeUIBButtonStyle(styles, "done_button", "custom", styles.done_button_text)
 
-end class
+      m.logoImageUrl = styles.logo_url
+      m.logoPosition = ViewUtils.makeUIBPosition(styles, "logo", 100, 33)
+      m.textPosition = ViewUtils.makeUIBPosition(styles, "text", 0, 310)
+      m.textWidth = ViewUtils.getUIBInt(styles, "text_w", 1920)
+      m.buttonPosition = ViewUtils.makeUIBPosition(styles, "button", 100, 33)
+      logoSize = ViewUtils.makeUIBSize(styles, "logo", 350, 100)
+      m.logoWidth = logoSize[0]
+      m.logoHeight = logoSize[1]
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '++ callbacks
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    public function onButtonSelected(value)
+      m.logMethod("onButtonSelected")
+      m.dismiss("cancel")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '++ Key Handling
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    public function isCapturingAnyKeyPress(key, press)
+      'do not anyone escape this screen!
+      return true
+    end function
+
+    public function onKeyPressBack() as boolean
+      m.dismiss("cancel")
+      return true
+    end function
+
+  end class
 end namespace

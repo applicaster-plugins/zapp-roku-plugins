@@ -9,16 +9,16 @@
 function SegmentAnalyticsConnector(task as object)
   return {
     init: _SegmentAnalyticsConnector_init
-    
+
     identify: _SegmentAnalyticsConnector_identify
     track: _SegmentAnalyticsConnector_track
     screen: _SegmentAnalyticsConnector_screen
     group: _SegmentAnalyticsConnector_group
     alias: _SegmentAnalyticsConnector_alias
-    
+
     'private
     _task: task
-    
+
     _callEvent: _SegmentAnalyticsConnector_callEvent
   }
 end function
@@ -111,7 +111,7 @@ sub _SegmentAnalyticsConnector_callEvent(name as string, payload as object)
   if payload.options = invalid
     payload.options = {}
   end if
-  
+
   if payload.options.timestamp = invalid
     dateTime = createObject("roDateTime")
     payload.options.timestamp = dateTime.ToIsoString()

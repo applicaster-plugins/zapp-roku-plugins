@@ -2,114 +2,114 @@
 
 namespace SAPT
 
-'@BeforeEach
-function beforeEach()
-  config = {
-    "write_key": "#w"
-  }
-  m.modelLocator = createObject("roSGNode", "ModelLocator")
-  m.modelLocator.constants = {
-    "applicasterDeviceId": "#a"
-  }
-  TU.setModelLocator(m.modelLocator)
-  
-  m.pluginData = new BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
-  
-  m.plugin = new SegmentAnalyticsPlugin(m.pluginData)
-end function
+  '@BeforeEach
+  function beforeEach()
+    config = {
+      "write_key": "#w"
+    }
+    m.modelLocator = createObject("roSGNode", "ModelLocator")
+    m.modelLocator.constants = {
+      "applicasterDeviceId": "#a"
+    }
+    TU.setModelLocator(m.modelLocator)
 
-'@AfterEach
-function afterEach()
-  TU.unsetModelLocator()
-end function
+    m.pluginData = new BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
 
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests constructor
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    m.plugin = new SegmentAnalyticsPlugin(m.pluginData)
+  end function
 
-'@Test constructor
-function constructor()
-  m.assertEqual(m.plugin.id, "segment_analytics_roku")
-  m.assertSubType(m.plugin.segmentTask, "SegmentAnalyticsTask")
-  m.assertEqual(m.plugin.writeKey, "#w")
-  m.assertEqual(m.plugin.applicasterDeviceId, "#a")
-  m.assertNotInvalid(m.plugin.library)
-end function
+  '@AfterEach
+  function afterEach()
+    TU.unsetModelLocator()
+  end function
 
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests start
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '@It tests constructor
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-'@Test start
-function start()
-  
-  library = { "id" : "library" }
-  m.plugin.library = library
-  
-  m.expectOnce(library, "init", [{
+  '@Test constructor
+  function constructor()
+    m.assertEqual(m.plugin.id, "segment_analytics_roku")
+    m.assertSubType(m.plugin.segmentTask, "SegmentAnalyticsTask")
+    m.assertEqual(m.plugin.writeKey, "#w")
+    m.assertEqual(m.plugin.applicasterDeviceId, "#a")
+    m.assertNotInvalid(m.plugin.library)
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '@It tests start
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  '@Test start
+  function start()
+
+    library = { "id": "library" }
+    m.plugin.library = library
+
+    m.expectOnce(library, "init", [{
       "writeKey": "#w"
       "debug": true
       "queueSize": 3
       "retryLimit": 0
-  }])
-  
-  m.plugin.start()
-end function
+    }])
 
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests generateMap
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    m.plugin.start()
+  end function
 
-'@Test some
-function generateMap_some()
-  config = {
-    "write_key": "#w"
-    "provider_key_1": "AdobePrimetime"
-    "provider_value_1": "Adobe"
-    "provider_key_2": "aws_cognito_auth_plugin"
-    "provider_value_2": "Cognito"
-    "provider_key_3": ""
-    "provider_value_3": ""
-  }
-  
-  pluginData = new BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
-  
-  map = m.plugin.generateMap(pluginData, "provider", 3)
-  
-  m.assertEqual(map["AdobePrimetime"], "Adobe")
-  m.assertEqual(map["aws_cognito_auth_plugin"], "Cognito")
-end function
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '@It tests generateMap
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-'@Test none
-function generateMap_none()
-  config = {
-    "write_key": "#w"
-    "provider_key_1": ""
-    "provider_value_1": ""
-    
-    
-    
-    "provider_key_2": ""
-    "provider_value_2": ""
-    "provider_key_3": ""
-    "provider_value_3": ""
-  }
-  
-  pluginData = new BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
-  
-  m.assertEmpty(m.plugin.generateMap(pluginData, "provider", 3))
-  
-end function
+  '@Test some
+  function generateMap_some()
+    config = {
+      "write_key": "#w"
+      "provider_key_1": "AdobePrimetime"
+      "provider_value_1": "Adobe"
+      "provider_key_2": "aws_cognito_auth_plugin"
+      "provider_value_2": "Cognito"
+      "provider_key_3": ""
+      "provider_value_3": ""
+    }
+
+    pluginData = new BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
+
+    map = m.plugin.generateMap(pluginData, "provider", 3)
+
+    m.assertEqual(map["AdobePrimetime"], "Adobe")
+    m.assertEqual(map["aws_cognito_auth_plugin"], "Cognito")
+  end function
+
+  '@Test none
+  function generateMap_none()
+    config = {
+      "write_key": "#w"
+      "provider_key_1": ""
+      "provider_value_1": ""
 
 
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests _identify
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-'@Test disabled_on_logout
-function _identify_disabled_on_logout()
-  m.plugin.isIdentifyingOnLogout = false
-  m.assertTrue(m.plugin._identify("pid", invalid, invalid, true))
-end function
+      "provider_key_2": ""
+      "provider_value_2": ""
+      "provider_key_3": ""
+      "provider_value_3": ""
+    }
+
+    pluginData = new BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
+
+    m.assertEmpty(m.plugin.generateMap(pluginData, "provider", 3))
+
+  end function
+
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '@It tests _identify
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  '@Test disabled_on_logout
+  function _identify_disabled_on_logout()
+    m.plugin.isIdentifyingOnLogout = false
+    m.assertTrue(m.plugin._identify("pid", invalid, invalid, true))
+  end function
 
 end namespace

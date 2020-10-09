@@ -1,53 +1,53 @@
 '@TestSuite [GTSVMT] GeneraltTextScreenVM Tests
 namespace GTSVMT
 
-'@BeforeEach
-function beforeEach()
-  localStore = createObject("roSGNode", "ZSessionStore")
-  modelLocator = createObject("roSGNode", "ModelLocator")
-  modelLocator.addfields({ "ZPLocalStore": localStore })
-  modelLocator.locale = "en"
-  
-  TU.setModelLocator(modelLocator)
-  
-  riversJson = {
-    "id": "generalTextScreen"
-    styles: {
+  '@BeforeEach
+  function beforeEach()
+    localStore = createObject("roSGNode", "ZSessionStore")
+    modelLocator = createObject("roSGNode", "ModelLocator")
+    modelLocator.addfields({ "ZPLocalStore": localStore })
+    modelLocator.locale = "en"
+
+    TU.setModelLocator(modelLocator)
+
+    riversJson = {
+      "id": "generalTextScreen"
+      styles: {
+      }
     }
-  }
-  
-  m.vm = new GeneralTextScreenVM(riversJson)
-  m.vm.initialize()
-end function
 
-'@AfterEach
-function afterEach()
-  m.global.delete("zapp")
-  TU.unsetModelLocator()
-end function
+    m.vm = new GeneralTextScreenVM(riversJson)
+    m.vm.initialize()
+  end function
 
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests onDoneButtonSelected
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '@AfterEach
+  function afterEach()
+    m.global.delete("zapp")
+    TU.unsetModelLocator()
+  end function
 
-'@Test 
-function onButtonSelected()
-  m.expectOnce(m.vm, "dismiss", ["cancel"])
-  
-  m.vm.onButtonSelected(true)
-  
-end function
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '@It tests onDoneButtonSelected
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests onKeyPressBack
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '@Test 
+  function onButtonSelected()
+    m.expectOnce(m.vm, "dismiss", ["cancel"])
 
-'@Test 
-function onKeyPressBack()
-  m.expectOnce(m.vm, "dismiss", ["cancel"])
-  
-  m.vm.onKeyPressBack()
-  
-end function
+    m.vm.onButtonSelected(true)
+
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '@It tests onKeyPressBack
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  '@Test 
+  function onKeyPressBack()
+    m.expectOnce(m.vm, "dismiss", ["cancel"])
+
+    m.vm.onKeyPressBack()
+
+  end function
 
 end namespace

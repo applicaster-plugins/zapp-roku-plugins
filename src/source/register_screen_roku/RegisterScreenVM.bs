@@ -3,252 +3,252 @@ import "pkg:/source/lib/ViewUtils.bs"
 import "pkg:/source/mixin/KeyboardDialogMixin.bs"
 
 namespace Applicaster
-class RegisterScreenVM extends ZUIBScreenVM
+  class RegisterScreenVM extends ZUIBScreenVM
 
-'styles
-public inputStyle = invalid
-public registerButtonStyle = invalid
-public usernamePlaceholderText = ""
-public namePlaceholderText = ""
-public passwordPlaceholderText = ""
+    'styles
+    public inputStyle = invalid
+    public registerButtonStyle = invalid
+    public usernamePlaceholderText = ""
+    public namePlaceholderText = ""
+    public passwordPlaceholderText = ""
 
-'state
-public isCredsValid = false
-public isRegisterButtonEnabled = false
-public isMainGroupVisible = true
-public isDoneGroupVisible = false
-public isLoading = false
-public nameButtonType = "textInput"
-public usernameButtonType = "textInput"
-public passwordButtonType = "textInput"
+    'state
+    public isCredsValid = false
+    public isRegisterButtonEnabled = false
+    public isMainGroupVisible = true
+    public isDoneGroupVisible = false
+    public isLoading = false
+    public nameButtonType = "textInput"
+    public usernameButtonType = "textInput"
+    public passwordButtonType = "textInput"
 
-public usernameText = ""
-public username = ""
-public nameText = ""
-public name = ""
-public passwordText = ""
-public password = ""
+    public usernameText = ""
+    public username = ""
+    public nameText = ""
+    public name = ""
+    public passwordText = ""
+    public password = ""
 
-public errorText = ""
-public isErrorShowing = false
+    public errorText = ""
+    public isErrorShowing = false
 
-private providerId = invalid
-private focusIds = ["usernameInput", "nameInput", "passwordInput", "registerButton"]
-private maxDebugAccounts = 1
-private debugAccountId = 0
+    private providerId = invalid
+    private focusIds = ["usernameInput", "nameInput", "passwordInput", "registerButton"]
+    private maxDebugAccounts = 1
+    private debugAccountId = 0
 
-public function new(riversJson)
-  super(riversJson, "RegisterScreenVM")
-  
-  m.focusId = "usernameInput"
-  KeyboardDialogMixin.mixin(m)
-  m.processStyles(m.riversJson.styles)
-  m.providerId = m.getAuthProviderId()
-  
-end function
+    public function new(riversJson)
+      super(riversJson, "RegisterScreenVM")
 
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'++ Overridden
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      m.focusId = "usernameInput"
+      KeyboardDialogMixin.mixin(m)
+      m.processStyles(m.riversJson.styles)
+      m.providerId = m.getAuthProviderId()
 
-public override function createContent()
-  m.logInfo("createContent is overridden in this screen")
-end function
+    end function
 
-public override function load() as boolean
-  return true
-end function
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '++ Overridden
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'++ styles
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    public override function createContent()
+      m.logInfo("createContent is overridden in this screen")
+    end function
 
-function processStyles(styles)
-  m.setField("usernameText", m.localizations.username_placeholder_text)
-  m.usernamePlaceholderText = m.usernameText
-  
-  m.setField("nameText", m.localizations.name_placeholder_text)
-  m.namePlaceholderText = m.nameText
-  
-  m.setField("passwordText", m.localizations.password_placeholder_text)
-  m.passwordPlaceholderText = m.passwordText
-  
-  inputStyle = ViewUtils.makeUIBButtonStyle(styles, "general_input", "textInputPlaceholder")
-  
-  m.setField("inputStyle", inputStyle)
-  
-  m.registerButtonStyle = ViewUtils.makeUIBButtonStyle(styles, "register_button", "custom", styles.register_button_text)
-  
-  m.maxDebugAccounts = ViewUtils.getUIBInt(styles, "debug_max_accounts")
-  
-end function
+    public override function load() as boolean
+      return true
+    end function
 
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'++ callbacks
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '++ styles
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-public function onUsernameButtonSelected(value)
-  m.showKeyboardDialog("Enter your username", m.username, "onUsernameKeyboardDialogDismissal")
-end function
+    function processStyles(styles)
+      m.setField("usernameText", m.localizations.username_placeholder_text)
+      m.usernamePlaceholderText = m.usernameText
 
-public function onNameButtonSelected(value)
-  m.showKeyboardDialog("Enter your name", m.name, "onNameKeyboardDialogDismissal")
-end function
+      m.setField("nameText", m.localizations.name_placeholder_text)
+      m.namePlaceholderText = m.nameText
 
-public function onPasswordButtonSelected(value)
-  m.showKeyboardDialog("Enter your password", m.password, "onPasswordKeyboardDialogDismissal", true)
-end function
+      m.setField("passwordText", m.localizations.password_placeholder_text)
+      m.passwordPlaceholderText = m.passwordText
 
-public function onRegisterButtonSelected(value)
-  m.logMethod("onRegisterButtonSelected")
-  
-  if not m.isLoading and m.isCredsValid
-    m.register()
-  else if not m.isCredsValid
-    m.setField("errorText", "Please enter your email address and password")
-    m.setfield("isErrorShowing", true)
-  else
-    m.logWarn("ignoring register button, while loading")
-  end if
-end function
+      inputStyle = ViewUtils.makeUIBButtonStyle(styles, "general_input", "textInputPlaceholder")
 
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'++ Keyboard dialog
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      m.setField("inputStyle", inputStyle)
 
-private function onUsernameKeyboardDialogDismissal(text)
-  m.logMethod("onKeyboardDialogDismissal")
-  KeyboardDialogMixin.setTextFromKeyboard(m, "username", text)
-end function
+      m.registerButtonStyle = ViewUtils.makeUIBButtonStyle(styles, "register_button", "custom", styles.register_button_text)
 
-private function onNameKeyboardDialogDismissal(text)
-  m.logMethod("onNameKeyboardDialogDismissal")
-  KeyboardDialogMixin.setTextFromKeyboard(m, "name", text)
-end function
+      m.maxDebugAccounts = ViewUtils.getUIBInt(styles, "debug_max_accounts")
 
-private function onPasswordKeyboardDialogDismissal(text)
-  m.logMethod("onPasswordKeyboardDialogDismissal")
-  KeyboardDialogMixin.setTextFromKeyboard(m, "password", text, true)
-end function
+    end function
 
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'++ register
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '++ callbacks
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-public function checkCredsValid()
-  m.setField("isCredsValid", m.usernameText <> invalid and m.usernameText.trim() <> "" and m.password <> invalid and m.password.trim() <> "" and m.nameText <> invalid and m.nameText.trim() <> "")
-  
-  m.setField("isRegisterButtonEnabled", m.isCredsValid and not m.isLoading)
-end function
+    public function onUsernameButtonSelected(value)
+      m.showKeyboardDialog("Enter your username", m.username, "onUsernameKeyboardDialogDismissal")
+    end function
 
-public function register()
-  m.logInfo("registering")
-  
-  if m.isCredsValid
-    creds = m.createInstance("AuthenticationCredentials")
-    creds.name = m.nameText
-    creds.username = m.usernameText
-    creds.password = m.password
-    creds.passwordConfirmation = m.password
-    m.authTask = m.createAuthTask("execRegister", m.providerId, "onRegisterComplete", creds)
-    
-    m.setField("isLoginButtonEnabled", false)
-    
-    m.setField("isLoading", true)
-    m.setField("errorText", "")
-    m.setField("isErrorShowing", false)
-    m.setField("state", "loading")
-  end if
-end function
+    public function onNameButtonSelected(value)
+      m.showKeyboardDialog("Enter your name", m.name, "onNameKeyboardDialogDismissal")
+    end function
 
-public function onRegisterComplete(result)
-  m.logMethod("onRegisterComplete", result)
-  
-  if result <> invalid and result.state = "valid"
-    m.logInfo("Register successful")
-    m.dismiss("success")
-  else
-    m.setField("state", "ready")
-    if result <> invalid and result.message <> invalid
-      m.setField("errorText", result.message)
-    else
-      m.setField("errorText", "Unknown error")
-    end if
-    m.setField("isErrorShowing", true)
-    m.setField("isLoginButtonEnabled", true)
-  end if
-  
-  m.setField("isLoading", false)
-  
-end function
+    public function onPasswordButtonSelected(value)
+      m.showKeyboardDialog("Enter your password", m.password, "onPasswordKeyboardDialogDismissal", true)
+    end function
 
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'++ private
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    public function onRegisterButtonSelected(value)
+      m.logMethod("onRegisterButtonSelected")
 
-'FIXME! hoist this into the base ViewModel in SDK 3.2
-'it is duplicated form RegcodeLoginScreenVM
+      if not m.isLoading and m.isCredsValid
+        m.register()
+      else if not m.isCredsValid
+        m.setField("errorText", "Please enter your email address and password")
+        m.setfield("isErrorShowing", true)
+      else
+        m.logWarn("ignoring register button, while loading")
+      end if
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '++ Keyboard dialog
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    private function onUsernameKeyboardDialogDismissal(text)
+      m.logMethod("onKeyboardDialogDismissal")
+      KeyboardDialogMixin.setTextFromKeyboard(m, "username", text)
+    end function
+
+    private function onNameKeyboardDialogDismissal(text)
+      m.logMethod("onNameKeyboardDialogDismissal")
+      KeyboardDialogMixin.setTextFromKeyboard(m, "name", text)
+    end function
+
+    private function onPasswordKeyboardDialogDismissal(text)
+      m.logMethod("onPasswordKeyboardDialogDismissal")
+      KeyboardDialogMixin.setTextFromKeyboard(m, "password", text, true)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '++ register
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    public function checkCredsValid()
+      m.setField("isCredsValid", m.usernameText <> invalid and m.usernameText.trim() <> "" and m.password <> invalid and m.password.trim() <> "" and m.nameText <> invalid and m.nameText.trim() <> "")
+
+      m.setField("isRegisterButtonEnabled", m.isCredsValid and not m.isLoading)
+    end function
+
+    public function register()
+      m.logInfo("registering")
+
+      if m.isCredsValid
+        creds = m.createInstance("AuthenticationCredentials")
+        creds.name = m.nameText
+        creds.username = m.usernameText
+        creds.password = m.password
+        creds.passwordConfirmation = m.password
+        m.authTask = m.createAuthTask("execRegister", m.providerId, "onRegisterComplete", creds)
+
+        m.setField("isLoginButtonEnabled", false)
+
+        m.setField("isLoading", true)
+        m.setField("errorText", "")
+        m.setField("isErrorShowing", false)
+        m.setField("state", "loading")
+      end if
+    end function
+
+    public function onRegisterComplete(result)
+      m.logMethod("onRegisterComplete", result)
+
+      if result <> invalid and result.state = "valid"
+        m.logInfo("Register successful")
+        m.dismiss("success")
+      else
+        m.setField("state", "ready")
+        if result <> invalid and result.message <> invalid
+          m.setField("errorText", result.message)
+        else
+          m.setField("errorText", "Unknown error")
+        end if
+        m.setField("isErrorShowing", true)
+        m.setField("isLoginButtonEnabled", true)
+      end if
+
+      m.setField("isLoading", false)
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '++ private
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    'FIXME! hoist this into the base ViewModel in SDK 3.2
+    'it is duplicated form RegcodeLoginScreenVM
 
 
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'++ Key Handling
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '++ Key Handling
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-public function isCapturingAnyKeyPress(key, press)
-  'do not anyone escape this screen!
-  if press and key = "back" and not MU.getContentField(m.riversJson, "general.isflowBlocker", true)
-    return false
-  else
-    return true
-  end if
-end function
+    public function isCapturingAnyKeyPress(key, press)
+      'do not anyone escape this screen!
+      if press and key = "back" and not MU.getContentField(m.riversJson, "general.isflowBlocker", true)
+        return false
+      else
+        return true
+      end if
+    end function
 
-public function onKeyPressBack() as boolean
-  m.logMethod("onKeyPressBack", m.focusId)
-  
-  m.dismiss("cancel")
-  return true
-end function
+    public function onKeyPressBack() as boolean
+      m.logMethod("onKeyPressBack", m.focusId)
 
-public function onKeyPressRight() as boolean
-  
-  if m.focusId = "loginButton" and m.riversJson.styles.debug_skip_on_right = true
-    m.logWarn("skipping debug flag is on")
-    m.onRegisterComplete(true)
-  end if
-  
-  return false
-end function
+      m.dismiss("cancel")
+      return true
+    end function
 
-public function onKeyPressDown() as boolean
-  m.logMethod("onKeyPressDown", m.focusId)
-  
-  m.setFocusId(MU.getItemAtOffset(m.focusIds, m.focusId, 1))
-  
-  return true
-end function
+    public function onKeyPressRight() as boolean
 
-public function onKeyPressOption() as boolean
-  m.logMethod("onKeyPressOption", m.focusId)
-  m.debugAccountId++
-  if m.debugAccountId > m.maxDebugAccounts
-    m.debugAccountId = 1
-  end if
-  username = m.riversJson.styles.debug_username.replace("@", str(m.debugAccountId).trim() + "@")
-  
-  m.onUsernameKeyboardDialogDismissal(username)
-  m.onNameKeyboardDialogDismissal(m.riversJson.styles.debug_name)
-  m.onPasswordKeyboardDialogDismissal(m.riversJson.styles.debug_password)
-  return true
-end function
+      if m.focusId = "loginButton" and m.riversJson.styles.debug_skip_on_right = true
+        m.logWarn("skipping debug flag is on")
+        m.onRegisterComplete(true)
+      end if
 
-public override function onKeyPressUp() as boolean
-  m.logMethod("onKeyPressUp", m.focusId)
-  
-  m.setFocusId(MU.getItemAtOffset(m.focusIds, m.focusId, - 1))
-  
-  return true
-end function
+      return false
+    end function
 
-end class
+    public function onKeyPressDown() as boolean
+      m.logMethod("onKeyPressDown", m.focusId)
+
+      m.setFocusId(MU.getItemAtOffset(m.focusIds, m.focusId, 1))
+
+      return true
+    end function
+
+    public function onKeyPressOption() as boolean
+      m.logMethod("onKeyPressOption", m.focusId)
+      m.debugAccountId++
+      if m.debugAccountId > m.maxDebugAccounts
+        m.debugAccountId = 1
+      end if
+      username = m.riversJson.styles.debug_username.replace("@", str(m.debugAccountId).trim() + "@")
+
+      m.onUsernameKeyboardDialogDismissal(username)
+      m.onNameKeyboardDialogDismissal(m.riversJson.styles.debug_name)
+      m.onPasswordKeyboardDialogDismissal(m.riversJson.styles.debug_password)
+      return true
+    end function
+
+    public override function onKeyPressUp() as boolean
+      m.logMethod("onKeyPressUp", m.focusId)
+
+      m.setFocusId(MU.getItemAtOffset(m.focusIds, m.focusId, -1))
+
+      return true
+    end function
+
+  end class
 end namespace

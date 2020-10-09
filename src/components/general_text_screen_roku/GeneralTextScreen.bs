@@ -17,7 +17,7 @@ function init()
     "optional1Text"
     "doneButton"
   ] 
-  
+
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
