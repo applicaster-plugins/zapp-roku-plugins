@@ -168,7 +168,9 @@ private function onSubScreenStateChange(state)
   m.logMethod("current screen state change", state, "m.isShowingRegisterScreen", m.isShowingRegisterScreen)
   
   if m.isShowingRegisterScreen and state = "success"
+    m.signalAppLaunchDialog(true)
     m.dismiss("success")
+    
   else if state = "success" or state = "cancel"
     m.toggleSubScreen(invalid)
   end if
@@ -209,9 +211,11 @@ private function onRefreshComplete(result)
   
   if m.getInstance("user").isLoggedIn
     m.dismiss("success")
+  else
+    m.signalAppLaunchDialog(false)
+    m.setField("isRefreshing", false)
   end if
   
-  m.setField("isRefreshing", false)
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -247,7 +251,9 @@ public function onLoginComplete(result)
   
   if result <> invalid and result.state = "valid"
     m.logInfo("logged in succesfull")
+    m.signalAppLaunchDialog(true)
     m.dismiss("success")
+    
   else
     m.setField("state", "ready")
     if result <> invalid and result.message <> invalid
@@ -262,6 +268,15 @@ public function onLoginComplete(result)
   m.setField("isLoading", false)
   
 end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ launch support
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+override function sendLaunchBecaon()
+  'we handle this manually
+end function
+
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '++ Key Handling
