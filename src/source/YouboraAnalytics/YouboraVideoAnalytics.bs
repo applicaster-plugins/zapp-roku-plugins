@@ -1,4 +1,3 @@
-
 import "pkg:/source/lib/BaseClass.bs"
 import "pkg:/source/video/analytics/BaseVideoAnalyticsPlugin.bs"
 

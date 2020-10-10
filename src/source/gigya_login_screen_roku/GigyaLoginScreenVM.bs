@@ -1,4 +1,3 @@
-
 import "pkg:/source/UIBuilder/view/ScreenVM.bs"
 
 class GigyaLoginScreenVM extends zuib.ScreenVM

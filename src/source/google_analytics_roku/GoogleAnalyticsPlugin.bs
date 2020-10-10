@@ -1,4 +1,3 @@
-
 import "pkg:/source/analytics/BaseAnalyticsPlugin.bs"
 
 class GoogleAnalyticsPlugin extends zc.Analytics.BaseAnalyticsPlugin
