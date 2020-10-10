@@ -6,7 +6,7 @@ namespace Tests
     override function beforeEach()
       zc.AppService.clearClassInstances()
       m.modelLocator = CreateObject("roSGNode", "ModelLocator")
-      m.modelLocator.plugins = [PPMT_CreatePluginJson("mpx_video_playback_prehook_roku", {
+      m.modelLocator.plugins = [TestUtils.CreatePluginJson("mpx_video_playback_prehook_roku", {
           "matching_path": "itemType"
           "matching_value": "video" 
       })] 

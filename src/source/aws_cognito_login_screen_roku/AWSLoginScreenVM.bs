@@ -3,7 +3,7 @@ import "pkg:/source/UIBuilder/view/ScreenVM.bs"
 import "pkg:/source/lib/ViewUtils.bs"
 import "pkg:/source/mixin/KeyboardDialogMixin.bs"
 
-class AWSLoginScreenVM extends ScreenVM
+class AWSLoginScreenVM extends zuib.ScreenVM
 
   'styles
   public titleStyle = invalid
@@ -21,7 +21,6 @@ class AWSLoginScreenVM extends ScreenVM
   public isCredsValid = false
   public isLoginButtonEnabled = false
   public isRefreshing = true
-  public isLoading = false
   public usernameButtonType = "textInput"
   public passwordButtonType = "textInput"
 

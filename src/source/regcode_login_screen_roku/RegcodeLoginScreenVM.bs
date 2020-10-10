@@ -4,7 +4,7 @@ import "pkg:/source/lib/ViewUtils.bs"
 import "pkg:/source/plugin-support/BasePlugin.bs"
 import "pkg:/source/plugin-support/PluginManager.bs"
 
-class RegcodeLoginScreenVM extends ScreenVM
+class RegcodeLoginScreenVM extends zuib.ScreenVM
 
   'styles
   public isContentGroupVisible = false

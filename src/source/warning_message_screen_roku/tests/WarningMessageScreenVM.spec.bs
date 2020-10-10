@@ -35,10 +35,10 @@ namespace Tests
 
     '@Test matching conditions
     '@Params[{field:"v" }, "field", "v"]
-    '@Params[{json{field:"v2"} }, "json.field", "v2"]
-    '@Params[{json{field:"v2 "} }, "json.field", "v2"]
-    '@Params[{json{field:"v2 "} }, "json.field", "v2 "]
-    '@Params[{json{field:"v2 "} }, "json.field", "V2 "]
+    '@Params[{json:{field:"v2"} }, "json.field", "v2"]
+    '@Params[{json:{field:"v2 "} }, "json.field", "v2"]
+    '@Params[{json:{field:"v2 "} }, "json.field", "v2 "]
+    '@Params[{json:{field:"v2 "} }, "json.field", "V2 "]
     '@Params[{field:"v", }, "field", "V"]
     function load_matching(entry, path, condition)
       m.vm.conditionPath = path
@@ -67,13 +67,13 @@ namespace Tests
     '@Test not matching conditions
     '@Params[{field:"", }, "field", "v"]
     '@Params[{field:"v", }, "field", ""]
-    '@Params[{json{field:"v2"}, }, "json.field", "n2"]
-    '@Params[{json{field:"v2 "}, }, "json.field", "n2"]
-    '@Params[{json{field:"v2 "}, }, "json.field", "n2 "]
-    '@Params[{json{field:"v2"}, }, "", "v2"]
-    '@Params[{json{field:"v2"}, }, " ", "v2"]
-    '@Params[{json{field:"v2"}, }, "json.field", ""]
-    '@Params[{json{field:"v2"}, }, "json.field", " "]
+    '@Params[{json:{field:"v2"}, }, "json.field", "n2"]
+    '@Params[{json:{field:"v2 "}, }, "json.field", "n2"]
+    '@Params[{json:{field:"v2 "}, }, "json.field", "n2 "]
+    '@Params[{json:{field:"v2"}, }, "", "v2"]
+    '@Params[{json:{field:"v2"}, }, " ", "v2"]
+    '@Params[{json:{field:"v2"}, }, "json.field", ""]
+    '@Params[{json:{field:"v2"}, }, "json.field", " "]
     function load_not_matching(entry, path, condition)
       m.vm.conditionPath = path
       m.vm.conditionValue = condition

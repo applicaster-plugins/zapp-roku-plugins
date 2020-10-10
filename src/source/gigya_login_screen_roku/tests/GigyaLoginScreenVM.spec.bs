@@ -1,209 +1,210 @@
-'@TestSuite [OCGPSVMT]
 namespace Tests
+  '@TestSuite GigyaLoginScreenVMTests
+  class GigyaLoginScreenVMTests extends Rooibos.BaseTestSuite
 
-  override function beforeEach()
-    m.modelLocator = {
-      "User": { "isLoggedIn": false }
-      "locale": "en"
-    }
-    zc.TestUtils.setModelLocator(m.modelLocator)
-
-    riversJson = {
-      "id": "myAccount"
-      "general": { "base_url": "#base_url/" }
-      "styles": { "login_screen": "#lis" }
-      "localizations": { 
-        "en": {} 
+    override function beforeEach()
+      m.modelLocator = {
+        "User": { "isLoggedIn": false }
+        "locale": "en"
       }
-    }
+      zc.TestUtils.setModelLocator(m.modelLocator)
 
-    m.vm = new GigyaLoginScreenVM(riversJson)
-  end function
+      riversJson = {
+        "id": "myAccount"
+        "general": { "base_url": "#base_url/" }
+        "styles": { "login_screen": "#lis" }
+        "localizations": { 
+          "en": {} 
+        }
+      }
 
-  override function afterEach()
-  end function
+      m.vm = new GigyaLoginScreenVM(riversJson)
+    end function
 
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '@It tests constructor
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    override function afterEach()
+    end function
 
-  '@Test
-  function constructor_tests()
-    m.assertEqual(m.vm.focusId, "loginButton")
-    m.assertTrue(m.vm.isRefreshing)
-    m.assertFalse(m.vm.isContentVisible)
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '@It tests constructor
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  end function
+    '@Test
+    function constructor_tests()
+      m.assertEqual(m.vm.focusId, "loginButton")
+      m.assertTrue(m.vm.isRefreshing)
+      m.assertFalse(m.vm.isContentVisible)
 
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '@It tests load
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    end function
 
-  '@Test not shown before
-  function load_not_shown()
-    m.expectOnce(m.vm, "getLocalStoreValue", ["gigya_login_screen_roku", "isShown"], invalid)
-    m.expectOnce(m.vm, "refreshLogin", [])
-    m.expectOnce(m.vm, "setLocalStoreValue", ["gigya_login_screen_roku", "isShown", "true", true])
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '@It tests load
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    m.vm.load()
+    '@Test not shown before
+    function load_not_shown()
+      m.expectOnce(m.vm, "getLocalStoreValue", ["gigya_login_screen_roku", "isShown"], invalid)
+      m.expectOnce(m.vm, "refreshLogin", [])
+      m.expectOnce(m.vm, "setLocalStoreValue", ["gigya_login_screen_roku", "isShown", "true", true])
 
-  end function
+      m.vm.load()
 
-  '@Test shown before
-  function load_shown()
-    m.expectOnce(m.vm, "getLocalStoreValue", ["gigya_login_screen_roku", "isShown"], "true")
-    m.expectNone(m.vm, "refreshLogin", [])
-    m.expectOnce(m.vm, "dismiss", ["success"])
+    end function
 
-    m.vm.load()
+    '@Test shown before
+    function load_shown()
+      m.expectOnce(m.vm, "getLocalStoreValue", ["gigya_login_screen_roku", "isShown"], "true")
+      m.expectNone(m.vm, "refreshLogin", [])
+      m.expectOnce(m.vm, "dismiss", ["success"])
 
-  end function
+      m.vm.load()
 
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '@It tests refreshLogin
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    end function
 
-  '@Test 
-  function refreshLogin()
-    authTask = { "id": "authTask" }
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '@It tests refreshLogin
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    m.expectOnce(m.vm, "createAuthTask", ["execLoad", "gigya_auth_plugin_roku", "onRefreshComplete"], authTask)
+    '@Test 
+    function refreshLogin()
+      authTask = { "id": "authTask" }
 
-    m.vm.refreshLogin()
+      m.expectOnce(m.vm, "createAuthTask", ["execLoad", "gigya_auth_plugin_roku", "onRefreshComplete"], authTask)
 
-    m.assertEqual(m.vm.authTask, authTask)
+      m.vm.refreshLogin()
 
-    m.assertTrue(m.vm.isRefreshing)
-    m.assertFalse(m.vm.isContentVisible)
-  end function
+      m.assertEqual(m.vm.authTask, authTask)
 
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '@It tests onRefreshComplete
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      m.assertTrue(m.vm.isRefreshing)
+      m.assertFalse(m.vm.isContentVisible)
+    end function
 
-  '@Test sucess
-  function onRefreshComplete()
-    user = { "id": "user", isLoggedIn: true }
-    analytics = { "id": "analytics" }
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '@It tests onRefreshComplete
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    m.expectOnce(m.vm, "getInstance", ["user"], user)
-    m.expectOnce(m.vm, "getInstance", ["analyticsManager"], analytics)
-    m.expectOnce(analytics, "callFunc", ["trackEvent", "Login Succesful", "page_loaded", { "provider": "gigya_login_screen_roku" }])
-    m.expectOnce(m.vm, "dismiss", ["success"])
+    '@Test sucess
+    function onRefreshComplete()
+      user = { "id": "user", isLoggedIn: true }
+      analytics = { "id": "analytics" }
 
-    m.vm.isContentVisible = false
-    m.vm.isRefreshing = true
+      m.expectOnce(m.vm, "getInstance", ["user"], user)
+      m.expectOnce(m.vm, "getInstance", ["analyticsManager"], analytics)
+      m.expectOnce(analytics, "callFunc", ["trackEvent", "Login Succesful", "page_loaded", { "provider": "gigya_login_screen_roku" }])
+      m.expectOnce(m.vm, "dismiss", ["success"])
 
-    m.vm.onRefreshComplete({})
+      m.vm.isContentVisible = false
+      m.vm.isRefreshing = true
 
-    m.assertFalse(m.vm.isRefreshing)
-    m.assertTrue(m.vm.isContentVisible)
+      m.vm.onRefreshComplete({})
 
-  end function
+      m.assertFalse(m.vm.isRefreshing)
+      m.assertTrue(m.vm.isContentVisible)
+
+    end function
 
 
-  '@Test failure
-  function onRefreshComplete_failure()
-    user = { "id": "user", isLoggedIn: false }
-    m.vm.isContentVisible = false
-    m.vm.isRefreshing = true
+    '@Test failure
+    function onRefreshComplete_failure()
+      user = { "id": "user", isLoggedIn: false }
+      m.vm.isContentVisible = false
+      m.vm.isRefreshing = true
 
-    m.expectOnce(m.vm, "getInstance", ["user"], user)
-    m.expectNone(m.vm, "dismiss")
-    m.vm.onRefreshComplete({})
+      m.expectOnce(m.vm, "getInstance", ["user"], user)
+      m.expectNone(m.vm, "dismiss")
+      m.vm.onRefreshComplete({})
 
-    m.assertFalse(m.vm.isRefreshing)
-    m.assertTrue(m.vm.isContentVisible)
+      m.assertFalse(m.vm.isRefreshing)
+      m.assertTrue(m.vm.isContentVisible)
 
-  end function
+    end function
 
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '@It tests button callbacks
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '@It tests button callbacks
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  '@Test - focused on loginButton
-  function onLoginButtonSelected()
-    m.vm.focusId = "loginButton"
-    m.expectOnce(m.vm, "showLoginScreen")
+    '@Test - focused on loginButton
+    function onLoginButtonSelected()
+      m.vm.focusId = "loginButton"
+      m.expectOnce(m.vm, "showLoginScreen")
 
-    m.vm.onLoginButtonSelected(true)
+      m.vm.onLoginButtonSelected(true)
 
-  end function
+    end function
 
-  '@Test - focused on logoutButton
-  function onSkipButtonSelected()
-    m.vm.focusId = "logoutButton"
+    '@Test - focused on logoutButton
+    function onSkipButtonSelected()
+      m.vm.focusId = "logoutButton"
 
-    m.expectOnce(m.vm, "dismiss", ["success"])
-    m.vm.onSkipButtonSelected(true)
+      m.expectOnce(m.vm, "dismiss", ["success"])
+      m.vm.onSkipButtonSelected(true)
 
-  end function
+    end function
 
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '@It tests onKeyPressBack
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '@It tests onKeyPressBack
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  '@Test 
-  function onKeyPressBack()
-    m.vm.focusId = "loginButton"
-    m.expectOnce(m.vm, "dismiss", ["cancel"])
+    '@Test 
+    function onKeyPressBack()
+      m.vm.focusId = "loginButton"
+      m.expectOnce(m.vm, "dismiss", ["cancel"])
 
-    m.assertTrue(m.vm.onKeyPressBack())
+      m.assertTrue(m.vm.onKeyPressBack())
 
-  end function
+    end function
 
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '@It tests showLoginScreen
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '@It tests showLoginScreen
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  '@Test found
-  function showLoginScreen_found()
-    screen = { "id": "screen" }
+    '@Test found
+    function showLoginScreen_found()
+      screen = { "id": "screen" }
 
-    m.expectOnce(m.vm, "getScreen", ["#lis"], screen)
-    m.expectOnce(m.vm, "push", [screen])
-    m.expectOnce(m.vm, "setFocus", [screen])
-    m.expectOnce(m.vm, "bindNodeField", [screen, "state", "onLoginScreenStateChange", MOM.createBindingProperties(false)])
+      m.expectOnce(m.vm, "getScreen", ["#lis"], screen)
+      m.expectOnce(m.vm, "push", [screen])
+      m.expectOnce(m.vm, "setFocus", [screen])
+      m.expectOnce(m.vm, "bindNodeField", [screen, "state", "onLoginScreenStateChange", MOM.createBindingProperties(false)])
 
-    m.vm.showLoginScreen()
-  end function
+      m.vm.showLoginScreen()
+    end function
 
-  '@Test not found
-  function showLoginScreen_not_found()
-    m.expectOnce(m.vm, "getScreen", ["#lis"], invalid)
-    m.expectNone(m.vm, "push")
-    m.expectNone(m.vm, "setFocus")
-    m.expectNone(m.vm, "bindNodeField")
+    '@Test not found
+    function showLoginScreen_not_found()
+      m.expectOnce(m.vm, "getScreen", ["#lis"], invalid)
+      m.expectNone(m.vm, "push")
+      m.expectNone(m.vm, "setFocus")
+      m.expectNone(m.vm, "bindNodeField")
 
-    m.vm.showLoginScreen()
-  end function
+      m.vm.showLoginScreen()
+    end function
 
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '@It tests onLoginStateChanged
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '@It tests onLoginStateChanged
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  '@Test success
-  function onLoginStatechanged_success()
-    m.vm.state = "none"
+    '@Test success
+    function onLoginStatechanged_success()
+      m.vm.state = "none"
 
-    m.vm.onLoginScreenStateChange("success")
+      m.vm.onLoginScreenStateChange("success")
 
-    m.assertEqual(m.vm.state, "success")
+      m.assertEqual(m.vm.state, "success")
 
-  end function
+    end function
 
-  '@Test other trackable state
-  '@Params["error"]
-  '@Params["cancel"]
-  function onLoginStatechanged_other_state(state)
-    m.vm.state = "none"
-    m.expectOnce(m.vm, "setFocusId", ["loginButton"])
+    '@Test other trackable state
+    '@Params["error"]
+    '@Params["cancel"]
+    function onLoginStatechanged_other_state(state)
+      m.vm.state = "none"
+      m.expectOnce(m.vm, "setFocusId", ["loginButton"])
 
-    m.vm.onLoginScreenStateChange(state)
+      m.vm.onLoginScreenStateChange(state)
 
-    m.assertEqual(m.vm.state, "none")
+      m.assertEqual(m.vm.state, "none")
 
-  end function
+    end function
 
-end class
+  end class
 end namespace

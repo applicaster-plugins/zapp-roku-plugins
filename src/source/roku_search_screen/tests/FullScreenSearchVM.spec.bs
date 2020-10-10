@@ -236,7 +236,7 @@ namespace Tests
 
     '@Test no serch scenarios
     '@Params["o"]
-    '@Params["aa]
+    '@Params["aa"]
     '@Params[" aa"]
     '@Params[" aa "]
     '@Params["aa  "]

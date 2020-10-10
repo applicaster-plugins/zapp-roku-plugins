@@ -524,13 +524,15 @@ function _SegmentAnalytics_Request(options as object, port as object, config as 
 
     if responseCode >= 200 and responseCode <= 299 and parsedResponse <> invalid then
       for each handler in m._successHandlers
+        'bs:disable-next-line
         handler(parsedResponse, m)
       end for
     else
       errorReason = message.getFailureReason()
       error = { url: m._url, reason: errorReason, response: rawResponse, responseCode: responseCode }
-
+      
       for each handler in m._errorHandlers
+        'bs:disable-next-line
         handler(error, m)
       end for
     end if

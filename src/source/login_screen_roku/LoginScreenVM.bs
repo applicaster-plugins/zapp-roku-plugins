@@ -3,7 +3,7 @@ import "pkg:/source/UIBuilder/view/ScreenVM.bs"
 import "pkg:/source/lib/ViewUtils.bs"
 import "pkg:/source/mixin/KeyboardDialogMixin.bs"
 
-class LoginScreenVM extends ScreenVM
+class LoginScreenVM extends zuib.ScreenVM
 
   'styles
   public inputStyle = invalid
@@ -16,7 +16,6 @@ class LoginScreenVM extends ScreenVM
   public isCredsValid = false
   public isLoginButtonEnabled = false
   public isRefreshing = true
-  public isLoading = false
   public usernameButtonType = "textInput"
   public passwordButtonType = "textInput"
   public isSubScreenVisible = false

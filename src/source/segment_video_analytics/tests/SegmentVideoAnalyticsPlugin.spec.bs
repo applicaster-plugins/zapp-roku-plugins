@@ -156,7 +156,7 @@ namespace Tests
     '@It tests onSubtitleChange
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test
+    '@Test onSubtitleChange
     function onSubtitleChange()
 
       m.expectOnce(m.plugin, "postSegmentEvent", ["Subtitle Languge Changed"])
@@ -165,7 +165,7 @@ namespace Tests
 
     end function
 
-    '@Test
+    '@Test onAudioChange
     function onAudioChange()
 
       m.expectOnce(m.plugin, "postSegmentEvent", ["Audio Language Selected"])
@@ -213,7 +213,7 @@ namespace Tests
     '@It tests getSubtitleLanguage
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test
+    '@Test known
     '@Params["1", "cor", "kw"]
     '@Params["2", "cos", "co"]
     '@Params["3", "cre", "cr"]
@@ -230,7 +230,7 @@ namespace Tests
       m.assertEqual(m.plugin.getSubtitleLanguage(), countryCode)
     end function
 
-    '@Test
+    '@Test unknown
     function getSubtitleLanguage_unknown()
       m.plugin.videoNode = {
         "currentSubtitleTrack": "unknown",

@@ -139,6 +139,6 @@ namespace Tests
 
       m.assertEqual(m.plugin.task.customSessionParams, invalid)
     end function
-    
+
   end class
-end function
+end namespace

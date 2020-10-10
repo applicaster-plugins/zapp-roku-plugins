@@ -5,13 +5,13 @@ namespace Tests
 
     override function beforeEach()
       zc.AppService.clearClassInstances()
-      m.pluginJson = PPMT_CreatePluginJson("tve_token_loader_prehook_roku", {
+      m.pluginJson = TestUtis.createPluginJson("tve_token_loader_prehook_roku", {
         "endpoint": "e/"
         "domain": "d"
         "matching_path": "itemType"
         "matching_value": "video" 
       })
-      m.tvePluginJson = PPMT_CreatePluginJson("AdobeAccessEnabler", {
+      m.tvePluginJson = TestUtis.createPluginJson("AdobeAccessEnabler", {
         publicKey: "pub"
         secret: "sec"
         requestorID: "rqd"

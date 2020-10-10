@@ -6,7 +6,7 @@ namespace Tests
     override function beforeEach()
       zc.AppService.clearClassInstances()
       m.modelLocator = CreateObject("roSGNode", "ModelLocator")
-      m.modelLocator.plugins = [PPMT_CreatePluginJson("oc_url_token_loader", {
+      m.modelLocator.plugins = [TestUtils.CreatePluginJson("oc_url_token_loader", {
           "endpoint": "e/"
           "domain": "d"
           "matching_path": "itemType"

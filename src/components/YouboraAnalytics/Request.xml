@@ -13,6 +13,6 @@
 
   </interface>
   
-  <script type="text/brightscript" uri="pkg:/source/maestro/lib/ThreadUtils.brs" />
+  
   <script type="text/brightscript" uri="Request.brs"/>
 </component>

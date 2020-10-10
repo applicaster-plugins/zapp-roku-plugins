@@ -2,7 +2,7 @@
 import "pkg:/source/UIBuilder/view/ScreenVM.bs"
 import "pkg:/source/lib/ViewUtils.bs"
 
-class GeneralTextScreenVM extends ScreenVM
+class GeneralTextScreenVM extends zuib.ScreenVM
 
   'styles
   public titleStyle = invalid

@@ -2,7 +2,7 @@
 import "pkg:/source/lib/BaseClass.bs"
 import "pkg:/source/video/analytics/BaseVideoAnalyticsPlugin.bs"
 
-class YouboraVideoAnalytics extends BaseVideoAnalyticsPlugin
+class YouboraVideoAnalytics extends zc.Analytics.BaseVideoAnalyticsPlugin
   ' Example Config:
   ' {
   ' "accountCode" : "nicetest", 'This is the only mandatory param
@@ -53,8 +53,7 @@ class YouboraVideoAnalytics extends BaseVideoAnalyticsPlugin
   private config = {}
   private taskName = "YBPluginRokuVideo"
 
-  public override function new(plugin)
-
+  public function new(plugin)
     super("YouboraVideoAnalytics")
     m.taskName = plugin.getStringValue("task_name", "YBPluginRokuVideo")
 

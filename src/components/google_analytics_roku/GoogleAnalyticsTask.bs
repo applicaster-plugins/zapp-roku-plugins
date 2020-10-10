@@ -1,4 +1,3 @@
-import "pkg:/source/maestro/lib/ThreadUtils.brs"
 import "googleAnalytics.brs"
 
 function init()
@@ -43,7 +42,7 @@ function execGampLoop()
   m.top.ready = true
 
   while true
-    msg = MTU_waitPort(0, port)
+    msg = wait(0, port)
     if type(msg) = "roSGNodeEvent" then
       field = msg.getField()
       data = msg.getData()

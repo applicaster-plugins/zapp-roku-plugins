@@ -67,7 +67,7 @@ namespace Tests
     '@Params["dev", "b123", "SVOD", "ICPOnly", true, "https://staging-v2.inplayer.com"]
     '@Params["dev", "c1234", "SVOD", "authOrICP", true, "https://staging-v2.inplayer.com"]
     '@Params["dev", "d1234", "SVOD", "authAndICP", true, "https://staging-v2.inplayer.com"]
-    function constructor(env, id, vodModel, entitlementsPolicy, expectedIsUsingRokuStore, expectedUrl)
+    function constructor_test(env, id, vodModel, entitlementsPolicy, expectedIsUsingRokuStore, expectedUrl)
       plugin = new zc.BasePlugin(PPMT.CreatePluginJson("1", {
         "client_id": id
         "environment": env
@@ -119,7 +119,7 @@ namespace Tests
     '@Params[{code:"f1"}, invalid, invalid, ["f1"]]
     '@Params[invalid, {code:"f2"}, invalid, ["f2"]]
     '@Params[invalid, {code:"f2"}, {code:"f3"}, ["f2","f3"]]
-    '@Params[{code:"f1"}, {code:"f2"}, {code:"f3"}, ["f1",f2","f3"]]
+    '@Params[{code:"f1"}, {code:"f2"}, {code:"f3"}, ["f1","f2","f3"]]
     function getPurchasedItemIds_multiple_purchases(rr1, rr2, rr3, expectedIds) as void
       rokuPurchases = [{ "code": "f1" }, { "code": "f2" }, { "code": "f3" }]
       receipt1 = { "id": "f1" }
@@ -149,12 +149,12 @@ namespace Tests
     '@Params[{}, []]
     '@Params[{collection:[]}, []]
     '@Params[{collection:[{}]}, []]
-    '@Params[collection: {[{"errors": {"401": "Invalid auth Token"}}]}, []]
-    '@Params[collection: {[{external_fees:invalid}]}, []]
-    '@Params[collection: {[{external_fees:[{external_id: invalid}]}]}, []]
-    '@Params[collection: {[{external_fees:[{external_id: "1"}]}]}, ["1"]]
-    '@Params[collection: {[{external_fees:[{external_id: "1"},{external_id: "2"}]}]}, ["1"]]
-    '@Params[collection: {[{external_fees:[{external_id: "1"},{external_id: "2"}]}}, {external_fees:[{external_id: "3"}]}], ["1", "3"]]
+    '@Params[{collection: [{"errors": {"401": "Invalid auth Token"}}]}, []]
+    '@Params[{collection: [{external_fees:invalid}]}, []]
+    '@Params[{collection: [{external_fees:[{external_id: invalid}]}]}, []]
+    '@Params[{collection: [{external_fees:[{external_id: "1"}]}]}, ["1"]]
+    '@Params[{collection: [{external_fees:[{external_id: "1"},{external_id: "2"}]}]}, ["1"]]
+    '@Params[{collection: [{external_fees:[{external_id: "1"},{external_id: "2"}]}, {external_fees:[{external_id: "3"}]} ]}, ["1", "3"]]
     function getPurchasedItemIds_invalidScenarios(response, expectedIds) as void
       m.expectOnce(m.plugin, "execute", ["GET", "items/access/customers?status=active"], response)
 
@@ -187,7 +187,7 @@ namespace Tests
     '@Params["t", invalid]
     '@Params[invalid, {"id": "1"}]
     function getAvailableProducts_not_valid(token, item)
-      rokuCatalogItems = [RCSMT_CreateRokuCatalogItem("1"), RCSMT_CreateRokuCatalogItem("2"), RCSMT_CreateRokuCatalogItem("3")]
+      rokuCatalogItems = [TestUtis.createRokuCatalogItem("1"), TestUtis.createRokuCatalogItem("2"), TestUtis.createRokuCatalogItem("3")]
       m.plugin.currentItem = item
 
       m.plugin.token = token
@@ -200,12 +200,12 @@ namespace Tests
     '@Test valid scenarios
     '@Params[[], []]
     '@Params[[{external_fees:[{external_id:"1"}]}], ["1"]]
-    '@Params[[{external_fees:[{external_id:"1"}}, {external_fees:{external_id:"2"}]}], ["1", "2"]]
-    '@Params[[{external_fees:[{external_id:"1"}}, {external_fees:{external_id:"2"}}, {external_fees:{external_id:"3"}]}], ["1", "2", "3"]]
-    '@Params[[{external_fees:[{external_id:"4"}}, {external_fees:{external_id:"2"}}, {external_fees:{external_id:"3"}]}], [2", "3"]]
-    '@Params[[{external_fees:[{external_id:"4"}}, {external_fees:{external_id:"5"}}, {external_fees:{external_id:"6"}]}], []]
+    '@Params[[{external_fees:[{external_id:"1"}]}, , {external_fees:[{external_id:"2"}]}], ["1", "2"]]
+    '@Params[[{external_fees:[{external_id:"1"}]}, {external_fees:[{external_id:"2"}]}, {external_fees:[{external_id:"3"}]}], ["1", "2", "3"]]
+    '@Params[[{external_fees:[{external_id:"4"}]}, {external_fees:[{external_id:"2"}]}, {external_fees:[{external_id:"3"}]}], ["2", "3"]]
+    '@Params[[{external_fees:[{external_id:"4"}]}, {external_fees:[{external_id:"5"}]}, {external_fees:[{external_id:"6"}]}], []]
     function getAvailableProducts_valid(fees, expectedIds)
-      rokuCatalogItems = [RCSMT_CreateRokuCatalogItem("1"), RCSMT_CreateRokuCatalogItem("2"), RCSMT_CreateRokuCatalogItem("3")]
+      rokuCatalogItems = [TestUtis.createRokuCatalogItem("1"), TestUtis.createRokuCatalogItem("2"), TestUtis.createRokuCatalogItem("3")]
       item = { id: "item" }
       m.plugin.currentItem = item
 
@@ -326,8 +326,8 @@ namespace Tests
     '@Test server errors
     '@Params[invalid, "Error loading item: cid"]
     '@Params[{}, "Error loading item: cid"]
-    '@Params[{errors:invalid]}, "Error loading item: item title"]
-    '@Params[{errors:{}]}, "Error loading item: item title"]
+    '@Params[{errors:invalid}, "Error loading item: item title"]
+    '@Params[{errors:{}}, "Error loading item: item title"]
     '@Params[{errors:{"401":"custom error"}}, "custom error"]
     function loadItem_errors(result, expectedErrorMessage)
 
@@ -550,7 +550,7 @@ namespace Tests
     '@Params[{external_fees:[{external_id:"1"}, {external_id:"2"}, {external_id:"3"}]}, [{"code":"3"}], {code:"3"}]
     '@Params[{external_fees:[{external_id:"1"}, {external_id:"2"}, {external_id:"3"}]}, [{"code":"1"}, {"code":"2"}, {"code":"3"}], {code:"1"}]
     '@Params[{external_fees:[{external_id:"1"}, {external_id:"2"}, {external_id:"3"}]}, [{"code":"2"}, {"code":"3"}], {code:"2"}]
-    '@Params[{external_id:"3"}]}, [{"code":"1"}, {"code":"2"}, {"code":"3"}], {code:"3"}]
+    '@Params[{external_id:"3"}, [{"code":"1"}, {"code":"2"}, {"code":"3"}], {code:"3"}]
     function getRokuItemForFee(fee, rokuPurchases, expected)
       m.assertEqual(m.plugin.getRokuItemForFee(fee, rokuPurchases), expected)
     end function
@@ -564,7 +564,7 @@ namespace Tests
     '@Params[invalid, {extensions:{"inplayer_asset_id":invalid}}, invalid]
     '@Params[invalid, {extensions:{"inplayer_asset_id":"123"}}, "123"]
     '@Params["extensions.custom_id", invalid, invalid]
-    '@Params["extensions.custom_id", {extensions:{"custom_id", "cid", "inplayer_asset_id":"123"}}, "cid"]
+    '@Params["extensions.custom_id", {extensions:{"custom_id": "cid", "inplayer_asset_id":"123"}}, "cid"]
     function getInplayerId_no_network_calls(pluginKey, item, expected)
       m.plugin.pluginInplayerAssetkey = pluginKey
       m.assertEqual(m.plugin.getInplayerId(item), expected)

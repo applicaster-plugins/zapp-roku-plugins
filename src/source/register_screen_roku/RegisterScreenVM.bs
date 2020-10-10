@@ -3,7 +3,7 @@ import "pkg:/source/UIBuilder/view/ScreenVM.bs"
 import "pkg:/source/lib/ViewUtils.bs"
 import "pkg:/source/mixin/KeyboardDialogMixin.bs"
 
-class RegisterScreenVM extends ScreenVM
+class RegisterScreenVM extends zuib.ScreenVM
 
   'styles
   public inputStyle = invalid
@@ -17,7 +17,6 @@ class RegisterScreenVM extends ScreenVM
   public isRegisterButtonEnabled = false
   public isMainGroupVisible = true
   public isDoneGroupVisible = false
-  public isLoading = false
   public nameButtonType = "textInput"
   public usernameButtonType = "textInput"
   public passwordButtonType = "textInput"
@@ -25,7 +24,6 @@ class RegisterScreenVM extends ScreenVM
   public usernameText = ""
   public username = ""
   public nameText = ""
-  public name = ""
   public passwordText = ""
   public password = ""
 
