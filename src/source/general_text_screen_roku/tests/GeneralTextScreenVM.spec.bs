@@ -1,53 +1,54 @@
-'@TestSuite [GTSVMT] GeneraltTextScreenVM Tests
-namespace GTSVMT
+namespace Tests
 
-  '@BeforeEach
-  function beforeEach()
-    localStore = createObject("roSGNode", "ZSessionStore")
-    modelLocator = createObject("roSGNode", "ModelLocator")
-    modelLocator.addfields({ "ZPLocalStore": localStore })
-    modelLocator.locale = "en"
+  '@TestSuite GeneralTextScreenVMTests
+  class GeneralTextScreenVMTests extends BaseTestSuite
 
-    zc.TestUtils.setModelLocator(modelLocator)
+    override function beforeEach()
+      localStore = createObject("roSGNode", "ZSessionStore")
+      modelLocator = createObject("roSGNode", "ModelLocator")
+      modelLocator.addfields({ "ZPLocalStore": localStore })
+      modelLocator.locale = "en"
 
-    riversJson = {
-      "id": "generalTextScreen"
-      styles: {
+      zc.TestUtils.setModelLocator(modelLocator)
+
+      riversJson = {
+        "id": "generalTextScreen"
+        styles: {
+        }
       }
-    }
 
-    m.vm = new GeneralTextScreenVM(riversJson)
-    m.vm.initialize()
-  end function
+      m.vm = new GeneralTextScreenVM(riversJson)
+      m.vm.initialize()
+    end function
 
-  '@AfterEach
-  function afterEach()
-    m.global.delete("zapp")
-    zc.TestUtils.unsetModelLocator()
-  end function
+    override function afterEach()
+      m.global.delete("zapp")
+      zc.TestUtils.unsetModelLocator()
+    end function
 
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '@It tests onDoneButtonSelected
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '@It tests onDoneButtonSelected
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  '@Test 
-  function onButtonSelected()
-    m.expectOnce(m.vm, "dismiss", ["cancel"])
+    '@Test 
+    function onButtonSelected()
+      m.expectOnce(m.vm, "dismiss", ["cancel"])
 
-    m.vm.onButtonSelected(true)
+      m.vm.onButtonSelected(true)
 
-  end function
+    end function
 
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '@It tests onKeyPressBack
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '@It tests onKeyPressBack
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  '@Test 
-  function onKeyPressBack()
-    m.expectOnce(m.vm, "dismiss", ["cancel"])
+    '@Test 
+    function onKeyPressBack()
+      m.expectOnce(m.vm, "dismiss", ["cancel"])
 
-    m.vm.onKeyPressBack()
+      m.vm.onKeyPressBack()
 
-  end function
+    end function
 
+  end class
 end namespace

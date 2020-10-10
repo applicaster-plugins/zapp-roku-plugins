@@ -1,277 +1,277 @@
-'@TestSuite SSVMT 
+namespace Tests
 
-namespace Applicaster.FullScreenSearchVM.Tests
+  '@TestSuite FullScreenSearchVMTests 
+  class FullScreenSearchVMTests extends BaseTestSuite
 
-  '@BeforeEach
-  function beforeEach()
+    override function beforeEach()
 
-    m.modelLocator = {
-      "User": { "isLoggedIn": false }
-      "locale": "en"
-    }
-    zc.TestUtils.setModelLocator(m.modelLocator)
-
-    m.riversJson = {
-      data: { source: "#myLink" }
-      styles: {
-        grid_x: 1
-        grid_y: 2
-        keyboard_x: 3
-        keyboard_y: 4
-        data_depth: 5
-        search_query_name: "#q"
-        search_min_chars: 6
-        key_color: "#ffaabbcc"
-        focused_key_color: "#ffaabbdd"
-        keyboard_bitmap_uri: "#keyboard_bitmap_uri"
-        keyboard_focus_bitmap_uri: "#keyboard_focus_bitmap_uri"
-        keyboard_lower_case: true
+      m.modelLocator = {
+        "User": { "isLoggedIn": false }
+        "locale": "en"
       }
-    }
+      zc.TestUtils.setModelLocator(m.modelLocator)
 
-    m.vm = new FullScreenSearchVM(m.riversJson)
-  end function
+      m.riversJson = {
+        data: { source: "#myLink" }
+        styles: {
+          grid_x: 1
+          grid_y: 2
+          keyboard_x: 3
+          keyboard_y: 4
+          data_depth: 5
+          search_query_name: "#q"
+          search_min_chars: 6
+          key_color: "#ffaabbcc"
+          focused_key_color: "#ffaabbdd"
+          keyboard_bitmap_uri: "#keyboard_bitmap_uri"
+          keyboard_focus_bitmap_uri: "#keyboard_focus_bitmap_uri"
+          keyboard_lower_case: true
+        }
+      }
 
-
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '@It tests constructor
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-  '@Test constructor
-  function constructor()
-    m.assertEqual(m.vm.focusId, "keyboard")
-
-  end function
-
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '@It tests processStyles
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-  function processStyles() 
-    m.assertNotEmpty(m.gridStyle)
-    m.assertEqual(m.gridStyle.translation, [1, 2])
-    m.assertEqual(m.loadDepth, 5)
-    m.assertEqual(m.minCharacters, 6)
-    m.assertEqual(m.searchQueryName, "#q")
-    m.assertNotEmpty(m.keyboardStyle)
-    m.assertEqual(m.keyboardStyle.translation, [3, 4])
-    m.assertEqual(m.keyboardStyle.keyColor, "#ffaabbcc")
-    m.assertEqual(m.keyboardStyle.keyColor, "#ffaabbdd")
-    m.assertEqual(m.keyboardStyle.bitmapUri, "#keyboard_bitmap_uri")
-    m.assertEqual(m.keyboardStyle.focusBitmapUri, "#keyboard_focus_bitmap_uri")
-    m.assertEqual(m.keyboardStyle.lowercase, true)
-
-  end function
-
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '@It tests leaving screen cancels searches
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-  '@Test 
-  function onHide()
-    loadItemTask = { "id": "loadItemTask" }
-    searchDelayTask = { "id": "searchDelayTask" }
-    m.vm.searchDelayTask = searchDelayTask
-    m.vm.loadItemTask = loadItemTask
-
-    m.expectOnce(m.vm, "cancelWaitTimer", [searchDelayTask])
-    m.expectOnce(m.vm, "cancelTask", [loadItemTask])
-
-    m.vm.onHide()
-
-    m.assertInvalid(m.vm.searchDelayTask)
-    m.assertInvalid(m.vm.loadItemTask)
-
-  end function
-
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '@It tests reset
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-  '@Test 
-  function reset()
-    m.expectOnce(m.vm, "setGridVisible", [false])
-
-    m.vm.reset()
-
-    m.assertNodeEmpty(m.vm.results)
-    m.assertEqual(m.vm.jumpToItem, 0)
-    m.assertEmpty(m.vm.searchText)
-
-  end function
-
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '@It tests showing resets the view when appropriate
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-  '@Test was not showing content
-  function onShow()
-    m.vm.isShowingContent = true
-    m.expectNone(m.vm, "reset")
-
-    m.vm.onShow()
-    m.assertFalse(m.vm.isShowingContent)
-
-  end function
-
-  '@Test was showing content
-  function onShow_wasShowing()
-    m.vm.isShowingContent = false
-    m.expectOnce(m.vm, "reset", [])
-
-    m.vm.onShow()
-
-    m.assertFalse(m.vm.isShowingContent)
-
-  end function
-
-
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '@It tests left keypress
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-  '@Test onKeyPressLeft
-  '@Params["grid", "keyboard"]
-  '@Params["keyboard", "keyboard"]
-  function onKeyPressLeft(currentKey, expectedKey)
-    m.vm.focusId = currentKey
-    m.vm.onKeyPressLeft()
-    m.assertEqual(m.vm.focusId, expectedKey)
-  end function
-
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '@It tests right keypress
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-  '@Test onKeyPressRight
-  '@Params["keyboard", true, "grid"]
-  '@Params["grid", true, "grid"]
-  '@Params["keyboard", false, "keyboard"]
-  '@Params["grid", false, "grid"]
-  function onKeyPressRight(currentKey, isGridVisible, expectedKey)
-    m.vm.focusId = currentKey
-    m.vm.isGridVisible = isGridVisible
-    m.vm.onKeyPressRight()
-    m.assertEqual(m.vm.focusId, expectedKey)
-  end function
-
-end namespace
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests setGridVisible
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-'@Test setGridVisible
-'@Params[true, 2, true, false, false]
-'@Params[true, 0, false, false, true]
-'@Params[false, 2, false, true, false]
-'@Params[false, 0, false, true, false]
-function setGridVisible(visible, numItems, isGridVisible, isNoSearchVisible, isNotFoundVisible)
-  m.vm.results = createObject("roSGNode", "ZPEntry")
-
-  for i = 0 to numItems - 1
-    m.vm.results.createChild("ZPEntry")
-  end for
-
-  m.vm.setGridVisible(visible)
-
-  m.assertEqual(m.vm.isGridVisible, isGridVisible)
-  m.assertEqual(m.vm.isNoSearchLabelVisible, isNoSearchVisible)
-  m.assertEqual(m.vm.isNotFoundLabelVisible, isNotFoundVisible)
-
-end function
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests perform search
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-'@Test performSearch
-'@Params["q1","s1", 0, "#myLink&q1=s1"]
-'@Params["q2","s2", 1, "#myLink&q2=s2"]
-'@Params["q3","s3  ", 1, "#myLink&q3=s3"]
-'@Params["q4","   s4  ", 1, "#myLink&q4=s4"]
-function performSearch(searchQuery, text, loadDepth, expectedLink)
-  m.vm.searchQueryName = searchQuery
-  m.vm.searchText = text
-  m.vm.loadDepth = loadDepth
-
-  entryMatcher = { "matcher": function(entry)
-      return entry.link = m.expectedLink
+      m.vm = new FullScreenSearchVM(m.riversJson)
     end function
-    "expectedLink": expectedLink
-  }
-
-  m.expectOnce(m.vm, "toggleLoadingItemTask", [true, entryMatcher, loadDepth])
-  m.expectOnce(m.vm, "setGridVisible", [true])
-
-  m.vm.performSearch(text)
-
-  m.assertTrue(m.vm.isLoading)
-
-end function
 
 
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests onSearchTextChange
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '@It tests constructor
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-'@Test onSearchTextChange
-'@Params["one"]
-'@Params["one2"]
-'@Params["one2three"]
-function onSearchTextChang_search_scenarios(text)
-  loadItemTask = { "id": "loadItemTask" }
-  searchDelayTask = { "id": "searchDelayTask" }
-  m.vm.searchDelayTask = searchDelayTask
-  m.vm.loadItemTask = loadItemTask
-  m.vm.minCharacters = 3
-  newDelayTask = { "id": "newDelayTask" }
+    '@Test constructor
+    function constructor()
+      m.assertEqual(m.vm.focusId, "keyboard")
 
-  m.expectOnce(m.vm, "cancelWaitTimer", [searchDelayTask])
-  m.expectOnce(m.vm, "cancelTask", [loadItemTask])
-  m.expectOnce(m.vm, "waitAFrame", ["onSearchDelayComplete", 0.5], newDelayTask)
+    end function
 
-  m.vm.onSearchTextChange(text)
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '@It tests processStyles
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  m.assertEqual(m.vm.searchDelayTask, newDelayTask)
-end function
+    function processStyles() 
+      m.assertNotEmpty(m.gridStyle)
+      m.assertEqual(m.gridStyle.translation, [1, 2])
+      m.assertEqual(m.loadDepth, 5)
+      m.assertEqual(m.minCharacters, 6)
+      m.assertEqual(m.searchQueryName, "#q")
+      m.assertNotEmpty(m.keyboardStyle)
+      m.assertEqual(m.keyboardStyle.translation, [3, 4])
+      m.assertEqual(m.keyboardStyle.keyColor, "#ffaabbcc")
+      m.assertEqual(m.keyboardStyle.keyColor, "#ffaabbdd")
+      m.assertEqual(m.keyboardStyle.bitmapUri, "#keyboard_bitmap_uri")
+      m.assertEqual(m.keyboardStyle.focusBitmapUri, "#keyboard_focus_bitmap_uri")
+      m.assertEqual(m.keyboardStyle.lowercase, true)
 
-'@Test no serch scenarios
-'@Params["o"]
-'@Params["aa]
-'@Params[" aa"]
-'@Params[" aa "]
-'@Params["aa  "]
-function onSearchTextChang_non_search_scenarios(text)
-  loadItemTask = { "id": "loadItemTask" }
-  searchDelayTask = { "id": "searchDelayTask" }
-  m.vm.searchDelayTask = searchDelayTask
-  m.vm.loadItemTask = loadItemTask
+    end function
 
-  newDelayTask = { "id": "newDelayTask" }
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '@It tests leaving screen cancels searches
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  m.expectOnce(m.vm, "cancelWaitTimer", [searchDelayTask])
-  m.expectOnce(m.vm, "cancelTask", [loadItemTask])
-  m.expectNone(m.vm, "waitAFrame")
+    '@Test 
+    function onHide()
+      loadItemTask = { "id": "loadItemTask" }
+      searchDelayTask = { "id": "searchDelayTask" }
+      m.vm.searchDelayTask = searchDelayTask
+      m.vm.loadItemTask = loadItemTask
 
-  m.vm.onSearchTextChange(text)
+      m.expectOnce(m.vm, "cancelWaitTimer", [searchDelayTask])
+      m.expectOnce(m.vm, "cancelTask", [loadItemTask])
 
-  m.assertEqual(m.vm.searchDelayTask, searchDelayTask)
-end function
+      m.vm.onHide()
 
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'@It tests onSearchDelayComplete
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      m.assertInvalid(m.vm.searchDelayTask)
+      m.assertInvalid(m.vm.loadItemTask)
 
-'@Test 
-'@Params["one"]
-'@Params["two"]
-'@Params["three"]
-function onSearchDelayComplete(text)
-  m.expectOnce(m.vm, "performSearch", [text])
-  m.vm.searchText = text
+    end function
 
-  m.vm.onSearchDelayComplete()
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '@It tests reset
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-end function
+    '@Test 
+    function reset()
+      m.expectOnce(m.vm, "setGridVisible", [false])
+
+      m.vm.reset()
+
+      m.assertNodeEmpty(m.vm.results)
+      m.assertEqual(m.vm.jumpToItem, 0)
+      m.assertEmpty(m.vm.searchText)
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '@It tests showing resets the view when appropriate
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    '@Test was not showing content
+    function onShow()
+      m.vm.isShowingContent = true
+      m.expectNone(m.vm, "reset")
+
+      m.vm.onShow()
+      m.assertFalse(m.vm.isShowingContent)
+
+    end function
+
+    '@Test was showing content
+    function onShow_wasShowing()
+      m.vm.isShowingContent = false
+      m.expectOnce(m.vm, "reset", [])
+
+      m.vm.onShow()
+
+      m.assertFalse(m.vm.isShowingContent)
+
+    end function
+
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '@It tests left keypress
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    '@Test onKeyPressLeft
+    '@Params["grid", "keyboard"]
+    '@Params["keyboard", "keyboard"]
+    function onKeyPressLeft(currentKey, expectedKey)
+      m.vm.focusId = currentKey
+      m.vm.onKeyPressLeft()
+      m.assertEqual(m.vm.focusId, expectedKey)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '@It tests right keypress
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    '@Test onKeyPressRight
+    '@Params["keyboard", true, "grid"]
+    '@Params["grid", true, "grid"]
+    '@Params["keyboard", false, "keyboard"]
+    '@Params["grid", false, "grid"]
+    function onKeyPressRight(currentKey, isGridVisible, expectedKey)
+      m.vm.focusId = currentKey
+      m.vm.isGridVisible = isGridVisible
+      m.vm.onKeyPressRight()
+      m.assertEqual(m.vm.focusId, expectedKey)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '@It tests setGridVisible
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    '@Test setGridVisible
+    '@Params[true, 2, true, false, false]
+    '@Params[true, 0, false, false, true]
+    '@Params[false, 2, false, true, false]
+    '@Params[false, 0, false, true, false]
+    function setGridVisible(visible, numItems, isGridVisible, isNoSearchVisible, isNotFoundVisible)
+      m.vm.results = createObject("roSGNode", "ZPEntry")
+
+      for i = 0 to numItems - 1
+        m.vm.results.createChild("ZPEntry")
+      end for
+
+      m.vm.setGridVisible(visible)
+
+      m.assertEqual(m.vm.isGridVisible, isGridVisible)
+      m.assertEqual(m.vm.isNoSearchLabelVisible, isNoSearchVisible)
+      m.assertEqual(m.vm.isNotFoundLabelVisible, isNotFoundVisible)
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '@It tests perform search
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    '@Test performSearch
+    '@Params["q1","s1", 0, "#myLink&q1=s1"]
+    '@Params["q2","s2", 1, "#myLink&q2=s2"]
+    '@Params["q3","s3  ", 1, "#myLink&q3=s3"]
+    '@Params["q4","   s4  ", 1, "#myLink&q4=s4"]
+    function performSearch(searchQuery, text, loadDepth, expectedLink)
+      m.vm.searchQueryName = searchQuery
+      m.vm.searchText = text
+      m.vm.loadDepth = loadDepth
+
+      entryMatcher = { "matcher": function(entry)
+          return entry.link = m.expectedLink
+        end function
+        "expectedLink": expectedLink
+      }
+
+      m.expectOnce(m.vm, "toggleLoadingItemTask", [true, entryMatcher, loadDepth])
+      m.expectOnce(m.vm, "setGridVisible", [true])
+
+      m.vm.performSearch(text)
+
+      m.assertTrue(m.vm.isLoading)
+
+    end function
+
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '@It tests onSearchTextChange
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    '@Test onSearchTextChange
+    '@Params["one"]
+    '@Params["one2"]
+    '@Params["one2three"]
+    function onSearchTextChang_search_scenarios(text)
+      loadItemTask = { "id": "loadItemTask" }
+      searchDelayTask = { "id": "searchDelayTask" }
+      m.vm.searchDelayTask = searchDelayTask
+      m.vm.loadItemTask = loadItemTask
+      m.vm.minCharacters = 3
+      newDelayTask = { "id": "newDelayTask" }
+
+      m.expectOnce(m.vm, "cancelWaitTimer", [searchDelayTask])
+      m.expectOnce(m.vm, "cancelTask", [loadItemTask])
+      m.expectOnce(m.vm, "waitAFrame", ["onSearchDelayComplete", 0.5], newDelayTask)
+
+      m.vm.onSearchTextChange(text)
+
+      m.assertEqual(m.vm.searchDelayTask, newDelayTask)
+    end function
+
+    '@Test no serch scenarios
+    '@Params["o"]
+    '@Params["aa]
+    '@Params[" aa"]
+    '@Params[" aa "]
+    '@Params["aa  "]
+    function onSearchTextChang_non_search_scenarios(text)
+      loadItemTask = { "id": "loadItemTask" }
+      searchDelayTask = { "id": "searchDelayTask" }
+      m.vm.searchDelayTask = searchDelayTask
+      m.vm.loadItemTask = loadItemTask
+
+      newDelayTask = { "id": "newDelayTask" }
+
+      m.expectOnce(m.vm, "cancelWaitTimer", [searchDelayTask])
+      m.expectOnce(m.vm, "cancelTask", [loadItemTask])
+      m.expectNone(m.vm, "waitAFrame")
+
+      m.vm.onSearchTextChange(text)
+
+      m.assertEqual(m.vm.searchDelayTask, searchDelayTask)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '@It tests onSearchDelayComplete
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    '@Test 
+    '@Params["one"]
+    '@Params["two"]
+    '@Params["three"]
+    function onSearchDelayComplete(text)
+      m.expectOnce(m.vm, "performSearch", [text])
+      m.vm.searchText = text
+
+      m.vm.onSearchDelayComplete()
+
+    end function
+
+  end class
 end namespace

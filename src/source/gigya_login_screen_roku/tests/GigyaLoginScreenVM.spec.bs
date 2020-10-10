@@ -1,8 +1,7 @@
 '@TestSuite [OCGPSVMT]
-namespace Applicaster.Gigya.LoginScreenVMTests
+namespace Tests
 
-  '@BeforeEach
-  function beforeEach()
+  override function beforeEach()
     m.modelLocator = {
       "User": { "isLoggedIn": false }
       "locale": "en"
@@ -21,8 +20,7 @@ namespace Applicaster.Gigya.LoginScreenVMTests
     m.vm = new GigyaLoginScreenVM(riversJson)
   end function
 
-  '@AfterEach
-  function afterEach()
+  override function afterEach()
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -207,4 +205,5 @@ namespace Applicaster.Gigya.LoginScreenVMTests
 
   end function
 
+end class
 end namespace

@@ -1,207 +1,205 @@
-'@TestSuite [ZGAPLT] GigyaAuthPluginTests
-namespace Applicaster.Authentication.GigyaTests
+namespace Tests
 
-  '@BeforeEach
-  function beforeEach()
-    m.riversJson = {
-      "id": "myAccount"
-    }
-    pluginConfiguration = {
-      "identifier": "gigya_auth_plugin_roku",
-      "configuration_json": { "base_url": "host/" }
-    }
-    m.expectedHeaders = { "Accept": "application/json", "Content-Type": "application/json" }
+  '@TestSuite GigyaAuthPluginTests
+  class GigyaAuthPluginTests extends BaseTestSuite
 
-    m.request = { "id": "request" }
-
-    plugin = new BasePlugin(pluginConfiguration)
-
-    m.plugin = new GigyaAuthPlugin(plugin)
-    m.plugin.request = m.request
-    m.analyticsManager = { "id": "analyticsManager" }
-  end function
-
-  '@AfterEach
-  function afterEach()
-  end function
-
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '@It tests constructor
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-  '@Test
-  function constructor()
-    pluginConfiguration = {
-      "identifier": "gigya_auth_plugin_roku",
-      "configuration_json": { "base_url": "host/" }
-    }
-
-    plugin = new BasePlugin(pluginConfiguration)
-
-    m.plugin = new GigyaAuthPlugin(plugin)
-
-    m.assertEqual(m.plugin.baseUrl, "host/")
-    m.assertNotInvalid(m.plugin.request)
-    m.assertEqual(m.plugin.request.__classname, "RequestModule")
-  end function
-
-
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '@It tests _getAcountInfo
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-  '@Test _getAccountInfo
-  function _getAccountInfo()
-    m.plugin.authData = {
-      "rawAuthData": {
-        "uid": "id"
-        "firstName": "george"
+    override function beforeEach()
+      m.riversJson = {
+        "id": "myAccount"
       }
-    }
-    m.assertEqual(m.plugin._getAccountInfo(), {
-      "id": "id"
-      "email": "anonymous@anon.com"
-      "username": "george"
-    })
-  end function
+      pluginConfiguration = {
+        "identifier": "gigya_auth_plugin_roku",
+        "configuration_json": { "base_url": "host/" }
+      }
+      m.expectedHeaders = { "Accept": "application/json", "Content-Type": "application/json" }
+
+      m.request = { "id": "request" }
+
+      plugin = new BasePlugin(pluginConfiguration)
+
+      m.plugin = new GigyaAuthPlugin(plugin)
+      m.plugin.request = m.request
+      m.analyticsManager = { "id": "analyticsManager" }
+    end function
+
+    override function afterEach()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '@It tests constructor
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    '@Test
+    function constructor()
+      pluginConfiguration = {
+        "identifier": "gigya_auth_plugin_roku",
+        "configuration_json": { "base_url": "host/" }
+      }
+
+      plugin = new BasePlugin(pluginConfiguration)
+
+      m.plugin = new GigyaAuthPlugin(plugin)
+
+      m.assertEqual(m.plugin.baseUrl, "host/")
+      m.assertNotInvalid(m.plugin.request)
+      m.assertEqual(m.plugin.request.__classname, "RequestModule")
+    end function
 
 
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '@It tests _verify
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '@It tests _getAcountInfo
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  '@Test invalid token
-  function _verify_has_invalid_token()
-    m.expectOnce(m.plugin, "isAuthDataExpired", [], true)
-    errorResult = { "id": "errorResult" }
-
-    m.expectOnce(m.plugin, "createErrorResult", ["Invalid token for verification"], errorResult)
-
-    m.assertEqual(m.plugin._verify(), errorResult)
-  end function
-
-  '@Test has_token_not_valid
-  function _verify_has_token_valid()
-
-    m.expectOnce(m.plugin, "isAuthDataExpired", [], false)
-
-
-    m.plugin.authData = { "id": "authData" }
-    result = m.plugin._verify()
-
-    m.assertEqual(result, m.plugin.authData)
-
-  end function
-
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '@It tests poll
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-  '@Test valid resposne
-  function onPollResponse_valid()
-    m.expectOnce(m.plugin, "getSessionStoreValue", [m.plugin.id, "regcode"], "pin")
-
-    response = {
-      access_token: "t"
-      firstname: "#firstname"
-    }
-    m.expectOnce(m.plugin.request, "getJsonSync", ["host/GetDeviceByPin/pin"], response)
-
-    m.expectOnce(m.plugin, "createAuthData", ["valid", "t", "t", "t", response, 99999])
-
-    m.plugin._poll()
-
-  end function
+    '@Test _getAccountInfo
+    function _getAccountInfo()
+      m.plugin.authData = {
+        "rawAuthData": {
+          "uid": "id"
+          "firstName": "george"
+        }
+      }
+      m.assertEqual(m.plugin._getAccountInfo(), {
+        "id": "id"
+        "email": "anonymous@anon.com"
+        "username": "george"
+      })
+    end function
 
 
-  '@Test invalid invalid - no data
-  '@Params[invalid]
-  function onPollResponse_invalid(response)
-    m.expectOnce(m.plugin, "getSessionStoreValue", [m.plugin.id, "regcode"], "pin")
-    m.expectOnce(m.plugin.request, "getJsonSync", ["host/GetDeviceByPin/pin"], response)
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '@It tests _verify
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    m.expectOnce(m.plugin, "createErrorResult", ["could not complete poll"])
+    '@Test invalid token
+    function _verify_has_invalid_token()
+      m.expectOnce(m.plugin, "isAuthDataExpired", [], true)
+      errorResult = { "id": "errorResult" }
 
-    m.plugin._poll()
-  end function
+      m.expectOnce(m.plugin, "createErrorResult", ["Invalid token for verification"], errorResult)
 
-  '@Test invalid invalid - with data
-  '@Params[{"ErrorCode": "e"}]
-  function onPollResponse_invalid_with_data(response)
-    m.expectOnce(m.plugin, "getSessionStoreValue", [m.plugin.id, "regcode"], "pin")
-    m.expectOnce(m.plugin.request, "getJsonSync", ["host/GetDeviceByPin/pin"], response)
+      m.assertEqual(m.plugin._verify(), errorResult)
+    end function
 
-    error = { "id": "error" }
+    '@Test has_token_not_valid
+    function _verify_has_token_valid()
 
-    m.expectOnce(m.plugin, "createErrorResult", ["e"], error)
-
-    m.assertEqual(m.plugin._poll(), error)
-  end function
+      m.expectOnce(m.plugin, "isAuthDataExpired", [], false)
 
 
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '@It tests regcode
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      m.plugin.authData = { "id": "authData" }
+      result = m.plugin._verify()
 
-  '@Test valid
-  function regcode_valid()
-    constants = { "id": "constants", "applicasterdeviceid": "did" }
-    m.expectOnce(m.plugin, "getInstance", ["constants"], constants)
+      m.assertEqual(result, m.plugin.authData)
 
-    regCodeResult = { "id": "regCodeResult" }
-    m.expectOnce(m.plugin, "createRegCodeResult", ["pcode"], regCodeResult)
+    end function
 
-    response = {
-      "devicePinCode": "pcode"
-    }
-    m.expectOnce(m.plugin.request, "post", ["host/CreateDevice", { "deviceId": "did" }, m.expectedHeaders], response)
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '@It tests poll
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    m.expectOnce(m.plugin, "setSessionStoreValue", ["gigya_auth_plugin_roku", "regcode", "pcode"])
+    '@Test valid resposne
+    function onPollResponse_valid()
+      m.expectOnce(m.plugin, "getSessionStoreValue", [m.plugin.id, "regcode"], "pin")
 
-    m.assertEqual(m.plugin._regCode(), regCodeResult)
-  end function
+      response = {
+        access_token: "t"
+        firstname: "#firstname"
+      }
+      m.expectOnce(m.plugin.request, "getJsonSync", ["host/GetDeviceByPin/pin"], response)
 
-  '@Test invalid
-  '@Params[{isOK:false}]
-  '@Params[{isOK:true}]
-  '@Params[{isOK:true, data: invalid}]
-  '@Params[{isOK:true, data: {}}]
-  '@Params[{isOK:true, data: {"devicePinCode": invalid}}]
-  function regcode_invalid(response)
-    constants = { "id": "constants", "applicasterdeviceid": "did" }
-    m.expectOnce(m.plugin, "getInstance", ["constants"], constants)
+      m.expectOnce(m.plugin, "createAuthData", ["valid", "t", "t", "t", response, 99999])
 
-    regCodeResult = { "id": "regCodeResult" }
-    m.expectOnce(m.plugin, "createRegCodeResult", [invalid, -1, "could not retrieve regcode"], regCodeResult)
+      m.plugin._poll()
 
-    m.expectOnce(m.plugin.request, "post", ["host/CreateDevice", { "deviceId": "did" }, m.expectedHeaders], response)
-
-    m.expectOnce(m.plugin, "setSessionStoreValue", ["gigya_auth_plugin_roku", "regcode", invalid])
-
-    m.assertEqual(m.plugin._regCode(), regCodeResult)
-  end function
-
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '@It tests logout
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    end function
 
 
-  '@Test valid resposne
-  function onLogout()
-    m.plugin.authData = {
-      "access_token": "at"
-    }
-    response = { "id": "response" }
+    '@Test invalid invalid - no data
+    '@Params[invalid]
+    function onPollResponse_invalid(response)
+      m.expectOnce(m.plugin, "getSessionStoreValue", [m.plugin.id, "regcode"], "pin")
+      m.expectOnce(m.plugin.request, "getJsonSync", ["host/GetDeviceByPin/pin"], response)
 
-    m.expectOnce(m.plugin.request, "post", ["host/Logout", { "access_token": "at" }], response)
+      m.expectOnce(m.plugin, "createErrorResult", ["could not complete poll"])
 
-    m.expectOnce(m.plugin, "createAuthData", [])
+      m.plugin._poll()
+    end function
 
-    m.plugin._logOut()
+    '@Test invalid invalid - with data
+    '@Params[{"ErrorCode": "e"}]
+    function onPollResponse_invalid_with_data(response)
+      m.expectOnce(m.plugin, "getSessionStoreValue", [m.plugin.id, "regcode"], "pin")
+      m.expectOnce(m.plugin.request, "getJsonSync", ["host/GetDeviceByPin/pin"], response)
 
-  end function
+      error = { "id": "error" }
+
+      m.expectOnce(m.plugin, "createErrorResult", ["e"], error)
+
+      m.assertEqual(m.plugin._poll(), error)
+    end function
 
 
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '@It tests regcode
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    '@Test valid
+    function regcode_valid()
+      constants = { "id": "constants", "applicasterdeviceid": "did" }
+      m.expectOnce(m.plugin, "getInstance", ["constants"], constants)
+
+      regCodeResult = { "id": "regCodeResult" }
+      m.expectOnce(m.plugin, "createRegCodeResult", ["pcode"], regCodeResult)
+
+      response = {
+        "devicePinCode": "pcode"
+      }
+      m.expectOnce(m.plugin.request, "post", ["host/CreateDevice", { "deviceId": "did" }, m.expectedHeaders], response)
+
+      m.expectOnce(m.plugin, "setSessionStoreValue", ["gigya_auth_plugin_roku", "regcode", "pcode"])
+
+      m.assertEqual(m.plugin._regCode(), regCodeResult)
+    end function
+
+    '@Test invalid
+    '@Params[{isOK:false}]
+    '@Params[{isOK:true}]
+    '@Params[{isOK:true, data: invalid}]
+    '@Params[{isOK:true, data: {}}]
+    '@Params[{isOK:true, data: {"devicePinCode": invalid}}]
+    function regcode_invalid(response)
+      constants = { "id": "constants", "applicasterdeviceid": "did" }
+      m.expectOnce(m.plugin, "getInstance", ["constants"], constants)
+
+      regCodeResult = { "id": "regCodeResult" }
+      m.expectOnce(m.plugin, "createRegCodeResult", [invalid, -1, "could not retrieve regcode"], regCodeResult)
+
+      m.expectOnce(m.plugin.request, "post", ["host/CreateDevice", { "deviceId": "did" }, m.expectedHeaders], response)
+
+      m.expectOnce(m.plugin, "setSessionStoreValue", ["gigya_auth_plugin_roku", "regcode", invalid])
+
+      m.assertEqual(m.plugin._regCode(), regCodeResult)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '@It tests logout
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
+    '@Test valid resposne
+    function onLogout()
+      m.plugin.authData = {
+        "access_token": "at"
+      }
+      response = { "id": "response" }
+
+      m.expectOnce(m.plugin.request, "post", ["host/Logout", { "access_token": "at" }], response)
+
+      m.expectOnce(m.plugin, "createAuthData", [])
+
+      m.plugin._logOut()
+
+    end function
+
+  end class
 end namespace

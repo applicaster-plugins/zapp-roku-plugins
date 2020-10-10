@@ -1,338 +1,338 @@
-'@TestSuite [IPAPT] InPlayerAuthPluginTests
-namespace Applicaster.Authentication.InPlayer
+namespace Tests
 
-  '@BeforeEach
-  function beforeEach()
-    m.riversJson = {
-      "id": "myAccount"
-    }
-    pluginConfiguration = {
-      "identifier": "client_id",
-      "configuration_json": {
-        "client_id": "cid"
-        "environment": "dev"
+  '@TestSuite InPlayerAuthPluginTests
+  class InPlayerAuthPluginTests extends BaseTestSuite
+
+    override function beforeEach()
+      m.riversJson = {
+        "id": "myAccount"
       }
-    }
-    m.expectedHeaders = { "Accept": "application/json", "Content-Type": "application/json" }
-    m.validResponse = {
-      access_token: "at"
-      refresh_token: "rt"
-      expires: 1599238289
-      account: { "id": "account_id" }
-    }
-
-    plugin = new BasePlugin(pluginConfiguration)
-
-    m.plugin = new InPlayerAuthPlugin(plugin)
-  end function
-
-  '@AfterEach
-  function afterEach()
-  end function
-
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '@It tests constructor
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-  '@Test
-  '@Params["cid1", "prod", "https://services.inplayer.com"]
-  '@Params["cid2", "dev", "https://staging-v2.inplayer.com"]
-  function constructor(clientId, env, expectedApiUrl)
-    pluginConfiguration = {
-      "identifier": "client_id",
-      "configuration_json": { "base_url": "host/" }
-    }
-
-    pluginConfiguration = {
-      "identifier": "client_id",
-      "configuration_json": {
-        "client_id": clientId
-        "environment": env
+      pluginConfiguration = {
+        "identifier": "client_id",
+        "configuration_json": {
+          "client_id": "cid"
+          "environment": "dev"
+        }
       }
-    }
+      m.expectedHeaders = { "Accept": "application/json", "Content-Type": "application/json" }
+      m.validResponse = {
+        access_token: "at"
+        refresh_token: "rt"
+        expires: 1599238289
+        account: { "id": "account_id" }
+      }
 
-    plugin = new BasePlugin(pluginConfiguration)
+      plugin = new BasePlugin(pluginConfiguration)
 
-    m.plugin = new InPlayerAuthPlugin(plugin)
+      m.plugin = new InPlayerAuthPlugin(plugin)
+    end function
 
-    m.assertEqual(m.plugin.apiUrl, expectedApiUrl)
-    m.assertEqual(m.plugin.clientId, clientId)
-  end function
+    override function afterEach()
+    end function
 
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '@It tests _getAcountInfo
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '@It tests constructor
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  '@Test _getAccountInfo
-  function _getAccountInfo()
-    m.plugin.authData = {
-      "user": {
+    '@Test
+    '@Params["cid1", "prod", "https://services.inplayer.com"]
+    '@Params["cid2", "dev", "https://staging-v2.inplayer.com"]
+    function constructor(clientId, env, expectedApiUrl)
+      pluginConfiguration = {
+        "identifier": "client_id",
+        "configuration_json": { "base_url": "host/" }
+      }
+
+      pluginConfiguration = {
+        "identifier": "client_id",
+        "configuration_json": {
+          "client_id": clientId
+          "environment": env
+        }
+      }
+
+      plugin = new BasePlugin(pluginConfiguration)
+
+      m.plugin = new InPlayerAuthPlugin(plugin)
+
+      m.assertEqual(m.plugin.apiUrl, expectedApiUrl)
+      m.assertEqual(m.plugin.clientId, clientId)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '@It tests _getAcountInfo
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    '@Test _getAccountInfo
+    function _getAccountInfo()
+      m.plugin.authData = {
+        "user": {
+          "uid": "id"
+          "firstName": "george"
+        }
+      }
+      m.assertEqual(m.plugin._getAccountInfo(), {
         "uid": "id"
         "firstName": "george"
+      })
+    end function
+
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '@It tests _verify
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    '@Test invalid token
+    function _verify_has_invalid_token()
+      m.expectOnce(m.plugin, "isAuthDataExpired", [], true)
+
+      authData = m.plugin._verify()
+
+      m.assertEqual(authData.state, "error")
+      m.assertEqual(authData.code, -1)
+
+    end function
+
+    '@Test token not verified  with service
+    '@Params[invalid]
+    '@Params[{"access_token": invalid}]
+    function _verify_has_token_service_invalid(serviceResponse)
+      m.expectOnce(m.plugin, "isAuthDataExpired", [], false)
+      m.plugin.authData = {
+        "refreshToken": "rt"
       }
-    }
-    m.assertEqual(m.plugin._getAccountInfo(), {
-      "uid": "id"
-      "firstName": "george"
-    })
-  end function
 
+      expectedParams = {
+        "grant_type": "refresh_token"
+        "client_id": "cid"
+        "refresh_token": "rt"
+      }
 
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '@It tests _verify
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      m.expectOnce(m.plugin, "executeAPIRequest", ["FORMPOST", "accounts/authenticate", expectedParams], serviceResponse)
 
-  '@Test invalid token
-  function _verify_has_invalid_token()
-    m.expectOnce(m.plugin, "isAuthDataExpired", [], true)
+      authData = m.plugin._verify()
 
-    authData = m.plugin._verify()
+      m.assertEqual(authData.state, "error")
+      m.assertEqual(authData.code, -1)
 
-    m.assertEqual(authData.state, "error")
-    m.assertEqual(authData.code, -1)
+    end function
 
-  end function
+    '@Test token verified  with service
+    function _verify_has_token_service_valid()
+      m.expectOnce(m.plugin, "isAuthDataExpired", [], false)
+      m.plugin.authData = {
+        "refreshToken": "rt"
+      }
 
-  '@Test token not verified  with service
-  '@Params[invalid]
-  '@Params[{"access_token": invalid}]
-  function _verify_has_token_service_invalid(serviceResponse)
-    m.expectOnce(m.plugin, "isAuthDataExpired", [], false)
-    m.plugin.authData = {
-      "refreshToken": "rt"
-    }
+      expectedParams = {
+        "grant_type": "refresh_token"
+        "client_id": "cid"
+        "refresh_token": "rt"
+      }
 
-    expectedParams = {
-      "grant_type": "refresh_token"
-      "client_id": "cid"
-      "refresh_token": "rt"
-    }
+      result = m.validResponse
+      m.expectOnce(m.plugin, "executeAPIRequest", ["FORMPOST", "accounts/authenticate", expectedParams], result)
+      authData = { "id": "authData" }
+      m.expectOnce(m.plugin, "createAuthData", ["valid", "at", "at", "rt", result, result.expires, 200, "", result.account], authData)
 
-    m.expectOnce(m.plugin, "executeAPIRequest", ["FORMPOST", "accounts/authenticate", expectedParams], serviceResponse)
+      m.assertEqual(m.plugin._verify(), authData)
 
-    authData = m.plugin._verify()
+    end function
 
-    m.assertEqual(authData.state, "error")
-    m.assertEqual(authData.code, -1)
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '@It tests register
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  end function
+    '@Test cannot register
+    '@Params[invalid]
+    '@Params[{"access_token": invalid}]
+    function _register_invalid(serviceResponse)
+      credentials = {
+        username: "u"
+        password: "p"
+        passwordConfirmation: "pc"
+        name: "n"
+      }
+      expectedParams = {
+        "grant_type": "password"
+        "type": "consumer"
+        "client_id": "cid"
+        "metadata[surname]": "dummy"
+        "username": "u"
+        "full_name": "n"
+        "password": "p"
+        "password_confirmation": "pc"
+      }
 
-  '@Test token verified  with service
-  function _verify_has_token_service_valid()
-    m.expectOnce(m.plugin, "isAuthDataExpired", [], false)
-    m.plugin.authData = {
-      "refreshToken": "rt"
-    }
+      m.expectOnce(m.plugin, "executeAPIRequest", ["FORMPOST", "accounts", expectedParams], serviceResponse)
 
-    expectedParams = {
-      "grant_type": "refresh_token"
-      "client_id": "cid"
-      "refresh_token": "rt"
-    }
+      m.expectNone(m.plugin, "createAuthData")
 
-    result = m.validResponse
-    m.expectOnce(m.plugin, "executeAPIRequest", ["FORMPOST", "accounts/authenticate", expectedParams], result)
-    authData = { "id": "authData" }
-    m.expectOnce(m.plugin, "createAuthData", ["valid", "at", "at", "rt", result, result.expires, 200, "", result.account], authData)
+      authData = { "id": "authData" }
+      m.expectOnce(m.plugin, "createErrorFromResult", [serviceResponse], authData)
 
-    m.assertEqual(m.plugin._verify(), authData)
+      m.assertEqual(m.plugin._register(credentials), authData)
+    end function
 
-  end function
+    '@Test valid register
+    function _register_valid()
+      credentials = {
+        username: "u"
+        password: "p"
+        passwordConfirmation: "pc"
+        name: "n"
+      }
+      expectedParams = {
+        "grant_type": "password"
+        "type": "consumer"
+        "client_id": "cid"
+        "metadata[surname]": "dummy"
+        "username": "u"
+        "full_name": "n"
+        "password": "p"
+        "password_confirmation": "pc"
+      }
+      m.expectOnce(m.plugin, "executeAPIRequest", ["FORMPOST", "accounts", expectedParams], m.validResponse)
 
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '@It tests register
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      m.expectNone(m.plugin, "createErrorFromResult")
 
-  '@Test cannot register
-  '@Params[invalid]
-  '@Params[{"access_token": invalid}]
-  function _register_invalid(serviceResponse)
-    credentials = {
-      username: "u"
-      password: "p"
-      passwordConfirmation: "pc"
-      name: "n"
-    }
-    expectedParams = {
-      "grant_type": "password"
-      "type": "consumer"
-      "client_id": "cid"
-      "metadata[surname]": "dummy"
-      "username": "u"
-      "full_name": "n"
-      "password": "p"
-      "password_confirmation": "pc"
-    }
+      authData = { "id": "authData" }
+      result = m.validResponse
+      m.expectOnce(m.plugin, "createAuthData", ["valid", "at", "at", "rt", result, result.expires, 200, "", result.account], authData)
 
-    m.expectOnce(m.plugin, "executeAPIRequest", ["FORMPOST", "accounts", expectedParams], serviceResponse)
+      m.assertEqual(m.plugin._register(credentials), authData)
 
-    m.expectNone(m.plugin, "createAuthData")
+    end function
 
-    authData = { "id": "authData" }
-    m.expectOnce(m.plugin, "createErrorFromResult", [serviceResponse], authData)
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '@It tests login
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    m.assertEqual(m.plugin._register(credentials), authData)
-  end function
+    '@Test cannot login
+    '@Params[invalid]
+    '@Params[{"access_token": invalid}]
+    function _login_invalid(serviceResponse)
+      credentials = {
+        username: "u"
+        password: "p"
+        passwordConfirmation: "pc"
+        name: "n"
+      }
+      expectedParams = {
+        "grant_type": "password"
+        "client_id": "cid"
+        "username": "u"
+        "password": "p"
+      }
 
-  '@Test valid register
-  function _register_valid()
-    credentials = {
-      username: "u"
-      password: "p"
-      passwordConfirmation: "pc"
-      name: "n"
-    }
-    expectedParams = {
-      "grant_type": "password"
-      "type": "consumer"
-      "client_id": "cid"
-      "metadata[surname]": "dummy"
-      "username": "u"
-      "full_name": "n"
-      "password": "p"
-      "password_confirmation": "pc"
-    }
-    m.expectOnce(m.plugin, "executeAPIRequest", ["FORMPOST", "accounts", expectedParams], m.validResponse)
+      m.expectOnce(m.plugin, "executeAPIRequest", ["FORMPOST", "accounts/authenticate", expectedParams], serviceResponse)
 
-    m.expectNone(m.plugin, "createErrorFromResult")
+      m.expectNone(m.plugin, "createAuthData")
 
-    authData = { "id": "authData" }
-    result = m.validResponse
-    m.expectOnce(m.plugin, "createAuthData", ["valid", "at", "at", "rt", result, result.expires, 200, "", result.account], authData)
+      authData = { "id": "authData" }
+      m.expectOnce(m.plugin, "createErrorFromResult", [serviceResponse], authData)
 
-    m.assertEqual(m.plugin._register(credentials), authData)
+      m.assertEqual(m.plugin._login(credentials), authData)
+    end function
 
-  end function
+    '@Test valid login
+    function _login_valid()
+      credentials = {
+        username: "u"
+        password: "p"
+        passwordConfirmation: "pc"
+        name: "n"
+      }
+      expectedParams = {
+        "grant_type": "password"
+        "client_id": "cid"
+        "username": "u"
+        "password": "p"
+      }
+      m.expectOnce(m.plugin, "executeAPIRequest", ["FORMPOST", "accounts/authenticate", expectedParams], m.validResponse)
 
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '@It tests login
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      m.expectNone(m.plugin, "createErrorFromResult")
 
-  '@Test cannot login
-  '@Params[invalid]
-  '@Params[{"access_token": invalid}]
-  function _login_invalid(serviceResponse)
-    credentials = {
-      username: "u"
-      password: "p"
-      passwordConfirmation: "pc"
-      name: "n"
-    }
-    expectedParams = {
-      "grant_type": "password"
-      "client_id": "cid"
-      "username": "u"
-      "password": "p"
-    }
+      authData = { "id": "authData" }
+      result = m.validResponse
+      m.expectOnce(m.plugin, "createAuthData", ["valid", "at", "at", "rt", result, result.expires, 200, "", result.account], authData)
 
-    m.expectOnce(m.plugin, "executeAPIRequest", ["FORMPOST", "accounts/authenticate", expectedParams], serviceResponse)
+      m.assertEqual(m.plugin._login(credentials), authData)
 
-    m.expectNone(m.plugin, "createAuthData")
+    end function
 
-    authData = { "id": "authData" }
-    m.expectOnce(m.plugin, "createErrorFromResult", [serviceResponse], authData)
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '@It tests logout
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    m.assertEqual(m.plugin._login(credentials), authData)
-  end function
+    '@Test not logged in
+    function _logout_not_logged_in()
 
-  '@Test valid login
-  function _login_valid()
-    credentials = {
-      username: "u"
-      password: "p"
-      passwordConfirmation: "pc"
-      name: "n"
-    }
-    expectedParams = {
-      "grant_type": "password"
-      "client_id": "cid"
-      "username": "u"
-      "password": "p"
-    }
-    m.expectOnce(m.plugin, "executeAPIRequest", ["FORMPOST", "accounts/authenticate", expectedParams], m.validResponse)
+      authData = { "id": "authData" }
 
-    m.expectNone(m.plugin, "createErrorFromResult")
+      m.expectOnce(m.plugin, "createErrorResult", ["cannot log out: not logged in"], authData)
 
-    authData = { "id": "authData" }
-    result = m.validResponse
-    m.expectOnce(m.plugin, "createAuthData", ["valid", "at", "at", "rt", result, result.expires, 200, "", result.account], authData)
+      m.assertEqual(m.plugin._logout(), authData)
 
-    m.assertEqual(m.plugin._login(credentials), authData)
+    end function
 
-  end function
+    '@Test cannot logout on backend
+    '@Params[{}]
+    '@Params[{"code": invalid}]
+    '@Params[{"code": 400}]
+    '@Params[{"code": 403}]
+    function _logout_bad_response(serviceResponse)
+      m.plugin.authData = {
+        "accessToken": "at"
+      }
+      m.expectOnce(m.plugin, "loadAuthDataFromRegistry", [])
 
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '@It tests logout
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+      m.expectOnce(m.plugin, "executeAPIRequest", ["GET", "accounts/logout", invalid, true, "at"], serviceResponse)
+      m.expectNone(m.plugin, "createAuthData")
 
-  '@Test not logged in
-  function _logout_not_logged_in()
+      authData = { "id": "authData" }
 
-    authData = { "id": "authData" }
+      m.expectOnce(m.plugin, "createErrorFromResult", [serviceResponse], authData)
 
-    m.expectOnce(m.plugin, "createErrorResult", ["cannot log out: not logged in"], authData)
+      m.assertEqual(m.plugin._logout(), authData)
 
-    m.assertEqual(m.plugin._logout(), authData)
+    end function
 
-  end function
+    '@Test can logout on backend
+    function _logout_valid_response()
+      m.expectOnce(m.plugin, "loadAuthDataFromRegistry", [])
 
-  '@Test cannot logout on backend
-  '@Params[{}]
-  '@Params[{"code": invalid}]
-  '@Params[{"code": 400}]
-  '@Params[{"code": 403}]
-  function _logout_bad_response(serviceResponse)
-    m.plugin.authData = {
-      "accessToken": "at"
-    }
-    m.expectOnce(m.plugin, "loadAuthDataFromRegistry", [])
+      serviceResponse = { "id": "serviceResponse", "code": 200 }
+      m.plugin.authData = {
+        "accessToken": "at"
+      }
 
-    m.expectOnce(m.plugin, "executeAPIRequest", ["GET", "accounts/logout", invalid, true, "at"], serviceResponse)
-    m.expectNone(m.plugin, "createAuthData")
+      m.expectOnce(m.plugin, "executeAPIRequest", ["GET", "accounts/logout", invalid, true, "at"], serviceResponse)
+      m.expectNone(m.plugin, "createErrorFromResult")
 
-    authData = { "id": "authData" }
+      authData = { "id": "authData" }
+      m.expectOnce(m.plugin, "createAuthData", [], authData)
 
-    m.expectOnce(m.plugin, "createErrorFromResult", [serviceResponse], authData)
+      m.assertEqual(m.plugin._logOut(), authData)
 
-    m.assertEqual(m.plugin._logout(), authData)
+    end function
 
-  end function
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '@It tests createErrorFromResult
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  '@Test can logout on backend
-  function _logout_valid_response()
-    m.expectOnce(m.plugin, "loadAuthDataFromRegistry", [])
+    '@Test 
+    '@Params[invalid, "Unknown error", -1]
+    '@Params[{}, "Unknown error", -1]
+    '@Params[{"errors": {"1":"one"}}, "one", -1]
+    '@Params[{"errors": {"1":"one"}, "code": 403}, "one", 403]
+    '@Params[{"errors": {"403":"m403"}, "code": 403}, "m403", 403]
+    function createErrorFromResult(result, expectedMessage, expectedCode)
+      error = m.plugin.createErrorFromResult(result)
+      m.assertEqual(error.code, expectedCode)
+      m.assertEqual(error.message, expectedMessage)
 
-    serviceResponse = { "id": "serviceResponse", "code": 200 }
-    m.plugin.authData = {
-      "accessToken": "at"
-    }
+    end function
 
-    m.expectOnce(m.plugin, "executeAPIRequest", ["GET", "accounts/logout", invalid, true, "at"], serviceResponse)
-    m.expectNone(m.plugin, "createErrorFromResult")
-
-    authData = { "id": "authData" }
-    m.expectOnce(m.plugin, "createAuthData", [], authData)
-
-    m.assertEqual(m.plugin._logOut(), authData)
-
-  end function
-
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '@It tests createErrorFromResult
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-  '@Test 
-  '@Params[invalid, "Unknown error", -1]
-  '@Params[{}, "Unknown error", -1]
-  '@Params[{"errors": {"1":"one"}}, "one", -1]
-  '@Params[{"errors": {"1":"one"}, "code": 403}, "one", 403]
-  '@Params[{"errors": {"403":"m403"}, "code": 403}, "m403", 403]
-  function createErrorFromResult(result, expectedMessage, expectedCode)
-    error = m.plugin.createErrorFromResult(result)
-    m.assertEqual(error.code, expectedCode)
-    m.assertEqual(error.message, expectedMessage)
-
-  end function
-
-
+  end class
 end namespace
