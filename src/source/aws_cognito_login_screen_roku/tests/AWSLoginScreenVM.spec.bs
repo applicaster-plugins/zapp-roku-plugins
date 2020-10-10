@@ -1,7 +1,7 @@
 namespace Tests
 
   '@TestSuite AWSLoginScreenVMTests
-  class AWSLoginScreenVMTests extends BaseTestSuite
+  class AWSLoginScreenVMTests extends Rooibos.BaseTestSuite
     override function beforeEach()
       m.modelLocator = {
         "User": { "isLoggedIn": false }
@@ -79,7 +79,7 @@ namespace Tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     '@Test constructor
-    function constructor()
+    function constructor_tests()
       m.assertEqual(m.vm.focusId, "usernameInput")
       m.assertEqual(m.vm.riversJson, m.riversJson)
     end function
@@ -372,7 +372,8 @@ namespace Tests
     '@It INTEGRATION tests processLogin
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    override function beforeEach()
+    '@BeforeEach
+    function integratin_process_login_beforeEach()
       m.modelLocator = CreateObject("roSGNode", "ModelLocator")
       m.modelLocator.constants = { "simulateInAppPurchases": true }
       m.modelLocator.entitlements = CreateObject("roSGNode", "SimpleEntitlements")
@@ -402,7 +403,8 @@ namespace Tests
       m.rootBeforeEach()
     end function
 
-    override function afterEach()
+    '@AfterEach
+    function processLogin_integration_afterEach()
       zc.TestUtils.unsetModelLocator()
     end function
 

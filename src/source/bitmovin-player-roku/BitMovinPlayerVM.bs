@@ -25,7 +25,7 @@ class BitMovinPlayerVM extends zc.BaseZappVM
     if themeColor = invalid
       m.themeColor = "#ffffff"
     else
-      m.themeColor = ViewUtils.transposeUIBColor(themeColor)
+      m.themeColor = zc.ViewUtils.transposeUIBColor(themeColor)
     end if
 
     m.isValid = m.licenseKey <> ""

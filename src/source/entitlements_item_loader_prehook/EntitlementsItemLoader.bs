@@ -1,7 +1,7 @@
 import "pkg:/source/plugin-support/PluginManager.bs"
 import "pkg:/source/lib/BaseClass.bs"
 import "pkg:/source/maestro/lib/Utils.bs"
-import "pkg:/source/lib/request.bs" 
+import "pkg:/source/lib/Request.bs" 
 
 ' /**
 '  * @module EntitlementsItemLoader
@@ -15,7 +15,7 @@ class EntitlementsItemLoader extends zc.BaseClass
 
   public function new()
     m.super("EntitlementsItemLoader")
-    m.plugins = m.getClassInstance("PluginManager")
+    m.plugins = m.getClassInstance("zc.PluginManager")
 
     plugin = m.plugins.getPluginById("entitlements_item_loader_prehook")
     m.isValid = plugin.isValid

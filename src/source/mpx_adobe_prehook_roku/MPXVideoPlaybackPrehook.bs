@@ -2,8 +2,8 @@
 import "pkg:/source/plugin-support/PluginManager.bs"
 import "pkg:/source/lib/BaseClass.bs"
 import "pkg:/source/maestro/lib/Utils.bs"
-import "pkg:/source/lib/request.bs" 
-import "pkg:/source/lib/uri.bs" 
+import "pkg:/source/lib/Request.bs" 
+import "pkg:/source/lib/URI.bs" 
 
 ' /**
 '  * @module MPXVideoPlaybackPrehook
@@ -19,7 +19,7 @@ class MPXVideoPlaybackPrehook extends zc.BaseClass
 
   public function new()
     m.super("MPXVideoPlaybackPrehook")
-    m.plugins = m.getClassInstance("PluginManager")
+    m.plugins = m.getClassInstance("zc.PluginManager")
 
     plugin = m.plugins.getPluginById("mpx_video_playback_prehook_roku")
     m.isValid = plugin.isValid
@@ -34,7 +34,7 @@ class MPXVideoPlaybackPrehook extends zc.BaseClass
     end if
 
     m.request = m.getClassInstance("RequestModule")
-    m.uri = m.getClassInstance("UriModule")
+    m.uri = m.getClassInstance("zc.URI")
 
 
   end function

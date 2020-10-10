@@ -146,28 +146,28 @@ class WarningMessageScreenVM extends ScreenVM
   function processStyles(styles)
     m.logInfo("converting rivers json styles into a format our UI controls can consume")
 
-    m.titleStyle = ViewUtils.makeUIBTextStyle(styles, "title")
+    m.titleStyle = zc.ViewUtils.makeUIBTextStyle(styles, "title")
 
-    m.descriptionStyle = ViewUtils.makeUIBTextStyle(styles, "description")
-    m.optional1Style = ViewUtils.makeUIBTextStyle(styles, "optional_text1")
-    m.backgroundColor = ViewUtils.transposeUIBColor(styles.background_color)
+    m.descriptionStyle = zc.ViewUtils.makeUIBTextStyle(styles, "description")
+    m.optional1Style = zc.ViewUtils.makeUIBTextStyle(styles, "optional_text1")
+    m.backgroundColor = zc.ViewUtils.transposeUIBColor(styles.background_color)
     m.backgroundUrl = styles.background_url
     m.logoImageUrl = styles.logo_image_url
 
-    m.doneButtonStyle = ViewUtils.makeUIBButtonStyle(styles, "done_button", "custom", styles.done_button_text)
+    m.doneButtonStyle = zc.ViewUtils.makeUIBButtonStyle(styles, "done_button", "custom", styles.done_button_text)
 
     m.logoImageUrl = styles.logo_url
-    m.logoPosition = ViewUtils.makeUIBPosition(styles, "logo", 100, 33)
-    m.textPosition = ViewUtils.makeUIBPosition(styles, "text", 0, 310)
-    m.textWidth = ViewUtils.getUIBInt(styles, "text_w", 1920)
-    m.buttonPosition = ViewUtils.makeUIBPosition(styles, "button", 100, 33)
-    logoSize = ViewUtils.makeUIBSize(styles, "logo", 350, 100)
+    m.logoPosition = zc.ViewUtils.makeUIBPosition(styles, "logo", 100, 33)
+    m.textPosition = zc.ViewUtils.makeUIBPosition(styles, "text", 0, 310)
+    m.textWidth = zc.ViewUtils.getUIBInt(styles, "text_w", 1920)
+    m.buttonPosition = zc.ViewUtils.makeUIBPosition(styles, "button", 100, 33)
+    logoSize = zc.ViewUtils.makeUIBSize(styles, "logo", 350, 100)
     m.logoWidth = logoSize[0]
     m.logoHeight = logoSize[1]
 
     m.warningType = mc.getContentField(styles, "warning_type", "entry")
-    m.warningEntryIndex = ViewUtils.getUIBInt(styles, "entry_index", -1)
-    m.warningEntryDepth = ViewUtils.getUIBInt(styles, "entry_depth", 1)
+    m.warningEntryIndex = zc.ViewUtils.getUIBInt(styles, "entry_index", -1)
+    m.warningEntryDepth = zc.ViewUtils.getUIBInt(styles, "entry_depth", 1)
 
     m.warningType = mc.getContentField(styles, "warning_type", "entry")
   end function

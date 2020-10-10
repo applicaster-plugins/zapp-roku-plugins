@@ -1,7 +1,7 @@
 namespace Tests
 
   '@TestSuite EntitlementsItemLoader
-  class EntitlementsItemLoader extends BaseTestSuite
+  class EntitlementsItemLoader extends Rooibos.BaseTestSuite
 
     override function beforeEach()
       zc.AppService.clearClassInstances()

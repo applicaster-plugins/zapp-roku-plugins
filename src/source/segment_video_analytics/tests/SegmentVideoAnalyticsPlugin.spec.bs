@@ -1,7 +1,7 @@
 namespace Tests
 
   '@TestSuite SegmenetVideoAnalyticsPluginTests
-  class SegmenetVideoAnalyticsPluginTests extends BaseTestSuite
+  class SegmenetVideoAnalyticsPluginTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
       m.constants = {
@@ -28,7 +28,7 @@ namespace Tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     '@Test
-    function constructor()
+    function constructor_tests()
       m.assertEqual(m.plugin.analyticsManager, m.analyticsManager)
       m.assertEqual(m.plugin.deviceInfo, m.constants.deviceInfo)
       m.assertEqual(m.plugin.videoHeight, "1080")

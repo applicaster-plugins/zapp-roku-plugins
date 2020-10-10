@@ -1,7 +1,7 @@
 namespace Tests
 
   '@TestSuite FullScreenSearchVMTests 
-  class FullScreenSearchVMTests extends BaseTestSuite
+  class FullScreenSearchVMTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
 
@@ -38,7 +38,7 @@ namespace Tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     '@Test constructor
-    function constructor()
+    function constructor_tests()
       m.assertEqual(m.vm.focusId, "keyboard")
 
     end function

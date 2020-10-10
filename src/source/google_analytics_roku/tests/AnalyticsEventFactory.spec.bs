@@ -1,7 +1,7 @@
 namespace Tests
 
   '@TestSuite AnalyticsEventFactoryTests
-  class AnalyticsEventFactoryTests extends BaseTestSuite
+  class AnalyticsEventFactoryTests extends Rooibos.BaseTestSuite
 
     override function setup()
       m.analytics = new AnalyticsEventFactory()

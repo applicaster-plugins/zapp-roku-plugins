@@ -1,7 +1,7 @@
 namespace Tests
 
   '@TestSuite GigyaAuthPluginTests
-  class GigyaAuthPluginTests extends BaseTestSuite
+  class GigyaAuthPluginTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
       m.riversJson = {
@@ -15,7 +15,7 @@ namespace Tests
 
       m.request = { "id": "request" }
 
-      plugin = new BasePlugin(pluginConfiguration)
+      plugin = new zc.BasePlugin(pluginConfiguration)
 
       m.plugin = new GigyaAuthPlugin(plugin)
       m.plugin.request = m.request
@@ -30,13 +30,13 @@ namespace Tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     '@Test
-    function constructor()
+    function constructor_tests()
       pluginConfiguration = {
         "identifier": "gigya_auth_plugin_roku",
         "configuration_json": { "base_url": "host/" }
       }
 
-      plugin = new BasePlugin(pluginConfiguration)
+      plugin = new zc.BasePlugin(pluginConfiguration)
 
       m.plugin = new GigyaAuthPlugin(plugin)
 

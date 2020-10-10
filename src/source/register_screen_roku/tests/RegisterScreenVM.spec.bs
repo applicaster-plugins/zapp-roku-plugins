@@ -2,7 +2,7 @@
 namespace Tests
 
   '@TestSuite RegisterScreenVMTests
-  class RegisterScreenVMTests extends BaseTestSuite
+  class RegisterScreenVMTests extends Rooibos.BaseTestSuite
     override function beforeEach()
       m.riversJson = {
         "name": "SmallSystemFont"
@@ -65,7 +65,7 @@ namespace Tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     '@Test constructor
-    function constructor()
+    function constructor_tests()
       m.assertEqual(m.vm.focusId, "usernameInput")
       m.assertEqual(m.vm.riversJson, m.riversJson)
     end function

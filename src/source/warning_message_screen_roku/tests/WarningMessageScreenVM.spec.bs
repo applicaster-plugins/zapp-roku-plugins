@@ -1,7 +1,7 @@
 namespace Tests
 
   '@TestSuite WarningMessageScreenVMTests
-  class WarningMessageScreenVMTests extends BaseTestSuite
+  class WarningMessageScreenVMTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
       localStore = createObject("roSGNode", "ZSessionStore")

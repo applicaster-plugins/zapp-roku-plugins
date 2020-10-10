@@ -2,8 +2,8 @@
 import "pkg:/source/plugin-support/PluginManager.bs"
 import "pkg:/source/lib/BaseClass.bs"
 import "pkg:/source/maestro/lib/Utils.bs"
-import "pkg:/source/lib/request.bs" 
-import "pkg:/source/lib/uri.bs" 
+import "pkg:/source/lib/Request.bs" 
+import "pkg:/source/lib/URI.bs" 
 
 ' /**
 '  * @module TVETokenLoaderPrehook
@@ -23,9 +23,9 @@ class TVETokenLoaderPrehook extends zc.BaseClass
 
   public function new()
     m.super("TVETokenLoaderPrehook")
-    m.plugins = m.getClassInstance("PluginManager")
+    m.plugins = m.getClassInstance("zc.PluginManager")
     m.request = m.getClassInstance("RequestModule")
-    m.uri = m.getClassInstance("UriModule")
+    m.uri = m.getClassInstance("zc.URI")
 
     plugin = m.plugins.getPluginById("tve_token_loader_prehook_roku")
     m.tveConfig = m.getTVEConfig()

@@ -1,7 +1,7 @@
 namespace Tests
 
   '@TestSuite LogoutScreenVmTests
-  class LogoutScreenVmTests extends BaseTestSuite
+  class LogoutScreenVmTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
       m.modelLocator = {
@@ -37,7 +37,7 @@ namespace Tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     '@Test constructor
-    function constructor()
+    function constructor_tests()
       m.assertEqual(m.vm.riversJson, m.riversJson)
       m.assertEqual(m.vm.textPosition, [20, 600])
       m.assertEqual(m.vm.textWidth, 300)

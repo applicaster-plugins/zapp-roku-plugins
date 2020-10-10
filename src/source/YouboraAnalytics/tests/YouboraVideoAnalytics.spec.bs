@@ -1,7 +1,7 @@
 namespace Tests
 
   '@TestSuite YouboraVideoAnalytics
-  class YouboraVideoAnalytics extends BaseTestSuite
+  class YouboraVideoAnalytics extends Rooibos.BaseTestSuite
 
     override function beforeEach()
       zc.AppService.clearClassInstances()
@@ -12,7 +12,7 @@ namespace Tests
         "task_name": "Node"
       }
 
-      m.pluginData = new BasePlugin({ "configuration_json": m.config, "identifier": "youbora" })
+      m.pluginData = new zc.BasePlugin({ "configuration_json": m.config, "identifier": "youbora" })
 
       m.plugin = new YouboraVideoAnalytics(m.pluginData)
     end function

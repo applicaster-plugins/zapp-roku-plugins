@@ -1,7 +1,7 @@
 namespace Tests
 
   '@TestSuite BitMovinPlayerVMTests
-  class BitMovinPlayerVMTests extends BaseTestSuite
+  class BitMovinPlayerVMTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
       m.modelLocator = CreateObject("roSGNode", "ModelLocator")

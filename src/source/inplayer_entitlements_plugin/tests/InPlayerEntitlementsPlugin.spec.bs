@@ -1,7 +1,7 @@
 namespace Tests
 
   '@TestSuite InplayerEntitlementsTests
-  class InplayerEntitlementsTests extends BaseTestSuite
+  class InplayerEntitlementsTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
       m.modelLocator = createObject("roSGNode", "ModelLocator")
@@ -13,7 +13,7 @@ namespace Tests
 
       'dependencies for testing plugin creation
 
-      plugin = BasePlugin(PPMT.CreatePluginJson("1", {
+      plugin = new zc.BasePlugin(PPMT.CreatePluginJson("1", {
         "client_id": "id1234" 
         "environment": "dev" 
       }))
@@ -68,7 +68,7 @@ namespace Tests
     '@Params["dev", "c1234", "SVOD", "authOrICP", true, "https://staging-v2.inplayer.com"]
     '@Params["dev", "d1234", "SVOD", "authAndICP", true, "https://staging-v2.inplayer.com"]
     function constructor(env, id, vodModel, entitlementsPolicy, expectedIsUsingRokuStore, expectedUrl)
-      plugin = BasePlugin(PPMT.CreatePluginJson("1", {
+      plugin = new zc.BasePlugin(PPMT.CreatePluginJson("1", {
         "client_id": id
         "environment": env
         "vod_model": vodModel
@@ -588,7 +588,8 @@ namespace Tests
     '@It INTEGRATION tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    override function beforeEach()
+    '@BeforeEach
+    function integration_beforeEach()
       m.superBeforeEach = InplayerEntitlements.Tests.beforeEach
       m.superBeforeEach()
       m.item = createObject("roSGNode", "ZPEntry")
@@ -608,7 +609,7 @@ namespace Tests
     end function
 
     function make_live_purchase(code = "73228_17870")
-      channelStore = new RokuChannelStoreModule(false)
+      channelStore = new zc.RokuChannelStoreModule(false)
       rcs = channelStore.getChannelStore()
       m.logInfo("MAKING ROKU PURCHASE", code)
       result = channelStore.doRokuPurchase(invalid, code, 1)
@@ -617,7 +618,7 @@ namespace Tests
     end function
 
     function getProducts()
-      channelStore = new RokuChannelStoreModule(false)
+      channelStore = new zc.RokuChannelStoreModule(false)
       rcs = channelStore.getChannelStore()
       result = channelStore.getRokuCatalog(rcs)
       m.logInfo("products", result)

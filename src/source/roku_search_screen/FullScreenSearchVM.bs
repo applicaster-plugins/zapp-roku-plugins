@@ -3,7 +3,7 @@ import "pkg:/source/lib/ViewUtils.bs"
 import "pkg:/source/maestro/lib/Utils.bs"
 import "pkg:/source/UIBuilder/view/ComponentVM.bs"
 
-class FullScreenSearchVM extends ComponentVM
+class FullScreenSearchVM extends zuib.ComponentVM
 
   public results = invalid
   public isGridVisible = false
@@ -31,7 +31,7 @@ class FullScreenSearchVM extends ComponentVM
 
     m.rowTarget = riversJson.data.target
 
-    if ViewUtils.getUIBBool(riversJson.styles, "override_target_screen", false)
+    if zc.ViewUtils.getUIBBool(riversJson.styles, "override_target_screen", false)
       m.rowTarget = mc.getContentField(riversJson, "data.target_screen")
       m.logWarn("Using overridden screen name for target!", m.rowTarget)
     end if
@@ -39,22 +39,22 @@ class FullScreenSearchVM extends ComponentVM
   end function
 
   function processStyles(styles) 
-    m.loadDepth = ViewUtils.getUIBInt(styles, "data_depth", 0)
+    m.loadDepth = zc.ViewUtils.getUIBInt(styles, "data_depth", 0)
     m.gridStyle = m.getGridStyle(styles)
 
     m.keyboardStyle = {
-      translation: ViewUtils.makeUIBPosition(styles, "keyboard", 300, 500)
-      keyColor: ViewUtils.transposeUIBColor(styles.key_color)
-      focusedKeyColor: ViewUtils.transposeUIBColor(styles.focused_key_color)
-      keyboardBitmapUri: ViewUtils.getPosterUri(styles.keyboard_bitmap_uri)
-      focusBitmapUri: ViewUtils.getPosterUri(styles.keyboard_focus_bitmap_uri)
-      lowerCase: ViewUtils.getUIBBool(styles, "keyboard_lower_case", false)
-      showTextEditBox: not ViewUtils.getUIBBool(styles, "use_custom_text_input", true)
+      translation: zc.ViewUtils.makeUIBPosition(styles, "keyboard", 300, 500)
+      keyColor: zc.ViewUtils.transposeUIBColor(styles.key_color)
+      focusedKeyColor: zc.ViewUtils.transposeUIBColor(styles.focused_key_color)
+      keyboardBitmapUri: zc.ViewUtils.getPosterUri(styles.keyboard_bitmap_uri)
+      focusBitmapUri: zc.ViewUtils.getPosterUri(styles.keyboard_focus_bitmap_uri)
+      lowerCase: zc.ViewUtils.getUIBBool(styles, "keyboard_lower_case", false)
+      showTextEditBox: not zc.ViewUtils.getUIBBool(styles, "use_custom_text_input", true)
     }
 
-    m.inputStyle = ViewUtils.makeUIBButtonStyle(styles, "custom_text_input", "textInput", invalid, true)
+    m.inputStyle = zc.ViewUtils.makeUIBButtonStyle(styles, "custom_text_input", "textInput", invalid, true)
     m.inputStyle.visible = not m.keyboardStyle.showTextEditBox
-    m.minCharacters = ViewUtils.getUIBInt(styles, "search_min_chars", 3)
+    m.minCharacters = zc.ViewUtils.getUIBInt(styles, "search_min_chars", 3)
     m.searchQueryName = mc.getContentField(styles, "search_query_name", "q")
   end function
 
@@ -62,12 +62,12 @@ class FullScreenSearchVM extends ComponentVM
     if m.style <> invalid and m.style.rowList <> invalid
       style = m.style.rowList
       style.itemSize = style.rowItemSize
-      style.itemSpacing = ViewUtils.makeUIBSize(styles, "grid_spacing", 44, 20)
+      style.itemSpacing = zc.ViewUtils.makeUIBSize(styles, "grid_spacing", 44, 20)
     else
       style = {}
     end if
 
-    style.translation = ViewUtils.makeUIBPosition(styles, "grid", 300, 500)
+    style.translation = zc.ViewUtils.makeUIBPosition(styles, "grid", 300, 500)
 
     return style
   end function

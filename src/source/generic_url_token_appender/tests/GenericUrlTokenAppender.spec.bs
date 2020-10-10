@@ -1,7 +1,7 @@
 namespace Tests
 
   '@TestSuite GenericUrlTokenAppender
-  class GenericUrlTokenAppender extends BaseTestSuite
+  class GenericUrlTokenAppender extends Rooibos.BaseTestSuite
 
     override function beforeEach()
       zc.AppService.clearClassInstances()

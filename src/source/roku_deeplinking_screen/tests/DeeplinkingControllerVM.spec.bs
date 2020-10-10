@@ -1,7 +1,7 @@
 namespace Tests
 
   '@TestSuite DeeplinkingControllerVMTests
-  class DeeplinkingControllerVMTests extends BaseTestSuite
+  class DeeplinkingControllerVMTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
       m.modelLocator = {
@@ -30,7 +30,7 @@ namespace Tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     '@Test 
-    function constructor()
+    function constructor_tests()
       m.assertEqual(m.vm.screenIdsByName, {
         "season": "seriesScreen"
         "episode": "episodeScreen"

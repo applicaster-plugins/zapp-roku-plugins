@@ -1,7 +1,7 @@
 namespace Tests
 
   '@TestSuite InPlayerAuthPluginTests
-  class InPlayerAuthPluginTests extends BaseTestSuite
+  class InPlayerAuthPluginTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
       m.riversJson = {
@@ -22,7 +22,7 @@ namespace Tests
         account: { "id": "account_id" }
       }
 
-      plugin = new BasePlugin(pluginConfiguration)
+      plugin = new zc.BasePlugin(pluginConfiguration)
 
       m.plugin = new InPlayerAuthPlugin(plugin)
     end function
@@ -51,7 +51,7 @@ namespace Tests
         }
       }
 
-      plugin = new BasePlugin(pluginConfiguration)
+      plugin = new zc.BasePlugin(pluginConfiguration)
 
       m.plugin = new InPlayerAuthPlugin(plugin)
 

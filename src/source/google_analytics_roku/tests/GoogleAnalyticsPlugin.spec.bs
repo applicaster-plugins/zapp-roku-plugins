@@ -1,7 +1,7 @@
 namespace Tests
 
   '@TestSuite GoogleAnalyticsPluginTests
-  class GoogleAnalyticsPluginTests extends BaseTestSuite
+  class GoogleAnalyticsPluginTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
       config = {
@@ -14,7 +14,7 @@ namespace Tests
       m.modelLocator.constants = { "googleAnalyticsClientId": "#c" }
 
       zc.TestUtils.setModelLocator(m.modelLocator)
-      m.pluginData = new BasePlugin({ "configuration_json": config, "identifier": "google_analytics_roku" })
+      m.pluginData = new zc.BasePlugin({ "configuration_json": config, "identifier": "google_analytics_roku" })
       m.plugin = new GoogleAnalyticsPlugin(m.pluginData)
     end function
 
@@ -27,7 +27,7 @@ namespace Tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     '@Test constructor
-    function constructor()
+    function constructor_tests()
       m.assertEqual(m.plugin.id, "google_analytics_roku")
       m.assertSubType(m.plugin.task, "GoogleAnalyticsTask")
       m.assertEqual(m.plugin.task.trackingId, "#t")
@@ -106,7 +106,7 @@ namespace Tests
       m.modelLocator.constants = {}
 
       zc.TestUtils.setModelLocator(m.modelLocator)
-      m.pluginData = new BasePlugin({ "configuration_json": config, "identifier": "google_analytics_roku" })
+      m.pluginData = new zc.BasePlugin({ "configuration_json": config, "identifier": "google_analytics_roku" })
       m.plugin = new GoogleAnalyticsPlugin(m.pluginData)
 
       m.assertEqual(m.plugin.isTrakingUserIdEnabled, result)

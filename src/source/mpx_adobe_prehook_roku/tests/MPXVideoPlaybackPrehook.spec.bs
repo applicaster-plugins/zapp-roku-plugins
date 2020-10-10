@@ -1,7 +1,7 @@
 namespace Tests
 
   '@TestSuite MPXVideoPlaybackPrehook
-  class MPXVideoPlaybackPrehook extends BaseTestSuite
+  class MPXVideoPlaybackPrehook extends Rooibos.BaseTestSuite
 
     override function beforeEach()
       zc.AppService.clearClassInstances()

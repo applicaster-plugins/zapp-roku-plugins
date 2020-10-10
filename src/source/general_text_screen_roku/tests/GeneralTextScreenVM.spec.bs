@@ -1,7 +1,7 @@
 namespace Tests
 
   '@TestSuite GeneralTextScreenVMTests
-  class GeneralTextScreenVMTests extends BaseTestSuite
+  class GeneralTextScreenVMTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
       localStore = createObject("roSGNode", "ZSessionStore")

@@ -1,7 +1,7 @@
 
 import "pkg:/source/entitlements/BaseEntitlementsPlugin.bs"
-import "pkg:/source/lib/DateModule.bs"
-import "pkg:/source/lib/AdminApiModule.bs"
+import "pkg:/source/lib/Date.bs"
+import "pkg:/source/lib/AdminAPI.bs"
 import "pkg:/source/lib/APIUtils.bs"
 
 class InPlayerEntitlementsPlugin extends BaseEntitlementsPlugin

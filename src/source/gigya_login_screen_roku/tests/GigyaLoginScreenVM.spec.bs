@@ -28,7 +28,7 @@ namespace Tests
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   '@Test
-  function constructor()
+  function constructor_tests()
     m.assertEqual(m.vm.focusId, "loginButton")
     m.assertTrue(m.vm.isRefreshing)
     m.assertFalse(m.vm.isContentVisible)

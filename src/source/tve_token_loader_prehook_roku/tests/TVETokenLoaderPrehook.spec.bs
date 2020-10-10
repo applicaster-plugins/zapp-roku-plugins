@@ -1,7 +1,7 @@
 namespace Tests
 
   '@TestSuite TVETokenLoaderPrehook
-  class TVETokenLoaderPrehook extends BaseTestSuite
+  class TVETokenLoaderPrehook extends Rooibos.BaseTestSuite
 
     override function beforeEach()
       zc.AppService.clearClassInstances()
@@ -41,8 +41,8 @@ namespace Tests
 
     '@Test no loader plugin
     function constructor_prehook_noPlugins()
-      plugins = m.plugin.getClassInstance("PluginManager")
-      loaderPlugin = new BasePlugin(invalid)
+      plugins = m.plugin.getClassInstance("zc.PluginManager")
+      loaderPlugin = new zc.BasePlugin(invalid)
       adobePlugin = m.plugin.plugins.getPluginById("AdobeAccessEnabler")
 
       m.expectOnce(plugins, "getPluginById", ["tve_token_loader_prehook_roku"], loaderPlugin)
@@ -54,8 +54,8 @@ namespace Tests
 
     '@Test no adobe config
     function constructor_prehook_no_adobe_config()
-      plugins = m.plugin.getClassInstance("PluginManager")
-      loaderPlugin = new BasePlugin(m.pluginJson)
+      plugins = m.plugin.getClassInstance("zc.PluginManager")
+      loaderPlugin = new zc.BasePlugin(m.pluginJson)
       adobePlugin = invalid
 
       m.expectOnce(plugins, "getPluginById", ["tve_token_loader_prehook_roku"], loaderPlugin)

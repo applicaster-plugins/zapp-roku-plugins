@@ -1,7 +1,7 @@
 
 import "pkg:/source/authorization/BaseAuthPlugin.bs" 
-import "pkg:/source/lib/request.bs" 
-import "pkg:/source/lib/uri.bs" 
+import "pkg:/source/lib/Request.bs" 
+import "pkg:/source/lib/URI.bs" 
 import "pkg:/source/authorization/JWTUtil.bs"
 
 class AdobePrimetimeAuthPlugin extends BaseAuthPlugin
@@ -21,7 +21,7 @@ class AdobePrimetimeAuthPlugin extends BaseAuthPlugin
     m.isTokenUsableWithDSP = true
     m.request = m.getClassInstance("RequestModule")
     m.JWTUtil = m.getClassInstance("JWTUtilModule")
-    m.uri = m.getClassInstance("UriModule")
+    m.uri = m.getClassInstance("zc.URI")
     m.resourceID = plugin.getStringValue("resourceID", "")
     m.requestorID = plugin.getStringValue("requestorID", "")
     m.secret = plugin.getStringValue("secret", "")

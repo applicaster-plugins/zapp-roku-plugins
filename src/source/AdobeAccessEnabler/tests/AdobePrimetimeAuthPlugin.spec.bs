@@ -1,7 +1,7 @@
 namespace Tests
 
   '@TestSuite APMATTests
-  class APMATTests extends BaseTestSuite
+  class APMATTests extends Rooibos.BaseTestSuite
 
     '@SetUp
     function BeforeEach()
@@ -22,7 +22,7 @@ namespace Tests
 
       zc.TestUtils.setModelLocator(modelLocator)
 
-      plugin = new BasePlugin(pluginConfiguration)
+      plugin = new zc.BasePlugin(pluginConfiguration)
 
       m.plugin = new AdobePrimetimeAuthPlugin(plugin)
     end function
@@ -36,10 +36,10 @@ namespace Tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     '@Test 
-    function constructor()
+    function constructor_tests()
       m.assertEqual(m.plugin.request.__className, "RequestModule")
       m.assertEqual(m.plugin.JWTUtil.__className, "JWTUtilModule")
-      m.assertEqual(m.plugin.uri.__className, "UriModule")
+      m.assertEqual(m.plugin.uri.__className, "zc.URI")
       m.assertEqual(m.plugin.requestorID, "rqd")
       m.assertEqual(m.plugin.resourceID, "rod")
       m.assertEqual(m.plugin.secret, "sec")

@@ -64,11 +64,11 @@ class AWSLoginScreenVM extends ScreenVM
   function processStyles(styles)
     m.logInfo("converting rivers json styles into a format our UI controls can consume")
 
-    m.titleStyle = ViewUtils.makeUIBTextStyle(styles, "title")
-    m.descriptionStyle = ViewUtils.makeUIBTextStyle(styles, "description")
-    m.optional1Style = ViewUtils.makeUIBTextStyle(styles, "optional_text1")
-    m.optional2Style = ViewUtils.makeUIBTextStyle(styles, "optional_text2")
-    m.errorStyle = ViewUtils.makeUIBTextStyle(styles, "error")
+    m.titleStyle = zc.ViewUtils.makeUIBTextStyle(styles, "title")
+    m.descriptionStyle = zc.ViewUtils.makeUIBTextStyle(styles, "description")
+    m.optional1Style = zc.ViewUtils.makeUIBTextStyle(styles, "optional_text1")
+    m.optional2Style = zc.ViewUtils.makeUIBTextStyle(styles, "optional_text2")
+    m.errorStyle = zc.ViewUtils.makeUIBTextStyle(styles, "error")
 
     m.setField("usernameText", styles.username_placeholder_text)
     m.usernamePlaceholderText = m.usernameText
@@ -76,20 +76,20 @@ class AWSLoginScreenVM extends ScreenVM
     m.setField("passwordText", styles.password_placeholder_text)
     m.passwordPlaceholderText = m.passwordText
 
-    m.backgroundColor = ViewUtils.transposeUIBColor(styles.background_color)
+    m.backgroundColor = zc.ViewUtils.transposeUIBColor(styles.background_color)
     m.backgroundUrl = styles.background_url
     m.logoImageUrl = styles.logo_url
-    m.logoPosition = ViewUtils.makeUIBPosition(styles, "logo", 100, 33)
-    logoSize = ViewUtils.makeUIBSize(styles, "logo", 350, 100)
+    m.logoPosition = zc.ViewUtils.makeUIBPosition(styles, "logo", 100, 33)
+    logoSize = zc.ViewUtils.makeUIBSize(styles, "logo", 350, 100)
     m.logoWidth = logoSize[0]
     m.logoHeight = logoSize[1]
 
 
-    inputStyle = ViewUtils.makeUIBButtonStyle(styles, "general_input", "textInputPlaceholder")
+    inputStyle = zc.ViewUtils.makeUIBButtonStyle(styles, "general_input", "textInputPlaceholder")
 
     m.setField("inputStyle", inputStyle)
 
-    m.loginButtonStyle = ViewUtils.makeUIBButtonStyle(styles, "login_button", "custom", styles.login_button_text)
+    m.loginButtonStyle = zc.ViewUtils.makeUIBButtonStyle(styles, "login_button", "custom", styles.login_button_text)
 
   end function
 

@@ -1,7 +1,7 @@
 
 import "pkg:/source/analytics/BaseAnalyticsPlugin.bs"
 
-class GoogleAnalyticsPlugin extends BaseAnalyticsPlugin
+class GoogleAnalyticsPlugin extends zc.Analytics.BaseAnalyticsPlugin
 
   private eventFactory = invalid
   private isTrakingUserIdEnabled = false

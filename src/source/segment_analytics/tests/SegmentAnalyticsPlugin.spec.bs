@@ -1,7 +1,7 @@
 namespace Tests
 
   '@TestSuite SegmentAnalyticsPluginTests
-  class SegmentAnalyticsPluginTests extends BaseTestSuite
+  class SegmentAnalyticsPluginTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
       config = {
@@ -13,7 +13,7 @@ namespace Tests
       }
       zc.TestUtils.setModelLocator(m.modelLocator)
 
-      m.pluginData = new BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
+      m.pluginData = new zc.BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
 
       m.plugin = new SegmentAnalyticsPlugin(m.pluginData)
     end function
@@ -27,7 +27,7 @@ namespace Tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     '@Test constructor
-    function constructor()
+    function constructor_tests()
       m.assertEqual(m.plugin.id, "segment_analytics_roku")
       m.assertSubType(m.plugin.segmentTask, "SegmentAnalyticsTask")
       m.assertEqual(m.plugin.writeKey, "#w")
@@ -71,7 +71,7 @@ namespace Tests
         "provider_value_3": ""
       }
 
-      pluginData = new BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
+      pluginData = new zc.BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
 
       map = m.plugin.generateMap(pluginData, "provider", 3)
 
@@ -94,7 +94,7 @@ namespace Tests
         "provider_value_3": ""
       }
 
-      pluginData = new BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
+      pluginData = new zc.BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
 
       m.assertEmpty(m.plugin.generateMap(pluginData, "provider", 3))
 

@@ -88,14 +88,14 @@ class LoginScreenVM extends ScreenVM
     m.setField("passwordText", m.localizations.password_placeholder_text)
     m.passwordPlaceholderText = m.passwordText
 
-    inputStyle = ViewUtils.makeUIBButtonStyle(styles, "general_input", "textInputPlaceholder")
+    inputStyle = zc.ViewUtils.makeUIBButtonStyle(styles, "general_input", "textInputPlaceholder")
 
     m.setField("inputStyle", inputStyle)
 
-    m.loginButtonStyle = ViewUtils.makeUIBButtonStyle(styles, "login_button", "custom", styles.login_button_text)
-    m.registerButtonStyle = ViewUtils.makeUIBButtonStyle(styles, "register_button", "custom", styles.register_button_text)
-    m.forgotPasswordButtonStyle = ViewUtils.makeUIBButtonStyle(styles, "forgot_password_button", "custom", styles.forgot_password_button_text)
-    m.maxDebugAccounts = ViewUtils.getUIBInt(styles, "debug_max_accounts")
+    m.loginButtonStyle = zc.ViewUtils.makeUIBButtonStyle(styles, "login_button", "custom", styles.login_button_text)
+    m.registerButtonStyle = zc.ViewUtils.makeUIBButtonStyle(styles, "register_button", "custom", styles.register_button_text)
+    m.forgotPasswordButtonStyle = zc.ViewUtils.makeUIBButtonStyle(styles, "forgot_password_button", "custom", styles.forgot_password_button_text)
+    m.maxDebugAccounts = zc.ViewUtils.getUIBInt(styles, "debug_max_accounts")
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
