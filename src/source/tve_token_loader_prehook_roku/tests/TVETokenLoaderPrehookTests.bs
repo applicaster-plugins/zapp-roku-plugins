@@ -26,14 +26,14 @@ namespace Applicaster.TVETokenLoaderPrehook.Tests
 
     m.modelLocator.constants = { "applicasterDeviceId": "did" }
 
-    TU.setModelLocator(m.modelLocator)
+    zc.TestUtils.setModelLocator(m.modelLocator)
 
     m.plugin = new TVETokenLoaderPrehook()
   end function
 
   '@AfterEach
   function afterEach()
-    TU.unsetModelLocator()
+    zc.TestUtils.unsetModelLocator()
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

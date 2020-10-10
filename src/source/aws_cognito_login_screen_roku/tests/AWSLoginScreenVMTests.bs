@@ -9,7 +9,7 @@ namespace TAAWSLSVMT
       "User": { "isLoggedIn": false }
       "locale": "en"
     }
-    TU.setModelLocator(m.modelLocator)
+    zc.TestUtils.setModelLocator(m.modelLocator)
 
     m.riversJson = {
       "name": "SmallSystemFont"
@@ -65,7 +65,7 @@ namespace TAAWSLSVMT
     m.locale = "en"
     m.modelLocator.locale = m.locale
 
-    TU.setModelLocator(m.modelLocator)
+    zc.TestUtils.setModelLocator(m.modelLocator)
 
     m.vm = AWSLoginScreenVM(m.riversJson)
     m.vm.initialize()
@@ -74,7 +74,7 @@ namespace TAAWSLSVMT
 
   '@AfterEach
   function afterEach()
-    TU.unsetModelLocator()
+    zc.TestUtils.unsetModelLocator()
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -401,14 +401,14 @@ namespace TAAWSLSVMT
       }
     }] 
 
-    TU.setModelLocator(m.modelLocator)
+    zc.TestUtils.setModelLocator(m.modelLocator)
     m.rootBeforeEach = TAAWSLSVMT.beforeEach
     m.rootBeforeEach()
   end function
 
   '@AfterEach
   function processLogin_afterEach()
-    TU.unsetModelLocator()
+    zc.TestUtils.unsetModelLocator()
   end function
 
   '@Test valid creds
@@ -421,7 +421,7 @@ namespace TAAWSLSVMT
 
     m.vm.processLogin()
 
-    TU.waitForField(m.vm, "isLoading", 3000, 5)
+    zc.TestUtils.waitForField(m.vm, "isLoading", 3000, 5)
 
     m.assertEqual(m.vm.state, "finished")
     m.assertFalse(m.vm.isLoading)
@@ -438,7 +438,7 @@ namespace TAAWSLSVMT
 
     m.vm.processLogin()
 
-    TU.waitForField(m.vm, "isLoading")
+    zc.TestUtils.waitForField(m.vm, "isLoading")
 
     m.assertEqual(m.vm.state, "ready")
     m.assertFalse(m.vm.isLoading)

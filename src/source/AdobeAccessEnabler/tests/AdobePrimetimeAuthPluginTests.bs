@@ -18,7 +18,7 @@ namespace Applicaster.m.plugin.AdobePrimetimeAuthPluginTests
       "constants": { "applicasterDeviceId": "did" }
     }
 
-    TU.setModelLocator(modelLocator)
+    zc.TestUtils.setModelLocator(modelLocator)
 
     plugin = new BasePlugin(pluginConfiguration)
 
@@ -27,7 +27,7 @@ namespace Applicaster.m.plugin.AdobePrimetimeAuthPluginTests
 
   '@AfterEach
   function afterEach()
-    TU.unsetModelLocator()
+    zc.TestUtils.unsetModelLocator()
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

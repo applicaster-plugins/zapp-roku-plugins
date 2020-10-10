@@ -9,7 +9,7 @@ namespace Applicaster.FullScreenSearchVM.Tests
       "User": { "isLoggedIn": false }
       "locale": "en"
     }
-    TU.setModelLocator(m.modelLocator)
+    zc.TestUtils.setModelLocator(m.modelLocator)
 
     m.riversJson = {
       data: { source: "#myLink" }

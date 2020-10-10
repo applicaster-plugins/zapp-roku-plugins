@@ -14,7 +14,7 @@ namespace ZBMPVMT
 
     m.BitmovinFields = { "PLAYER_STATE": "playerState", "ERROR": "error", "WARNING": "warning", "SEEK": "seek", "SEEKED": "seeked", "TIME_SHIFT": "timeShift", "TIME_SHIFTED": "timeShifted", "CURRENT_TIME": "currentTime", "SOURCE_LOADED": "sourceLoaded", "SOURCE_UNLOADED": "sourceUnloaded", "PLAY": "play", "METADATA": "metadata", "AUDIO_CHANGED": "audioChanged", "MUTED": "muted", "UNMUTED": "unmuted", "DOWNLOAD_FINISHED": "downloadFinished" }
 
-    TU.setModelLocator(m.modelLocator)
+    zc.TestUtils.setModelLocator(m.modelLocator)
 
     m.selection = createObject("roSGNode", "Selection")
 
@@ -38,7 +38,7 @@ namespace ZBMPVMT
 
   '@AfterEach
   function afterEach()
-    TU.unsetModelLocator()
+    zc.TestUtils.unsetModelLocator()
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

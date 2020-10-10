@@ -14,14 +14,14 @@ namespace SVAPT
       "analyticsManager": m.analyticsManager
     }
 
-    TU.setModelLocator(m.modelLocator)
+    zc.TestUtils.setModelLocator(m.modelLocator)
 
     m.plugin = new SegmentVideoAnalyticsPlugin(json)
   end function
 
   '@AfterEach
   function afterEach()
-    TU.unsetModelLocator()
+    zc.TestUtils.unsetModelLocator()
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

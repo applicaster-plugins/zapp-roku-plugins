@@ -11,14 +11,14 @@ namespace Applicaster.MPXVideoPlaybackPrehook.Tests
         "matching_value": "video" 
     })] 
 
-    TU.setModelLocator(m.modelLocator)
+    zc.TestUtils.setModelLocator(m.modelLocator)
 
     m.plugin = new MPXVideoPlaybackPrehook()
   end function
 
   '@AfterEach
   function afterEach()
-    TU.unsetModelLocator()
+    zc.TestUtils.unsetModelLocator()
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

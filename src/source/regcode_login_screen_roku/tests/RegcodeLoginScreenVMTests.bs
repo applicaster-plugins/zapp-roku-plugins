@@ -8,7 +8,7 @@ namespace Applicaster.Authentication.RegcodeLoginScreenVMTests
       "ZPLocalStore": localStore
       "locale": "en"
     }
-    TU.setModelLocator(m.modelLocator)
+    zc.TestUtils.setModelLocator(m.modelLocator)
 
     riversJson = {
       "id": "regcodeScreen"
@@ -29,7 +29,7 @@ namespace Applicaster.Authentication.RegcodeLoginScreenVMTests
   '@AfterEach
   function afterEach()
     m.global.delete("zapp")
-    TU.unsetModelLocator()
+    zc.TestUtils.unsetModelLocator()
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

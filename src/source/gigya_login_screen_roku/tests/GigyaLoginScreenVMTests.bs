@@ -7,7 +7,7 @@ namespace Applicaster.Gigya.LoginScreenVMTests
       "User": { "isLoggedIn": false }
       "locale": "en"
     }
-    TU.setModelLocator(m.modelLocator)
+    zc.TestUtils.setModelLocator(m.modelLocator)
 
     riversJson = {
       "id": "myAccount"

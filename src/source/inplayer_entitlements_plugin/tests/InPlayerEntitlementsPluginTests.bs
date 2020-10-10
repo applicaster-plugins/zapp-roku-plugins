@@ -9,7 +9,7 @@ namespace InplayerEntitlements.Tests
     m.modelLocator = CreateObject("roSGNode", "ModelLocator")
     m.modelLocator.constants = { id: "constants" }
     m.modelLocator.plugins = []
-    TU.setModelLocator(m.modelLocator)
+    zc.TestUtils.setModelLocator(m.modelLocator)
 
     'dependencies for testing plugin creation
 
@@ -24,7 +24,7 @@ namespace InplayerEntitlements.Tests
 
   '@AfterEach
   function afterEach()
-    TU.unsetModelLocator()
+    zc.TestUtils.unsetModelLocator()
     zc.AppService.clearClassInstances()
   end function
 

@@ -13,14 +13,14 @@ namespace Applicaster.EntitlementsItemLoader.Tests
         "matching_value": "video" 
     })] 
 
-    TU.setModelLocator(m.modelLocator)
+    zc.TestUtils.setModelLocator(m.modelLocator)
 
     m.loader = new EntitlementsItemLoader()
   end function
 
   '@AfterEach
   function afterEach()
-    TU.unsetModelLocator()
+    zc.TestUtils.unsetModelLocator()
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

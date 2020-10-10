@@ -7,7 +7,7 @@ namespace LogoutSVMT
       "User": { "isLoggedIn": false }
       "locale": "en"
     }
-    TU.setModelLocator(m.modelLocator)
+    zc.TestUtils.setModelLocator(m.modelLocator)
 
     m.riversJson = {
       "id": "logoutscreen"

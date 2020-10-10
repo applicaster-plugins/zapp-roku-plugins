@@ -11,7 +11,7 @@ namespace SAPT
     m.modelLocator.constants = {
       "applicasterDeviceId": "#a"
     }
-    TU.setModelLocator(m.modelLocator)
+    zc.TestUtils.setModelLocator(m.modelLocator)
 
     m.pluginData = new BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
 
@@ -20,7 +20,7 @@ namespace SAPT
 
   '@AfterEach
   function afterEach()
-    TU.unsetModelLocator()
+    zc.TestUtils.unsetModelLocator()
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

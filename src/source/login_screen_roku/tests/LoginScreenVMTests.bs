@@ -381,14 +381,14 @@ namespace Applicaster.LoginSreenVM.Tests
       }
     }] 
 
-    TU.setModelLocator(m.modelLocator)
+    zc.TestUtils.setModelLocator(m.modelLocator)
     m.rootBeforeEach = TAAWSLSVMT.beforeEach
     m.rootBeforeEach()
   end function
 
   '@AfterEach
   function processLogin_afterEach()
-    TU.unsetModelLocator()
+    zc.TestUtils.unsetModelLocator()
   end function
 
   '@Test valid creds
@@ -401,7 +401,7 @@ namespace Applicaster.LoginSreenVM.Tests
 
     m.vm.processLogin()
 
-    TU.waitForField(m.vm, "isLoading", 3000, 5)
+    zc.TestUtils.waitForField(m.vm, "isLoading", 3000, 5)
 
     m.assertEqual(m.vm.state, "finished")
     m.assertFalse(m.vm.isLoading)
@@ -418,7 +418,7 @@ namespace Applicaster.LoginSreenVM.Tests
 
     m.vm.processLogin()
 
-    TU.waitForField(m.vm, "isLoading")
+    zc.TestUtils.waitForField(m.vm, "isLoading")
 
     m.assertEqual(m.vm.state, "ready")
     m.assertFalse(m.vm.isLoading)

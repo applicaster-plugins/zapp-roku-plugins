@@ -8,7 +8,7 @@ namespace GTSVMT
     modelLocator.addfields({ "ZPLocalStore": localStore })
     modelLocator.locale = "en"
 
-    TU.setModelLocator(modelLocator)
+    zc.TestUtils.setModelLocator(modelLocator)
 
     riversJson = {
       "id": "generalTextScreen"
@@ -23,7 +23,7 @@ namespace GTSVMT
   '@AfterEach
   function afterEach()
     m.global.delete("zapp")
-    TU.unsetModelLocator()
+    zc.TestUtils.unsetModelLocator()
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

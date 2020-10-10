@@ -8,14 +8,14 @@ namespace Applicaster.OpenSource.GenericUrlTokenAppenderTests
     m.modelLocator = CreateObject("roSGNode", "ModelLocator")
     m.modelLocator.plugins = [PPMT_CreatePluginJson("generic_url_token_appender", { "provider_id": "pid", "token_key": "t" })] 
 
-    TU.setModelLocator(m.modelLocator)
+    zc.TestUtils.setModelLocator(m.modelLocator)
 
     m.appender = new GenericUrlTokenAppender()
   end function
 
   '@AfterEach
   function afterEach()
-    TU.unsetModelLocator()
+    zc.TestUtils.unsetModelLocator()
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
