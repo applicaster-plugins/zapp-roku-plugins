@@ -1,7 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
 <component
     name='FullScreenSearch'
-    extends='zuib_Component'>
+    extends='zuib_Component'
+    vmclass='FullScreenSearchVM'>
 
   <interface>
   </interface>
@@ -9,32 +10,32 @@
   <children>
     <MLabel
         id='noSearchLabel'
-        visible='{{vm.isNoSearchLabelVisible}}'
+        visible='{{isNoSearchLabelVisible}}'
         style='{{=ViewUtils_UIBLabel("no_items")}}' />
     <MLabel
         id='notFoundLabel'
-        visible='{{vm.isNotFoundLabelVisible}}'
+        visible='{{isNotFoundLabelVisible}}'
         style='{{=ViewUtils_UIBLabel("not_found")}}' />
 
     <StylableButton
         id='textInput'
-        style='{{:vm.inputStyle}}'
+        style='{{:inputStyle}}'
         labelXOffset='9'
-        text='{{vm.searchText}}' />
+        text='{{searchText}}' />
 
     <ZMiniKeyboard
         id='keyboard'
-        style='{{:vm.keyboardStyle}}'
-        newText='{{vm.searchText}}'
-        text='{(vm.onSearchTextChange(),isSettingInitialValue=false)}' />
+        style='{{:keyboardStyle}}'
+        newText='{{searchText}}'
+        text='{(onSearchTextChange(value))}' />
 
     <ZMarkupGrid
         id='grid'
-        content='{{vm.results}}'
-        visible='{{vm.isGridVisible}}'
-        style='{{vm.gridStyle}}'
-        jumpToItem='{{vm.jumpToItem}}'
-        itemSelected='{(vm.onSelectItem,isSettingInitialValue=false)}'
+        content='{{results}}'
+        visible='{{isGridVisible}}'
+        style='{{gridStyle}}'
+        jumpToItem='{{jumpToItem}}'
+        itemSelected='{(onSelectItem(value))}'
         numColumns='{{=ViewUtils_UIBInt("number_of_columns", 2)}}'
         numRows='{{=ViewUtils_UIBInt("number_of_rows", 3)}}'
         itemComponentName='ZPowerCell' />
@@ -43,7 +44,7 @@
         id='loadingIndicator'
         width='1920'
         height='1080'
-        isActive='{{vm.isLoading, isSettingInitialValue=true}}'
+        isActive='{{isLoading;fireOnSet}}'
         backgroundVisible='false'
         translation='[0,0]'
         text='' />

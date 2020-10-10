@@ -1,7 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
 <component
     name='RegcodeLoginScreen'
-    extends='zuib_Screen'>
+    extends='zuib_Screen'
+    vmclass='RegcodeLoginScreenVM'>
 
   <interface></interface>
 
@@ -9,12 +10,12 @@
     <Timer
         id='pollTimer'
         duration='3'
-        control='{{vm.pollTimerControl}}'
-        fire='{(vm.onPollTimerFire(),isSettingInitialValue=false)}' />
+        control='{{pollTimerControl}}'
+        fire='{(onPollTimerFire(value))}' />
 
     <Group
         id='backgroundGroup'
-        visible='{{vm.isContentGroupVisible}}'>
+        visible='{{isContentGroupVisible}}'>
       <Rectangle
           id='backgroundRect'
           width='1920'
@@ -34,7 +35,7 @@
 
     <Group
         id='contentGroup'
-        visible='{{vm.isContentGroupVisible}}'>
+        visible='{{isContentGroupVisible}}'>
       <MLabel
           id='titleLabel'
           style='{{=ViewUtils_UIBLabel("title")}}' />
@@ -71,7 +72,7 @@
         <MLabel
             id='codeLabel'
             style='{{=ViewUtils_UIBLabel("code","")}}'
-            text='{{vm.codeText}}' />
+            text='{{codeText}}' />
         <MLabel
             id='supportLabel'
             style='{{=ViewUtils_UIBLabel("support")}}' />
@@ -84,9 +85,9 @@
       <StylableButton
           id='refreshButton'
           style='{{=ViewUtils_UIBButton("refresh_button")}}'
-          opacity='{{:vm.refreshButtonOpacity}}'
-          visible='{{vm.isRefreshing, transform=MOM_transform_invertBoolean}}'
-          selected='{(vm.onRefreshButtonSelected,isSettingInitialValue=false)}' />
+          opacity='{{:refreshButtonOpacity}}'
+          visible='{{isRefreshing, transform=MOM_transform_invertBoolean}}'
+          selected='{(onRefreshButtonSelected(value))}' />
     </Group>
 
     <LoadingIndicator
@@ -94,7 +95,7 @@
         width='1920'
         height='1080'
         translation='[0,0]'
-        isActive='{{vm.isShowingLoadingIndicator, isSettingInitialValue=true}}'
+        isActive='{{isShowingLoadingIndicator;fireOnSet}}'
         backgroundVisible='false'
         text='' />
 

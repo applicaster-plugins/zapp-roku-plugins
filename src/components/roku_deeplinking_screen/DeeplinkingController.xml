@@ -1,7 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
 <component
     name='DeeplinkingController'
-    extends='zuib_Screen'>
+    extends='zuib_Screen'
+    vmclass='DeeplinkingControllerVM'>
 
   <interface>
     </interface>
@@ -27,12 +28,12 @@
 
     <DynamicContainer
         id='screenContainer'
-        setNextView='{{vm.currentScreen}}' />
+        setNextView='{{currentScreen}}' />
     <LoadingIndicator
         id='loadingIndicator'
         width='1920'
         height='1080'
-        isActive='{{vm.isLoadingIndicatorVisible, isSettingInitialValue=true}}'
+        isActive='{{isLoadingIndicatorVisible;fireOnSet}}'
         backgroundVisible='false'
         text='' />
   </children>

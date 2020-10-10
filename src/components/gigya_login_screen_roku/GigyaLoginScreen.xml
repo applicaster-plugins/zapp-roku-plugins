@@ -1,7 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
 <component
     name='GigyaLoginScreen'
-    extends='zuib_Screen'>
+    extends='zuib_Screen'
+    vmclass='GigyaLoginScreenVM'>
 
   <interface>
   </interface>
@@ -24,7 +25,7 @@
     <!-- account not signed in -->
     <Group
         id='conentGroup'
-        visible='{{vm.isContentVisible}}'
+        visible='{{isContentVisible}}'
         translation='[0,0]'>
       <MLabel
           id='title'
@@ -32,11 +33,11 @@
       <StylableButton
           id='loginButton'
           style='{{=ViewUtils_UIBButton("login_button")}}'
-          selected='{(vm.onLoginButtonSelected(), isSettingInitialValue=false)}' />
+          selected='{(onLoginButtonSelected(value))}' />
       <StylableButton
           id='skipButton'
           style='{{=ViewUtils_UIBButton("skip_button")}}'
-          selected='{(vm.onSkipButtonSelected(), isSettingInitialValue=false)}' />
+          selected='{(onSkipButtonSelected(value))}' />
     </Group>
 
     <LoadingIndicator
@@ -44,7 +45,7 @@
         width='1920'
         height='1080'
         translation='[0,0]'
-        isActive='{{vm.isRefreshing, isSettingInitialValue=true}}'
+        isActive='{{isRefreshing;fireOnSet}}'
         backgroundVisible='false'
         text='' />
 

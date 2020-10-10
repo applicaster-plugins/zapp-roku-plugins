@@ -1,7 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
 <component
     name='RegisterScreen'
-    extends='zuib_Screen'>
+    extends='zuib_Screen'
+    vmclass='RegisterScreenVM'>
 
   <interface></interface>
 
@@ -19,7 +20,7 @@
         uri='{{=ViewUtils_getPosterUri(m.top.riversJson.styles.logo_image_url)}}' />
     <Group
         id='mainGroup'
-        visible='{{vm.isMainGroupVisible, isSettingInitialValue=true}}'>
+        visible='{{isMainGroupVisible;fireOnSet}}'>
       <ZLayoutGroup
           id='labelsGroup'
           layoutDirection='vert'
@@ -49,45 +50,45 @@
           itemSpacings='[10, 45, 52]'>
         <StylableButton
             id='usernameInput'
-            style='{{:vm.inputStyle}}'
+            style='{{:inputStyle}}'
             labelXOffset='9'
-            text='{{vm.usernameText}}'
-            buttonType='{{vm.usernameButtonType}}'
-            selected='{(vm.onUsernameButtonSelected,isSettingInitialValue=false)}'
+            text='{{usernameText}}'
+            buttonType='{{usernameButtonType}}'
+            selected='{(onUsernameButtonSelected(value))}'
             width='{{=ViewUtils_UIBInt("input_w")}}' />
 
         <StylableButton
             id='nameInput'
-            style='{{:vm.inputStyle}}'
+            style='{{:inputStyle}}'
             labelXOffset='9'
-            text='{{vm.nameText}}'
-            buttonType='{{vm.nameButtonType}}'
-            selected='{(vm.onNameButtonSelected,isSettingInitialValue=false)}'
+            text='{{nameText}}'
+            buttonType='{{nameButtonType}}'
+            selected='{(onNameButtonSelected(value))}'
             width='{{=ViewUtils_UIBInt("input_w")}}' />
 
         <StylableButton
             id='passwordInput'
-            text='{{vm.passwordText}}'
-            style='{{:vm.inputStyle}}'
+            text='{{passwordText}}'
+            style='{{:inputStyle}}'
             labelXOffset='9'
-            buttonType='{{vm.passwordButtonType}}'
-            selected='{(vm.onPasswordButtonSelected,isSettingInitialValue=false)}'
+            buttonType='{{passwordButtonType}}'
+            selected='{(onPasswordButtonSelected(value))}'
             width='{{=ViewUtils_UIBInt("input_w")}}' />
 
         <!-- <StylableButton
             id='confirmPasswordInput'
-            text='{{vm.confirmPasswordText}}'
-            style='{{:vm.inputStyle}}'
+            text='{{confirmPasswordText}}'
+            style='{{:inputStyle}}'
             labelXOffset='9'
-            buttonType='{{vm.confirmPasswordButtonType}}'
-            selected='{(vm.onConfirmPasswordButtonSelected,isSettingInitialValue=false)}'
+            buttonType='{{confirmPasswordButtonType}}'
+            selected='{(onConfirmPasswordButtonSelected(value))}'
             width='{{=ViewUtils_UIBInt("input_w")}}' /> -->
 
         <StylableButton
             id='registerButton'
-            style='{{:vm.registerButtonStyle}}'
-            visible='{{vm.isLoading, isSettingInitialValue=true,transform=MOM_transform_invertBoolean}}'
-            selected='{(vm.onRegisterButtonSelected,isSettingInitialValue=false)}'
+            style='{{:registerButtonStyle}}'
+            visible='{{isLoading;fireOnSet,transform=MOM_transform_invertBoolean}}'
+            selected='{(onRegisterButtonSelected(value))}'
             width='{{=ViewUtils_UIBInt("input_w")}}' />
 
       </ZLayoutGroup>
@@ -95,7 +96,7 @@
       <Group
           id='errorGroup'
           translation='[0,0.0]'
-          visible='{{vm.isErrorShowing}}'>
+          visible='{{isErrorShowing}}'>
         <ZPoster
             id='errorBackground'
             style='{{=ViewUtils_UIBPoster("error_background")}}' />
@@ -103,7 +104,7 @@
         <MLabel
             id='errorText'
             style='{{=ViewUtils_UIBLabel("error", "")}}'
-            text='{{vm.errorText}}' />
+            text='{{errorText}}' />
       </Group>
     </Group>
 
@@ -111,7 +112,7 @@
         id='doneGroup'
         horizAlignment='center'
         vertAlignment='center'
-        visible='{{vm.isDoneGroupVisible}}'
+        visible='{{isDoneGroupVisible}}'
         itemSpacings='[30]'>
       <MLabel
           id='doneTitleLabel'
@@ -122,9 +123,9 @@
 
       <StylableButton
           id='doneButton'
-          style='{{:vm.processButtonStyle}}'
-          text='{{:vm.riversJson.styles.done_button_text}}'
-          selected='{(vm.onDoneButtonSelected,isSettingInitialValue=false)}'
+          style='{{:processButtonStyle}}'
+          text='{{:riversJson.styles.done_button_text}}'
+          selected='{(onDoneButtonSelected(value))}'
           width='610' />
 
     </ZLayoutGroup>
@@ -134,7 +135,7 @@
         width='1920'
         height='1080'
         translation='[0,0]'
-        isActive='{{vm.isLoading, isSettingInitialValue=true}}'
+        isActive='{{isLoading;fireOnSet}}'
         backgroundVisible='false'
         text='' />
 
@@ -143,7 +144,7 @@
         width='1920'
         height='1080'
         translation='[0,0]'
-        isActive='{{vm.isRefreshing, isSettingInitialValue=true}}'
+        isActive='{{isRefreshing;fireOnSet}}'
         backgroundVisible='false'
         text='' />
   </children>
