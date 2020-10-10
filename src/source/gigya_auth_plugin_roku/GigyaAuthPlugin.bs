@@ -6,12 +6,12 @@ import "pkg:/source/authorization/JWTUtil.bs"
 
 import "pkg:/source/authorization/BaseAuthPlugin.bs" 
 
-class ZGigyaAuthPlugin extends BaseAuthPlugin
+class GigyaAuthPlugin extends BaseAuthPlugin
 
   public baseUrl = ""
 
   public function new(plugin)
-    super("ZGigyaAuthPlugin", plugin)
+    super("GigyaAuthPlugin", plugin)
     m.baseUrl = plugin.getStringValue("base_url")
     m.request = m.getClassInstance("RequestModule")
   end function

@@ -1,19 +1,20 @@
+'@Only
 
 import "pkg:/source/plugin-support/PluginManager.bs"
 import "pkg:/source/lib/BaseClass.bs"
 import "pkg:/source/maestro/lib/Utils.bs"
 
 ' /**
-'  * @module ZGenericUrlTokenAppender
+'  * @module GenericUrlTokenAppender
 '  * @description appends the spcified token to the url
 '  */
-class ZGenericUrlTokenAppender extends zc.BaseClass
+class GenericUrlTokenAppender extends zc.BaseClass
 
   private providerId = ""
   private tokenKey = ""
 
   public function new()
-    m.super("ZGenericUrlTokenAppender")
+    m.super("GenericUrlTokenAppender")
     m.plugins = m.getClassInstance("PluginManager")
 
     plugin = m.plugins.getPluginById("generic_url_token_appender")

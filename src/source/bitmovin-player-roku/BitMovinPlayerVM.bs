@@ -2,7 +2,7 @@
 import "pkg:/source/zapp/BaseZappVM.bs"
 import "pkg:/source/plugin-support/PluginManager.bs"
 
-class ZBitMovinPlayerVM extends zc.BaseZappVM
+class BitMovinPlayerVM extends zc.BaseZappVM
 
   private view = invalid
   private themeColor = "#ffffff"
@@ -15,7 +15,7 @@ class ZBitMovinPlayerVM extends zc.BaseZappVM
   private playMode = "default"
 
   public function new(view)
-    super("ZBitMovinPlayerVM")
+    super("BitMovinPlayerVM")
     m.view = view
 
     m.licenseKey = mc.getContentField(view.riversJson, "general.license_key", "")

@@ -1,6 +1,6 @@
 '@TestSuite SSVMT 
 
-namespace Applicaster.ZFullScreenSearchVM.Tests
+namespace Applicaster.FullScreenSearchVM.Tests
 
   '@BeforeEach
   function beforeEach()
@@ -29,7 +29,7 @@ namespace Applicaster.ZFullScreenSearchVM.Tests
       }
     }
 
-    m.vm = new ZFullScreenSearchVM(m.riversJson)
+    m.vm = new FullScreenSearchVM(m.riversJson)
   end function
 
 

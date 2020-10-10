@@ -1,5 +1,5 @@
 import "pkg:/source/rLog/rLogMixin.brs"
-import "pkg:/source/mpx_adobe_prehook_roku/ZMPXVideoPlaybackPrehook.bs"
+import "pkg:/source/tve_token_loader_prehook_roku/TVETokenLoaderPrehook.bs"
 
 
 function init()
@@ -8,9 +8,9 @@ end function
 
 
 function execRunLoop()
-  registerLogger("ZMPXVideoPlaybackPrehookTask")
+  registerLogger("TVETokenLoaderPrehookTask")
   m.logMethod("execRunLoop")
 
-  resolver = new ZMPXVideoPlaybackPrehook()
+  resolver = new TVETokenLoaderPrehook()
   m.top.output = resolver.execute()
 end function

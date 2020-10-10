@@ -6,10 +6,10 @@ import "pkg:/source/lib/request.bs"
 import "pkg:/source/lib/uri.bs" 
 
 ' /**
-'  * @module ZTVETokenLoaderPrehook
+'  * @module TVETokenLoaderPrehook
 '  * @description retrieves the specified tokens for TVE account. Requires that Adobe Primetime auth plugin is used, and is logged in via to this prehook running.
 '  */
-class ZTVETokenLoaderPrehook extends zc.BaseClass
+class TVETokenLoaderPrehook extends zc.BaseClass
 
   private isValid = false
   private matchingPath = ""
@@ -22,7 +22,7 @@ class ZTVETokenLoaderPrehook extends zc.BaseClass
   private uri = invalid
 
   public function new()
-    m.super("ZTVETokenLoaderPrehook")
+    m.super("TVETokenLoaderPrehook")
     m.plugins = m.getClassInstance("PluginManager")
     m.request = m.getClassInstance("RequestModule")
     m.uri = m.getClassInstance("UriModule")

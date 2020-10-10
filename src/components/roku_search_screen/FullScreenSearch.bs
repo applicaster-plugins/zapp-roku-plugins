@@ -1,4 +1,4 @@
-import "pkg:/source/roku_search_screen/ZFullScreenSearchVM.bs"
+import "pkg:/source/roku_search_screen/FullScreenSearchVM.bs"
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '++ Initialization
@@ -14,5 +14,5 @@ end function
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 function createVM()
-  return new ZFullScreenSearchVM(m.top.riversJson)
+  return new FullScreenSearchVM(m.top.riversJson)
 end function

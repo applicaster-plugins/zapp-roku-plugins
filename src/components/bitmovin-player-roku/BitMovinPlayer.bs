@@ -1,4 +1,4 @@
-import "pkg:/source/bitmovin-player-roku/ZBitMovinPlayerVM.bs"
+import "pkg:/source/bitmovin-player-roku/BitMovinPlayerVM.bs"
 
 function init()
   m.top.observeField("control", "onControlChange")
@@ -21,7 +21,7 @@ end function
 function createVM()
   m.logMethod("createVM")
 
-  m.vm = ZBitMovinPlayerVM(m.top)
+  m.vm = BitMovinPlayerVM(m.top)
   m.vm.initialize()
 
   MVMM.initializeBindings(true)

@@ -1,6 +1,6 @@
-'@TestSuite ZTVETL ZTVETokenLoaderPrehook
+'@TestSuite TVETL TVETokenLoaderPrehook
 
-namespace Applicaster.ZTVETokenLoaderPrehook.Tests
+namespace Applicaster.TVETokenLoaderPrehook.Tests
 
   '@BeforeEach
   function BeforeEach()
@@ -28,7 +28,7 @@ namespace Applicaster.ZTVETokenLoaderPrehook.Tests
 
     TU.setModelLocator(m.modelLocator)
 
-    m.plugin = new ZTVETokenLoaderPrehook()
+    m.plugin = new TVETokenLoaderPrehook()
   end function
 
   '@AfterEach
@@ -49,7 +49,7 @@ namespace Applicaster.ZTVETokenLoaderPrehook.Tests
     m.expectOnce(plugins, "getPluginById", ["tve_token_loader_prehook_roku"], loaderPlugin)
     m.expectOnce(plugins, "getPluginById", ["AdobeAccessEnabler"], adobePlugin)
 
-    m.plugin = new ZTVETokenLoaderPrehook()
+    m.plugin = new TVETokenLoaderPrehook()
     m.assertFalse(m.plugin.isValid)
   end function
 
@@ -62,7 +62,7 @@ namespace Applicaster.ZTVETokenLoaderPrehook.Tests
     m.expectOnce(plugins, "getPluginById", ["tve_token_loader_prehook_roku"], loaderPlugin)
     m.expectOnce(plugins, "getPluginById", ["AdobeAccessEnabler"], adobePlugin)
 
-    m.plugin = new ZTVETokenLoaderPrehook()
+    m.plugin = new TVETokenLoaderPrehook()
     m.assertFalse(m.plugin.isValid)
   end function
 

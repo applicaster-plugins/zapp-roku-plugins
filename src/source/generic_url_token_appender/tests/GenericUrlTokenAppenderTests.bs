@@ -1,6 +1,6 @@
-'@TestSuite AOZGUTAT ZGenericUrlTokenAppender
+'@TestSuite AOZGUTAT GenericUrlTokenAppender
 
-namespace Applicaster.OpenSource.ZGenericUrlTokenAppenderTests
+namespace Applicaster.OpenSource.GenericUrlTokenAppenderTests
 
   '@BeforeEach
   function BeforeEach()
@@ -10,7 +10,7 @@ namespace Applicaster.OpenSource.ZGenericUrlTokenAppenderTests
 
     TU.setModelLocator(m.modelLocator)
 
-    m.appender = new ZGenericUrlTokenAppender()
+    m.appender = new GenericUrlTokenAppender()
   end function
 
   '@AfterEach
@@ -27,7 +27,7 @@ namespace Applicaster.OpenSource.ZGenericUrlTokenAppenderTests
     m.modelLocator.plugins = [] 
     zc.AppService.clearClassInstances()
 
-    m.appender = new ZGenericUrlTokenAppender()
+    m.appender = new GenericUrlTokenAppender()
 
     m.assertNotInvalid(m.appender.plugins)
     m.assertFalse(m.appender.isValid)

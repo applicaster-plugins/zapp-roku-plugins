@@ -6,10 +6,10 @@ import "pkg:/source/lib/request.bs"
 import "pkg:/source/lib/uri.bs" 
 
 ' /**
-'  * @module ZMPXVideoPlaybackPrehook
+'  * @module MPXVideoPlaybackPrehook
 '  * @description appends the content url from mpx, using adobe shortmedia token
 '  */
-class ZMPXVideoPlaybackPrehook extends zc.BaseClass
+class MPXVideoPlaybackPrehook extends zc.BaseClass
 
   public isValid = false
   private matchingPath = ""
@@ -18,7 +18,7 @@ class ZMPXVideoPlaybackPrehook extends zc.BaseClass
   private uri = invalid
 
   public function new()
-    m.super("ZMPXVideoPlaybackPrehook")
+    m.super("MPXVideoPlaybackPrehook")
     m.plugins = m.getClassInstance("PluginManager")
 
     plugin = m.plugins.getPluginById("mpx_video_playback_prehook_roku")

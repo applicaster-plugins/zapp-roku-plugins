@@ -1,13 +1,13 @@
 
 import "pkg:/source/UIBuilder/view/ScreenVM.bs"
 
-class ZGigyaLoginScreenVM extends ScreenVM
+class GigyaLoginScreenVM extends ScreenVM
 
   public isContentVisible = false
   public isRefreshing = true
 
   public function new(riversJson)
-    super(riversJson, "ZGigyaLoginScreenVM")
+    super(riversJson, "GigyaLoginScreenVM")
     m.focusId = "loginButton"
   end function
 

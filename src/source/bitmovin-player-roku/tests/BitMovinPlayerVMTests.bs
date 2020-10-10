@@ -1,4 +1,4 @@
-'@TestSuite ZBMPVMT ZBitMovinPlayerVMTests
+'@TestSuite ZBMPVMT BitMovinPlayerVMTests
 
 namespace ZBMPVMT
 
@@ -33,7 +33,7 @@ namespace ZBMPVMT
       "BitmovinPlayerState": m.BitmovinPlayerState
     } 
 
-    m.vm = new ZBitMovinPlayerVM(m.view)
+    m.vm = new BitMovinPlayerVM(m.view)
   end function
 
   '@AfterEach
@@ -57,7 +57,7 @@ namespace ZBMPVMT
   '@Params[{"overrideVideoUrl": "#override" }]
   function constructor_badConfiguredPlugin(generalJson)
     m.view.riversJson = { "general": generalJson }
-    m.vm = new ZBitMovinPlayerVM(m.view)
+    m.vm = new BitMovinPlayerVM(m.view)
 
     m.assertEqual(m.vm.state, "none")
     m.assertEqual(m.vm.view, m.view)
@@ -74,7 +74,7 @@ namespace ZBMPVMT
       }
     }
 
-    m.vm = new ZBitMovinPlayerVM(m.view)
+    m.vm = new BitMovinPlayerVM(m.view)
 
     m.assertEqual(m.vm.state, "none")
     m.assertEqual(m.vm.view, m.view)

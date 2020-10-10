@@ -3,7 +3,7 @@ import "pkg:/source/lib/ViewUtils.bs"
 import "pkg:/source/maestro/lib/Utils.bs"
 import "pkg:/source/UIBuilder/view/ComponentVM.bs"
 
-class ZFullScreenSearchVM extends ComponentVM
+class FullScreenSearchVM extends ComponentVM
 
   public results = invalid
   public isGridVisible = false
@@ -24,7 +24,7 @@ class ZFullScreenSearchVM extends ComponentVM
   private rowTarget = invalid
 
   public function new(riversJson)
-    super(riversJson, "ZFullScreenSearchVM")
+    super(riversJson, "FullScreenSearchVM")
     m.focusId = "keyboard"
     m.processStyles(riversJson.styles)
     m.setGridVisible(false)

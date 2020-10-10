@@ -1,5 +1,5 @@
 import "pkg:/source/rLog/rLogMixin.brs"
-import "pkg:/source/generic_url_token_appender/ZGenericUrlTokenAppender.bs"
+import "pkg:/source/generic_url_token_appender/GenericUrlTokenAppender.bs"
 import "pkg:/source/maestro/lib/Utils.bs"
 
 
@@ -9,9 +9,9 @@ end function
 
 
 function execRunLoop()
-  registerLogger("ZGenericUrlTokenAppenderTask")
+  registerLogger("GenericUrlTokenAppenderTask")
   m.logMethod("execRunLoop")
 
-  resolver = new ZGenericUrlTokenAppender()
+  resolver = new GenericUrlTokenAppender()
   m.top.output = resolver.execute()
 end function

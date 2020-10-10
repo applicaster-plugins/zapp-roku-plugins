@@ -1,6 +1,6 @@
-'@TestSuite OCURLTAT ZMPXVideoPlaybackPrehook
+'@TestSuite OCURLTAT MPXVideoPlaybackPrehook
 
-namespace Applicaster.ZMPXVideoPlaybackPrehook.Tests
+namespace Applicaster.MPXVideoPlaybackPrehook.Tests
 
   '@BeforeEach
   function BeforeEach()
@@ -13,7 +13,7 @@ namespace Applicaster.ZMPXVideoPlaybackPrehook.Tests
 
     TU.setModelLocator(m.modelLocator)
 
-    m.plugin = new ZMPXVideoPlaybackPrehook()
+    m.plugin = new MPXVideoPlaybackPrehook()
   end function
 
   '@AfterEach
@@ -30,7 +30,7 @@ namespace Applicaster.ZMPXVideoPlaybackPrehook.Tests
     m.modelLocator.plugins = [] 
     zc.AppService.clearClassInstances()
 
-    m.plugin = new ZMPXVideoPlaybackPrehook()
+    m.plugin = new MPXVideoPlaybackPrehook()
 
     m.assertNotInvalid(m.plugin.plugins)
   end function
