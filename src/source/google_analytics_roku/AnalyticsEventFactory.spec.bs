@@ -52,6 +52,7 @@ namespace Tests
     function AMT_propertiesToLabel_nonString()
       properties = {}
       properties["boolean"] = true
+      'bs:disable-next-line
       properties["integer"] = 42%
       properties["longinteger"] = 2349823492&
       properties["float"] = 243.573!

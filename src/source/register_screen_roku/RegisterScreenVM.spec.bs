@@ -52,7 +52,7 @@ namespace Tests
         }
       }
 
-      m.vm = RegisterScreenVM(m.riversJson)
+      m.vm = new RegisterScreenVM(m.riversJson)
       m.vm.initialize()
 
     end function

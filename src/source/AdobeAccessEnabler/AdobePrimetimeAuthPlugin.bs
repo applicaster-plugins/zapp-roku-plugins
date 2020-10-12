@@ -3,7 +3,7 @@ import "pkg:/source/lib/Request.bs"
 import "pkg:/source/lib/URI.bs" 
 import "pkg:/source/authorization/JWTUtil.bs"
 
-class AdobePrimetimeAuthPlugin extends BaseAuthPlugin
+class AdobePrimetimeAuthPlugin extends zc.Auth.BaseAuthPlugin
 
   private request = invalid
   private JWTUtil = invalid

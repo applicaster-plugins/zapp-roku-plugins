@@ -65,7 +65,7 @@ namespace Tests
 
       zc.TestUtils.setModelLocator(m.modelLocator)
 
-      m.vm = AWSLoginScreenVM(m.riversJson)
+      m.vm = new AWSLoginScreenVM(m.riversJson)
       m.vm.initialize()
 
     end function

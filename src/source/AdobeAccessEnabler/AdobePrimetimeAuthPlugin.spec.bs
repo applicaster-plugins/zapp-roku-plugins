@@ -3,8 +3,7 @@ namespace Tests
   '@TestSuite APMATTests
   class APMATTests extends Rooibos.BaseTestSuite
 
-    '@SetUp
-    function BeforeEach()
+    override function beforeEach()
       pluginConfiguration = {
         "identifier": "AdobeAccessEnabler",
         "configuration_json": {

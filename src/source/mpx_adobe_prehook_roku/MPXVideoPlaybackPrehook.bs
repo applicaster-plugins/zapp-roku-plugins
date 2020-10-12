@@ -17,7 +17,7 @@ class MPXVideoPlaybackPrehook extends zc.BaseClass
   private uri = invalid
 
   public function new()
-    m.super("MPXVideoPlaybackPrehook")
+    super("MPXVideoPlaybackPrehook")
     m.plugins = m.getClassInstance("zc.PluginManager")
 
     plugin = m.plugins.getPluginById("mpx_video_playback_prehook_roku")

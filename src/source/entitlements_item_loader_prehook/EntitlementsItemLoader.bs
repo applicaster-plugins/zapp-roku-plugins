@@ -14,7 +14,7 @@ class EntitlementsItemLoader extends zc.BaseClass
   private matchingValue = ""
 
   public function new()
-    m.super("EntitlementsItemLoader")
+    super("EntitlementsItemLoader")
     m.plugins = m.getClassInstance("zc.PluginManager")
 
     plugin = m.plugins.getPluginById("entitlements_item_loader_prehook")

@@ -13,7 +13,7 @@ class GenericUrlTokenAppender extends zc.BaseClass
   private tokenKey = ""
 
   public function new()
-    m.super("GenericUrlTokenAppender")
+    super("GenericUrlTokenAppender")
     m.plugins = m.getClassInstance("zc.PluginManager")
 
     plugin = m.plugins.getPluginById("generic_url_token_appender")

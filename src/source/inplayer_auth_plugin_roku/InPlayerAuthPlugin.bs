@@ -4,7 +4,7 @@ import "pkg:/source/lib/URI.bs"
 import "pkg:/source/lib/APIUtils.bs"
 import "pkg:/source/authorization/BaseAuthPlugin.bs" 
 
-class InPlayerAuthPlugin extends BaseAuthPlugin
+class InPlayerAuthPlugin extends zc.Auth.BaseAuthPlugin
 
   public apiUrl = "" ' note this is used by APIMixin
 

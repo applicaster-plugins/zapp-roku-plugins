@@ -52,7 +52,7 @@ namespace Tests
         }
       }
 
-      m.vm = AWSLoginScreenVM(m.riversJson)
+      m.vm = new LoginScreenVM(m.riversJson)
       m.vm.initialize()
 
     end function

@@ -2,10 +2,7 @@ import "pkg:/source/entitlements/BaseEntitlementsPlugin.bs"
 import "pkg:/source/lib/AdminAPI.bs"
 import "pkg:/source/lib/APIUtils.bs"
 
-class InPlayerEntitlementsPlugin extends BaseEntitlementsPlugin
-
-  private validPolicies = ["none", "authOnly", "ICPOnly", "authOrICP", "authAndICP"]
-  private validVodModels = ["none", "SVOD", "AVOD", "TVOD", "TVODAndSVOD"]
+class InPlayerEntitlementsPlugin extends zc.Entitlements.BaseEntitlementsPlugin
 
   private entitlementsPolicy = ""
   private vodModel = ""
@@ -21,6 +18,8 @@ class InPlayerEntitlementsPlugin extends BaseEntitlementsPlugin
     m.isItemRequiredToLoadEntitlements = true
     m.requiresLoadToAscertainEntitlements = true
 
+    m.validPolicies = ["none", "authOnly", "ICPOnly", "authOrICP", "authAndICP"]
+    m.validVodModels = ["none", "SVOD", "AVOD", "TVOD", "TVODAndSVOD"]
     m.authenticationData = m.getInstance("authenticationData")
     m.assetKey = plugin.getStringValue("inplayer_custom_asset_key", "")
     m.entitlementsPolicy = plugin.getStringValue("entitlements_policy", "none", m.validPolicies)

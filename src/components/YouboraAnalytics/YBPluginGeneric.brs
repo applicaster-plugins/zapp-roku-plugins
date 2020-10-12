@@ -109,9 +109,8 @@ sub _run()
 end sub
 
 sub _stop()
-
+    'bs:disable-next-line
     stopMonitoring()
-
 end sub
 
 'This method should be overriden in the specific plugin in order to process

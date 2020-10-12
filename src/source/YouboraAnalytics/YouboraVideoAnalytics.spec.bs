@@ -1,7 +1,7 @@
 namespace Tests
 
-  '@TestSuite YouboraVideoAnalytics
-  class YouboraVideoAnalytics extends Rooibos.BaseTestSuite
+  '@TestSuite YouboraVideoAnalyticsTests
+  class YouboraVideoAnalyticsTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
       zc.AppService.clearClassInstances()
