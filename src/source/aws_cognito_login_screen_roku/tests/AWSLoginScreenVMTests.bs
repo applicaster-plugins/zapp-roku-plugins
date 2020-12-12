@@ -331,11 +331,15 @@ function processLogin_invalid_creds()
   
 end function
 
+'@only
 '@Test valid creds
-function processLogin_valid_creds()
+'@Params["pass", "pass"]
+'@Params["Pass2", "pass2"]
+'@Params["PASS3", "pass3"]
+function processLogin_valid_creds(password, expectedPassword)
   m.vm.isCredsValid = true
   m.vm.usernameText = "user"
-  m.vm.password = "pass"
+  m.vm.password = password
   authTask = { "id": "authTask" }
   creds = { "id": "creds" }
   
@@ -347,7 +351,7 @@ function processLogin_valid_creds()
   m.assertEqual(m.vm.authTask, authTask)
   
   m.assertEqual(creds.username, "user")
-  m.assertEqual(creds.password, "pass")
+  m.assertEqual(creds.password, expectedPassword)
   m.assertEqual(m.vm.state, "loading")
   
   m.assertTrue(m.vm.isLoading)
