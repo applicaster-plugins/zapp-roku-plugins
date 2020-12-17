@@ -60,7 +60,7 @@
             id='nameInput'
             style='{{:vm.inputStyle}}'
             labelXOffset='9'
-            text='{{vm.nameText}}'
+            text='{{vm.humanNameText}}'
             buttonType='{{vm.nameButtonType}}'
             selected='{(vm.onNameButtonSelected,isSettingInitialValue=false)}'
             width='{{=ViewUtils_UIBInt("input_w")}}' />

@@ -24,8 +24,8 @@ namespace Applicaster
 
     public usernameText = ""
     public username = ""
-    public nameText = ""
-    public name = ""
+    public humanNameText = ""
+    public humanName = ""
     public passwordText = ""
     public password = ""
 
@@ -67,8 +67,8 @@ namespace Applicaster
       m.setField("usernameText", m.localizations.username_placeholder_text)
       m.usernamePlaceholderText = m.usernameText
 
-      m.setField("nameText", m.localizations.name_placeholder_text)
-      m.namePlaceholderText = m.nameText
+      m.setField("humanNameText", m.localizations.name_placeholder_text)
+      m.namePlaceholderText = m.humanNameText
 
       m.setField("passwordText", m.localizations.password_placeholder_text)
       m.passwordPlaceholderText = m.passwordText
@@ -92,7 +92,7 @@ namespace Applicaster
     end function
 
     public function onNameButtonSelected(value)
-      m.showKeyboardDialog("Enter your name", m.name, "onNameKeyboardDialogDismissal")
+      m.showKeyboardDialog("Enter your name", m.humanName, "onNameKeyboardDialogDismissal")
     end function
 
     public function onPasswordButtonSelected(value)
@@ -123,7 +123,7 @@ namespace Applicaster
 
     private function onNameKeyboardDialogDismissal(text)
       m.logMethod("onNameKeyboardDialogDismissal")
-      KeyboardDialogMixin.setTextFromKeyboard(m, "name", text)
+      KeyboardDialogMixin.setTextFromKeyboard(m, "humanName", text)
     end function
 
     private function onPasswordKeyboardDialogDismissal(text)
@@ -136,7 +136,7 @@ namespace Applicaster
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     public function checkCredsValid()
-      m.setField("isCredsValid", m.usernameText <> invalid and m.usernameText.trim() <> "" and m.password <> invalid and m.password.trim() <> "" and m.nameText <> invalid and m.nameText.trim() <> "")
+      m.setField("isCredsValid", m.usernameText <> invalid and m.usernameText.trim() <> "" and m.password <> invalid and m.password.trim() <> "" and m.humanNameText <> invalid and m.humanNameText.trim() <> "")
 
       m.setField("isRegisterButtonEnabled", m.isCredsValid and not m.isLoading)
     end function
@@ -146,7 +146,7 @@ namespace Applicaster
 
       if m.isCredsValid
         creds = m.createInstance("AuthenticationCredentials")
-        creds.name = m.nameText
+        creds.name = m.humanNameText
         creds.username = m.usernameText
         creds.password = m.password
         creds.passwordConfirmation = m.password
