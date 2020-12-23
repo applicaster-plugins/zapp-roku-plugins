@@ -200,8 +200,8 @@ public function processLogin()
   
   if m.isCredsValid
     creds = m.createInstance("AuthenticationCredentials")
-    creds.username = m.usernameText
-    creds.password = lcase(m.password)
+    creds.username = lcase(m.usernameText)
+    creds.password = m.password
     m.authTask = m.createAuthTask("execLogIn", "aws_cognito_auth_plugin", "onLoginComplete", creds)
     
     m.setField("isLoginButtonEnabled", false)
