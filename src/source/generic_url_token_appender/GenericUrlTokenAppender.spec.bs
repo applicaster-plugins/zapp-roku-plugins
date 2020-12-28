@@ -1,20 +1,20 @@
-namespace Tests
+namespace Applicaster.Tests
 
-  '@TestSuite GenericUrlTokenAppenderTests
+  '@TestSuite
   class GenericUrlTokenAppenderTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
-      zc.AppService.clearClassInstances()
+      ZC.AppService.clearClassInstances()
       m.modelLocator = CreateObject("roSGNode", "ModelLocator")
       m.modelLocator.plugins = [TestUtils.CreatePluginJson("generic_url_token_appender", { "provider_id": "pid", "token_key": "t" })] 
 
-      zc.TestUtils.setModelLocator(m.modelLocator)
+      ZC.TestUtils.setModelLocator(m.modelLocator)
 
       m.appender = new GenericUrlTokenAppender()
     end function
 
     override function afterEach()
-      zc.TestUtils.unsetModelLocator()
+      ZC.TestUtils.unsetModelLocator()
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -22,9 +22,9 @@ namespace Tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     '@Test no plugin
-    function constructor_noPlugin()
+    function testConstructor_noPlugin()
       m.modelLocator.plugins = [] 
-      zc.AppService.clearClassInstances()
+      ZC.AppService.clearClassInstances()
 
       m.appender = new GenericUrlTokenAppender()
 
@@ -33,7 +33,7 @@ namespace Tests
     end function
 
     '@Test valid plugin
-    function constructor_valid()
+    function testConstructor_valid()
       m.assertTrue(m.appender.isValid)
     end function
 

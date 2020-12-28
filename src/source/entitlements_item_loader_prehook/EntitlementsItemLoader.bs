@@ -7,7 +7,7 @@ import "pkg:/source/lib/Request.bs"
 '  * @module EntitlementsItemLoader
 '  * @description retrieves the content url from the entitlements manager
 '  */
-class EntitlementsItemLoader extends zc.BaseClass
+class EntitlementsItemLoader extends ZC.BaseClass
 
   public isValid = false
   private matchingPath = ""
@@ -15,7 +15,7 @@ class EntitlementsItemLoader extends zc.BaseClass
 
   public function new()
     super("EntitlementsItemLoader")
-    m.plugins = m.getClassInstance("zc.PluginManager")
+    m.plugins = m.getClassInstance("ZC.PluginManager")
 
     plugin = m.plugins.getPluginById("entitlements_item_loader_prehook")
     m.isValid = plugin.isValid
@@ -32,7 +32,7 @@ class EntitlementsItemLoader extends zc.BaseClass
   end function
 
   public function execute()
-    item = mc.getContentField(m.getInstance("currentSelection"), "currentItem")
+    item = MC.getContentField(m.getInstance("currentSelection"), "currentItem")
 
     if item = invalid
       m.logError("no item - entitlements loader reuires currentSelection.currentItem is populated")
@@ -50,7 +50,7 @@ class EntitlementsItemLoader extends zc.BaseClass
       return "success"
     end if
 
-    manager = m.getClassInstance("EntitlementsManager")
+    manager = m.getClassInstance("ZC.Entitlements.EntitlementsManager")
 
 
     if manager.loadItem(item)
@@ -65,8 +65,8 @@ class EntitlementsItemLoader extends zc.BaseClass
       return true
     end if
 
-    value = mc.getContentField(item.json, m.matchingPath, invalid)
-    if not mc.isString(value)
+    value = MC.getContentField(item.json, m.matchingPath, invalid)
+    if not MC.isString(value)
       value = formatJson(value)
     end if
     return value = m.matchingValue

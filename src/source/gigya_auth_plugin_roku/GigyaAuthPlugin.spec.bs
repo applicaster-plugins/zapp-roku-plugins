@@ -1,6 +1,6 @@
-namespace Tests
+namespace Applicaster.Tests
 
-  '@TestSuite GigyaAuthPluginTests
+  '@TestSuite
   class GigyaAuthPluginTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
@@ -15,7 +15,7 @@ namespace Tests
 
       m.request = { "id": "request" }
 
-      plugin = new zc.BasePlugin(pluginConfiguration)
+      plugin = new ZC.BasePlugin(pluginConfiguration)
 
       m.plugin = new GigyaAuthPlugin(plugin)
       m.plugin.request = m.request
@@ -30,13 +30,13 @@ namespace Tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     '@Test
-    function constructor_tests()
+    function testConstructor_tests()
       pluginConfiguration = {
         "identifier": "gigya_auth_plugin_roku",
         "configuration_json": { "base_url": "host/" }
       }
 
-      plugin = new zc.BasePlugin(pluginConfiguration)
+      plugin = new ZC.BasePlugin(pluginConfiguration)
 
       m.plugin = new GigyaAuthPlugin(plugin)
 

@@ -2,7 +2,7 @@ import "pkg:/source/entitlements/BaseEntitlementsPlugin.bs"
 import "pkg:/source/lib/AdminAPI.bs"
 import "pkg:/source/lib/APIUtils.bs"
 
-class InPlayerEntitlementsPlugin extends zc.Entitlements.BaseEntitlementsPlugin
+class InPlayerEntitlementsPlugin extends ZC.Entitlements.BaseEntitlementsPlugin
 
   private entitlementsPolicy = ""
   private vodModel = ""
@@ -58,8 +58,8 @@ class InPlayerEntitlementsPlugin extends zc.Entitlements.BaseEntitlementsPlugin
     result = m.execute("GET", "items/access/customers?status=active")
     ids = []
 
-    collection = mc.getContentField(result, "collection")
-    if mc.isArray(collection)
+    collection = MC.getContentField(result, "collection")
+    if MC.isArray(collection)
       for each receipt in collection
         'have to load the item to get the external_id
         'inplayer say they will improve this, at which point its hould become m.getExternalIDsFromItem
@@ -71,7 +71,7 @@ class InPlayerEntitlementsPlugin extends zc.Entitlements.BaseEntitlementsPlugin
       end for
 
     else
-      errors = mc.getContentField(result, "errors", "Unknown error")
+      errors = MC.getContentField(result, "errors", "Unknown error")
       m.logError("error getting purchased item ids", errors)
     end if
 
@@ -97,7 +97,7 @@ class InPlayerEntitlementsPlugin extends zc.Entitlements.BaseEntitlementsPlugin
     products = []
     for each fee in inPlayerFees
       rokuProduct = m.getRokuItemForFee(fee, rokuProducts)
-      if rokuProduct <> invalid and mc.getArrayIndex(purchasedItemIds, rokuProduct.code) = -1 and usedProducts[rokuProduct.code] = invalid
+      if rokuProduct <> invalid and MC.getArrayIndex(purchasedItemIds, rokuProduct.code) = -1 and usedProducts[rokuProduct.code] = invalid
         rokuProduct.fee = fee
         usedProducts[rokuProduct.code] = true
         products.push(rokuProduct)
@@ -139,7 +139,7 @@ class InPlayerEntitlementsPlugin extends zc.Entitlements.BaseEntitlementsPlugin
     if m.token = invalid
       errorMessage = "not authenticated with inplayer when retrieving item: " + item.id
       m.logError(errorMessage, item)
-      mc.setOrAddNodeField(item, "errorMessage", errorMessage)
+      MC.setOrAddNodeField(item, "errorMessage", errorMessage)
       return false
     end if
 
@@ -147,25 +147,25 @@ class InPlayerEntitlementsPlugin extends zc.Entitlements.BaseEntitlementsPlugin
     if inPlayerId = invalid
       errorMessage = "Could not ascertain inplayer id with item: " + item.id
       m.logError(errorMessage, item)
-      mc.setOrAddNodeField(item, "errorMessage", errorMessage)
+      MC.setOrAddNodeField(item, "errorMessage", errorMessage)
 
       return false
     end if
 
-    result = m.execute("GET", "items/" + mc.asString(inPlayerId) + "/access")
+    result = m.execute("GET", "items/" + MC.asString(inPlayerId) + "/access")
 
-    content = parseJson(mc.getContentField(result, "item.content", "{}"))
+    content = parseJson(MC.getContentField(result, "item.content", "{}"))
     if content.mobile_url <> invalid and content.mobile_url.trim() <> ""
       if item.originalUrl = invalid
         m.logInfo("this item has never been manipulated; storing it's original url")
-        mc.setOrAddNodeField(item, "originalUrl", item.url)
+        MC.setOrAddNodeField(item, "originalUrl", item.url)
       end if
       item.url = content.mobile_url
       if content.cookies <> invalid
         cookieText = "Cookie:"
-        cookieText += "CloudFront-Policy=" + mc.getContentField(content.cookies, "CloudFront-Policy", "") + "; "
-        cookieText += "CloudFront-Signature=" + mc.getContentField(content.cookies, "CloudFront-Signature", "") + "; "
-        cookieText += "CloudFront-Key-Pair-Id=" + mc.getContentField(content.cookies, "CloudFront-Key-Pair-Id", "") + ";"
+        cookieText += "CloudFront-Policy=" + MC.getContentField(content.cookies, "CloudFront-Policy", "") + "; "
+        cookieText += "CloudFront-Signature=" + MC.getContentField(content.cookies, "CloudFront-Signature", "") + "; "
+        cookieText += "CloudFront-Key-Pair-Id=" + MC.getContentField(content.cookies, "CloudFront-Key-Pair-Id", "") + ";"
         item.HttpHeaders = [cookieText]
       end if
       item.isLoaded = true
@@ -174,7 +174,7 @@ class InPlayerEntitlementsPlugin extends zc.Entitlements.BaseEntitlementsPlugin
 
     errorMessage = m.getErrorMessage(result, "Error loading item: " + item.id)
     m.logError("could not unlock content:", errorMessage)
-    mc.setOrAddNodeField(item, "errorMessage", errorMessage)
+    MC.setOrAddNodeField(item, "errorMessage", errorMessage)
     return false
   end function
 
@@ -218,7 +218,7 @@ class InPlayerEntitlementsPlugin extends zc.Entitlements.BaseEntitlementsPlugin
       }
       result = m.execute("FORMPOST", "v2/external-payments/roku/validate", params)
 
-      code = mc.getContentField(result, "code", -1)
+      code = MC.getContentField(result, "code", -1)
       'TODO get code for already purchased error and ignore it!
       if code <> 200
         m.logError("failed to register receipt code:", code, result)
@@ -234,7 +234,7 @@ class InPlayerEntitlementsPlugin extends zc.Entitlements.BaseEntitlementsPlugin
     inPlayerId = m.getInplayerId(item)
 
     if inPlayerId <> invalid
-      result = m.execute("GET", "items/" + mc.asString(inPlayerId).trim() + "/access-fees")
+      result = m.execute("GET", "items/" + MC.asString(inPlayerId).trim() + "/access-fees")
 
       if result <> invalid
         for each item in result
@@ -260,23 +260,23 @@ class InPlayerEntitlementsPlugin extends zc.Entitlements.BaseEntitlementsPlugin
     end if
 
     m.logInfo("extensions", item.extensions)
-    id = mc.getContentField(item.json, m.pluginInplayerAssetKey)
+    id = MC.getContentField(item.json, m.pluginInplayerAssetKey)
 
     if id = invalid
-      id = mc.getContentField(item.json, "extensions.inplayer_asset_id")
+      id = MC.getContentField(item.json, "extensions.inplayer_asset_id")
     end if
 
     if id = invalid
-      assetType = mc.getContentField(item.json, "extensions.inplayer_asset_type")
+      assetType = MC.getContentField(item.json, "extensions.inplayer_asset_type")
       m.logInfo("trying to retrieve inplayer external id with inplayer_asset_type", assetType, "and id", item.id)
       if assetType <> invalid
         result = m.execute("GET", "items/assets/external/" + assetType + "/" + item.id)
-        id = mc.getContentField(result, "id")
+        id = MC.getContentField(result, "id")
       end if 
     end if
 
     if id <> invalid
-      mc.setOrAddNodeField(item, "inPlayerId", id)
+      MC.setOrAddNodeField(item, "inPlayerId", id)
     else
       m.logError("could not ascertain inplayer asset id, or succefully retrieve the id based on entry.id and inplayer asset type")
     end if
@@ -293,12 +293,12 @@ class InPlayerEntitlementsPlugin extends zc.Entitlements.BaseEntitlementsPlugin
   '  * @returns {assocarray|invalid} fee, or invalid if no match
   '  */
   private function getFeeForAccessReceipt(feeReceipt)
-    feeId = mc.getContentField(feeReceipt, "item_id")
+    feeId = MC.getContentField(feeReceipt, "item_id")
 
     if feeId <> invalid
-      result = m.execute("GET", "items/" + mc.asString(feeId).trim() + "/access-fees")
+      result = m.execute("GET", "items/" + MC.asString(feeId).trim() + "/access-fees")
 
-      if mc.isArray(result)
+      if MC.isArray(result)
         for each fee in result
           if fee.id = feeReceipt.purchased_access_fee_id
             return fee
@@ -331,7 +331,7 @@ class InPlayerEntitlementsPlugin extends zc.Entitlements.BaseEntitlementsPlugin
 
     if item.external_fees <> invalid
       for each externalFee in item.external_fees
-        externalId = mc.getContentField(externalFee, "external_id")
+        externalId = MC.getContentField(externalFee, "external_id")
 
         if externalId <> invalid
           ids.push(externalId)

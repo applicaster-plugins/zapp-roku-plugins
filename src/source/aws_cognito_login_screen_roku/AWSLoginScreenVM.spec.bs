@@ -1,13 +1,13 @@
-namespace Tests
+namespace Applicaster.Tests
 
-  '@TestSuite AWSLoginScreenVMTests
+  '@TestSuite
   class AWSLoginScreenVMTests extends Rooibos.BaseTestSuite
     override function beforeEach()
       m.modelLocator = {
         "User": { "isLoggedIn": false }
         "locale": "en"
       }
-      zc.TestUtils.setModelLocator(m.modelLocator)
+      ZC.TestUtils.setModelLocator(m.modelLocator)
 
       m.riversJson = {
         "name": "SmallSystemFont"
@@ -63,7 +63,7 @@ namespace Tests
       m.locale = "en"
       m.modelLocator.locale = m.locale
 
-      zc.TestUtils.setModelLocator(m.modelLocator)
+      ZC.TestUtils.setModelLocator(m.modelLocator)
 
       m.vm = new AWSLoginScreenVM(m.riversJson)
       m.vm.initialize()
@@ -71,7 +71,7 @@ namespace Tests
     end function
 
     override function afterEach()
-      zc.TestUtils.unsetModelLocator()
+      ZC.TestUtils.unsetModelLocator()
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -79,7 +79,7 @@ namespace Tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     '@Test constructor
-    function constructor_tests()
+    function testConstructor_tests()
       m.assertEqual(m.vm.focusId, "usernameInput")
       m.assertEqual(m.vm.riversJson, m.riversJson)
     end function
@@ -398,14 +398,14 @@ namespace Tests
         }
       }] 
 
-      zc.TestUtils.setModelLocator(m.modelLocator)
+      ZC.TestUtils.setModelLocator(m.modelLocator)
       m.rootBeforeEach = TAAWSLSVMT.beforeEach
       m.rootBeforeEach()
     end function
 
     '@AfterEach
     function processLogin_integration_afterEach()
-      zc.TestUtils.unsetModelLocator()
+      ZC.TestUtils.unsetModelLocator()
     end function
 
     '@Test valid creds
@@ -418,7 +418,7 @@ namespace Tests
 
       m.vm.processLogin()
 
-      zc.TestUtils.waitForField(m.vm, "isLoading", 3000, 5)
+      ZC.TestUtils.waitForField(m.vm, "isLoading", 3000, 5)
 
       m.assertEqual(m.vm.state, "finished")
       m.assertFalse(m.vm.isLoading)
@@ -435,7 +435,7 @@ namespace Tests
 
       m.vm.processLogin()
 
-      zc.TestUtils.waitForField(m.vm, "isLoading")
+      ZC.TestUtils.waitForField(m.vm, "isLoading")
 
       m.assertEqual(m.vm.state, "ready")
       m.assertFalse(m.vm.isLoading)

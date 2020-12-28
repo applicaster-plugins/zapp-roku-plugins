@@ -1,7 +1,7 @@
 import "pkg:/source/UIBuilder/view/ScreenVM.bs"
 import "pkg:/source/lib/ViewUtils.bs"
 
-class DeeplinkingControllerVM extends zuib.ScreenVM
+class DeeplinkingControllerVM extends ZUIB.ScreenVM
 
   public isLoadingIndicatorVisible = false
   public currentScreen = invalid
@@ -20,10 +20,10 @@ class DeeplinkingControllerVM extends zuib.ScreenVM
 
   private function processStyles(styles)
     m.screenIdsByName = { 
-      "series": mc.getContentField(styles, "series_screen") 
-      "season": mc.getContentField(styles, "series_screen") 
-      "episode": mc.getContentField(styles, "episode_screen") 
-      "detail": mc.getContentField(styles, "detail_screen") 
+      "series": MC.getContentField(styles, "series_screen") 
+      "season": MC.getContentField(styles, "series_screen") 
+      "episode": MC.getContentField(styles, "episode_screen") 
+      "detail": MC.getContentField(styles, "detail_screen") 
     }
   end function
 
@@ -89,7 +89,7 @@ class DeeplinkingControllerVM extends zuib.ScreenVM
 
   private function getPrehookController()
     m.logInfo("getPrehookController")
-    prehooks = mc.getContentField(m.riversJson, "hooks.preload_plugins") 
+    prehooks = MC.getContentField(m.riversJson, "hooks.preload_plugins") 
 
     if prehooks <> invalid and prehooks.count() > 0
       m.logInfo("this deeplink controller has prehooks")
@@ -234,7 +234,7 @@ class DeeplinkingControllerVM extends zuib.ScreenVM
   end function
 
   function exitFromDeeplinking()
-    zc.AppService.exitFromDeeplinking()
+    ZC.AppService.exitFromDeeplinking()
   end function
 
 

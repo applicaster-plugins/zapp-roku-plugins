@@ -1,7 +1,7 @@
 import "pkg:/source/zapp/BaseZappVM.bs"
 import "pkg:/source/plugin-support/PluginManager.bs"
 
-class BitMovinPlayerVM extends zc.BaseZappVM
+class BitMovinPlayerVM extends ZC.BaseZappVM
 
   private view = invalid
   private themeColor = "#ffffff"
@@ -17,14 +17,14 @@ class BitMovinPlayerVM extends zc.BaseZappVM
     super("BitMovinPlayerVM")
     m.view = view
 
-    m.licenseKey = mc.getContentField(view.riversJson, "general.license_key", "")
-    m.overrideVideoUrl = mc.getContentField(view.riversJson, "general.override_video_url", "")
-    themeColor = mc.getContentField(view.riversJson, "styles.theme_color")
+    m.licenseKey = MC.getContentField(view.riversJson, "general.license_key", "")
+    m.overrideVideoUrl = MC.getContentField(view.riversJson, "general.override_video_url", "")
+    themeColor = MC.getContentField(view.riversJson, "styles.theme_color")
 
     if themeColor = invalid
       m.themeColor = "#ffffff"
     else
-      m.themeColor = zc.ViewUtils.transposeUIBColor(themeColor)
+      m.themeColor = ZC.ViewUtils.transposeUIBColor(themeColor)
     end if
 
     m.isValid = m.licenseKey <> ""

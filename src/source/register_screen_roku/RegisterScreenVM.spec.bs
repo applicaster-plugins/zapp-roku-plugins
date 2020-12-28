@@ -1,7 +1,6 @@
+namespace Applicaster.Tests
 
-namespace Tests
-
-  '@TestSuite RegisterScreenVMTests
+  '@TestSuite
   class RegisterScreenVMTests extends Rooibos.BaseTestSuite
     override function beforeEach()
       m.riversJson = {
@@ -65,7 +64,7 @@ namespace Tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     '@Test constructor
-    function constructor_tests()
+    function testConstructor_tests()
       m.assertEqual(m.vm.focusId, "usernameInput")
       m.assertEqual(m.vm.riversJson, m.riversJson)
     end function
@@ -380,14 +379,14 @@ namespace Tests
         }
       }] 
 
-      zc.TestUtils.setModelLocator(m.modelLocator)
+      ZC.TestUtils.setModelLocator(m.modelLocator)
       m.rootBeforeEach = TAAWSLSVMT.beforeEach
       m.rootBeforeEach()
     end function
 
     '@AfterEach
     function integration_afterEach()
-      zc.TestUtils.unsetModelLocator()
+      ZC.TestUtils.unsetModelLocator()
     end function
 
     '@Test valid creds
@@ -400,7 +399,7 @@ namespace Tests
 
       m.vm.processLogin()
 
-      zc.TestUtils.waitForField(m.vm, "isLoading", 3000, 5)
+      ZC.TestUtils.waitForField(m.vm, "isLoading", 3000, 5)
 
       m.assertEqual(m.vm.state, "finished")
       m.assertFalse(m.vm.isLoading)
@@ -417,7 +416,7 @@ namespace Tests
 
       m.vm.processLogin()
 
-      zc.TestUtils.waitForField(m.vm, "isLoading")
+      ZC.TestUtils.waitForField(m.vm, "isLoading")
 
       m.assertEqual(m.vm.state, "ready")
       m.assertFalse(m.vm.isLoading)

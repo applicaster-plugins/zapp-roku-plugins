@@ -1,6 +1,6 @@
-namespace Tests
+namespace Applicaster.Tests
 
-  '@TestSuite SegmentAnalyticsPluginTests
+  '@TestSuite
   class SegmentAnalyticsPluginTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
@@ -11,15 +11,15 @@ namespace Tests
       m.modelLocator.constants = {
         "applicasterDeviceId": "#a"
       }
-      zc.TestUtils.setModelLocator(m.modelLocator)
+      ZC.TestUtils.setModelLocator(m.modelLocator)
 
-      m.pluginData = new zc.BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
+      m.pluginData = new ZC.BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
 
       m.plugin = new SegmentAnalyticsPlugin(m.pluginData)
     end function
 
     override function afterEach()
-      zc.TestUtils.unsetModelLocator()
+      ZC.TestUtils.unsetModelLocator()
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -27,7 +27,7 @@ namespace Tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     '@Test constructor
-    function constructor_tests()
+    function testConstructor_tests()
       m.assertEqual(m.plugin.id, "segment_analytics_roku")
       m.assertSubType(m.plugin.segmentTask, "SegmentAnalyticsTask")
       m.assertEqual(m.plugin.writeKey, "#w")
@@ -71,7 +71,7 @@ namespace Tests
         "provider_value_3": ""
       }
 
-      pluginData = new zc.BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
+      pluginData = new ZC.BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
 
       map = m.plugin.generateMap(pluginData, "provider", 3)
 
@@ -94,7 +94,7 @@ namespace Tests
         "provider_value_3": ""
       }
 
-      pluginData = new zc.BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
+      pluginData = new ZC.BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
 
       m.assertEmpty(m.plugin.generateMap(pluginData, "provider", 3))
 

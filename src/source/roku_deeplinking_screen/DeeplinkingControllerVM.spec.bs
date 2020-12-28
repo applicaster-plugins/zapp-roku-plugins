@@ -1,6 +1,6 @@
-namespace Tests
+namespace Applicaster.Tests
 
-  '@TestSuite DeeplinkingControllerVMTests
+  '@TestSuite
   class DeeplinkingControllerVMTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
@@ -8,7 +8,7 @@ namespace Tests
         "User": { "isLoggedIn": false }
         "locale": "en"
       }
-      zc.TestUtils.setModelLocator(m.modelLocator)
+      ZC.TestUtils.setModelLocator(m.modelLocator)
 
       m.riversJson = {
         styles: {
@@ -30,7 +30,7 @@ namespace Tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     '@Test 
-    function constructor_tests()
+    function testConstructor_tests()
       m.assertEqual(m.vm.screenIdsByName, {
         "season": "seriesScreen"
         "episode": "episodeScreen"
@@ -161,7 +161,7 @@ namespace Tests
 
 
       m.vm.riversJson = riversJson
-      hooks = mc.getContentField(riversJson, "hooks.preload_plugins") 
+      hooks = MC.getContentField(riversJson, "hooks.preload_plugins") 
       mockScreen = { "id": "screen" }
 
       m.expectOnce(m.vm, "createInstance", ["ScreenHookController", invalid, "prehooksController"], mockScreen)

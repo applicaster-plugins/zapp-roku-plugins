@@ -8,7 +8,7 @@ import "pkg:/source/lib/URI.bs"
 '  * @module TVETokenLoaderPrehookTests
 '  * @description retrieves the specified tokens for TVE account. Requires that Adobe Primetime auth plugin is used, and is logged in via to this prehook running.
 '  */
-class TVETokenLoaderPrehookTests extends zc.BaseClass
+class TVETokenLoaderPrehookTests extends ZC.BaseClass
 
   private isValid = false
   private matchingPath = ""
@@ -22,9 +22,9 @@ class TVETokenLoaderPrehookTests extends zc.BaseClass
 
   public function new()
     super("TVETokenLoaderPrehook")
-    m.plugins = m.getClassInstance("zc.PluginManager")
-    m.request = m.getClassInstance("RequestModule")
-    m.uri = m.getClassInstance("zc.URI")
+    m.plugins = m.getClassInstance("ZC.PluginManager")
+    m.request = m.getClassInstance("ZC.Request")
+    m.uri = m.getClassInstance("ZC.URI")
 
     plugin = m.plugins.getPluginById("tve_token_loader_prehook_roku")
     m.tveConfig = m.getTVEConfig()
@@ -65,7 +65,7 @@ class TVETokenLoaderPrehookTests extends zc.BaseClass
       return "error"
     end if
 
-    item = mc.getContentField(m.getInstance("currentSelection"), "currentItem")
+    item = MC.getContentField(m.getInstance("currentSelection"), "currentItem")
 
     if item = invalid
       m.logError("no item - tve token loader prehook requires currentSelection.currentItem is populated")
@@ -89,8 +89,8 @@ class TVETokenLoaderPrehookTests extends zc.BaseClass
       return true
     end if
 
-    value = mc.getContentField(item.json, m.matchingPath, invalid)
-    if not mc.isString(value)
+    value = MC.getContentField(item.json, m.matchingPath, invalid)
+    if not MC.isString(value)
       value = formatJson(value)
     end if
     return value = m.matchingValue

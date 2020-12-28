@@ -2,7 +2,7 @@ import "pkg:/source/UIBuilder/view/ScreenVM.bs"
 import "pkg:/source/lib/ViewUtils.bs"
 import "pkg:/source/mixin/KeyboardDialogMixin.bs"
 
-class LoginScreenVM extends zuib.ScreenVM
+class LoginScreenVM extends ZUIB.ScreenVM
 
   'styles
   public inputStyle = invalid
@@ -68,8 +68,8 @@ class LoginScreenVM extends zuib.ScreenVM
   end function
 
   private function isLoginRequired()
-    currentItem = mc.getContentField(m.getInstance("currentSelection"), "currentItem")
-    if currentItem <> invalid and mc.getContentField(currentItem.json, "extensions.requires_authentication", false) = false
+    currentItem = MC.getContentField(m.getInstance("currentSelection"), "currentItem")
+    if currentItem <> invalid and MC.getContentField(currentItem.json, "extensions.requires_authentication", false) = false
       return false
     else
       return true
@@ -86,14 +86,14 @@ class LoginScreenVM extends zuib.ScreenVM
     m.setField("passwordText", m.localizations.password_placeholder_text)
     m.passwordPlaceholderText = m.passwordText
 
-    inputStyle = zc.ViewUtils.makeUIBButtonStyle(styles, "general_input", "textInputPlaceholder")
+    inputStyle = ZC.ViewUtils.makeUIBButtonStyle(styles, "general_input", "textInputPlaceholder")
 
     m.setField("inputStyle", inputStyle)
 
-    m.loginButtonStyle = zc.ViewUtils.makeUIBButtonStyle(styles, "login_button", "custom", styles.login_button_text)
-    m.registerButtonStyle = zc.ViewUtils.makeUIBButtonStyle(styles, "register_button", "custom", styles.register_button_text)
-    m.forgotPasswordButtonStyle = zc.ViewUtils.makeUIBButtonStyle(styles, "forgot_password_button", "custom", styles.forgot_password_button_text)
-    m.maxDebugAccounts = zc.ViewUtils.getUIBInt(styles, "debug_max_accounts")
+    m.loginButtonStyle = ZC.ViewUtils.makeUIBButtonStyle(styles, "login_button", "custom", styles.login_button_text)
+    m.registerButtonStyle = ZC.ViewUtils.makeUIBButtonStyle(styles, "register_button", "custom", styles.register_button_text)
+    m.forgotPasswordButtonStyle = ZC.ViewUtils.makeUIBButtonStyle(styles, "forgot_password_button", "custom", styles.forgot_password_button_text)
+    m.maxDebugAccounts = ZC.ViewUtils.getUIBInt(styles, "debug_max_accounts")
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -282,7 +282,7 @@ class LoginScreenVM extends zuib.ScreenVM
 
   public function isCapturingAnyKeyPress(key, press)
     'do not anyone escape this screen!
-    if press and key = "back" and not mc.getContentField(m.riversJson, "general.isflowBlocker", true)
+    if press and key = "back" and not MC.getContentField(m.riversJson, "general.isflowBlocker", true)
       return false
     else
       return true
@@ -313,7 +313,7 @@ class LoginScreenVM extends zuib.ScreenVM
   public function onKeyPressDown() as boolean
     m.logMethod("onKeyPressDown", m.focusId)
     if not m.isSubScreenVisible 
-      m.setFocusId(mc.getItemAtOffset(m.focusIds, m.focusId, 1))
+      m.setFocusId(MC.getItemAtOffset(m.focusIds, m.focusId, 1))
     end if
     return true
   end function
@@ -321,7 +321,7 @@ class LoginScreenVM extends zuib.ScreenVM
   public override function onKeyPressUp() as boolean
     m.logMethod("onKeyPressUp", m.focusId)
     if not m.isSubScreenVisible
-      m.setFocusId(mc.getItemAtOffset(m.focusIds, m.focusId, -1))
+      m.setFocusId(MC.getItemAtOffset(m.focusIds, m.focusId, -1))
     end if
     return true
   end function

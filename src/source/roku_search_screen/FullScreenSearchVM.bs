@@ -2,7 +2,7 @@ import "pkg:/source/lib/ViewUtils.bs"
 import "pkg:/source/maestro/lib/Utils.bs"
 import "pkg:/source/UIBuilder/view/ComponentVM.bs"
 
-class FullScreenSearchVM extends zuib.ComponentVM
+class FullScreenSearchVM extends ZUIB.ComponentVM
 
   public results = invalid
   public isGridVisible = false
@@ -30,43 +30,43 @@ class FullScreenSearchVM extends zuib.ComponentVM
 
     m.rowTarget = riversJson.data.target
 
-    if zc.ViewUtils.getUIBBool(riversJson.styles, "override_target_screen", false)
-      m.rowTarget = mc.getContentField(riversJson, "data.target_screen")
+    if ZC.ViewUtils.getUIBBool(riversJson.styles, "override_target_screen", false)
+      m.rowTarget = MC.getContentField(riversJson, "data.target_screen")
       m.logWarn("Using overridden screen name for target!", m.rowTarget)
     end if
 
   end function
 
   function processStyles(styles) 
-    m.loadDepth = zc.ViewUtils.getUIBInt(styles, "data_depth", 0)
+    m.loadDepth = ZC.ViewUtils.getUIBInt(styles, "data_depth", 0)
     m.gridStyle = m.getGridStyle(styles)
 
     m.keyboardStyle = {
-      translation: zc.ViewUtils.makeUIBPosition(styles, "keyboard", 300, 500)
-      keyColor: zc.ViewUtils.transposeUIBColor(styles.key_color)
-      focusedKeyColor: zc.ViewUtils.transposeUIBColor(styles.focused_key_color)
-      keyboardBitmapUri: zc.ViewUtils.getPosterUri(styles.keyboard_bitmap_uri)
-      focusBitmapUri: zc.ViewUtils.getPosterUri(styles.keyboard_focus_bitmap_uri)
-      lowerCase: zc.ViewUtils.getUIBBool(styles, "keyboard_lower_case", false)
-      showTextEditBox: not zc.ViewUtils.getUIBBool(styles, "use_custom_text_input", true)
+      translation: ZC.ViewUtils.makeUIBPosition(styles, "keyboard", 300, 500)
+      keyColor: ZC.ViewUtils.transposeUIBColor(styles.key_color)
+      focusedKeyColor: ZC.ViewUtils.transposeUIBColor(styles.focused_key_color)
+      keyboardBitmapUri: ZC.ViewUtils.getPosterUri(styles.keyboard_bitmap_uri)
+      focusBitmapUri: ZC.ViewUtils.getPosterUri(styles.keyboard_focus_bitmap_uri)
+      lowerCase: ZC.ViewUtils.getUIBBool(styles, "keyboard_lower_case", false)
+      showTextEditBox: not ZC.ViewUtils.getUIBBool(styles, "use_custom_text_input", true)
     }
 
-    m.inputStyle = zc.ViewUtils.makeUIBButtonStyle(styles, "custom_text_input", "textInput", invalid, true)
+    m.inputStyle = ZC.ViewUtils.makeUIBButtonStyle(styles, "custom_text_input", "textInput", invalid, true)
     m.inputStyle.visible = not m.keyboardStyle.showTextEditBox
-    m.minCharacters = zc.ViewUtils.getUIBInt(styles, "search_min_chars", 3)
-    m.searchQueryName = mc.getContentField(styles, "search_query_name", "q")
+    m.minCharacters = ZC.ViewUtils.getUIBInt(styles, "search_min_chars", 3)
+    m.searchQueryName = MC.getContentField(styles, "search_query_name", "q")
   end function
 
   private function getGridStyle(styles)
     if m.style <> invalid and m.style.rowList <> invalid
       style = m.style.rowList
       style.itemSize = style.rowItemSize
-      style.itemSpacing = zc.ViewUtils.makeUIBSize(styles, "grid_spacing", 44, 20)
+      style.itemSpacing = ZC.ViewUtils.makeUIBSize(styles, "grid_spacing", 44, 20)
     else
       style = {}
     end if
 
-    style.translation = zc.ViewUtils.makeUIBPosition(styles, "grid", 300, 500)
+    style.translation = ZC.ViewUtils.makeUIBPosition(styles, "grid", 300, 500)
 
     return style
   end function
@@ -153,7 +153,7 @@ class FullScreenSearchVM extends zuib.ComponentVM
       results = createObject("roSGNode", "ZPEntry")
     end if
 
-    mc.setOrAddNodeField(results, "target", m.rowTarget)
+    MC.setOrAddNodeField(results, "target", m.rowTarget)
 
     m.setField("results", results)
     m.setField("jumpToItem", 0)
@@ -181,8 +181,8 @@ class FullScreenSearchVM extends zuib.ComponentVM
       cellStyle = m.style.cell
       cellStyle.dataMap = m.style.dataMap
       cellStyle.delete("translation")
-      mc.setOrAddNodeField(content, "_style", cellStyle)
-      mc.setOrAddNodeField(content, "_styleId", m.style.id)
+      MC.setOrAddNodeField(content, "_style", cellStyle)
+      MC.setOrAddNodeField(content, "_styleId", m.style.id)
     end if
 
   end function

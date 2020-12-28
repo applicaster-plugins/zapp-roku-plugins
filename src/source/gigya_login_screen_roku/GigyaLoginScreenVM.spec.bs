@@ -1,5 +1,6 @@
-namespace Tests
-  '@TestSuite GigyaLoginScreenVMTests
+namespace Applicaster.Tests
+
+  '@TestSuite
   class GigyaLoginScreenVMTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
@@ -7,7 +8,7 @@ namespace Tests
         "User": { "isLoggedIn": false }
         "locale": "en"
       }
-      zc.TestUtils.setModelLocator(m.modelLocator)
+      ZC.TestUtils.setModelLocator(m.modelLocator)
 
       riversJson = {
         "id": "myAccount"
@@ -29,7 +30,7 @@ namespace Tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     '@Test
-    function constructor_tests()
+    function testConstructor_tests()
       m.assertEqual(m.vm.focusId, "loginButton")
       m.assertTrue(m.vm.isRefreshing)
       m.assertFalse(m.vm.isContentVisible)

@@ -1,7 +1,7 @@
 import "pkg:/source/UIBuilder/view/ScreenVM.bs"
 import "pkg:/source/lib/ViewUtils.bs"
 
-class WarningMessageScreenVM extends zuib.ScreenVM
+class WarningMessageScreenVM extends ZUIB.ScreenVM
 
   'styles
   public isContentGroupVisible = false
@@ -20,6 +20,7 @@ class WarningMessageScreenVM extends zuib.ScreenVM
   public buttonPosition = [655, 688]
   public logoPosition = [100, 33]
   public logoWidth = 350
+  public textWidth = 1920
   public logoHeight = 100
   public logoImageUrl = ""
 
@@ -50,10 +51,10 @@ class WarningMessageScreenVM extends zuib.ScreenVM
   public override function load() as boolean
     isShowingWarning = false
 
-    if m.originEntry <> invalid and mc.isString(m.conditionPath) and mc.isString(m.conditionValue) 
-      value = mc.getContentField(m.originEntry.json, m.conditionPath, invalid)
+    if m.originEntry <> invalid and MC.isString(m.conditionPath) and MC.isString(m.conditionValue) 
+      value = MC.getContentField(m.originEntry.json, m.conditionPath, invalid)
 
-      if mc.isString(value) and lcase(value) = lcase(m.conditionValue)
+      if MC.isString(value) and lcase(value) = lcase(m.conditionValue)
         m.logInfo("this content has a value that matches the locking condition")
         isShowingWarning = true
 
@@ -106,7 +107,7 @@ class WarningMessageScreenVM extends zuib.ScreenVM
     messageEntry = invalid
 
     if result.isOk and result.data.itemType <> "problemDetailsResponse"
-      messageEntry = mc.getChildAtDepth(result.data, m.warningEntryDepth)
+      messageEntry = MC.getChildAtDepth(result.data, m.warningEntryDepth)
     end if
 
     if messageEntry <> invalid
@@ -126,7 +127,7 @@ class WarningMessageScreenVM extends zuib.ScreenVM
     m.setField("isContentGroupVisible", true)
     m.setField("isShowingLoadingIndicator", false)
 
-    titleText = mc.getContentField(entry.json, "title", "")
+    titleText = MC.getContentField(entry.json, "title", "")
 
     if titleText = ""
       titleText = "This content cannot be displayed"
@@ -134,8 +135,8 @@ class WarningMessageScreenVM extends zuib.ScreenVM
 
     m.setField("titleText", titleText)
 
-    m.setField("descriptionText", mc.getContentField(entry.json, "description", ""))
-    m.setField("optional1Text", mc.getContentField(entry.json, "extensions.extra_text", ""))
+    m.setField("descriptionText", MC.getContentField(entry.json, "description", ""))
+    m.setField("optional1Text", MC.getContentField(entry.json, "extensions.extra_text", ""))
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -145,30 +146,30 @@ class WarningMessageScreenVM extends zuib.ScreenVM
   function processStyles(styles)
     m.logInfo("converting rivers json styles into a format our UI controls can consume")
 
-    m.titleStyle = zc.ViewUtils.makeUIBTextStyle(styles, "title")
+    m.titleStyle = ZC.ViewUtils.makeUIBTextStyle(styles, "title")
 
-    m.descriptionStyle = zc.ViewUtils.makeUIBTextStyle(styles, "description")
-    m.optional1Style = zc.ViewUtils.makeUIBTextStyle(styles, "optional_text1")
-    m.backgroundColor = zc.ViewUtils.transposeUIBColor(styles.background_color)
+    m.descriptionStyle = ZC.ViewUtils.makeUIBTextStyle(styles, "description")
+    m.optional1Style = ZC.ViewUtils.makeUIBTextStyle(styles, "optional_text1")
+    m.backgroundColor = ZC.ViewUtils.transposeUIBColor(styles.background_color)
     m.backgroundUrl = styles.background_url
     m.logoImageUrl = styles.logo_image_url
 
-    m.doneButtonStyle = zc.ViewUtils.makeUIBButtonStyle(styles, "done_button", "custom", styles.done_button_text)
+    m.doneButtonStyle = ZC.ViewUtils.makeUIBButtonStyle(styles, "done_button", "custom", styles.done_button_text)
 
     m.logoImageUrl = styles.logo_url
-    m.logoPosition = zc.ViewUtils.makeUIBPosition(styles, "logo", 100, 33)
-    m.textPosition = zc.ViewUtils.makeUIBPosition(styles, "text", 0, 310)
-    m.textWidth = zc.ViewUtils.getUIBInt(styles, "text_w", 1920)
-    m.buttonPosition = zc.ViewUtils.makeUIBPosition(styles, "button", 100, 33)
-    logoSize = zc.ViewUtils.makeUIBSize(styles, "logo", 350, 100)
+    m.logoPosition = ZC.ViewUtils.makeUIBPosition(styles, "logo", 100, 33)
+    m.textPosition = ZC.ViewUtils.makeUIBPosition(styles, "text", 0, 310)
+    m.textWidth = ZC.ViewUtils.getUIBInt(styles, "text_w", 1920)
+    m.buttonPosition = ZC.ViewUtils.makeUIBPosition(styles, "button", 100, 33)
+    logoSize = ZC.ViewUtils.makeUIBSize(styles, "logo", 350, 100)
     m.logoWidth = logoSize[0]
     m.logoHeight = logoSize[1]
 
-    m.warningType = mc.getContentField(styles, "warning_type", "entry")
-    m.warningEntryIndex = zc.ViewUtils.getUIBInt(styles, "entry_index", -1)
-    m.warningEntryDepth = zc.ViewUtils.getUIBInt(styles, "entry_depth", 1)
+    m.warningType = MC.getContentField(styles, "warning_type", "entry")
+    m.warningEntryIndex = ZC.ViewUtils.getUIBInt(styles, "entry_index", -1)
+    m.warningEntryDepth = ZC.ViewUtils.getUIBInt(styles, "entry_depth", 1)
 
-    m.warningType = mc.getContentField(styles, "warning_type", "entry")
+    m.warningType = MC.getContentField(styles, "warning_type", "entry")
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

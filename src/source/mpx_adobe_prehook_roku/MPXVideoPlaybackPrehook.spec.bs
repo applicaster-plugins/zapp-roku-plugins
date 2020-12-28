@@ -1,23 +1,23 @@
-namespace Tests
+namespace Applicaster.Tests
 
-  '@TestSuite MPXVideoPlaybackPrehookTests
+  '@TestSuite
   class MPXVideoPlaybackPrehookTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
-      zc.AppService.clearClassInstances()
+      ZC.AppService.clearClassInstances()
       m.modelLocator = CreateObject("roSGNode", "ModelLocator")
       m.modelLocator.plugins = [TestUtils.CreatePluginJson("mpx_video_playback_prehook_roku", {
           "matching_path": "itemType"
           "matching_value": "video" 
       })] 
 
-      zc.TestUtils.setModelLocator(m.modelLocator)
+      ZC.TestUtils.setModelLocator(m.modelLocator)
 
       m.plugin = new MPXVideoPlaybackPrehook()
     end function
 
     override function afterEach()
-      zc.TestUtils.unsetModelLocator()
+      ZC.TestUtils.unsetModelLocator()
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -25,16 +25,16 @@ namespace Tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     '@Test no plugin
-    function constructor_noPlugin()
+    function testConstructor_noPlugin()
       m.modelLocator.plugins = [] 
-      zc.AppService.clearClassInstances()
+      ZC.AppService.clearClassInstances()
 
       m.plugin = new MPXVideoPlaybackPrehook()
 
       m.assertNotInvalid(m.plugin.plugins)
     end function
 
-    function constructor_valid()
+    function testConstructor_valid()
       m.assertTrue(m.plugin.isValid)
       m.assertEqual(m.plugin.endpoint, "e/?domain=d")
     end function

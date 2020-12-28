@@ -1,7 +1,7 @@
 import "pkg:/source/UIBuilder/view/ScreenVM.bs"
 import "pkg:/source/lib/ViewUtils.bs"
 
-class GeneralTextScreenVM extends zuib.ScreenVM
+class GeneralTextScreenVM extends ZUIB.ScreenVM
 
   'styles
   public titleStyle = invalid
@@ -11,7 +11,7 @@ class GeneralTextScreenVM extends zuib.ScreenVM
   public descriptionText = ""
   public optional1Text = ""
   public buttonStyle = invalid
-
+  
   public backgroundColor = "#000000ff"
   public backgroundUrl = ""
   public textPosition = [0, 310]
@@ -20,6 +20,7 @@ class GeneralTextScreenVM extends zuib.ScreenVM
   public logoWidth = 350
   public logoHeight = 100
   public logoImageUrl = ""
+  public textWidth = 1920
 
   public function new(riversJson)
     super(riversJson, "WarningMessageScreenVM")
@@ -48,22 +49,22 @@ class GeneralTextScreenVM extends zuib.ScreenVM
   function processStyles(styles)
     m.logInfo("converting rivers json styles into a format our UI controls can consume")
 
-    m.titleStyle = zc.ViewUtils.makeUIBTextStyle(styles, "title")
+    m.titleStyle = ZC.ViewUtils.makeUIBTextStyle(styles, "title")
 
-    m.descriptionStyle = zc.ViewUtils.makeUIBTextStyle(styles, "description")
-    m.optional1Style = zc.ViewUtils.makeUIBTextStyle(styles, "optional_text1")
-    m.backgroundColor = zc.ViewUtils.transposeUIBColor(styles.background_color)
+    m.descriptionStyle = ZC.ViewUtils.makeUIBTextStyle(styles, "description")
+    m.optional1Style = ZC.ViewUtils.makeUIBTextStyle(styles, "optional_text1")
+    m.backgroundColor = ZC.ViewUtils.transposeUIBColor(styles.background_color)
     m.backgroundUrl = styles.background_url
     m.logoImageUrl = styles.logo_image_url
 
-    m.buttonStyle = zc.ViewUtils.makeUIBButtonStyle(styles, "done_button", "custom", styles.done_button_text)
+    m.buttonStyle = ZC.ViewUtils.makeUIBButtonStyle(styles, "done_button", "custom", styles.done_button_text)
 
     m.logoImageUrl = styles.logo_url
-    m.logoPosition = zc.ViewUtils.makeUIBPosition(styles, "logo", 100, 33)
-    m.textPosition = zc.ViewUtils.makeUIBPosition(styles, "text", 0, 310)
-    m.textWidth = zc.ViewUtils.getUIBInt(styles, "text_w", 1920)
-    m.buttonPosition = zc.ViewUtils.makeUIBPosition(styles, "button", 100, 33)
-    logoSize = zc.ViewUtils.makeUIBSize(styles, "logo", 350, 100)
+    m.logoPosition = ZC.ViewUtils.makeUIBPosition(styles, "logo", 100, 33)
+    m.textPosition = ZC.ViewUtils.makeUIBPosition(styles, "text", 0, 310)
+    m.textWidth = ZC.ViewUtils.getUIBInt(styles, "text_w", 1920)
+    m.buttonPosition = ZC.ViewUtils.makeUIBPosition(styles, "button", 100, 33)
+    logoSize = ZC.ViewUtils.makeUIBSize(styles, "logo", 350, 100)
     m.logoWidth = logoSize[0]
     m.logoHeight = logoSize[1]
 

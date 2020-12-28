@@ -8,7 +8,7 @@ import "pkg:/source/lib/URI.bs"
 '  * @module MPXVideoPlaybackPrehook
 '  * @description appends the content url from mpx, using adobe shortmedia token
 '  */
-class MPXVideoPlaybackPrehook extends zc.BaseClass
+class MPXVideoPlaybackPrehook extends ZC.BaseClass
 
   public isValid = false
   private matchingPath = ""
@@ -18,7 +18,7 @@ class MPXVideoPlaybackPrehook extends zc.BaseClass
 
   public function new()
     super("MPXVideoPlaybackPrehook")
-    m.plugins = m.getClassInstance("zc.PluginManager")
+    m.plugins = m.getClassInstance("ZC.PluginManager")
 
     plugin = m.plugins.getPluginById("mpx_video_playback_prehook_roku")
     m.isValid = plugin.isValid
@@ -32,14 +32,14 @@ class MPXVideoPlaybackPrehook extends zc.BaseClass
       m.matchingValue = ""
     end if
 
-    m.request = m.getClassInstance("RequestModule")
-    m.uri = m.getClassInstance("zc.URI")
+    m.request = m.getClassInstance("ZC.Request")
+    m.uri = m.getClassInstance("ZC.URI")
 
 
   end function
 
   public function execute()
-    item = mc.getContentField(m.getInstance("currentSelection"), "currentItem")
+    item = MC.getContentField(m.getInstance("currentSelection"), "currentItem")
 
     if item = invalid
       m.logError("no item - this plugin requires currentSelection.currentItem is populated")
@@ -63,8 +63,8 @@ class MPXVideoPlaybackPrehook extends zc.BaseClass
       return true
     end if
 
-    value = mc.getContentField(item.json, m.matchingPath, invalid)
-    if not mc.isString(value)
+    value = MC.getContentField(item.json, m.matchingPath, invalid)
+    if not MC.isString(value)
       value = formatJson(value)
     end if
     return value = m.matchingValue

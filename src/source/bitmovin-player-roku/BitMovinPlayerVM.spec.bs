@@ -1,6 +1,6 @@
-namespace Tests
+namespace Applicaster.Tests
 
-  '@TestSuite BitMovinPlayerVMTests
+  '@TestSuite
   class BitMovinPlayerVMTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
@@ -14,7 +14,7 @@ namespace Tests
 
       m.BitmovinFields = { "PLAYER_STATE": "playerState", "ERROR": "error", "WARNING": "warning", "SEEK": "seek", "SEEKED": "seeked", "TIME_SHIFT": "timeShift", "TIME_SHIFTED": "timeShifted", "CURRENT_TIME": "currentTime", "SOURCE_LOADED": "sourceLoaded", "SOURCE_UNLOADED": "sourceUnloaded", "PLAY": "play", "METADATA": "metadata", "AUDIO_CHANGED": "audioChanged", "MUTED": "muted", "UNMUTED": "unmuted", "DOWNLOAD_FINISHED": "downloadFinished" }
 
-      zc.TestUtils.setModelLocator(m.modelLocator)
+      ZC.TestUtils.setModelLocator(m.modelLocator)
 
       m.selection = createObject("roSGNode", "Selection")
 
@@ -37,7 +37,7 @@ namespace Tests
     end function
 
     override function afterEach()
-      zc.TestUtils.unsetModelLocator()
+      ZC.TestUtils.unsetModelLocator()
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -54,7 +54,7 @@ namespace Tests
     '@Params[{"license_key": "", "overrideVideoUrl": "" }]
     '@Params[{"overrideVideoUrl": "" }]
     '@Params[{"overrideVideoUrl": "#override" }]
-    function constructor_badConfiguredPlugin(generalJson)
+    function testConstructor_badConfiguredPlugin(generalJson)
       m.view.riversJson = { "general": generalJson }
       m.vm = new BitMovinPlayerVM(m.view)
 
@@ -66,7 +66,7 @@ namespace Tests
     end function
 
     '@Test valid plugin
-    function constructor_validPlugin()
+    function testConstructor_validPlugin()
       m.view.riversJson = { "general": {
           "license_key": "#key"
           "override_video_url": "#override"

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <component
     name='GeneralTextScreen'
-    extends='zuib_Screen'
+    extends='Screen'
     vmclass='GeneralTextScreenVM'>
 
   <interface></interface>

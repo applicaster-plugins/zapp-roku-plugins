@@ -6,14 +6,14 @@ import "pkg:/source/maestro/lib/Utils.bs"
 '  * @module GenericUrlTokenAppender
 '  * @description appends the spcified token to the url
 '  */
-class GenericUrlTokenAppender extends zc.BaseClass
+class GenericUrlTokenAppender extends ZC.BaseClass
 
   private providerId = ""
   private tokenKey = ""
 
   public function new()
     super("GenericUrlTokenAppender")
-    m.plugins = m.getClassInstance("zc.PluginManager")
+    m.plugins = m.getClassInstance("ZC.PluginManager")
 
     plugin = m.plugins.getPluginById("generic_url_token_appender")
 
@@ -31,7 +31,7 @@ class GenericUrlTokenAppender extends zc.BaseClass
   public function execute()
     currentSelection = m.getInstance("currentSelection")
 
-    url = mc.getContentField(currentSelection, "currentItem.url", "")
+    url = MC.getContentField(currentSelection, "currentItem.url", "")
     if url.trim() = ""
       m.logError("there is no current item, or no url set")
       return "error"

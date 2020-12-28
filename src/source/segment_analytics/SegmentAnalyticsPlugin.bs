@@ -3,7 +3,7 @@ import "pkg:/source/plugin-support/PluginManager.bs"
 import "./SegmentAnalyticsConnector.brs"
 import "pkg:/source/analytics/BaseAnalyticsPlugin.bs"
 
-class SegmentAnalyticsPlugin extends zc.Analytics.BaseAnalyticsPlugin
+class SegmentAnalyticsPlugin extends ZC.Analytics.BaseAnalyticsPlugin
 
   private writeKey = ""
   private isDebug = false

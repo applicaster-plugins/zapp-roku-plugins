@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <component
     name='RegisterScreen'
-    extends='zuib_Screen'
+    extends='Screen'
     vmclass='RegisterScreenVM'>
 
   <interface></interface>
@@ -108,43 +108,12 @@
       </Group>
     </Group>
 
-    <ZLayoutGroup
-        id='doneGroup'
-        horizAlignment='center'
-        vertAlignment='center'
-        visible='{{isDoneGroupVisible}}'
-        itemSpacings='[30]'>
-      <MLabel
-          id='doneTitleLabel'
-          style='{{=ViewUtils_UIBLabel("done_title")}}' />
-      <MLabel
-          id='doneMessageLabel'
-          style='{{=ViewUtils_UIBLabel("done_message")}}' />
-
-      <StylableButton
-          id='doneButton'
-          style='{{:processButtonStyle}}'
-          text='{{:riversJson.styles.done_button_text}}'
-          selected='{(onDoneButtonSelected(value))}'
-          width='610' />
-
-    </ZLayoutGroup>
-
     <LoadingIndicator
         id='loadingIndicator'
         width='1920'
         height='1080'
         translation='[0,0]'
         isActive='{{isLoading;fireOnSet}}'
-        backgroundVisible='false'
-        text='' />
-
-    <LoadingIndicator
-        id='refreshLoadingIndicator'
-        width='1920'
-        height='1080'
-        translation='[0,0]'
-        isActive='{{isRefreshing;fireOnSet}}'
         backgroundVisible='false'
         text='' />
   </children>

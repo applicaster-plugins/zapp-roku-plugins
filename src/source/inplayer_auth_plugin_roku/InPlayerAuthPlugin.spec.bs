@@ -1,6 +1,6 @@
-namespace Tests
+namespace Applicaster.Tests
 
-  '@TestSuite InPlayerAuthPluginTests
+  '@TestSuite
   class InPlayerAuthPluginTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
@@ -22,7 +22,7 @@ namespace Tests
         account: { "id": "account_id" }
       }
 
-      plugin = new zc.BasePlugin(pluginConfiguration)
+      plugin = new ZC.BasePlugin(pluginConfiguration)
 
       m.plugin = new InPlayerAuthPlugin(plugin)
     end function
@@ -37,7 +37,7 @@ namespace Tests
     '@Test
     '@Params["cid1", "prod", "https://services.inplayer.com"]
     '@Params["cid2", "dev", "https://staging-v2.inplayer.com"]
-    function constructor_test(clientId, env, expectedApiUrl)
+    function testConstructor_test(clientId, env, expectedApiUrl)
       pluginConfiguration = {
         "identifier": "client_id",
         "configuration_json": { "base_url": "host/" }
@@ -51,7 +51,7 @@ namespace Tests
         }
       }
 
-      plugin = new zc.BasePlugin(pluginConfiguration)
+      plugin = new ZC.BasePlugin(pluginConfiguration)
 
       m.plugin = new InPlayerAuthPlugin(plugin)
 

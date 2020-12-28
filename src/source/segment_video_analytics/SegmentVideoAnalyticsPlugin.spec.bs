@@ -1,6 +1,6 @@
-namespace Tests
+namespace Applicaster.Tests
 
-  '@TestSuite SegmenetVideoAnalyticsPluginTests
+  '@TestSuite
   class SegmenetVideoAnalyticsPluginTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
@@ -14,13 +14,13 @@ namespace Tests
         "analyticsManager": m.analyticsManager
       }
 
-      zc.TestUtils.setModelLocator(m.modelLocator)
+      ZC.TestUtils.setModelLocator(m.modelLocator)
 
       m.plugin = new SegmentVideoAnalyticsPlugin(json)
     end function
 
     override function afterEach()
-      zc.TestUtils.unsetModelLocator()
+      ZC.TestUtils.unsetModelLocator()
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -28,7 +28,7 @@ namespace Tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     '@Test
-    function constructor_tests()
+    function testConstructor_tests()
       m.assertEqual(m.plugin.analyticsManager, m.analyticsManager)
       m.assertEqual(m.plugin.deviceInfo, m.constants.deviceInfo)
       m.assertEqual(m.plugin.videoHeight, "1080")

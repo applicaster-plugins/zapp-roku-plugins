@@ -3,7 +3,7 @@ import "pkg:/source/lib/Request.bs"
 import "pkg:/source/lib/URI.bs" 
 import "pkg:/source/authorization/JWTUtil.bs"
 
-class AdobePrimetimeAuthPlugin extends zc.Auth.BaseAuthPlugin
+class AdobePrimetimeAuthPlugin extends ZC.Auth.BaseAuthPlugin
 
   private request = invalid
   private JWTUtil = invalid
@@ -18,9 +18,9 @@ class AdobePrimetimeAuthPlugin extends zc.Auth.BaseAuthPlugin
   public function new(plugin)
     super("AdobePrimetime", plugin) 
     m.isTokenUsableWithDSP = true
-    m.request = m.getClassInstance("RequestModule")
-    m.JWTUtil = m.getClassInstance("JWTUtilModule")
-    m.uri = m.getClassInstance("zc.URI")
+    m.request = m.getClassInstance("ZC.Request")
+    m.JWTUtil = m.getClassInstance("ZC.JWTUtil")
+    m.uri = m.getClassInstance("ZC.URI")
     m.resourceID = plugin.getStringValue("resourceID", "")
     m.requestorID = plugin.getStringValue("requestorID", "")
     m.secret = plugin.getStringValue("secret", "")
@@ -36,7 +36,7 @@ class AdobePrimetimeAuthPlugin extends zc.Auth.BaseAuthPlugin
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public override function _getAccountInfo()
-    userId = mc.getContentField(m.authData, "user.userId", "not known yet")
+    userId = MC.getContentField(m.authData, "user.userId", "not known yet")
 
     return {
       id: userId
@@ -182,7 +182,7 @@ class AdobePrimetimeAuthPlugin extends zc.Auth.BaseAuthPlugin
         errorCode = 0
       end if
 
-      expireTime = mc.strToLong(result.expires) / 1000
+      expireTime = MC.strToLong(result.expires) / 1000
       secondsTillExpire = m.date.getSecondsUntil(expireTime)
 
       if m.pollResult <> invalid

@@ -3,13 +3,14 @@ import "pkg:/source/lib/ViewUtils.bs"
 import "pkg:/source/plugin-support/BasePlugin.bs"
 import "pkg:/source/plugin-support/PluginManager.bs"
 
-class RegcodeLoginScreenVM extends zuib.ScreenVM
+class RegcodeLoginScreenVM extends ZUIB.ScreenVM
 
   'styles
   public isContentGroupVisible = false
   public codeText = ""
   public isShowingLoadingIndicator = true
   public pollTimerControl = "stop"
+  public isRefreshing = false
 
   private authTask = invalid
   private analyticsManager = invalid 
@@ -30,7 +31,7 @@ class RegcodeLoginScreenVM extends zuib.ScreenVM
       m.logError(titleText)
     end if
 
-    if not mc.getContentField(riversJson, "styles.use_refresh_button", true)
+    if not MC.getContentField(riversJson, "styles.use_refresh_button", true)
       m.refreshButtonOpacity = 0
     end if
   end function
@@ -70,7 +71,7 @@ class RegcodeLoginScreenVM extends zuib.ScreenVM
   private function shouldDisplayWithContent(currentSelection)
 
     entitlements = m.getInstance("entitlements")
-    return entitlements@.isLocked(mc.getContentField(currentSelection, "currentItem"))
+    return entitlements@.isLocked(MC.getContentField(currentSelection, "currentItem"))
   end function 
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

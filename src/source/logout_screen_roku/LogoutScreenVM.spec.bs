@@ -1,6 +1,6 @@
-namespace Tests
+namespace Applicaster.Tests
 
-  '@TestSuite LogoutScreenVmTests
+  '@TestSuite
   class LogoutScreenVmTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
@@ -8,7 +8,7 @@ namespace Tests
         "User": { "isLoggedIn": false }
         "locale": "en"
       }
-      zc.TestUtils.setModelLocator(m.modelLocator)
+      ZC.TestUtils.setModelLocator(m.modelLocator)
 
       m.riversJson = {
         "id": "logoutscreen"
@@ -37,7 +37,7 @@ namespace Tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     '@Test constructor
-    function constructor_tests()
+    function testConstructor_tests()
       m.assertEqual(m.vm.riversJson, m.riversJson)
       m.assertEqual(m.vm.textPosition, [20, 600])
       m.assertEqual(m.vm.textWidth, 300)

@@ -1,6 +1,6 @@
-namespace Tests
+namespace Applicaster.Tests
 
-  '@TestSuite InplayerEntitlementsTests
+  '@TestSuite
   class InplayerEntitlementsTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
@@ -9,11 +9,11 @@ namespace Tests
       m.modelLocator = CreateObject("roSGNode", "ModelLocator")
       m.modelLocator.constants = { id: "constants" }
       m.modelLocator.plugins = []
-      zc.TestUtils.setModelLocator(m.modelLocator)
+      ZC.TestUtils.setModelLocator(m.modelLocator)
 
       'dependencies for testing plugin creation
 
-      plugin = new zc.BasePlugin(PPMT.CreatePluginJson("1", {
+      plugin = new ZC.BasePlugin(PPMT.CreatePluginJson("1", {
         "client_id": "id1234" 
         "environment": "dev" 
       }))
@@ -23,8 +23,8 @@ namespace Tests
     end function
 
     override function afterEach()
-      zc.TestUtils.unsetModelLocator()
-      zc.AppService.clearClassInstances()
+      ZC.TestUtils.unsetModelLocator()
+      ZC.AppService.clearClassInstances()
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -67,8 +67,8 @@ namespace Tests
     '@Params["dev", "b123", "SVOD", "ICPOnly", true, "https://staging-v2.inplayer.com"]
     '@Params["dev", "c1234", "SVOD", "authOrICP", true, "https://staging-v2.inplayer.com"]
     '@Params["dev", "d1234", "SVOD", "authAndICP", true, "https://staging-v2.inplayer.com"]
-    function constructor_test(env, id, vodModel, entitlementsPolicy, expectedIsUsingRokuStore, expectedUrl)
-      plugin = new zc.BasePlugin(PPMT.CreatePluginJson("1", {
+    function testConstructor_test(env, id, vodModel, entitlementsPolicy, expectedIsUsingRokuStore, expectedUrl)
+      plugin = new ZC.BasePlugin(PPMT.CreatePluginJson("1", {
         "client_id": id
         "environment": env
         "vod_model": vodModel
@@ -609,7 +609,7 @@ namespace Tests
     end function
 
     function make_live_purchase(code = "73228_17870")
-      channelStore = new zc.RokuChannelStoreModule(false)
+      channelStore = new ZC.RokuChannelStoreModule(false)
       rcs = channelStore.getChannelStore()
       m.logInfo("MAKING ROKU PURCHASE", code)
       result = channelStore.doRokuPurchase(invalid, code, 1)
@@ -618,7 +618,7 @@ namespace Tests
     end function
 
     function getProducts()
-      channelStore = new zc.RokuChannelStoreModule(false)
+      channelStore = new ZC.RokuChannelStoreModule(false)
       rcs = channelStore.getChannelStore()
       result = channelStore.getRokuCatalog(rcs)
       m.logInfo("products", result)

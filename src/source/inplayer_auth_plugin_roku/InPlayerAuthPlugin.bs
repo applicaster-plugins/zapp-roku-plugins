@@ -4,7 +4,7 @@ import "pkg:/source/lib/URI.bs"
 import "pkg:/source/lib/APIUtils.bs"
 import "pkg:/source/authorization/BaseAuthPlugin.bs" 
 
-class InPlayerAuthPlugin extends zc.Auth.BaseAuthPlugin
+class InPlayerAuthPlugin extends ZC.Auth.BaseAuthPlugin
 
   public apiUrl = "" ' note this is used by APIMixin
 
@@ -114,7 +114,7 @@ class InPlayerAuthPlugin extends zc.Auth.BaseAuthPlugin
 
     result = m.executeAPIRequest("GET", "accounts/logout", invalid, true, m.authData.accessToken)
 
-    if mc.getContentField(result, "code", -1) = 200
+    if MC.getContentField(result, "code", -1) = 200
       return m.createAuthData()
     else
       return m.createErrorFromResult(result)
@@ -129,7 +129,7 @@ class InPlayerAuthPlugin extends zc.Auth.BaseAuthPlugin
 
     result = m.executeAPIRequest("FORMPOST", "/accounts/forgot-password", params)
 
-    if mc.getContentField(result, "code", -1) = 200
+    if MC.getContentField(result, "code", -1) = 200
       return m.createAuthData("valid")
     else
       return m.createErrorFromResult(result)
@@ -149,10 +149,10 @@ class InPlayerAuthPlugin extends zc.Auth.BaseAuthPlugin
     if result.errors <> invalid and result.errors.count() > 0
       message = result.errors[result.errors.keys()[0]] 
     else
-      message = mc.getContentField(result, "message", "Unknown error")
+      message = MC.getContentField(result, "message", "Unknown error")
     end if
 
-    code = mc.getContentField(result, "code", -1)
+    code = MC.getContentField(result, "code", -1)
     return m.createErrorResult(message, code, result)
   end function
 

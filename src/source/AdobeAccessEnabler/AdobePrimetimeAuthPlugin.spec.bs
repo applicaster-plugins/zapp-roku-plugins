@@ -1,6 +1,6 @@
-namespace Tests
+namespace Applicaster.Tests
 
-  '@TestSuite APMATTests
+  '@TestSuite
   class APMATTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
@@ -19,15 +19,15 @@ namespace Tests
         "constants": { "applicasterDeviceId": "did" }
       }
 
-      zc.TestUtils.setModelLocator(modelLocator)
+      ZC.TestUtils.setModelLocator(modelLocator)
 
-      plugin = new zc.BasePlugin(pluginConfiguration)
+      plugin = new ZC.BasePlugin(pluginConfiguration)
 
       m.plugin = new AdobePrimetimeAuthPlugin(plugin)
     end function
 
     override function afterEach()
-      zc.TestUtils.unsetModelLocator()
+      ZC.TestUtils.unsetModelLocator()
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -35,10 +35,10 @@ namespace Tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     '@Test 
-    function constructor_tests()
+    function testConstructor_tests()
       m.assertEqual(m.plugin.request.__className, "RequestModule")
-      m.assertEqual(m.plugin.JWTUtil.__className, "JWTUtilModule")
-      m.assertEqual(m.plugin.uri.__className, "zc.URI")
+      m.assertEqual(m.plugin.JWTUtil.__className, "ZC.JWTUtil")
+      m.assertEqual(m.plugin.uri.__className, "ZC.URI")
       m.assertEqual(m.plugin.requestorID, "rqd")
       m.assertEqual(m.plugin.resourceID, "rod")
       m.assertEqual(m.plugin.secret, "sec")
@@ -280,7 +280,7 @@ namespace Tests
         "expires": "1589402085000"
       }
       m.expectOnce(m.plugin.request, "getJsonSync", [url, expectedHeaders], response)
-      m.expectOnce(m.plugin.date, "getSecondsUntil", [mc.strToLong("1589402085000") / 1000], 9999)
+      m.expectOnce(m.plugin.date, "getSecondsUntil", [MC.strToLong("1589402085000") / 1000], 9999)
       m.plugin.pollResult = { "id": "pollResult" }
 
       result = { "id": "result" }

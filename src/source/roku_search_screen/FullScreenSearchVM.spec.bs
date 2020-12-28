@@ -1,15 +1,14 @@
-namespace Tests
+namespace Applicaster.Tests
 
-  '@TestSuite FullScreenSearchVMTests 
+  '@TestSuite
   class FullScreenSearchVMTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
-
       m.modelLocator = {
         "User": { "isLoggedIn": false }
         "locale": "en"
       }
-      zc.TestUtils.setModelLocator(m.modelLocator)
+      ZC.TestUtils.setModelLocator(m.modelLocator)
 
       m.riversJson = {
         data: { source: "#myLink" }
@@ -38,7 +37,7 @@ namespace Tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     '@Test constructor
-    function constructor_tests()
+    function testConstructor_tests()
       m.assertEqual(m.vm.focusId, "keyboard")
 
     end function
