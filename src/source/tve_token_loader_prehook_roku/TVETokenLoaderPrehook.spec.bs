@@ -1,7 +1,7 @@
 namespace Applicaster.Tests
 
   '@TestSuite
-  class TVETokenLoaderPrehook extends Rooibos.BaseTestSuite
+  class TVETokenLoaderPrehookTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
       ZC.AppService.clearClassInstances()

@@ -2,7 +2,7 @@ import "pkg:/source/UIBuilder/view/ScreenVM.bs"
 import "pkg:/source/lib/ViewUtils.bs"
 import "pkg:/source/mixin/KeyboardDialogMixin.bs"
 
-class AWSLoginScreenVM extends ZUIB.ScreenVM
+class AWSLoginScreenVM extends Zapp.UIB.ScreenVM
 
   'styles
   public titleStyle = invalid

@@ -1,7 +1,7 @@
 import "pkg:/source/UIBuilder/view/ScreenVM.bs"
 import "pkg:/source/lib/ViewUtils.bs"
 
-class DeeplinkingControllerVM extends ZUIB.ScreenVM
+class DeeplinkingControllerVM extends Zapp.UIB.ScreenVM
 
   public isLoadingIndicatorVisible = false
   public currentScreen = invalid

@@ -8,7 +8,7 @@ import "pkg:/source/lib/URI.bs"
 '  * @module TVETokenLoaderPrehookTests
 '  * @description retrieves the specified tokens for TVE account. Requires that Adobe Primetime auth plugin is used, and is logged in via to this prehook running.
 '  */
-class TVETokenLoaderPrehookTests extends ZC.BaseClass
+class TVETokenLoaderPrehook extends ZC.BaseClass
 
   private isValid = false
   private matchingPath = ""
