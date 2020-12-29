@@ -1,7 +1,7 @@
 import "pkg:/source/lib/BaseClass.bs"
 import "pkg:/source/video/analytics/BaseVideoAnalyticsPlugin.bs"
 
-class YouboraVideoAnalytics extends ZC.Video.BaseVideoAnalyticsPlugin
+class YouboraVideoAnalytics extends Video.BaseVideoAnalyticsPlugin
   ' Example Config:
   ' {
   ' "accountCode" : "nicetest", 'This is the only mandatory param

@@ -14,7 +14,7 @@ namespace Applicaster.Tests
       m.modelLocator.constants = { "googleAnalyticsClientId": "#c" }
 
       ZC.TestUtils.setModelLocator(m.modelLocator)
-      m.pluginData = new ZC.BasePlugin({ "configuration_json": config, "identifier": "google_analytics_roku" })
+      m.pluginData = new Zapp.BasePlugin({ "configuration_json": config, "identifier": "google_analytics_roku" })
       m.plugin = new GoogleAnalyticsPlugin(m.pluginData)
     end function
 
@@ -106,7 +106,7 @@ namespace Applicaster.Tests
       m.modelLocator.constants = {}
 
       ZC.TestUtils.setModelLocator(m.modelLocator)
-      m.pluginData = new ZC.BasePlugin({ "configuration_json": config, "identifier": "google_analytics_roku" })
+      m.pluginData = new Zapp.BasePlugin({ "configuration_json": config, "identifier": "google_analytics_roku" })
       m.plugin = new GoogleAnalyticsPlugin(m.pluginData)
 
       m.assertEqual(m.plugin.isTrakingUserIdEnabled, result)

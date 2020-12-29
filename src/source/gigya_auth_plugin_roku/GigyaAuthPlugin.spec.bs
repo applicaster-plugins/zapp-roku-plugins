@@ -15,7 +15,7 @@ namespace Applicaster.Tests
 
       m.request = { "id": "request" }
 
-      plugin = new ZC.BasePlugin(pluginConfiguration)
+      plugin = new Zapp.BasePlugin(pluginConfiguration)
 
       m.plugin = new GigyaAuthPlugin(plugin)
       m.plugin.request = m.request
@@ -36,7 +36,7 @@ namespace Applicaster.Tests
         "configuration_json": { "base_url": "host/" }
       }
 
-      plugin = new ZC.BasePlugin(pluginConfiguration)
+      plugin = new Zapp.BasePlugin(pluginConfiguration)
 
       m.plugin = new GigyaAuthPlugin(plugin)
 

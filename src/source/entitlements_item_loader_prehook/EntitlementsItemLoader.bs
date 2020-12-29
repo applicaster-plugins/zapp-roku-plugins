@@ -7,7 +7,7 @@ import "pkg:/source/lib/Request.bs"
 '  * @module EntitlementsItemLoader
 '  * @description retrieves the content url from the entitlements manager
 '  */
-class EntitlementsItemLoader extends ZC.BaseClass
+class EntitlementsItemLoader extends Zapp.BaseClass
 
   public isValid = false
   private matchingPath = ""
@@ -15,7 +15,7 @@ class EntitlementsItemLoader extends ZC.BaseClass
 
   public function new()
     super("EntitlementsItemLoader")
-    m.plugins = m.getClassInstance("ZC.PluginManager")
+    m.plugins = m.getClassInstance("Zapp.PluginManager")
 
     plugin = m.plugins.getPluginById("entitlements_item_loader_prehook")
     m.isValid = plugin.isValid
@@ -44,8 +44,8 @@ class EntitlementsItemLoader extends ZC.BaseClass
       return "success"
     end if
 
-    entitlements = m.getInstance("entitlements")
-    if not entitlements@.isLocked(item)
+    entitlementsNode = m.getInstance("entitlements")
+    if not entitlementsNode@.isLocked(item)
       m.logInfo("item is already unlocked")
       return "success"
     end if

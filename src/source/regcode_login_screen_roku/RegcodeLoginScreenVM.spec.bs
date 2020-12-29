@@ -89,9 +89,9 @@ namespace Applicaster.Tests
     function shouldDisplayWithContent(expected)
       currentItem = { "id": "currentItem" }
       currentSelection = { "id": "currentSelection", "currentItem": currentItem }
-      entitlements = { "id": "entitlements" }
-      m.expectOnce(m.vm, "getInstance", ["entitlements"], entitlements)
-      m.expectOnce(entitlements, "callFunc", ["isLocked", currentItem], expected)
+      entitlementsNode = { "id": "entitlements" }
+      m.expectOnce(m.vm, "getInstance", ["entitlements"], entitlementsNode)
+      m.expectOnce(entitlementsNode, "callFunc", ["isLocked", currentItem], expected)
 
       m.assertEqual(m.vm.shouldDisplayWithContent(currentSelection), expected)
     end function

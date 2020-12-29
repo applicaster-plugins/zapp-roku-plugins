@@ -41,8 +41,8 @@ namespace Applicaster.Tests
 
     '@Test no loader plugin
     function testConstructor_prehook_noPlugins()
-      plugins = m.plugin.getClassInstance("ZC.PluginManager")
-      loaderPlugin = new ZC.BasePlugin(invalid)
+      plugins = m.plugin.getClassInstance("Zapp.PluginManager")
+      loaderPlugin = new Zapp.BasePlugin(invalid)
       adobePlugin = m.plugin.plugins.getPluginById("AdobeAccessEnabler")
 
       m.expectOnce(plugins, "getPluginById", ["tve_token_loader_prehook_roku"], loaderPlugin)
@@ -54,8 +54,8 @@ namespace Applicaster.Tests
 
     '@Test no adobe config
     function testConstructor_prehook_no_adobe_config()
-      plugins = m.plugin.getClassInstance("ZC.PluginManager")
-      loaderPlugin = new ZC.BasePlugin(m.pluginJson)
+      plugins = m.plugin.getClassInstance("Zapp.PluginManager")
+      loaderPlugin = new Zapp.BasePlugin(m.pluginJson)
       adobePlugin = invalid
 
       m.expectOnce(plugins, "getPluginById", ["tve_token_loader_prehook_roku"], loaderPlugin)

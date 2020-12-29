@@ -2,7 +2,7 @@ import "pkg:/source/entitlements/BaseEntitlementsPlugin.bs"
 import "pkg:/source/lib/AdminAPI.bs"
 import "pkg:/source/lib/APIUtils.bs"
 
-class InPlayerEntitlementsPlugin extends ZC.Entitlements.BaseEntitlementsPlugin
+class InPlayerEntitlementsPlugin extends Zapp.Entitlements.BaseEntitlementsPlugin
 
   private entitlementsPolicy = ""
   private vodModel = ""
@@ -110,24 +110,24 @@ class InPlayerEntitlementsPlugin extends ZC.Entitlements.BaseEntitlementsPlugin
   end function
 
   public override function getEntitlements() as dynamic
-    entitlements = m.getInstance("entitlements")
+  entitlementsNode = m.getInstance("entitlements")
 
-    if entitlements = invalid or entitlements.subType() <> "SimpleEntitlements"
+    if entitlementsNode = invalid or entitlementsNode.subType() <> "SimpleEntitlements"
       m.logInfo("the current IOC registred entitlements object is incompatible with this plugin, creating a new entitlements object")
-      entitlements = m.createInstance("SimpleEntitlements", invalid, "entitlements")
-      m.setInstance("entitlements", entitlements)
+      entitlementsNode = m.createInstance("SimpleEntitlements", invalid, "entitlements")
+      m.setInstance("entitlements", entitlementsNode)
     end if
 
-    entitlements.availableProducts = m.availableProducts
-    entitlements.authenticationData = m.authenticationData
-    entitlements.policy = m.entitlementsPolicy
-    entitlements.vodModel = m.vodModel
-    entitlements.requiresLoadToAscertainEntitlements = true
-    entitlements@.configure()
+    entitlementsNode.availableProducts = m.availableProducts
+    entitlementsNode.authenticationData = m.authenticationData
+    entitlementsNode.policy = m.entitlementsPolicy
+    entitlementsNode.vodModel = m.vodModel
+    entitlementsNode.requiresLoadToAscertainEntitlements = true
+    entitlementsNode@.configure()
     if m.soonestExpiration <> -1
-      entitlements.expiryTimeInSeconds = m.soonestExpiration
+      entitlementsNode.expiryTimeInSeconds = m.soonestExpiration
     end if
-    return entitlements
+    return entitlementsNode
   end function
 
   public override function loadItem(item) as boolean

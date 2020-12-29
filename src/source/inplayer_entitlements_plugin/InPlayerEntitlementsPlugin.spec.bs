@@ -13,7 +13,7 @@ namespace Applicaster.Tests
 
       'dependencies for testing plugin creation
 
-      plugin = new ZC.BasePlugin(PPMT.CreatePluginJson("1", {
+      plugin = new Zapp.BasePlugin(PPMT.CreatePluginJson("1", {
         "client_id": "id1234" 
         "environment": "dev" 
       }))
@@ -68,7 +68,7 @@ namespace Applicaster.Tests
     '@Params["dev", "c1234", "SVOD", "authOrICP", true, "https://staging-v2.inplayer.com"]
     '@Params["dev", "d1234", "SVOD", "authAndICP", true, "https://staging-v2.inplayer.com"]
     function testConstructor_test(env, id, vodModel, entitlementsPolicy, expectedIsUsingRokuStore, expectedUrl)
-      plugin = new ZC.BasePlugin(PPMT.CreatePluginJson("1", {
+      plugin = new Zapp.BasePlugin(PPMT.CreatePluginJson("1", {
         "client_id": id
         "environment": env
         "vod_model": vodModel
@@ -363,16 +363,16 @@ namespace Applicaster.Tests
       m.plugin.vodModel = vodModel
       m.plugin.policy = policy
 
-      entitlements = { "id": "entitlements" }
-      m.expectOnce(m.plugin, "getInstance", ["entitlements"], entitlements)
-      m.expectOnce(entitlements, "subType", [], "SimpleEntitlements")
-      m.expectOnce(entitlements, "callFunc", ["configure"])
+      entitlementsNode = { "id": "entitlements" }
+      m.expectOnce(m.plugin, "getInstance", ["entitlements"], entitlementsNode)
+      m.expectOnce(entitlementsNode, "subType", [], "SimpleEntitlements")
+      m.expectOnce(entitlementsNode, "callFunc", ["configure"])
 
       m.expectNone(m.plugin, "setInstance")
 
       result = m.plugin.getEntitlements()
 
-      m.assertEqual(result, entitlements)
+      m.assertEqual(result, entitlementsNode)
       m.assertTrue(result.requiresLoadToAscertainEntitlements)
       m.assertEqual(result.authenticationData, m.plugin.authenticationData)
       m.assertEqual(result.availableProducts, m.plugin.availableProducts)
@@ -390,14 +390,14 @@ namespace Applicaster.Tests
       oldEntitlements = { "id": "oldentitlements" }
       m.expectOnce(m.plugin, "getInstance", ["entitlements"], oldEntitlements)
       m.expectOnce(oldEntitlements, "subType", [], subType)
-      entitlements = { "id": "entitlements" }
-      m.expectOnce(m.plugin, "createInstance", ["SimpleEntitlements", invalid, "entitlements"], entitlements)
-      m.expectOnce(entitlements, "callFunc", ["configure"])
-      m.expectOnce(m.plugin, "setInstance", ["entitlements", entitlements])
+      entitlementsNode = { "id": "entitlements" }
+      m.expectOnce(m.plugin, "createInstance", ["SimpleEntitlements", invalid, "entitlements"], entitlementsNode)
+      m.expectOnce(entitlementsNode, "callFunc", ["configure"])
+      m.expectOnce(m.plugin, "setInstance", ["entitlements", entitlementsNode])
 
       result = m.plugin.getEntitlements()
 
-      m.assertEqual(result, entitlements)
+      m.assertEqual(result, entitlementsNode)
       m.assertTrue(result.requiresLoadToAscertainEntitlements)
       m.assertEqual(result.authenticationData, m.plugin.authenticationData)
       m.assertEqual(result.availableProducts, m.plugin.availableProducts)
@@ -413,14 +413,14 @@ namespace Applicaster.Tests
       m.plugin.policy = policy
 
       m.expectOnce(m.plugin, "getInstance", ["entitlements"], invalid)
-      entitlements = { "id": "entitlements" }
-      m.expectOnce(m.plugin, "createInstance", ["SimpleEntitlements", invalid, "entitlements"], entitlements)
-      m.expectOnce(entitlements, "callFunc", ["configure"])
-      m.expectOnce(m.plugin, "setInstance", ["entitlements", entitlements])
+      entitlementsNode = { "id": "entitlements" }
+      m.expectOnce(m.plugin, "createInstance", ["SimpleEntitlements", invalid, "entitlements"], entitlementsNode)
+      m.expectOnce(entitlementsNode, "callFunc", ["configure"])
+      m.expectOnce(m.plugin, "setInstance", ["entitlements", entitlementsNode])
 
       result = m.plugin.getEntitlements()
 
-      m.assertEqual(result, entitlements)
+      m.assertEqual(result, entitlementsNode)
       m.assertTrue(result.requiresLoadToAscertainEntitlements)
       m.assertEqual(result.authenticationData, m.plugin.authenticationData)
       m.assertEqual(result.availableProducts, m.plugin.availableProducts)
@@ -609,7 +609,7 @@ namespace Applicaster.Tests
     end function
 
     function make_live_purchase(code = "73228_17870")
-      channelStore = new ZC.RokuChannelStoreModule(false)
+      channelStore = new Zapp.RokuChannelStoreModule(false)
       rcs = channelStore.getChannelStore()
       m.logInfo("MAKING ROKU PURCHASE", code)
       result = channelStore.doRokuPurchase(invalid, code, 1)
@@ -618,7 +618,7 @@ namespace Applicaster.Tests
     end function
 
     function getProducts()
-      channelStore = new ZC.RokuChannelStoreModule(false)
+      channelStore = new Zapp.RokuChannelStoreModule(false)
       rcs = channelStore.getChannelStore()
       result = channelStore.getRokuCatalog(rcs)
       m.logInfo("products", result)

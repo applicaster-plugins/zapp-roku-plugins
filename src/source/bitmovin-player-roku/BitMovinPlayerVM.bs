@@ -1,7 +1,7 @@
 import "pkg:/source/zapp/BaseZappVM.bs"
 import "pkg:/source/plugin-support/PluginManager.bs"
 
-class BitMovinPlayerVM extends ZC.BaseZappVM
+class BitMovinPlayerVM extends Zapp.BaseZappVM
 
   private view = invalid
   private themeColor = "#ffffff"

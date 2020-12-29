@@ -12,7 +12,7 @@ namespace Applicaster.Tests
         "task_name": "Node"
       }
 
-      m.pluginData = new ZC.BasePlugin({ "configuration_json": m.config, "identifier": "youbora" })
+      m.pluginData = new Zapp.BasePlugin({ "configuration_json": m.config, "identifier": "youbora" })
 
       m.plugin = new YouboraVideoAnalytics(m.pluginData)
     end function

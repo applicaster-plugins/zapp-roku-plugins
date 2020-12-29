@@ -88,12 +88,12 @@ namespace Applicaster.Tests
       m.expectOnce(m.loader, "getInstance", ["currentSelection"], currentSelection)
       m.expectOnce(m.loader, "isItemMatch", [item], true)
 
-      entitlements = { "id": "entitlements" }
-      m.expectOnce(m.loader, "getInstance", ["entitlements"], entitlements)
-      m.expectOnce(entitlements, "callFunc", ["isLocked", item], true)
+      entitlementsNode = { "id": "entitlements" }
+      m.expectOnce(m.loader, "getInstance", ["entitlements"], entitlementsNode)
+      m.expectOnce(entitlementsNode, "callFunc", ["isLocked", item], true)
 
       manager = { "id": "manager" }
-      m.expectOnce(m.loader, "getClassInstance", ["ZC.Entitlements.EntitlementsManager"], manager)
+      m.expectOnce(m.loader, "getClassInstance", ["Entitlements.EntitlementsManager"], manager)
       m.expectOnce(manager, "loadItem", [item], response)
 
       m.assertEqual(m.loader.execute(), expectedResult)
@@ -110,9 +110,9 @@ namespace Applicaster.Tests
       m.expectOnce(m.loader, "getInstance", ["currentSelection"], currentSelection)
       m.expectOnce(m.loader, "isItemMatch", [item], true)
 
-      entitlements = { "id": "entitlements" }
-      m.expectOnce(m.loader, "getInstance", ["entitlements"], entitlements)
-      m.expectOnce(entitlements, "callFunc", ["isLocked", item], false)
+      entitlementsNode = { "id": "entitlements" }
+      m.expectOnce(m.loader, "getInstance", ["entitlements"], entitlementsNode)
+      m.expectOnce(entitlementsNode, "callFunc", ["isLocked", item], false)
 
       m.expectNone(m.loader, "getClassInstance")
 

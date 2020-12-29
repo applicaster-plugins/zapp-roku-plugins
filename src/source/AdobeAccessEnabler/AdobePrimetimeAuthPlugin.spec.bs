@@ -21,7 +21,7 @@ namespace Applicaster.Tests
 
       ZC.TestUtils.setModelLocator(modelLocator)
 
-      plugin = new ZC.BasePlugin(pluginConfiguration)
+      plugin = new Zapp.BasePlugin(pluginConfiguration)
 
       m.plugin = new AdobePrimetimeAuthPlugin(plugin)
     end function

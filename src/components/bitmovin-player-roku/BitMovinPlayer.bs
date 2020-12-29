@@ -21,7 +21,7 @@ end function
 function createVM()
   m.logMethod("createVM")
 
-  m.vm = ZC.VIdeo.BitMovinPlayerVM(m.top)
+  m.vm = Video.BitMovinPlayerVM(m.top)
   m.vm.initialize()
 
   MVMM.initializeBindings(true)

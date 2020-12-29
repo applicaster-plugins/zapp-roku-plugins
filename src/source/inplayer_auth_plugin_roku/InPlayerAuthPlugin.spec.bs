@@ -22,7 +22,7 @@ namespace Applicaster.Tests
         account: { "id": "account_id" }
       }
 
-      plugin = new ZC.BasePlugin(pluginConfiguration)
+      plugin = new Zapp.BasePlugin(pluginConfiguration)
 
       m.plugin = new InPlayerAuthPlugin(plugin)
     end function
@@ -51,7 +51,7 @@ namespace Applicaster.Tests
         }
       }
 
-      plugin = new ZC.BasePlugin(pluginConfiguration)
+      plugin = new Zapp.BasePlugin(pluginConfiguration)
 
       m.plugin = new InPlayerAuthPlugin(plugin)
 

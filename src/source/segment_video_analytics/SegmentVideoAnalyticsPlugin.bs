@@ -4,7 +4,7 @@ import "pkg:/source/plugin-support/PluginManager.bs"
 import "pkg:/source/lib/Country.bs"
 import "pkg:/source/video/analytics/BaseVideoAnalyticsPlugin.bs"
 
-class SegmentVideoAnalyticsPlugin extends ZC.Video.BaseVideoAnalyticsPlugin
+class SegmentVideoAnalyticsPlugin extends Video.BaseVideoAnalyticsPlugin
 
   public function new(pluginJson)
     super("SegmentVideoAnalyticsPlugin")

@@ -6,14 +6,14 @@ import "pkg:/source/maestro/lib/Utils.bs"
 '  * @module GenericUrlTokenAppender
 '  * @description appends the spcified token to the url
 '  */
-class GenericUrlTokenAppender extends ZC.BaseClass
+class GenericUrlTokenAppender extends Zapp.BaseClass
 
   private providerId = ""
   private tokenKey = ""
 
   public function new()
     super("GenericUrlTokenAppender")
-    m.plugins = m.getClassInstance("ZC.PluginManager")
+    m.plugins = m.getClassInstance("Zapp.PluginManager")
 
     plugin = m.plugins.getPluginById("generic_url_token_appender")
 

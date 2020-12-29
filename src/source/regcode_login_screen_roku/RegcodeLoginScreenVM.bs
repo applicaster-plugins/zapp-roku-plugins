@@ -70,8 +70,8 @@ class RegcodeLoginScreenVM extends Zapp.UIB.ScreenVM
 
   private function shouldDisplayWithContent(currentSelection)
 
-    entitlements = m.getInstance("entitlements")
-    return entitlements@.isLocked(MC.getContentField(currentSelection, "currentItem"))
+    entitlementsNode = m.getInstance("entitlements")
+    return entitlementsNode@.isLocked(MC.getContentField(currentSelection, "currentItem"))
   end function 
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

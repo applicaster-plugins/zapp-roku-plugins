@@ -4,7 +4,7 @@ import "pkg:/source/lib/URI.bs"
 import "pkg:/source/authorization/JWTUtil.bs"
 import "pkg:/source/authorization/BaseAuthPlugin.bs" 
 
-class GigyaAuthPlugin extends ZC.Auth.BaseAuthPlugin
+class GigyaAuthPlugin extends Zapp.Auth.BaseAuthPlugin
 
   public baseUrl = ""
 
