@@ -159,7 +159,7 @@ namespace AEAPM
       result = m.execute("GET", "items/" + MU.asString(inPlayerId) + "/access")
 
       content = parseJson(MU.getContentField(result, "item.content", "{}"))
-      if content.mobile_url <> invalid and content.mobile_url.trim() <> ""
+      if content <> invalid and content.mobile_url <> invalid and content.mobile_url.trim() <> ""
         if item.originalUrl = invalid
           m.logInfo("this item has never been manipulated; storing it's original url")
           MU.setOrAddNodeField(item, "originalUrl", item.url)
