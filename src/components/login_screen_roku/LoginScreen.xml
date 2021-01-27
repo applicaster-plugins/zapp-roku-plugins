@@ -69,21 +69,21 @@
         <StylableButton
             id='loginButton'
             style='{{:loginButtonStyle}}'
-            visible='{{isLoading;fireOnSet,transform=MOM_transform_invertBoolean}}'
+            visible='{{isLoading;fireOnSet;transform=MOM_transform_invertBoolean}}'
             selected='{(onLoginButtonSelected(value))}'
             width='610' />
 
         <StylableButton
             id='registerButton'
             style='{{:registerButtonStyle}}'
-            visible='{{isLoading;fireOnSet,transform=MOM_transform_invertBoolean}}'
+            visible='{{isLoading;fireOnSet;transform=MOM_transform_invertBoolean}}'
             selected='{(onRegisterButtonSelected(value))}'
             width='610' />
 
         <StylableButton
             id='forgotPasswordButton'
             style='{{:forgotPasswordButtonStyle}}'
-            visible='{{isLoading;fireOnSet,transform=MOM_transform_invertBoolean}}'
+            visible='{{isLoading;fireOnSet;transform=MOM_transform_invertBoolean}}'
             selected='{(onForgotPasswordButtonSelected(value))}'
             width='610' />
       </ZLayoutGroup>

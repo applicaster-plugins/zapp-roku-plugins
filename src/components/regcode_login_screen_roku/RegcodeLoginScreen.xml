@@ -86,7 +86,7 @@
           id='refreshButton'
           style='{{=ViewUtils_UIBButton("refresh_button")}}'
           opacity='{{:refreshButtonOpacity}}'
-          visible='{{isRefreshing, transform=MOM_transform_invertBoolean}}'
+          visible='{{isRefreshing;transform=MOM_transform_invertBoolean}}'
           selected='{(onRefreshButtonSelected(value))}' />
     </Group>
 

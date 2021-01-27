@@ -87,7 +87,7 @@
         <StylableButton
             id='registerButton'
             style='{{:registerButtonStyle}}'
-            visible='{{isLoading;fireOnSet,transform=MOM_transform_invertBoolean}}'
+            visible='{{isLoading;fireOnSet;transform=MOM_transform_invertBoolean}}'
             selected='{(onRegisterButtonSelected(value))}'
             width='{{=ViewUtils_UIBInt("input_w")}}' />
 
