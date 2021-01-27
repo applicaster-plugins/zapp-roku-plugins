@@ -20,11 +20,11 @@ namespace Applicaster.Deepinking
     end function
 
     private function processStyles(styles)
-      m.screenIdsByName = { 
-        "series": MU.getContentField(styles, "series_screen") 
-        "season": MU.getContentField(styles, "series_screen") 
-        "episode": MU.getContentField(styles, "episode_screen") 
-        "detail": MU.getContentField(styles, "detail_screen") 
+      m.screenIdsByName = {
+        "series": MU.getContentField(styles, "series_screen")
+        "season": MU.getContentField(styles, "series_screen")
+        "episode": MU.getContentField(styles, "episode_screen")
+        "detail": MU.getContentField(styles, "detail_screen")
       }
     end function
 
@@ -38,7 +38,7 @@ namespace Applicaster.Deepinking
     public override function load() as boolean
       prehookController = m.getPrehookController()
 
-      if prehookController <> invalid 
+      if prehookController <> invalid
         m.logInfo("this deeplinking screen has a prehookController")
         m.togglePrehookController(true, prehookController)
       else
@@ -83,14 +83,14 @@ namespace Applicaster.Deepinking
         args = m.getInstance("deeplinkingArgs")
         m.toggleDeeplinkingTask(true, args)
 
-      else 
+      else
         m.dismissDeeplinkingController()
       end if
     end function
 
     private function getPrehookController()
       m.logInfo("getPrehookController")
-      prehooks = MU.getContentField(m.riversJson, "hooks.preload_plugins") 
+      prehooks = MU.getContentField(m.riversJson, "hooks.preload_plugins")
 
       if prehooks <> invalid and prehooks.count() > 0
         m.logInfo("this deeplink controller has prehooks")
@@ -111,7 +111,7 @@ namespace Applicaster.Deepinking
 
     public function toggleDeeplinkingTask(isActive, args = invalid)
       m.logMethod("toggleDeeplinkingTask", isActive, args)
-      m.setField("isLoadingIndicatorVisible", isActive)
+      m.toggleLoadingIndicator(isActive)
 
       if m.deeplinkingTask <> invalid
         m.unbindNodeField(m.deeplinkingTask, "deeplinkingData", "onDeeplinkingTaskResult")
@@ -164,9 +164,12 @@ namespace Applicaster.Deepinking
       if parentScreen <> invalid and deeplinkingData.itemType <> "channel"
         m.isShowingParentScreen = true
         m.setField("currentScreen", parentScreen)
+        m.toggleNavMenuFocus(false)
+        m.onContentStateChange(parentScreen.state)
+        m.bindNodeField(parentScreen, "state", "onContentStateChange", MOM.createBindingProperties(false))
       end if
 
-      m.isDeeplinkingApplied = true 
+      m.isDeeplinkingApplied = true
 
       if deeplinkingSelection.action = "play"
         m.setInstance("currentSelection", deeplinkingSelection)
@@ -188,7 +191,7 @@ namespace Applicaster.Deepinking
           screen = m.getScreen(screenId)
           screen.originEntry = entry
         end if
-      end if 
+      end if
 
       return screen
     end function
@@ -196,8 +199,12 @@ namespace Applicaster.Deepinking
     '++ private impl
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+    private function toggleLoadingIndicator(isActive)
+      m.setField("isLoadingIndicatorVisible", isActive)
+    end function
+
     private function dismissDeeplinkingController()
-      m.setField("isLoadingIndicatorVisible", false)
+      m.toggleLoadingIndicator(true)
 
       if m.isLiveDeeplink or not m.isShowingPrehooks
         m.logInfo("going to go back, if possible")
@@ -252,6 +259,11 @@ namespace Applicaster.Deepinking
       return true
     end function
 
+    private function onContentStateChange(state)
+      m.logInfo("DEEP LINK PARENT SCREEN STATE", state)
+      m.toggleLoadingIndicator(state = "loading")
+    end function
+
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     '++ Lifecycle methods
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -261,7 +273,7 @@ namespace Applicaster.Deepinking
 
       if m.isDeeplinkingApplied and not m.isShowingParentScreen
         m.logInfo("the screen has appeared again, probably from a video player; but has no parent screen, exiting from deeplinking")
-        m.exitFromDeeplinking() 
+        m.exitFromDeeplinking()
       end if
     end function
 
