@@ -1,6 +1,6 @@
-namespace Applicaster.Tests
+namespace Applicaster.tests
 
-  '@TestSuite
+  @suite
   class GeneralTextScreenVMTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
@@ -27,11 +27,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onDoneButtonSelected
+    @describe("tests onDoneButtonSelected")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test 
-    function onButtonSelected()
+    @it("onButtonSelected")
+    function _()
       m.expectOnce(m.vm, "dismiss", ["cancel"])
 
       m.vm.onButtonSelected(true)
@@ -39,11 +39,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onKeyPressBack
+    @describe("tests onKeyPressBack")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test 
-    function onKeyPressBack()
+    @it("onKeyPressBack")
+    function _()
       m.expectOnce(m.vm, "dismiss", ["cancel"])
 
       m.vm.onKeyPressBack()

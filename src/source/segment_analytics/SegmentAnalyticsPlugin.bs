@@ -3,7 +3,7 @@ import "pkg:/source/plugin-support/PluginManager.bs"
 import "./SegmentAnalyticsConnector.brs"
 import "pkg:/source/analytics/BaseAnalyticsPlugin.bs"
 
-class SegmentAnalyticsPlugin extends Zapp.Analytics.BaseAnalyticsPlugin
+class SegmentAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
 
   private writeKey = ""
   private isDebug = false
@@ -17,8 +17,8 @@ class SegmentAnalyticsPlugin extends Zapp.Analytics.BaseAnalyticsPlugin
     constants = m.getInstance("constants")
     m.applicasterDeviceId = constants.applicasterDeviceId
     m.writeKey = plugin.getStringValue("write_key")
-    m.isDebug = plugin.getBoolValue("is_debug") 
-    m.isIdentifyingOnLogout = plugin.getBoolValue("send_identify_on_logout") 
+    m.isDebug = plugin.getBoolValue("is_debug")
+    m.isIdentifyingOnLogout = plugin.getBoolValue("send_identify_on_logout")
     m.library = SegmentAnalyticsConnector(m.segmentTask)
   end function
 
@@ -70,7 +70,7 @@ class SegmentAnalyticsPlugin extends Zapp.Analytics.BaseAnalyticsPlugin
       m.defaultOptions = m.getDefaultOptions()
       m.defaultProperties = m.getDefaultProperties()
 
-      if accountInfo <> invalid 
+      if accountInfo <> invalid
         options.append(m.defaultOptions)
         if accountInfo.id <> invalid and accountInfo.id.trim() <> ""
           m.logInfo("identifying analytics with the userId", accountInfo.id, "for plugin:", pluginId)
@@ -83,7 +83,7 @@ class SegmentAnalyticsPlugin extends Zapp.Analytics.BaseAnalyticsPlugin
         m.logWarn("idenitfy called; but there is no logged in user; identifying as anonymous")
         m.identifyAsAnonymous()
       end if
-    end if 
+    end if
 
     return true
   end function
@@ -165,7 +165,7 @@ class SegmentAnalyticsPlugin extends Zapp.Analytics.BaseAnalyticsPlugin
     end if
 
     primetimeAccountInfo = m.getSessionStoreValue("AdobeAccessEnabler", "account", true)
-    if primetimeAccountInfo <> invalid 
+    if primetimeAccountInfo <> invalid
       properties.user_adobe_id = m.hash(primetimeAccountInfo.id)
     else
       properties.user_adobe_id = "anonymous"

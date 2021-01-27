@@ -1,7 +1,7 @@
 import "pkg:/source/UIBuilder/view/ScreenVM.bs"
 import "pkg:/source/lib/ViewUtils.bs"
 
-class WarningMessageScreenVM extends Zapp.UIB.ScreenVM
+class WarningMessageScreenVM extends zapp.UIB.ScreenVM
 
   'styles
   public isContentGroupVisible = false
@@ -51,7 +51,7 @@ class WarningMessageScreenVM extends Zapp.UIB.ScreenVM
   public override function load() as boolean
     isShowingWarning = false
 
-    if m.originEntry <> invalid and MC.isString(m.conditionPath) and MC.isString(m.conditionValue) 
+    if m.originEntry <> invalid and MC.isString(m.conditionPath) and MC.isString(m.conditionValue)
       value = MC.getContentField(m.originEntry.json, m.conditionPath, invalid)
 
       if MC.isString(value) and lcase(value) = lcase(m.conditionValue)

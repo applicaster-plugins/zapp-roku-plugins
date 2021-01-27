@@ -2,7 +2,7 @@
 <component
     name='FullScreenSearch'
     extends='UIBComponent'
-    vmclass='FullScreenSearchVM'>
+    vm='FullScreenSearchVM'>
 
   <interface>
   </interface>

@@ -9,10 +9,8 @@
     <field id = "args" type = "assocarray" />
 
     <!-- <field id = "config" type = "assocarray" /> -->
-    <field id = "response" type = "string" />
 
   </interface>
   
   
-  <script type="text/brightscript" uri="Request.brs"/>
 </component>

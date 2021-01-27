@@ -1,6 +1,6 @@
-namespace Applicaster.Tests
+namespace Applicaster.tests
 
-  '@TestSuite
+  @suite
   class SegmenetVideoAnalyticsPluginTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
@@ -9,7 +9,7 @@ namespace Applicaster.Tests
       }
       m.analyticsManager = { id: "#am" }
 
-      m.modelLocator = { 
+      m.modelLocator = {
         "constants": m.constants
         "analyticsManager": m.analyticsManager
       }
@@ -24,11 +24,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests constructor
+    @describe("tests constructor")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test
-    function testConstructor_tests()
+    @it("testConstructor_tests")
+    function _()
       m.assertEqual(m.plugin.analyticsManager, m.analyticsManager)
       m.assertEqual(m.plugin.deviceInfo, m.constants.deviceInfo)
       m.assertEqual(m.plugin.videoHeight, "1080")
@@ -36,26 +36,26 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests getVideoResolution
+    @describe("tests getVideoResolution")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test
-    '@Params["1080", "1920x1080"]
-    '@Params["2160", "3840x2160"]
-    '@Params["720", "1280x720"]
-    '@Params["480", "640x480"]
-    '@Params["800", "unknown"]
-    function getVideoResolution(height, expected)
+    @it("getVideoResolution")
+    @params("1080", "1920x1080")
+    @params("2160", "3840x2160")
+    @params("720", "1280x720")
+    @params("480", "640x480")
+    @params("800", "unknown")
+    function _(height, expected)
       m.assertEqual(m.plugin.getVideoResolution(height), expected)
     end function
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests videoStart
+    @describe("tests videoStart")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test
-    function videoStart()
+    @it("videoStart")
+    function _()
       videoNode = { id: "videoPlayer", position: 100 }
       contentNode = { id: "content", length: 1000 }
 
@@ -69,11 +69,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests videoEnd
+    @describe("tests videoEnd")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test
-    function videoEnd()
+    @it("videoEnd")
+    function _()
       m.plugin.videoNode = { id: "videoPlayer", position: 100 }
       m.plugin.contentNode = { id: "content", length: 1000 }
 
@@ -85,11 +85,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests videoPause
+    @describe("tests videoPause")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test
-    function videoPause()
+    @it("videoPause")
+    function _()
 
       m.expectOnce(m.plugin, "postSegmentEvent", ["Video Paused"])
 
@@ -98,11 +98,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests videoResume
+    @describe("tests videoResume")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test
-    function videoResume()
+    @it("videoResume")
+    function _()
 
       m.expectOnce(m.plugin, "postSegmentEvent", ["Video Playback Resume"])
 
@@ -111,13 +111,13 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests videoHeartbeat
+    @describe("tests videoHeartbeat")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test
-    '@Params[true, "Video Ad Playing (Heartbeat)"]
-    '@Params[false, "Video Heartbeat"]
-    function videoHeartbeat(isInAdBreak, expectedEventName)
+    @it("videoHeartbeat")
+    @params(true, "Video Ad Playing (Heartbeat)")
+    @params(false, "Video Heartbeat")
+    function _(isInAdBreak, expectedEventName)
       m.plugin.isInAdBreak = isInAdBreak
 
       m.expectOnce(m.plugin, "postSegmentEvent", [expectedEventName])
@@ -127,11 +127,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests adBreakStart
+    @describe("tests adBreakStart")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test
-    function adBreakStart()
+    @it("adBreakStart")
+    function _()
 
       m.expectOnce(m.plugin, "postSegmentEvent", ["Video Ad Play"])
 
@@ -140,11 +140,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests adBreakEnd
+    @describe("tests adBreakEnd")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test
-    function adBreakEnd()
+    @it("adBreakEnd")
+    function _()
 
       m.expectOnce(m.plugin, "postSegmentEvent", ["Video Ad Completed"])
 
@@ -153,11 +153,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onSubtitleChange
+    @describe("tests onSubtitleChange")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test onSubtitleChange
-    function onSubtitleChange()
+    @it("onSubtitleChange")
+    function _()
 
       m.expectOnce(m.plugin, "postSegmentEvent", ["Subtitle Languge Changed"])
 
@@ -165,8 +165,8 @@ namespace Applicaster.Tests
 
     end function
 
-    '@Test onAudioChange
-    function onAudioChange()
+    @it("onAudioChange")
+    function _()
 
       m.expectOnce(m.plugin, "postSegmentEvent", ["Audio Language Selected"])
 
@@ -175,14 +175,14 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests getAudioLanguage
+    @describe("tests getAudioLanguage")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test known
-    '@Params["1", "cor", "kw"]
-    '@Params["2", "cos", "co"]
-    '@Params["3", "cre", "cr"]
-    function getAudioLanguage_known(currentTrack, trackLanguage, countryCode)
+    @it("known")
+    @params("1", "cor", "kw")
+    @params("2", "cos", "co")
+    @params("3", "cre", "cr")
+    function _(currentTrack, trackLanguage, countryCode)
       m.plugin.videoNode = {
         "currentAudioTrack": currentTrack,
         "availableAudioTracks": [
@@ -195,8 +195,8 @@ namespace Applicaster.Tests
       m.assertEqual(m.plugin.getAudioLanguage(), countryCode)
     end function
 
-    '@Test unknown
-    function getAudioLanguage_unknown()
+    @it("unknown")
+    function _()
       m.plugin.videoNode = {
         "currentAudioTrack": "unknown",
         "availableAudioTracks": [
@@ -210,14 +210,14 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests getSubtitleLanguage
+    @describe("tests getSubtitleLanguage")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test known
-    '@Params["1", "cor", "kw"]
-    '@Params["2", "cos", "co"]
-    '@Params["3", "cre", "cr"]
-    function getSubtitleLanguage_known(currentTrack, trackLanguage, countryCode)
+    @it("known")
+    @params("1", "cor", "kw")
+    @params("2", "cos", "co")
+    @params("3", "cre", "cr")
+    function _(currentTrack, trackLanguage, countryCode)
       m.plugin.videoNode = {
         "currentSubtitleTrack": currentTrack,
         "availableSubtitleTracks": [
@@ -230,8 +230,8 @@ namespace Applicaster.Tests
       m.assertEqual(m.plugin.getSubtitleLanguage(), countryCode)
     end function
 
-    '@Test unknown
-    function getSubtitleLanguage_unknown()
+    @it("unknown")
+    function _()
       m.plugin.videoNode = {
         "currentSubtitleTrack": "unknown",
         "availableSubtitleTracks": [
@@ -245,14 +245,14 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests getProperties
+    @describe("tests getProperties")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test
-    '@Params["#action1"]
-    '@Params["#action2"]
-    '@Params[invalid]
-    function getProperties(action)
+    @it("getProperties")
+    @params("#action1")
+    @params("#action2")
+    @params(invalid)
+    function _(action)
       contentNode = {
         "LIVE": true
         length: 100
@@ -287,14 +287,14 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests postSegementEvent
+    @describe("tests postSegementEvent")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test
-    '@Params["event1"]
-    '@Params["event2"]
-    '@Params["event3"]
-    function postSegementEvent(eventName)
+    @it("postSegementEvent")
+    @params("event1")
+    @params("event2")
+    @params("event3")
+    function _(eventName)
       m.plugin.videoNode = { id: "videoPlayer", position: 100 }
       m.plugin.contentNode = { id: "content", length: 1000 }
 
@@ -304,7 +304,7 @@ namespace Applicaster.Tests
       matcher = { "matcher": function(value)
           return value.name = m.eventName
         end function
-        "eventName": eventName 
+        "eventName": eventName
       }
 
       m.expectOnce(m.plugin.analyticsManager, "callFunc", ["track", eventName, matcher])

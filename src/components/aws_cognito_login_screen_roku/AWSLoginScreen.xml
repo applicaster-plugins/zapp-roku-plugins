@@ -2,7 +2,7 @@
 <component
     name='AWSLoginScreen'
     extends='UIBScreen'
-    vmclass='AWSLoginScreenVM'>
+    vm='AWSLoginScreenVM'>
 
   <interface></interface>
 

@@ -1,7 +1,7 @@
 import "pkg:/source/UIBuilder/view/ScreenVM.bs"
 import "pkg:/source/lib/ViewUtils.bs"
 
-class GeneralTextScreenVM extends Zapp.UIB.ScreenVM
+class GeneralTextScreenVM extends zapp.UIB.ScreenVM
 
   'styles
   public titleStyle = invalid
@@ -11,7 +11,7 @@ class GeneralTextScreenVM extends Zapp.UIB.ScreenVM
   public descriptionText = ""
   public optional1Text = ""
   public buttonStyle = invalid
-  
+
   public backgroundColor = "#000000ff"
   public backgroundUrl = ""
   public textPosition = [0, 310]

@@ -1,6 +1,6 @@
-namespace Applicaster.Tests
+namespace Applicaster.tests
 
-  '@TestSuite
+  @suite
   class WarningMessageScreenVMTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
@@ -30,68 +30,68 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests load
+    @describe("tests load")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test matching conditions
-    '@Params[{field:"v" }, "field", "v"]
-    '@Params[{json:{field:"v2"} }, "json.field", "v2"]
-    '@Params[{json:{field:"v2 "} }, "json.field", "v2"]
-    '@Params[{json:{field:"v2 "} }, "json.field", "v2 "]
-    '@Params[{json:{field:"v2 "} }, "json.field", "V2 "]
-    '@Params[{field:"v", }, "field", "V"]
-    function load_matching(entry, path, condition)
+    @it("matching conditions")
+    @params({field:"v" }, "field", "v")
+    @params({json:{field:"v2"} }, "json.field", "v2")
+    @params({json:{field:"v2 "} }, "json.field", "v2")
+    @params({json:{field:"v2 "} }, "json.field", "v2 ")
+    @params({json:{field:"v2 "} }, "json.field", "V2 ")
+    @params({field:"v", }, "field", "V")
+    function _(entry, path, condition)
       m.vm.conditionPath = path
       m.vm.conditionValue = condition
       m.expectOnce(m.vm, "load_ComponentVM")
       m.expectNone(m.vm, "dismiss")
       m.vm.originEntry = entry
 
-      m.vm.load() 
+      m.vm.load()
 
       m.assertNotEqual(m.vm.state, "success")
 
     end function
 
-    '@Test no entry
-    function load_no_entry()
+    @it("no entry")
+    function _()
       m.expectNone(m.vm, "CVM_load")
       m.expectOnce(m.vm, "dismiss", ["success"])
 
       m.vm.originEntry = invalid
 
-      m.vm.load() 
+      m.vm.load()
 
     end function
 
-    '@Test not matching conditions
-    '@Params[{field:"", }, "field", "v"]
-    '@Params[{field:"v", }, "field", ""]
-    '@Params[{json:{field:"v2"}, }, "json.field", "n2"]
-    '@Params[{json:{field:"v2 "}, }, "json.field", "n2"]
-    '@Params[{json:{field:"v2 "}, }, "json.field", "n2 "]
-    '@Params[{json:{field:"v2"}, }, "", "v2"]
-    '@Params[{json:{field:"v2"}, }, " ", "v2"]
-    '@Params[{json:{field:"v2"}, }, "json.field", ""]
-    '@Params[{json:{field:"v2"}, }, "json.field", " "]
-    function load_not_matching(entry, path, condition)
+    @it("not matching conditions")
+    @params({field:"", }, "field", "v")
+    @params({field:"v", }, "field", "")
+    @params({json:{field:"v2"}, }, "json.field", "n2")
+    @params({json:{field:"v2 "}, }, "json.field", "n2")
+    @params({json:{field:"v2 "}, }, "json.field", "n2 ")
+    @params({json:{field:"v2"}, }, "", "v2")
+    @params({json:{field:"v2"}, }, " ", "v2")
+    @params({json:{field:"v2"}, }, "json.field", "")
+    @params({json:{field:"v2"}, }, "json.field", " ")
+    function _(entry, path, condition)
       m.vm.conditionPath = path
       m.vm.conditionValue = condition
       m.expectNone(m.vm, "CVM_load")
       m.expectOnce(m.vm, "dismiss", ["success"])
       m.vm.originEntry = entry
 
-      m.vm.load() 
+      m.vm.load()
 
     end function
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onDoneButtonSelected
+    @describe("tests onDoneButtonSelected")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test 
-    function onDoneButtonSelected()
+    @it("onDoneButtonSelected")
+    function _()
       m.expectOnce(m.vm, "dismiss", ["cancel"])
 
       m.vm.onDoneButtonSelected(true)
@@ -99,11 +99,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onKeyPressBack
+    @describe("tests onKeyPressBack")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test 
-    function onKeyPressBack()
+    @it("onKeyPressBack")
+    function _()
       m.expectOnce(m.vm, "dismiss", ["cancel"])
 
       m.vm.onKeyPressBack()
@@ -111,12 +111,12 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests showMessage
+    @describe("tests showMessage")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-    '@Test showMessage
-    function showMessage()
+    @it("showMessage")
+    function _()
       entry = { "id": "entry"
         title: "#t"
         description: "#d"

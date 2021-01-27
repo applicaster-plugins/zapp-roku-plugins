@@ -1,6 +1,6 @@
-namespace Applicaster.Tests
+namespace Applicaster.tests
 
-  '@TestSuite
+  @suite
   class InPlayerAuthPluginTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
@@ -22,7 +22,7 @@ namespace Applicaster.Tests
         account: { "id": "account_id" }
       }
 
-      plugin = new Zapp.BasePlugin(pluginConfiguration)
+      plugin = new zapp.BasePlugin(pluginConfiguration)
 
       m.plugin = new InPlayerAuthPlugin(plugin)
     end function
@@ -31,13 +31,13 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests constructor
+    @describe("tests constructor")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test
-    '@Params["cid1", "prod", "https://services.inplayer.com"]
-    '@Params["cid2", "dev", "https://staging-v2.inplayer.com"]
-    function testConstructor_test(clientId, env, expectedApiUrl)
+    @it("testConstructor_test")
+    @params("cid1", "prod", "https://services.inplayer.com")
+    @params("cid2", "dev", "https://staging-v2.inplayer.com")
+    function _(clientId, env, expectedApiUrl)
       pluginConfiguration = {
         "identifier": "client_id",
         "configuration_json": { "base_url": "host/" }
@@ -51,7 +51,7 @@ namespace Applicaster.Tests
         }
       }
 
-      plugin = new Zapp.BasePlugin(pluginConfiguration)
+      plugin = new zapp.BasePlugin(pluginConfiguration)
 
       m.plugin = new InPlayerAuthPlugin(plugin)
 
@@ -60,11 +60,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests _getAcountInfo
+    @describe("tests _getAcountInfo")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test _getAccountInfo
-    function _getAccountInfo()
+    @it("_getAccountInfo")
+    function _()
       m.plugin.authData = {
         "user": {
           "uid": "id"
@@ -79,11 +79,11 @@ namespace Applicaster.Tests
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests _verify
+    @describe("tests _verify")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test invalid token
-    function _verify_has_invalid_token()
+    @it("invalid token")
+    function _()
       m.expectOnce(m.plugin, "isAuthDataExpired", [], true)
 
       authData = m.plugin._verify()
@@ -93,10 +93,10 @@ namespace Applicaster.Tests
 
     end function
 
-    '@Test token not verified  with service
-    '@Params[invalid]
-    '@Params[{"access_token": invalid}]
-    function _verify_has_token_service_invalid(serviceResponse)
+    @it("token not verified  with service")
+    @params(invalid)
+    @params({"access_token": invalid})
+    function _(serviceResponse)
       m.expectOnce(m.plugin, "isAuthDataExpired", [], false)
       m.plugin.authData = {
         "refreshToken": "rt"
@@ -117,8 +117,8 @@ namespace Applicaster.Tests
 
     end function
 
-    '@Test token verified  with service
-    function _verify_has_token_service_valid()
+    @it("token verified  with service")
+    function _()
       m.expectOnce(m.plugin, "isAuthDataExpired", [], false)
       m.plugin.authData = {
         "refreshToken": "rt"
@@ -140,13 +140,13 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests register
+    @describe("tests register")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test cannot register
-    '@Params[invalid]
-    '@Params[{"access_token": invalid}]
-    function _register_invalid(serviceResponse)
+    @it("cannot register")
+    @params(invalid)
+    @params({"access_token": invalid})
+    function _(serviceResponse)
       credentials = {
         username: "u"
         password: "p"
@@ -174,8 +174,8 @@ namespace Applicaster.Tests
       m.assertEqual(m.plugin._register(credentials), authData)
     end function
 
-    '@Test valid register
-    function _register_valid()
+    @it("valid register")
+    function _()
       credentials = {
         username: "u"
         password: "p"
@@ -205,13 +205,13 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests login
+    @describe("tests login")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test cannot login
-    '@Params[invalid]
-    '@Params[{"access_token": invalid}]
-    function _login_invalid(serviceResponse)
+    @it("cannot login")
+    @params(invalid)
+    @params({"access_token": invalid})
+    function _(serviceResponse)
       credentials = {
         username: "u"
         password: "p"
@@ -235,8 +235,8 @@ namespace Applicaster.Tests
       m.assertEqual(m.plugin._login(credentials), authData)
     end function
 
-    '@Test valid login
-    function _login_valid()
+    @it("valid login")
+    function _()
       credentials = {
         username: "u"
         password: "p"
@@ -262,11 +262,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests logout
+    @describe("tests logout")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test not logged in
-    function _logout_not_logged_in()
+    @it("not logged in")
+    function _()
 
       authData = { "id": "authData" }
 
@@ -276,12 +276,12 @@ namespace Applicaster.Tests
 
     end function
 
-    '@Test cannot logout on backend
-    '@Params[{}]
-    '@Params[{"code": invalid}]
-    '@Params[{"code": 400}]
-    '@Params[{"code": 403}]
-    function _logout_bad_response(serviceResponse)
+    @it("cannot logout on backend")
+    @params({})
+    @params({"code": invalid})
+    @params({"code": 400})
+    @params({"code": 403})
+    function _(serviceResponse)
       m.plugin.authData = {
         "accessToken": "at"
       }
@@ -298,8 +298,8 @@ namespace Applicaster.Tests
 
     end function
 
-    '@Test can logout on backend
-    function _logout_valid_response()
+    @it("can logout on backend")
+    function _()
       m.expectOnce(m.plugin, "loadAuthDataFromRegistry", [])
 
       serviceResponse = { "id": "serviceResponse", "code": 200 }
@@ -318,16 +318,16 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests createErrorFromResult
+    @describe("tests createErrorFromResult")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test 
-    '@Params[invalid, "Unknown error", -1]
-    '@Params[{}, "Unknown error", -1]
-    '@Params[{"errors": {"1":"one"}}, "one", -1]
-    '@Params[{"errors": {"1":"one"}, "code": 403}, "one", 403]
-    '@Params[{"errors": {"403":"m403"}, "code": 403}, "m403", 403]
-    function createErrorFromResult(result, expectedMessage, expectedCode)
+    @it("createErrorFromResult")
+    @params(invalid, "Unknown error", -1)
+    @params({}, "Unknown error", -1)
+    @params({"errors": {"1":"one"}}, "one", -1)
+    @params({"errors": {"1":"one"}, "code": 403}, "one", 403)
+    @params({"errors": {"403":"m403"}, "code": 403}, "m403", 403)
+    function _(result, expectedMessage, expectedCode)
       error = m.plugin.createErrorFromResult(result)
       m.assertEqual(error.code, expectedCode)
       m.assertEqual(error.message, expectedMessage)

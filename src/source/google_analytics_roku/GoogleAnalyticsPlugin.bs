@@ -1,6 +1,6 @@
 import "pkg:/source/analytics/BaseAnalyticsPlugin.bs"
 
-class GoogleAnalyticsPlugin extends Zapp.Analytics.BaseAnalyticsPlugin
+class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
 
   private eventFactory = invalid
   private isTrakingUserIdEnabled = false
@@ -40,7 +40,7 @@ class GoogleAnalyticsPlugin extends Zapp.Analytics.BaseAnalyticsPlugin
 
     if m.isEnabled
 
-      if m.isTrakingUserIdEnabled <> true 
+      if m.isTrakingUserIdEnabled <> true
         m.logInfo("traking user is not allowed skip isIdentified")
         return true
       end if
@@ -53,7 +53,7 @@ class GoogleAnalyticsPlugin extends Zapp.Analytics.BaseAnalyticsPlugin
 
       m.logInfo("identify accountInfo", accountInfo)
 
-      if accountInfo <> invalid 
+      if accountInfo <> invalid
         if accountInfo.id <> invalid and accountInfo.id.trim() <> ""
           m.logInfo("identifying analytics with the userId", accountInfo.id, "for plugin:", pluginId)
           m.logInfo("recrating GoogleAnalyticsTask with the userId", accountInfo.id, "for plugin:", pluginId)
@@ -66,7 +66,7 @@ class GoogleAnalyticsPlugin extends Zapp.Analytics.BaseAnalyticsPlugin
         m.logWarn("idenitfy called; but there is no logged in user; goint to unidentify, to get anonymous analytics")
         m.identifyAsAnonymous()
       end if
-    end if 
+    end if
 
     return true
   end function
@@ -86,17 +86,17 @@ class GoogleAnalyticsPlugin extends Zapp.Analytics.BaseAnalyticsPlugin
     suffix = versionId
     s = userIdString
 
-    if MC.isString(s) and MC.isString(prefix) and MC.isString(suffix) 
-      if prefix + suffix = s 
+    if MC.isString(s) and MC.isString(prefix) and MC.isString(suffix)
+      if prefix + suffix = s
         return true
       end if
     end if
 
-    return false 
+    return false
   end function
 
   private function setGoogleTaskUserId(userId)
-    if MC.isString(userId) 
+    if MC.isString(userId)
       m.task.customSessionParams = {
         "uid": Box(userId).Escape()
       }

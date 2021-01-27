@@ -1,10 +1,10 @@
-import "pkg:/source/authorization/BaseAuthPlugin.bs" 
-import "pkg:/source/lib/Request.bs" 
-import "pkg:/source/lib/URI.bs" 
+import "pkg:/source/authorization/BaseAuthPlugin.bs"
+import "pkg:/source/lib/Request.bs"
+import "pkg:/source/lib/URI.bs"
 import "pkg:/source/lib/APIUtils.bs"
-import "pkg:/source/authorization/BaseAuthPlugin.bs" 
+import "pkg:/source/authorization/BaseAuthPlugin.bs"
 
-class InPlayerAuthPlugin extends Zapp.Auth.BaseAuthPlugin
+class InPlayerAuthPlugin extends zapp.Auth.BaseAuthPlugin
 
   public apiUrl = "" ' note this is used by APIMixin
 
@@ -13,7 +13,7 @@ class InPlayerAuthPlugin extends Zapp.Auth.BaseAuthPlugin
     m.clientId = plugin.getStringValue("client_id")
 
     if plugin.getStringValue("environment", "prod") = "prod"
-      m.apiUrl = "https://services.inplayer.com" 
+      m.apiUrl = "https://services.inplayer.com"
     else
       m.apiUrl = "https://staging-v2.inplayer.com"
     end if
@@ -147,7 +147,7 @@ class InPlayerAuthPlugin extends Zapp.Auth.BaseAuthPlugin
     end if
 
     if result.errors <> invalid and result.errors.count() > 0
-      message = result.errors[result.errors.keys()[0]] 
+      message = result.errors[result.errors.keys()[0]]
     else
       message = MC.getContentField(result, "message", "Unknown error")
     end if

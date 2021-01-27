@@ -1,7 +1,7 @@
 import "pkg:/source/zapp/BaseZappVM.bs"
 import "pkg:/source/plugin-support/PluginManager.bs"
 
-class BitMovinPlayerVM extends Zapp.BaseZappVM
+class BitMovinPlayerVM extends zapp.BaseZappVM
 
   private view = invalid
   private themeColor = "#ffffff"
@@ -56,7 +56,7 @@ class BitMovinPlayerVM extends Zapp.BaseZappVM
       m.playerFunctions = m.player.BitmovinFunctions
       m.playerFields = m.player.BitmovinFields
       m.playerState = m.player.BitmovinPlayerState
-      m.setVideoChromeStyle() 
+      m.setVideoChromeStyle()
       bindingProperties = MOM.createBindingProperties(false)
       m.bindNodeField(m.player, m.playerFields.PLAYER_STATE, "onPlayerStateChange", bindingProperties)
       m.bindNodeField(m.player, m.playerFields.ERROR, "onPlayerVideoError", bindingProperties)
@@ -159,7 +159,7 @@ class BitMovinPlayerVM extends Zapp.BaseZappVM
       m.view.playbackResult = m.makeResult("error", "error during playback")
       m.view.isPlaybackFinished = true
       m.state = "error"
-    else 
+    else
       'ignore this state ; but check if we'v got a duration yet
       videoNode = m.player.getChild(0)
 

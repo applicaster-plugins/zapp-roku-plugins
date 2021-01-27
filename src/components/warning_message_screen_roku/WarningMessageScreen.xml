@@ -2,7 +2,7 @@
 <component
     name='WarningMessageScreen'
     extends='UIBScreen'
-    vmclass='WarningMessageScreenVM'>
+    vm='WarningMessageScreenVM'>
 
   <interface></interface>
 

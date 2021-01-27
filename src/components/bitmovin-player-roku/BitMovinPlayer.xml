@@ -2,7 +2,7 @@
 <component
     name='BitMovinPlayer'
     extends='BaseVideoPlayer'
-    vmclass='BitMovinPlayerVM'>
+    vm='BitMovinPlayerVM'>
 
   <interface>
   </interface>

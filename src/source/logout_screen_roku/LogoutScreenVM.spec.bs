@@ -1,6 +1,6 @@
-namespace Applicaster.Tests
+namespace Applicaster.tests
 
-  '@TestSuite
+  @suite
   class LogoutScreenVmTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
@@ -33,11 +33,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests constructor
+    @describe("tests constructor")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test constructor
-    function testConstructor_tests()
+    @it("constructor")
+    function _()
       m.assertEqual(m.vm.riversJson, m.riversJson)
       m.assertEqual(m.vm.textPosition, [20, 600])
       m.assertEqual(m.vm.textWidth, 300)
@@ -51,19 +51,19 @@ namespace Applicaster.Tests
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onLogoutButtonSelected
+    @describe("tests onLogoutButtonSelected")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test not logged out yet
-    function onLogoutButtonSelected()
+    @it("not logged out yet")
+    function _()
       m.expectOnce(m.vm, "logout", [])
       m.expectNone(m.vm, "restartApp")
 
       m.vm.onLogoutButtonSelected(true)
     end function
 
-    '@Test logged out
-    function onLogoutButtonSelected_logged_out()
+    @it("logged out")
+    function _()
       m.vm.isLoggedOut = true
 
       m.expectNone(m.vm, "logout")
@@ -73,11 +73,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests logout
+    @describe("tests logout")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test all providers 
-    function logout()
+    @it("all providers")
+    function _()
       authTask = { "id": "authTask" }
 
       analyticsManager = { "id": "analyticsManager" }
@@ -98,10 +98,10 @@ namespace Applicaster.Tests
       m.assertFalse(m.vm.isButtonVisible)
     end function
 
-    '@Test specific providers
-    '@Params["id1"]
-    '@Params["id2"]
-    function logout_specific_provider(providerId)
+    @it("specific providers")
+    @params("id1")
+    @params("id2")
+    function _(providerId)
       authTask = { "id": "authTask" }
 
       analyticsManager = { "id": "analyticsManager" }
@@ -124,19 +124,19 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onKeyPressBack
+    @describe("tests onKeyPressBack")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test not signing out
-    function onKeyPressBack_not_signing_out()
+    @it("not signing out")
+    function _()
 
       m.expectOnce(m.vm, "pop", [])
       m.vm.onKeyPressBack()
 
     end function
 
-    '@Test signing out
-    function onKeyPressBack_signing_out()
+    @it("signing out")
+    function _()
       m.vm.isLoggedOut = true
 
       m.expectNone(m.vm, "pop")
@@ -145,12 +145,12 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onLogoutCompplete
+    @describe("tests onLogoutCompplete")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-    '@Test onLogoutComplete
-    function onLogoutComplete()
+    @it("onLogoutComplete")
+    function _()
 
       m.vm.onLogoutComplete({ isOK: true })
 

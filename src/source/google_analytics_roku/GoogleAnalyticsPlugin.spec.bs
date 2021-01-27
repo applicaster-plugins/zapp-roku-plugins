@@ -1,6 +1,6 @@
-namespace Applicaster.Tests
+namespace Applicaster.tests
 
-  '@TestSuite
+  @suite
   class GoogleAnalyticsPluginTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
@@ -14,7 +14,7 @@ namespace Applicaster.Tests
       m.modelLocator.constants = { "googleAnalyticsClientId": "#c" }
 
       ZC.TestUtils.setModelLocator(m.modelLocator)
-      m.pluginData = new Zapp.BasePlugin({ "configuration_json": config, "identifier": "google_analytics_roku" })
+      m.pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "google_analytics_roku" })
       m.plugin = new GoogleAnalyticsPlugin(m.pluginData)
     end function
 
@@ -23,11 +23,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests constructor
+    @describe("tests constructor")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test constructor
-    function testConstructor_tests()
+    @it("constructor")
+    function _()
       m.assertEqual(m.plugin.id, "google_analytics_roku")
       m.assertSubType(m.plugin.task, "GoogleAnalyticsTask")
       m.assertEqual(m.plugin.task.trackingId, "#t")
@@ -35,11 +35,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests start
+    @describe("tests start")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test start
-    function start()
+    @it("start")
+    function _()
 
       task = { "id": "task" }
       m.plugin.task = task
@@ -55,24 +55,25 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests identifyAsAnonymous
+    @describe("tests identifyAsAnonymous")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    function identifyAsAnonymous()
+    @it("identifies as Anonymous")
+    function _()
       m.expectOnce(m.plugin, "setGoogleTaskUserId", invalid)
 
       m.plugin.identifyAsAnonymous()
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests is tracking user Id allowed
+    @describe("tests is tracking user Id allowed")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test is user id allowed
-    '@Params["allow-tracking-user-id-for-app-family-aaaa","aaaa", true ]
-    '@Params["allow-tracking-user-id-for-app-familya-aaaa","aaaa", false ]
-    '@Params["allow-tracking-user-id-for-app-family-aaaa","aaaac", false ]
-    function isTrackingUserIdAllowed(userIdString, versionId, result)
+    @it("is user id allowed")
+    @params("allow-tracking-user-id-for-app-family-aaaa","aaaa", true )
+    @params("allow-tracking-user-id-for-app-familya-aaaa","aaaa", false )
+    @params("allow-tracking-user-id-for-app-family-aaaa","aaaac", false )
+    function _(userIdString, versionId, result)
 
       versionPrefix = "allow-tracking-user-id-for-app-family-"
 
@@ -83,18 +84,14 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests trackUserIdAllowedFlag
+    @describe("tests trackUserIdAllowedFlag")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    override function beforeEachTrackUserIdAllowedFlag()
-
-    end function
-
-    '@Test constructor_trackUser
-    '@Params[ "allow-tracking-user-id-for-app-family-aaaa", "aaaa", true ]
-    '@Params[ "allow-tracking-user-id-for-app-family-aaac", "aaaa", false ]
-    '@Params[ invalid, "aaaa", false ]
-    function trackUserIdAllowedFlag(userID, versionId, result)
+    @it("constructor_trackUser")
+    @params( "allow-tracking-user-id-for-app-family-aaaa", "aaaa", true )
+    @params( "allow-tracking-user-id-for-app-family-aaac", "aaaa", false )
+    @params( invalid, "aaaa", false )
+    function _(userID, versionId, result)
 
       config = {
         "tracking_id": "#t"
@@ -106,7 +103,7 @@ namespace Applicaster.Tests
       m.modelLocator.constants = {}
 
       ZC.TestUtils.setModelLocator(m.modelLocator)
-      m.pluginData = new Zapp.BasePlugin({ "configuration_json": config, "identifier": "google_analytics_roku" })
+      m.pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "google_analytics_roku" })
       m.plugin = new GoogleAnalyticsPlugin(m.pluginData)
 
       m.assertEqual(m.plugin.isTrakingUserIdEnabled, result)
@@ -114,13 +111,13 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests setGoogleTaskUserId
+    @describe("tests setGoogleTaskUserId")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test valid
-    '@Params["user123", "user123" ]
-    '@Params["user 123", "user%20123" ]
-    function setGoogleTaskUserId(userID, encodeUserId)
+    @it("valid")
+    @params("user123", "user123" )
+    @params("user 123", "user%20123" )
+    function _(userID, encodeUserId)
       params = {
         "uid": encodeUserId
       }
@@ -130,11 +127,11 @@ namespace Applicaster.Tests
       m.assertEqual(m.plugin.task.customSessionParams, params)
     end function
 
-    '@Test return invalid
-    '@Params[invalid ]
-    '@Params[{} ]
-    '@Params[123 ]
-    function setGoogleTaskUserId_reutrn_invalid(userID)
+    @it("return invalid")
+    @params(invalid )
+    @params({} )
+    @params(123 )
+    function _(userID)
       m.plugin.setGoogleTaskUserId(userID)
 
       m.assertEqual(m.plugin.task.customSessionParams, invalid)

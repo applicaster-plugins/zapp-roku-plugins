@@ -1,6 +1,6 @@
-namespace Applicaster.Tests
+namespace Applicaster.tests
 
-  '@TestSuite
+  @suite
   class AWSLoginScreenVMTests extends Rooibos.BaseTestSuite
     override function beforeEach()
       m.modelLocator = {
@@ -75,22 +75,22 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests constructor
+    @describe("tests constructor")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test constructor
-    function testConstructor_tests()
+    @it("constructor")
+    function _()
       m.assertEqual(m.vm.focusId, "usernameInput")
       m.assertEqual(m.vm.riversJson, m.riversJson)
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests processStyles
+    @describe("tests processStyles")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Ignore - FIXME -this vm method uses new ViewStyle methods, so the tests are out of date
-    '@Test processStyles
-    function processStyles()
+    @ignore("- FIXME -this vm method uses new ViewStyle methods, so the tests are out of date")
+    @it("processStyles")
+    function _()
       m.vm.processStyles(m.riversJson.styles)
 
       m.assertEqual(m.vm.backgroundColor, "#0000ffff")
@@ -139,12 +139,12 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onLoginButtonSelected
+    @describe("tests onLoginButtonSelected")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-    '@Test 
-    function onLoginButtonSelected()
+    @it("onLoginButtonSelected")
+    function _()
       m.vm.isLoading = false
       m.vm.isCredsValid = true
 
@@ -153,16 +153,16 @@ namespace Applicaster.Tests
       m.vm.onLoginButtonSelected(true)
     end function
 
-    '@Test in progress
-    function onLoginButtonSelected_inProgress()
+    @it("in progress")
+    function _()
       m.vm.isLoading = true
       m.expectNone(m.vm, "processLogin")
 
       m.vm.onLoginButtonSelected(true)
     end function
 
-    '@Test invalid creds
-    function onLoginButtonSelected_invalidCreds()
+    @it("invalid creds")
+    function _()
       m.vm.isLoading = false
       m.vm.isCredsValid = false
       m.expectNone(m.vm, "processLogin")
@@ -171,13 +171,13 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onUsernameButtonSelected
+    @describe("tests onUsernameButtonSelected")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test onUsernameButtonSelected
-    '@Params["", ""]
-    '@Params["other", "other"]
-    function onUsernameButtonSelected(text, expectedText)
+    @it("onUsernameButtonSelected")
+    @params("", "")
+    @params("other", "other")
+    function _(text, expectedText)
       m.vm.username = text
 
       m.expectOnce(m.vm, "showKeyboardDialog", ["Enter your username", expectedText, "onUsernameKeyboardDialogDismissal"])
@@ -187,13 +187,13 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onPasswordButtonSelected
+    @describe("tests onPasswordButtonSelected")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test onPasswordButtonSelected
-    '@Params["", ""]
-    '@Params["other", "other"]
-    function onPasswordButtonSelected(text, expectedText)
+    @it("onPasswordButtonSelected")
+    @params("", "")
+    @params("other", "other")
+    function _(text, expectedText)
       m.vm.password = text
 
       m.expectOnce(m.vm, "showKeyboardDialog", ["Enter your password", expectedText, "onPasswordKeyboardDialogDismissal", true])
@@ -203,16 +203,16 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onUsernameKeyboardDialogDismissal
+    @describe("tests onUsernameKeyboardDialogDismissal")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test 
-    '@Params["", "placeholder", "textInputPlaceholder", ""]
-    '@Params["   ", "placeholder", "textInputPlaceholder", ""]
-    '@Params["george@foo.bar", "george@foo.bar", "textInput", "george@foo.bar"]
-    '@Params["abcd1234", "abcd1234", "textInput", "abcd1234"]
-    '@Params["aBCd1234", "aBCd1234", "textInput", "abcd1234"]
-    function onUsernameKeyboardDialogDismissal(text, expectedText, expectedButtonStyle, expectedUserName)
+    @it("onUsernameKeyboardDialogDismissal")
+    @params("", "placeholder", "textInputPlaceholder", "")
+    @params("   ", "placeholder", "textInputPlaceholder", "")
+    @params("george@foo.bar", "george@foo.bar", "textInput", "george@foo.bar")
+    @params("abcd1234", "abcd1234", "textInput", "abcd1234")
+    @params("aBCd1234", "aBCd1234", "textInput", "abcd1234")
+    function _(text, expectedText, expectedButtonStyle, expectedUserName)
 
       m.expectOnce(m.vm, "checkCredsValid")
 
@@ -226,14 +226,14 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onPasswordKeyboardDialogDismissal
+    @describe("tests onPasswordKeyboardDialogDismissal")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test
-    '@Params["", "placeholder", "textInputPlaceholder", ""]
-    '@Params["   ", "placeholder", "textInputPlaceholder", ""]
-    '@Params["12345678", "********", "textInput", "12345678"]
-    function onPasswordKeyboardDialogDismissal(text, expectedText, expectedButtonStyle, expectedPassword)
+    @it("onPasswordKeyboardDialogDismissal")
+    @params("", "placeholder", "textInputPlaceholder", "")
+    @params("   ", "placeholder", "textInputPlaceholder", "")
+    @params("12345678", "********", "textInput", "12345678")
+    function _(text, expectedText, expectedButtonStyle, expectedPassword)
 
       m.vm.passwordPlaceholderText = "placeholder"
       m.expectOnce(m.vm, "checkCredsValid")
@@ -248,14 +248,14 @@ namespace Applicaster.Tests
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onKeyPressUp
+    @describe("tests onKeyPressUp")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test onKeyPressUp
-    '@Params["usernameInput", "usernameInput"]
-    '@Params["passwordInput", "usernameInput"]
-    '@Params["loginButton", "passwordInput"]
-    function onKeyPressUp(focusId, expectedFocusId)
+    @it("onKeyPressUp")
+    @params("usernameInput", "usernameInput")
+    @params("passwordInput", "usernameInput")
+    @params("loginButton", "passwordInput")
+    function _(focusId, expectedFocusId)
       m.vm.focusId = focusId
 
       m.assertTrue(m.vm.onKeyPressUp())
@@ -263,14 +263,14 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onKeyPressDown
+    @describe("tests onKeyPressDown")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test onKeyPressDown
-    '@Params["usernameInput", "passwordInput"]
-    '@Params["passwordInput", "loginButton"]
-    '@Params["loginButton", "loginButton"]
-    function onKeyPressDown(focusId, expectedFocusId)
+    @it("onKeyPressDown")
+    @params("usernameInput", "passwordInput")
+    @params("passwordInput", "loginButton")
+    @params("loginButton", "loginButton")
+    function _(focusId, expectedFocusId)
       m.vm.focusId = focusId
 
       m.assertTrue(m.vm.onKeyPressDown())
@@ -278,21 +278,21 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onKeyPressBack
+    @describe("tests onKeyPressBack")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test onKeyPressBack - first field
-    function onKeyPressBack_first_field()
+    @it("onKeyPressBack - first field")
+    function _()
       m.vm.focusId = "usernameInput"
 
       m.assertFalse(m.vm.onKeyPressBack())
       m.assertEqual(m.vm.focusId, "usernameInput")
     end function
 
-    '@Test onKeyPressBack - otherField
-    '@Params["passwordInput"]
-    '@Params["loginButton"]
-    function onKeyPressBack_other_field(focusId)
+    @it("onKeyPressBack - otherField")
+    @params("passwordInput")
+    @params("loginButton")
+    function _(focusId)
       m.vm.focusId = focusId
       m.expectOnce(m.vm, "onKeyPressUp", invalid, true)
 
@@ -301,20 +301,20 @@ namespace Applicaster.Tests
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests checkCredsValid
+    @describe("tests checkCredsValid")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test 
-    '@Params[invalid, invalid, false]
-    '@Params["","", false]
-    '@Params["   ","   ", false]
-    '@Params["valid","", false]
-    '@Params["valid","   ", false]
-    '@Params[invalid, "valid", false]
-    '@Params["","valid", false]
-    '@Params["  ","valid", false]
-    '@Params["valid", "valid", true]
-    function checkCredsValid(username, password, expectedValue)
+    @it("checkCredsValid")
+    @params(invalid, invalid, false)
+    @params("","", false)
+    @params("   ","   ", false)
+    @params("valid","", false)
+    @params("valid","   ", false)
+    @params(invalid, "valid", false)
+    @params("","valid", false)
+    @params("  ","valid", false)
+    @params("valid", "valid", true)
+    function _(username, password, expectedValue)
       m.vm.username = username
       m.vm.password = password
 
@@ -324,11 +324,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests processLogin
+    @describe("tests processLogin")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test invalid creds
-    function processLogin_invalid_creds()
+    @it("invalid creds")
+    function _()
       m.vm.isCredsValid = false
 
       m.expectNone(m.vm, "createInstance")
@@ -340,8 +340,8 @@ namespace Applicaster.Tests
 
     end function
 
-    '@Test valid creds
-    function processLogin_valid_creds()
+    @it("valid creds")
+    function _()
       m.vm.isCredsValid = true
       m.vm.username = "user"
       m.vm.password = "pass"
@@ -367,9 +367,9 @@ namespace Applicaster.Tests
 
     end function
 
-    '@Ignore - only use these with your own creds, and for non suit tests
+    @ignore("- only use these with your own creds, and for non suit tests")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It INTEGRATION tests processLogin
+    @describe("INTEGRATION tests processLogin")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     '@BeforeEach
@@ -386,7 +386,7 @@ namespace Applicaster.Tests
         "identifier": "aws_cognito_auth_plugin",
         "api": {
           "require_startup_execution": false,
-          "class_name": "AwsCognitoAuthPlugin", 
+          "class_name": "AwsCognitoAuthPlugin",
           "interfaces": ["IAuthProvider"]
         },
         "type": "auth_provider"
@@ -396,7 +396,7 @@ namespace Applicaster.Tests
           "endpoint": "SOME_ENDPOINT"
           "app_client_id": "SOME_CLIENT_ID"
         }
-      }] 
+      }]
 
       ZC.TestUtils.setModelLocator(m.modelLocator)
       m.rootBeforeEach = TAAWSLSVMT.beforeEach
@@ -408,8 +408,8 @@ namespace Applicaster.Tests
       ZC.TestUtils.unsetModelLocator()
     end function
 
-    '@Test valid creds
-    function processLogin_integration_test()
+    @it("valid creds")
+    function _()
       m.vm.isCredsValid = true
       m.vm.username = "SOME_USER@email.com"
       m.vm.password = "SOME_PASSWORD"
@@ -424,8 +424,8 @@ namespace Applicaster.Tests
       m.assertFalse(m.vm.isLoading)
     end function
 
-    '@Test
-    function processLogin_integration_test_invalid()
+    @it("processLogin_integration_test_invalid")
+    function _()
 
       m.vm.isCredsValid = true
       m.vm.username = "user"
@@ -443,11 +443,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onLoginComplete
+    @describe("tests onLoginComplete")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test valid
-    function onLoginComplete_valid()
+    @it("valid")
+    function _()
       m.vm.state = "loading"
       m.expectOnce(m.vm, "dismiss", ["success"])
 
@@ -457,12 +457,12 @@ namespace Applicaster.Tests
 
     end function
 
-    '@Test fail
-    '@Params[invalid, "Unknown error"]
-    '@Params[{}, "Unknown error"]
-    '@Params[{"state": "error"}, "Unknown error"]
-    '@Params[{"state": "error", "message": "m"}, "m"]
-    function onLoginComplete_fail(result, expectedMessage)
+    @it("fail")
+    @params(invalid, "Unknown error")
+    @params({}, "Unknown error")
+    @params({"state": "error"}, "Unknown error")
+    @params({"state": "error", "message": "m"}, "m")
+    function _(result, expectedMessage)
       m.vm.state = "loading"
       m.expectNone(m.vm, "dismiss")
 
@@ -477,11 +477,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests refreshLogin
+    @describe("tests refreshLogin")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test 
-    function refreshLogin()
+    @it("refreshLogin")
+    function _()
       authTask = { "id": "authTask" }
 
       m.expectOnce(m.vm, "createAuthTask", ["execLoad", "aws_cognito_auth_plugin", "onRefreshComplete"], authTask)
@@ -495,11 +495,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onRefreshComplete
+    @describe("tests onRefreshComplete")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test sucess
-    function onRefreshComplete()
+    @it("sucess")
+    function _()
       user = { "id": "user", isLoggedIn: true }
       m.expectOnce(m.vm, "getInstance", ["user"], user)
       m.expectOnce(m.vm, "dismiss", ["success"])
@@ -515,8 +515,8 @@ namespace Applicaster.Tests
     end function
 
 
-    '@Test failure
-    function onRefreshComplete_failure()
+    @it("failure")
+    function _()
       user = { "id": "user", isLoggedIn: false }
       m.expectOnce(m.vm, "getInstance", ["user"], user)
       m.expectOnce(m.vm, "dismiss", ["success"])

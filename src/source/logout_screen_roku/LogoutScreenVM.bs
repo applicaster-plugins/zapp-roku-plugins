@@ -1,7 +1,7 @@
 import "pkg:/source/UIBuilder/view/ScreenVM.bs"
 import "pkg:/source/lib/ViewUtils.bs"
 
-class LogoutScreenVM extends Zapp.UIB.ScreenVM
+class LogoutScreenVM extends zapp.UIB.ScreenVM
 
   public isButtonVisible = true
   public isShowingLoadingIndicator = false
@@ -96,7 +96,7 @@ class LogoutScreenVM extends Zapp.UIB.ScreenVM
 
     m.isLoggedOut = true
     m.setField("isShowingLoadingIndicator", true)
-    m.setField("isButtonVisible", false) 
+    m.setField("isButtonVisible", false)
   end function
 
   function onLogoutComplete(result)

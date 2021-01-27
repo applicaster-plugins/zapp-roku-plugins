@@ -2,7 +2,7 @@
 <component
     name='DeeplinkingController'
     extends='UIBScreen'
-    vmclass='DeeplinkingControllerVM'>
+    vm='DeeplinkingControllerVM'>
 
   <interface>
     </interface>

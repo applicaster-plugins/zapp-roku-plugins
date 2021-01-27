@@ -2,7 +2,7 @@
 <component
     name='LogoutScreen'
     extends='UIBScreen'
-    vmclass='LogoutScreenVM'>
+    vm='LogoutScreenVM'>
 
   <interface></interface>
 

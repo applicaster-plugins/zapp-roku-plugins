@@ -1,6 +1,6 @@
-namespace Applicaster.Tests
+namespace Applicaster.tests
 
-  '@TestSuite
+  @suite
   class SegmentAnalyticsPluginTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
@@ -13,7 +13,7 @@ namespace Applicaster.Tests
       }
       ZC.TestUtils.setModelLocator(m.modelLocator)
 
-      m.pluginData = new Zapp.BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
+      m.pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
 
       m.plugin = new SegmentAnalyticsPlugin(m.pluginData)
     end function
@@ -23,11 +23,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests constructor
+    @describe("tests constructor")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test constructor
-    function testConstructor_tests()
+    @it("constructor")
+    function _()
       m.assertEqual(m.plugin.id, "segment_analytics_roku")
       m.assertSubType(m.plugin.segmentTask, "SegmentAnalyticsTask")
       m.assertEqual(m.plugin.writeKey, "#w")
@@ -36,11 +36,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests start
+    @describe("tests start")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test start
-    function start()
+    @it("start")
+    function _()
 
       library = { "id": "library" }
       m.plugin.library = library
@@ -56,11 +56,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests generateMap
+    @describe("tests generateMap")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test some
-    function generateMap_some()
+    @it("some")
+    function _()
       config = {
         "write_key": "#w"
         "provider_key_1": "AdobePrimetime"
@@ -71,7 +71,7 @@ namespace Applicaster.Tests
         "provider_value_3": ""
       }
 
-      pluginData = new Zapp.BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
+      pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
 
       map = m.plugin.generateMap(pluginData, "provider", 3)
 
@@ -79,8 +79,8 @@ namespace Applicaster.Tests
       m.assertEqual(map["aws_cognito_auth_plugin"], "Cognito")
     end function
 
-    '@Test none
-    function generateMap_none()
+    @it("none")
+    function _()
       config = {
         "write_key": "#w"
         "provider_key_1": ""
@@ -94,7 +94,7 @@ namespace Applicaster.Tests
         "provider_value_3": ""
       }
 
-      pluginData = new Zapp.BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
+      pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
 
       m.assertEmpty(m.plugin.generateMap(pluginData, "provider", 3))
 
@@ -102,11 +102,11 @@ namespace Applicaster.Tests
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests _identify
+    @describe("tests _identify")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test disabled_on_logout
-    function _identify_disabled_on_logout()
+    @it("disabled_on_logout")
+    function _()
       m.plugin.isIdentifyingOnLogout = false
       m.assertTrue(m.plugin._identify("pid", invalid, invalid, true))
     end function

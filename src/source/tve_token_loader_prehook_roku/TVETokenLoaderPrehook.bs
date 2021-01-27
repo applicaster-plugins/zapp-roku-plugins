@@ -1,14 +1,14 @@
 import "pkg:/source/plugin-support/PluginManager.bs"
 import "pkg:/source/lib/BaseClass.bs"
 import "pkg:/source/maestro/lib/Utils.bs"
-import "pkg:/source/lib/Request.bs" 
-import "pkg:/source/lib/URI.bs" 
+import "pkg:/source/lib/Request.bs"
+import "pkg:/source/lib/URI.bs"
 
 ' /**
 '  * @module TVETokenLoaderPrehookTests
 '  * @description retrieves the specified tokens for TVE account. Requires that Adobe Primetime auth plugin is used, and is logged in via to this prehook running.
 '  */
-class TVETokenLoaderPrehook extends Zapp.BaseClass
+class TVETokenLoaderPrehook extends zapp.BaseClass
 
   private isValid = false
   private matchingPath = ""
@@ -22,7 +22,7 @@ class TVETokenLoaderPrehook extends Zapp.BaseClass
 
   public function new()
     super("TVETokenLoaderPrehook")
-    m.plugins = m.getClassInstance("Zapp.PluginManager")
+    m.plugins = m.getClassInstance("zapp.PluginManager")
     m.request = m.getClassInstance("ZC.Request")
     m.uri = m.getClassInstance("ZC.URI")
 

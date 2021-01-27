@@ -2,7 +2,7 @@ import "pkg:/source/UIBuilder/view/ScreenVM.bs"
 import "pkg:/source/lib/ViewUtils.bs"
 import "pkg:/source/mixin/KeyboardDialogMixin.bs"
 
-class AWSLoginScreenVM extends Zapp.UIB.ScreenVM
+class AWSLoginScreenVM extends zapp.UIB.ScreenVM
 
   'styles
   public titleStyle = invalid
@@ -52,7 +52,7 @@ class AWSLoginScreenVM extends Zapp.UIB.ScreenVM
 
   public override function load() as boolean
     m.logInfo("load - refreshing login")
-    m.refreshLogin() 
+    m.refreshLogin()
     return true
   end function
 
@@ -137,7 +137,7 @@ class AWSLoginScreenVM extends Zapp.UIB.ScreenVM
       lCaseUserName = LCase(text)
       m.username = lCaseUserName
       m.setField("usernameButtonType", "textInput")
-    end if 
+    end if
 
     m.checkCredsValid()
 
@@ -155,7 +155,7 @@ class AWSLoginScreenVM extends Zapp.UIB.ScreenVM
       m.setField("passwordText", KeyboardDialogMixin.getHiddenPasswordText(text))
       m.password = text
       m.setField("passwordButtonType", "textInput")
-    end if 
+    end if
 
     m.checkCredsValid()
   end function

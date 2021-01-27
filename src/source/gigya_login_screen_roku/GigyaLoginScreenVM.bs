@@ -1,6 +1,6 @@
 import "pkg:/source/UIBuilder/view/ScreenVM.bs"
 
-class GigyaLoginScreenVM extends Zapp.UIB.ScreenVM
+class GigyaLoginScreenVM extends zapp.UIB.ScreenVM
 
   public isContentVisible = false
   public isRefreshing = true

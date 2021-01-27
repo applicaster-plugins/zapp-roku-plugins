@@ -2,7 +2,7 @@ import "pkg:/source/UIBuilder/view/ScreenVM.bs"
 import "pkg:/source/lib/ViewUtils.bs"
 import "pkg:/source/mixin/KeyboardDialogMixin.bs"
 
-class LoginScreenVM extends Zapp.UIB.ScreenVM
+class LoginScreenVM extends zapp.UIB.ScreenVM
 
   'styles
   public inputStyle = invalid
@@ -62,7 +62,7 @@ class LoginScreenVM extends Zapp.UIB.ScreenVM
       m.dismiss("success")
     else
       m.logInfo("user not logged in - attemping refreshing")
-      m.refreshLogin() 
+      m.refreshLogin()
     end if
     return true
   end function
@@ -312,7 +312,7 @@ class LoginScreenVM extends Zapp.UIB.ScreenVM
 
   public function onKeyPressDown() as boolean
     m.logMethod("onKeyPressDown", m.focusId)
-    if not m.isSubScreenVisible 
+    if not m.isSubScreenVisible
       m.setFocusId(MC.getItemAtOffset(m.focusIds, m.focusId, 1))
     end if
     return true

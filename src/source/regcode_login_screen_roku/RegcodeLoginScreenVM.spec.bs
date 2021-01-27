@@ -1,6 +1,6 @@
-namespace Applicaster.Tests
+namespace Applicaster.tests
 
-  '@TestSuite
+  @suite
   class RegcodeLoginScreenVMTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
@@ -15,8 +15,8 @@ namespace Applicaster.Tests
         "id": "regcodeScreen"
         styles: {
         }
-        "localizations": { 
-          "en": {} 
+        "localizations": {
+          "en": {}
         }
       }
 
@@ -33,11 +33,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests load
+    @describe("tests load")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test displayedInPrehook not showing
-    function load_displayedInPrehook_no_show()
+    @it("displayedInPrehook not showing")
+    function _()
       currentSelection = { "id": "currentSelection" }
       m.vm.providerId = "pid"
       m.vm.isDisplayedInPrehook = true
@@ -49,8 +49,8 @@ namespace Applicaster.Tests
       m.vm.load()
     end function
 
-    '@Test displayedInPrehook showing
-    function load_displayedInPrehook_showing()
+    @it("displayedInPrehook showing")
+    function _()
       currentSelection = { "id": "currentSelection" }
       m.vm.providerId = "pid"
       m.vm.isDisplayedInPrehook = true
@@ -65,8 +65,8 @@ namespace Applicaster.Tests
       m.vm.load()
     end function
 
-    '@Test not displayedInPrehook
-    function load_not_displayedInPrehook()
+    @it("not displayedInPrehook")
+    function _()
       currentSelection = { "id": "currentSelection" }
       m.vm.providerId = "pid"
       m.vm.isDisplayedInPrehook = false
@@ -80,13 +80,13 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests shouldDisplayWithContent
+    @describe("tests shouldDisplayWithContent")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test
-    '@Params[true]
-    '@Params[false]
-    function shouldDisplayWithContent(expected)
+    @it("shouldDisplayWithContent")
+    @params(true)
+    @params(false)
+    function _(expected)
       currentItem = { "id": "currentItem" }
       currentSelection = { "id": "currentSelection", "currentItem": currentItem }
       entitlementsNode = { "id": "entitlements" }
@@ -97,14 +97,14 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests refreshLogin
+    @describe("tests refreshLogin")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test
-    '@Params[invalid]
-    '@Params["id1"]
-    '@Params["id2"]
-    function refreshLogin(providerId)
+    @it("refreshLogin")
+    @params(invalid)
+    @params("id1")
+    @params("id2")
+    function _(providerId)
       authTask = { "id": "authTask" }
 
       m.expectOnce(m.vm, "createAuthTask", ["execLoad", providerId, "onRefreshLoginComplete"], authTask)
@@ -118,11 +118,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onRefreshLoginComplete
+    @describe("tests onRefreshLoginComplete")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test success
-    function onRefreshLoginComplete_success()
+    @it("success")
+    function _()
       user = { "id": "user", isLoggedIn: true }
       m.expectOnce(m.vm, "getInstance", ["user"], user)
 
@@ -133,8 +133,8 @@ namespace Applicaster.Tests
 
     end function
 
-    '@Test not valid
-    function onRefreshLoginComplete_not_valid()
+    @it("not valid")
+    function _()
       user = { "id": "user", isLoggedIn: false }
       m.expectOnce(m.vm, "getInstance", ["user"], user)
       m.expectOnce(m.vm, "loadCode", [])
@@ -148,24 +148,24 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onRefreshButtonSelected
+    @describe("tests onRefreshButtonSelected")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test 
-    function onRefreshButtonSelected()
+    @it("onRefreshButtonSelected")
+    function _()
       m.expectOnce(m.vm, "loadCode", [])
       m.vm.onRefreshButtonSelected(true)
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onPollTimerFire
+    @describe("tests onPollTimerFire")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test
-    '@params[invalid]
-    '@params[true]
-    '@params[false]
-    function onTimerFire_true(value)
+    @it("onTimerFire_true")
+    @params(invalid)
+    @params(true)
+    @params(false)
+    function _(value)
       m.vm.authTask = { "id": "authtask" }
       newAuthTask = { "id": "newAuthTask" }
       m.vm.providerId = "pid"
@@ -180,11 +180,11 @@ namespace Applicaster.Tests
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests loadCode
+    @describe("tests loadCode")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test 
-    function loadCode()
+    @it("loadCode")
+    function _()
       oldAuthTask = { "id": "authtask" }
       m.vm.authTask = oldAuthTask
       m.vm.providerId = "pid"
@@ -202,11 +202,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onLoadCodecomplete
+    @describe("tests onLoadCodecomplete")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test success
-    function onLoadCodeComplete_success()
+    @it("success")
+    function _()
       result = { "regcode": "reg" }
       m.expectOnce(m.vm, "togglePollTimer", [true])
 
@@ -217,11 +217,11 @@ namespace Applicaster.Tests
       m.assertFalse(m.vm.isRefreshing)
     end function
 
-    '@Test fail
-    '@Params[invalid]
-    '@Params[{}]
-    '@Params[{"codeText": invalid}]
-    function onLoadCodeComplete_fail(result)
+    @it("fail")
+    @params(invalid)
+    @params({})
+    @params({"codeText": invalid})
+    function _(result)
       m.expectNone(m.vm, "togglePollTimer")
 
       m.vm.onLoadCodeComplete(result)
@@ -232,24 +232,24 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests togglePollTimer
+    @describe("tests togglePollTimer")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test 
-    '@Params[true, "start"]
-    '@Params[false, "stop"]
-    function togglePollTimer(isActive, expectedValue)
+    @it("togglePollTimer")
+    @params(true, "start")
+    @params(false, "stop")
+    function _(isActive, expectedValue)
       m.vm.togglePollTimer(isActive)
       m.assertEqual(m.vm.pollTimerControl, expectedValue)
 
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onPollComplete
+    @describe("tests onPollComplete")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test valid
-    function onPollComplete_valid()
+    @it("valid")
+    function _()
       result = { "state": "valid" }
       m.vm.providerId = "pid"
 
@@ -260,12 +260,12 @@ namespace Applicaster.Tests
       m.vm.onPollComplete(result)
     end function
 
-    '@Test fail
-    '@Params[invalid]
-    '@Params[{}]
-    '@Params[{"state":"error"}]
-    '@Params[{"state":"none"}]
-    function onPollComplete_fail(result)
+    @it("fail")
+    @params(invalid)
+    @params({})
+    @params({"state":"error"})
+    @params({"state":"none"})
+    function _(result)
       m.vm.providerId = "pid"
       m.expectNone(m.vm.analyticsManager, "callFunc")
       m.expectNone(m.vm, "dismiss")
@@ -275,11 +275,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onKeyPressBack
+    @describe("tests onKeyPressBack")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test 
-    function onKeyPressBack()
+    @it("onKeyPressBack")
+    function _()
       m.expectOnce(m.vm, "dismiss", ["cancel"])
       m.vm.onKeyPressBack()
 

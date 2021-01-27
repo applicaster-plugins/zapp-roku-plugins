@@ -2,7 +2,7 @@
 <component
     name='GeneralTextScreen'
     extends='UIBScreen'
-    vmclass='GeneralTextScreenVM'>
+    vm='GeneralTextScreenVM'>
 
   <interface></interface>
 

@@ -2,7 +2,7 @@
 <component
     name='RegisterScreen'
     extends='UIBScreen'
-    vmclass='RegisterScreenVM'>
+    vm='RegisterScreenVM'>
 
   <interface></interface>
 

@@ -1,6 +1,6 @@
-namespace Applicaster.Tests
+namespace Applicaster.tests
 
-  '@TestSuite
+  @suite
   class DeeplinkingControllerVMTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
@@ -26,11 +26,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests constructor
+    @describe("tests constructor")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test 
-    function testConstructor_tests()
+    @it("testConstructor_tests")
+    function _()
       m.assertEqual(m.vm.screenIdsByName, {
         "season": "seriesScreen"
         "episode": "episodeScreen"
@@ -40,11 +40,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests togglePrehookController
+    @describe("tests togglePrehookController")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test set controller - none set
-    function togglePrehookController_none_set()
+    @it("set controller - none set")
+    function _()
       controller = { "id": "controller" }
 
       m.expectOnce(m.vm, "bindNodefield", [controller, "state", "onPrehookControllerStateChange", MOM.createBindingProperties(false, invalid, true)])
@@ -55,8 +55,8 @@ namespace Applicaster.Tests
 
     end function
 
-    '@Test replace controller
-    function togglePrehookController_replace()
+    @it("replace controller")
+    function _()
       controller = { "id": "controller" }
 
       m.vm.currentScreen = { "id": "controller" }
@@ -72,8 +72,8 @@ namespace Applicaster.Tests
     end function
 
 
-    '@Test unset, with screen 
-    function togglePrehookController()
+    @it("unset, with screen")
+    function _()
       controller = { "id": "controller" }
       m.vm.currentScreen = controller
       m.expectOnce(m.vm, "unbindNodeField", [controller, "state", "onPrehookControllerStateChange"])
@@ -85,11 +85,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onPrehookControllerStateChange
+    @describe("tests onPrehookControllerStateChange")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test success
-    function onPrehookControllerStateChange_success()
+    @it("success")
+    function _()
       screen = { "id": "screen" }
       m.vm.currentScreen = screen
 
@@ -104,10 +104,10 @@ namespace Applicaster.Tests
 
     end function
 
-    '@Test other states
-    '@Params["error"]
-    '@Params["cancel"]
-    function onPrehookControllerStateChange_other(state)
+    @it("other states")
+    @params("error")
+    @params("cancel")
+    function _(state)
       screen = { "id": "screen" }
       m.vm.currentScreen = screen
 
@@ -121,15 +121,15 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests dismissDeeplinkingController
+    @describe("tests dismissDeeplinkingController")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test 
-    '@Params[true, false, true, false]
-    '@Params[true, true, true, false]
-    '@Params[false, false, true, false]
-    '@Params[false, true, false, true]
-    function dismissDeeplinkingController(isLiveDeeplink, isShowingPrehooks, isExitDeeplinking, isExitApp)
+    @it("dismissDeeplinkingController")
+    @params(true, false, true, false)
+    @params(true, true, true, false)
+    @params(false, false, true, false)
+    @params(false, true, false, true)
+    function _(isLiveDeeplink, isShowingPrehooks, isExitDeeplinking, isExitApp)
       m.vm.isLiveDeeplink = isLiveDeeplink
       m.vm.isShowingPrehooks = isShowingPrehooks
 
@@ -140,28 +140,28 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests getPrehookController
+    @describe("tests getPrehookController")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test  none
-    '@Params[{ "id" : "screen"}]
-    '@Params[{ "id" : "screen", "hooks": {"preload_plugins":invalid}}]
-    '@Params[{"hooks": {"preload_plugins":[]}}]
-    function getPrehookController_no_prehooks(riversJson)
+    @it(" none")
+    @params({ "id" : "screen"})
+    @params({ "id" : "screen", "hooks": {"preload_plugins":invalid}})
+    @params({"hooks": {"preload_plugins":[]}})
+    function _(riversJson)
       m.vm.riversJson = riversJson
       m.assertInvalid(m.vm.getPrehookController())
     end function
 
-    '@Test hooks
-    '@Params[{ "id" : "s1", "hooks": {"preload_plugins":[{"id": 1}]}}]
-    '@Params[{ "id" : "s2", "hooks": {"preload_plugins":[{"id": 1}]}}]
-    '@Params[{ "id" : "s3", "hooks": {"preload_plugins":[{"id": 1},{"id": 2}]}}]
-    '@Params[{ "id" : "s4", "hooks": {"preload_plugins":[{"id": 1},{"id": 2}]}}]
-    function getPrehookController_with_prehooks(riversJson)
+    @it("hooks")
+    @params({ "id" : "s1", "hooks": {"preload_plugins":[{"id": 1}]}})
+    @params({ "id" : "s2", "hooks": {"preload_plugins":[{"id": 1}]}})
+    @params({ "id" : "s3", "hooks": {"preload_plugins":[{"id": 1},{"id": 2}]}})
+    @params({ "id" : "s4", "hooks": {"preload_plugins":[{"id": 1},{"id": 2}]}})
+    function _(riversJson)
 
 
       m.vm.riversJson = riversJson
-      hooks = MC.getContentField(riversJson, "hooks.preload_plugins") 
+      hooks = MC.getContentField(riversJson, "hooks.preload_plugins")
       mockScreen = { "id": "screen" }
 
       m.expectOnce(m.vm, "createInstance", ["ScreenHookController", invalid, "prehooksController"], mockScreen)
@@ -177,14 +177,14 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onShow
+    @describe("tests onShow")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test 
-    '@Params[false, false, false]
-    '@Params[true, false, true]
-    '@Params[true, true, false]
-    function onShow_no_prehook(isDeeplinkingApplied, isShowingParentScreen, isExitCalled)
+    @it("onShow_no_prehook")
+    @params(false, false, false)
+    @params(true, false, true)
+    @params(true, true, false)
+    function _(isDeeplinkingApplied, isShowingParentScreen, isExitCalled)
       m.vm.isShowingParentScreen = isShowingParentScreen
       m.vm.isDeeplinkingApplied = isDeeplinkingApplied
       m.expectOnceOrNone(m.vm, "exitFromDeeplinking", isExitCalled, [])
@@ -193,11 +193,11 @@ namespace Applicaster.Tests
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests applyDeeplinking
+    @describe("tests applyDeeplinking")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test invalid selection
-    function applyDeeplinking_invalid_selection()
+    @it("invalid selection")
+    function _()
       deeplinkingData = {
         "id": "deeplinkingData"
         "itemType": "series"
@@ -214,10 +214,10 @@ namespace Applicaster.Tests
 
     end function
 
-    '@Test video and parent screen present
-    '@Params[true]
-    '@Params[false]
-    function applyDeeplinking_onlyVideo_parent_screen(isLaunchDeeplink)
+    @it("video and parent screen present")
+    @params(true)
+    @params(false)
+    function _(isLaunchDeeplink)
       parentEntry = { "id": "parentEntry" }
       parentScreen = { "id": "parentScreen" }
 
@@ -243,10 +243,10 @@ namespace Applicaster.Tests
 
     end function
 
-    '@Test only video
-    '@Params[true]
-    '@Params[false]
-    function applyDeeplinking_onlyVideo(isLaunchDeeplink)
+    @it("only video")
+    @params(true)
+    @params(false)
+    function _(isLaunchDeeplink)
       parentEntry = { "id": "parentEntry" }
       entry = { "id": "entry" }
       deeplinkingData = {
@@ -270,15 +270,15 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests getDeeplinkingSelectionWithData
+    @describe("tests getDeeplinkingSelectionWithData")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test sets properties for non-episode types
-    '@Params["channel"]
-    '@Params["vod"]
-    '@Params["collection"]
-    function getDeeplinkingSelectionWithData_valid_notSeasonOrSeries(itemType)
-      collection = Applicaster.Selection.Tests.createCollection(3)
+    @it("sets properties for non-episode types")
+    @params("channel")
+    @params("vod")
+    @params("collection")
+    function _(itemType)
+      collection = Applicaster.Selection.tests.createCollection(3)
       deeplinkingData = createObject("roSGNode", "DeeplinkingData")
       deeplinkingData.action = "play"
       deeplinkingData.itemType = itemType
@@ -293,11 +293,11 @@ namespace Applicaster.Tests
       m.AssertEqual(selection.collection.id, deeplinkingData.entry.id)
     end function
 
-    '@Test valid season or series with found episode
-    '@Params["series"]
-    '@Params["season"]
-    function getDeeplinkingSelectionWithData_valid_SeasonOrSeries(itemType)
-      collection = Applicaster.Selection.Tests.createCollection(3)
+    @it("valid season or series with found episode")
+    @params("series")
+    @params("season")
+    function _(itemType)
+      collection = Applicaster.Selection.tests.createCollection(3)
       collection.id = "expectedId"
       deeplinkingData = createObject("roSGNode", "DeeplinkingData")
       deeplinkingData.action = "play"
@@ -312,11 +312,11 @@ namespace Applicaster.Tests
       m.AssertEqual(selection.collection.id, "expectedId")
     end function
 
-    '@Test sets properties series and season types, invalid episode
-    '@Params["series"]
-    '@Params["season"]
-    function getDeeplinkingSelectionWithData_seasonSeries_invalidEpisode(itemType)
-      collection = Applicaster.Selection.Tests.createCollection(3)
+    @it("sets properties series and season types, invalid episode")
+    @params("series")
+    @params("season")
+    function _(itemType)
+      collection = Applicaster.Selection.tests.createCollection(3)
       deeplinkingData = createObject("roSGNode", "DeeplinkingData")
       deeplinkingData.action = "play"
       deeplinkingData.itemType = itemType
@@ -331,11 +331,11 @@ namespace Applicaster.Tests
       m.AssertEqual(selection.collection.id, deeplinkingData.entry.id)
     end function
 
-    '@Test sets properties series and season types, valid episode
-    '@Params["series"]
-    '@Params["season"]
-    function getDeeplinkingSelectionWithData_seasonSeries_validEpisode(itemType)
-      collection = Applicaster.Selection.Tests.createCollection(3)
+    @it("sets properties series and season types, valid episode")
+    @params("series")
+    @params("season")
+    function _(itemType)
+      collection = Applicaster.Selection.tests.createCollection(3)
       deeplinkingData = createObject("roSGNode", "DeeplinkingData")
       deeplinkingData.action = "play"
       deeplinkingData.itemType = itemType
@@ -350,14 +350,14 @@ namespace Applicaster.Tests
       m.AssertEqual(selection.collection.id, deeplinkingData.entry.id)
     end function
 
-    '@Test does not set when deeplinkingData is not valid
-    '@Params["channel"]
-    '@Params["vod"]
-    '@Params["collection"]
-    '@Params["season"]
-    '@Params["series"]
-    function getDeeplinkingSelectionWithData_notValid(itemType)
-      collection = Applicaster.Selection.Tests.createCollection(3)
+    @it("does not set when deeplinkingData is not valid")
+    @params("channel")
+    @params("vod")
+    @params("collection")
+    @params("season")
+    @params("series")
+    function _(itemType)
+      collection = Applicaster.Selection.tests.createCollection(3)
       deeplinkingData = createObject("roSGNode", "DeeplinkingData")
       deeplinkingData.action = "play"
       deeplinkingData.itemType = itemType
@@ -372,13 +372,13 @@ namespace Applicaster.Tests
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests toggleDeeplinkingTask
+    @describe("tests toggleDeeplinkingTask")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test inactive no task
-    '@Params[true]
-    '@Params[false]
-    function toggleDeeplinkingTask_inactive_no_task(navMenuFocusable)
+    @it("inactive no task")
+    @params(true)
+    @params(false)
+    function _(navMenuFocusable)
       m.vm.isNAvMenuFocusable = navMenuFocusable
 
       m.expectNone(m.vm, "unbindNodeField")
@@ -390,10 +390,10 @@ namespace Applicaster.Tests
       m.assertFalse(m.vm.isLoadingIndicatorVisible)
     end function
 
-    '@Test inactive with task
-    '@Params[true]
-    '@Params[false]
-    function toggleDeeplinkingTask_inactive_task(navMenuFocusable)
+    @it("inactive with task")
+    @params(true)
+    @params(false)
+    function _(navMenuFocusable)
       m.vm.isNavMenuFocusable = navMenuFocusable
       m.vm.deeplinkingTask = { "id": "task" }
 
@@ -410,13 +410,13 @@ namespace Applicaster.Tests
     end function
 
 
-    '@Test active -no task
-    function toggleDeeplinkingTask_active()
+    @it("active -no task")
+    function _()
       deeplinkingTask = { "id": "task" }
       args = { "id": "args" }
 
       m.expectOnce(m.vm, "createInstance", ["DeeplinkingTask", invalid, "deeplinkingTask"], deeplinkingTask)
-      m.expectOnce(m.vm, "bindNodeField", [deeplinkingTask, "deeplinkingData", "onDeeplinkingTaskResult", MOM.createBindingProperties(false, invalid, true)]) 
+      m.expectOnce(m.vm, "bindNodeField", [deeplinkingTask, "deeplinkingData", "onDeeplinkingTaskResult", MOM.createBindingProperties(false, invalid, true)])
 
       m.vm.toggleDeeplinkingTask(true, args)
 
@@ -426,8 +426,8 @@ namespace Applicaster.Tests
       m.assertTrue(m.vm.isLoadingIndicatorVisible)
     end function
 
-    '@Test active - with task
-    function toggleDeeplinkingTask_active_with_task()
+    @it("active - with task")
+    function _()
       m.vm.deeplinkingTask = { "id": "old_task" }
       deeplinkingTask = { "id": "task" }
       args = { "id": "args" }
@@ -435,7 +435,7 @@ namespace Applicaster.Tests
       m.expectOnce(m.vm, "unbindNodeField", [m.vm.deeplinkingTask, "deeplinkingData", "onDeeplinkingTaskResult"])
 
       m.expectOnce(m.vm, "createInstance", ["DeeplinkingTask", invalid, "deeplinkingTask"], deeplinkingTask)
-      m.expectOnce(m.vm, "bindNodeField", [deeplinkingTask, "deeplinkingData", "onDeeplinkingTaskResult", MOM.createBindingProperties(false, invalid, true)]) 
+      m.expectOnce(m.vm, "bindNodeField", [deeplinkingTask, "deeplinkingData", "onDeeplinkingTaskResult", MOM.createBindingProperties(false, invalid, true)])
 
       m.vm.toggleDeeplinkingTask(true, args)
 
@@ -446,11 +446,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onDeeplinkingTaskResult
+    @describe("tests onDeeplinkingTaskResult")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test data isValid
-    function onDeeplinkingTaskResult_valid()
+    @it("data isValid")
+    function _()
       data = createObject("roSGNode", "DeeplinkingData")
       data.isValid = true
       data.id = "dld"

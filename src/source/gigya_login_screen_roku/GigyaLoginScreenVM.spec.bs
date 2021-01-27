@@ -1,6 +1,6 @@
-namespace Applicaster.Tests
+namespace Applicaster.tests
 
-  '@TestSuite
+  @suite
   class GigyaLoginScreenVMTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
@@ -14,8 +14,8 @@ namespace Applicaster.Tests
         "id": "myAccount"
         "general": { "base_url": "#base_url/" }
         "styles": { "login_screen": "#lis" }
-        "localizations": { 
-          "en": {} 
+        "localizations": {
+          "en": {}
         }
       }
 
@@ -26,11 +26,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests constructor
+    @describe("tests constructor")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test
-    function testConstructor_tests()
+    @it("testConstructor_tests")
+    function _()
       m.assertEqual(m.vm.focusId, "loginButton")
       m.assertTrue(m.vm.isRefreshing)
       m.assertFalse(m.vm.isContentVisible)
@@ -38,11 +38,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests load
+    @describe("tests load")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test not shown before
-    function load_not_shown()
+    @it("not shown before")
+    function _()
       m.expectOnce(m.vm, "getLocalStoreValue", ["gigya_login_screen_roku", "isShown"], invalid)
       m.expectOnce(m.vm, "refreshLogin", [])
       m.expectOnce(m.vm, "setLocalStoreValue", ["gigya_login_screen_roku", "isShown", "true", true])
@@ -51,8 +51,8 @@ namespace Applicaster.Tests
 
     end function
 
-    '@Test shown before
-    function load_shown()
+    @it("shown before")
+    function _()
       m.expectOnce(m.vm, "getLocalStoreValue", ["gigya_login_screen_roku", "isShown"], "true")
       m.expectNone(m.vm, "refreshLogin", [])
       m.expectOnce(m.vm, "dismiss", ["success"])
@@ -62,11 +62,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests refreshLogin
+    @describe("tests refreshLogin")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test 
-    function refreshLogin()
+    @it("refreshLogin")
+    function _()
       authTask = { "id": "authTask" }
 
       m.expectOnce(m.vm, "createAuthTask", ["execLoad", "gigya_auth_plugin_roku", "onRefreshComplete"], authTask)
@@ -80,11 +80,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onRefreshComplete
+    @describe("tests onRefreshComplete")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test sucess
-    function onRefreshComplete()
+    @it("sucess")
+    function _()
       user = { "id": "user", isLoggedIn: true }
       analytics = { "id": "analytics" }
 
@@ -104,8 +104,8 @@ namespace Applicaster.Tests
     end function
 
 
-    '@Test failure
-    function onRefreshComplete_failure()
+    @it("failure")
+    function _()
       user = { "id": "user", isLoggedIn: false }
       m.vm.isContentVisible = false
       m.vm.isRefreshing = true
@@ -120,11 +120,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests button callbacks
+    @describe("tests button callbacks")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test - focused on loginButton
-    function onLoginButtonSelected()
+    @it("- focused on loginButton")
+    function _()
       m.vm.focusId = "loginButton"
       m.expectOnce(m.vm, "showLoginScreen")
 
@@ -132,8 +132,8 @@ namespace Applicaster.Tests
 
     end function
 
-    '@Test - focused on logoutButton
-    function onSkipButtonSelected()
+    @it("- focused on logoutButton")
+    function _()
       m.vm.focusId = "logoutButton"
 
       m.expectOnce(m.vm, "dismiss", ["success"])
@@ -142,11 +142,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onKeyPressBack
+    @describe("tests onKeyPressBack")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test 
-    function onKeyPressBack()
+    @it("onKeyPressBack")
+    function _()
       m.vm.focusId = "loginButton"
       m.expectOnce(m.vm, "dismiss", ["cancel"])
 
@@ -155,11 +155,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests showLoginScreen
+    @describe("tests showLoginScreen")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test found
-    function showLoginScreen_found()
+    @it("found")
+    function _()
       screen = { "id": "screen" }
 
       m.expectOnce(m.vm, "getScreen", ["#lis"], screen)
@@ -170,8 +170,8 @@ namespace Applicaster.Tests
       m.vm.showLoginScreen()
     end function
 
-    '@Test not found
-    function showLoginScreen_not_found()
+    @it("not found")
+    function _()
       m.expectOnce(m.vm, "getScreen", ["#lis"], invalid)
       m.expectNone(m.vm, "push")
       m.expectNone(m.vm, "setFocus")
@@ -181,11 +181,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onLoginStateChanged
+    @describe("tests onLoginStateChanged")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test success
-    function onLoginStatechanged_success()
+    @it("success")
+    function _()
       m.vm.state = "none"
 
       m.vm.onLoginScreenStateChange("success")
@@ -194,10 +194,10 @@ namespace Applicaster.Tests
 
     end function
 
-    '@Test other trackable state
-    '@Params["error"]
-    '@Params["cancel"]
-    function onLoginStatechanged_other_state(state)
+    @it("other trackable state")
+    @params("error")
+    @params("cancel")
+    function _(state)
       m.vm.state = "none"
       m.expectOnce(m.vm, "setFocusId", ["loginButton"])
 

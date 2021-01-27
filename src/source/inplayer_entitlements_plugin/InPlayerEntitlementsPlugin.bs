@@ -2,7 +2,7 @@ import "pkg:/source/entitlements/BaseEntitlementsPlugin.bs"
 import "pkg:/source/lib/AdminAPI.bs"
 import "pkg:/source/lib/APIUtils.bs"
 
-class InPlayerEntitlementsPlugin extends Zapp.Entitlements.BaseEntitlementsPlugin
+class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugin
 
   private entitlementsPolicy = ""
   private vodModel = ""
@@ -31,7 +31,7 @@ class InPlayerEntitlementsPlugin extends Zapp.Entitlements.BaseEntitlementsPlugi
     m.token = m.getSessionStoreValue("inplayer_auth_plugin_roku", "token")
 
     if plugin.getStringValue("environment", "prod") = "prod"
-      m.apiUrl = "https://services.inplayer.com" 
+      m.apiUrl = "https://services.inplayer.com"
     else
       m.apiUrl = "https://staging-v2.inplayer.com"
     end if
@@ -186,7 +186,7 @@ class InPlayerEntitlementsPlugin extends Zapp.Entitlements.BaseEntitlementsPlugi
     if result <> invalid and result.errors <> invalid
       for each id in result.errors
         return result.errors[id]
-      end for 
+      end for
     end if
     return defaultMessage
   end function
@@ -272,7 +272,7 @@ class InPlayerEntitlementsPlugin extends Zapp.Entitlements.BaseEntitlementsPlugi
       if assetType <> invalid
         result = m.execute("GET", "items/assets/external/" + assetType + "/" + item.id)
         id = MC.getContentField(result, "id")
-      end if 
+      end if
     end if
 
     if id <> invalid
@@ -315,7 +315,7 @@ class InPlayerEntitlementsPlugin extends Zapp.Entitlements.BaseEntitlementsPlugi
   function getRokuItemForFee(fee, rokuItems)
     if fee <> invalid and fee.external_fees <> invalid
       for each externalFee in fee.external_fees
-        for each rokuItem in rokuItems 
+        for each rokuItem in rokuItems
           if externalFee.external_id = rokuItem.code
             return rokuItem
           end if

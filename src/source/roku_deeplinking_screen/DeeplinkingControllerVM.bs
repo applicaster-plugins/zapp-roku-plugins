@@ -1,7 +1,7 @@
 import "pkg:/source/UIBuilder/view/ScreenVM.bs"
 import "pkg:/source/lib/ViewUtils.bs"
 
-class DeeplinkingControllerVM extends Zapp.UIB.ScreenVM
+class DeeplinkingControllerVM extends zapp.UIB.ScreenVM
 
   public isLoadingIndicatorVisible = false
   public currentScreen = invalid
@@ -19,11 +19,11 @@ class DeeplinkingControllerVM extends Zapp.UIB.ScreenVM
   end function
 
   private function processStyles(styles)
-    m.screenIdsByName = { 
-      "series": MC.getContentField(styles, "series_screen") 
-      "season": MC.getContentField(styles, "series_screen") 
-      "episode": MC.getContentField(styles, "episode_screen") 
-      "detail": MC.getContentField(styles, "detail_screen") 
+    m.screenIdsByName = {
+      "series": MC.getContentField(styles, "series_screen")
+      "season": MC.getContentField(styles, "series_screen")
+      "episode": MC.getContentField(styles, "episode_screen")
+      "detail": MC.getContentField(styles, "detail_screen")
     }
   end function
 
@@ -37,7 +37,7 @@ class DeeplinkingControllerVM extends Zapp.UIB.ScreenVM
   public override function load() as boolean
     prehookController = m.getPrehookController()
 
-    if prehookController <> invalid 
+    if prehookController <> invalid
       m.logInfo("this deeplinking screen has a prehookController")
       m.togglePrehookController(true, prehookController)
     else
@@ -82,14 +82,14 @@ class DeeplinkingControllerVM extends Zapp.UIB.ScreenVM
       args = m.getInstance("deeplinkingArgs")
       m.toggleDeeplinkingTask(true, args)
 
-    else 
+    else
       m.dismissDeeplinkingController()
     end if
   end function
 
   private function getPrehookController()
     m.logInfo("getPrehookController")
-    prehooks = MC.getContentField(m.riversJson, "hooks.preload_plugins") 
+    prehooks = MC.getContentField(m.riversJson, "hooks.preload_plugins")
 
     if prehooks <> invalid and prehooks.count() > 0
       m.logInfo("this deeplink controller has prehooks")
@@ -165,7 +165,7 @@ class DeeplinkingControllerVM extends Zapp.UIB.ScreenVM
       m.setField("currentScreen", parentScreen)
     end if
 
-    m.isDeeplinkingApplied = true 
+    m.isDeeplinkingApplied = true
 
     if deeplinkingSelection.action = "play"
       m.setInstance("currentSelection", deeplinkingSelection)
@@ -187,7 +187,7 @@ class DeeplinkingControllerVM extends Zapp.UIB.ScreenVM
         screen = m.getScreen(screenId)
         screen.originEntry = entry
       end if
-    end if 
+    end if
 
     return screen
   end function
@@ -260,7 +260,7 @@ class DeeplinkingControllerVM extends Zapp.UIB.ScreenVM
 
     if m.isDeeplinkingApplied and not m.isShowingParentScreen
       m.logInfo("the screen has appeared again, probably from a video player; but has no parent screen, exiting from deeplinking")
-      m.exitFromDeeplinking() 
+      m.exitFromDeeplinking()
     end if
   end function
 

@@ -1,6 +1,6 @@
-namespace Applicaster.Tests
+namespace Applicaster.tests
 
-  '@TestSuite
+  @suite
   class APMATTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
@@ -21,7 +21,7 @@ namespace Applicaster.Tests
 
       ZC.TestUtils.setModelLocator(modelLocator)
 
-      plugin = new Zapp.BasePlugin(pluginConfiguration)
+      plugin = new zapp.BasePlugin(pluginConfiguration)
 
       m.plugin = new AdobePrimetimeAuthPlugin(plugin)
     end function
@@ -31,11 +31,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests constructor
+    @describe("tests constructor")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test 
-    function testConstructor_tests()
+    @it("testConstructor_tests")
+    function _()
       m.assertEqual(m.plugin.request.__className, "RequestModule")
       m.assertEqual(m.plugin.JWTUtil.__className, "ZC.JWTUtil")
       m.assertEqual(m.plugin.uri.__className, "ZC.URI")
@@ -48,11 +48,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests getAccountInfo
+    @describe("tests getAccountInfo")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test
-    function getAccountInfo()
+    @it("getAccountInfo")
+    function _()
       m.plugin.authData = {
         "user": {
           userId: "id"
@@ -67,11 +67,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests verify
+    @describe("tests verify")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test expired
-    function verify_expired()
+    @it("expired")
+    function _()
       result = { "id": "result" }
 
       m.expectOnce(m.plugin, "isAuthDataExpired", [], true)
@@ -81,8 +81,8 @@ namespace Applicaster.Tests
       m.assertEqual(m.plugin._verify(), result)
     end function
 
-    '@Test valid
-    function verify_valid()
+    @it("valid")
+    function _()
       result = { "id": "result" }
 
       m.expectOnce(m.plugin, "isAuthDataExpired", [], false)
@@ -95,11 +95,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests regcode
+    @describe("tests regcode")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test valid
-    function regcode_valid()
+    @it("valid")
+    function _()
       response = {
         "id": "0c0166e1-9596-4826-a6a4-85a19692d2f4"
         "code": "c"
@@ -119,12 +119,12 @@ namespace Applicaster.Tests
       m.assertEqual(m.plugin._regcode(), result)
     end function
 
-    '@Test invalid
-    '@Params[invalid]
-    '@Params[{}]
-    '@Params[{code:invalid}]
-    '@Params[{code:""}]
-    function regcode_invalid(response)
+    @it("invalid")
+    @params(invalid)
+    @params({})
+    @params({code:invalid})
+    @params({code:""})
+    function _(response)
       m.expectOnce(m.plugin, "signRequest", ["POST", "/reggie/v1/rqd/regcode"], "aut")
       expectedHeaders = {
         "Accept": "application/json"
@@ -142,11 +142,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests poll
+    @describe("tests poll")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test valid
-    function poll_valid()
+    @it("valid")
+    function _()
       m.expectOnce(m.plugin, "signRequest", ["GET", "/api/v1/tokens/authn"], "aut")
       expectedHeaders = {
         "Accept": "application/json"
@@ -163,13 +163,13 @@ namespace Applicaster.Tests
       m.assertEqual(m.plugin._poll(), result)
     end function
 
-    '@Test failure
-    '@Params[invalid, invalid, "error"]
-    '@Params[invalid, 400, "error"]
-    '@Params[{"userId": invalid}, 403, "error"]
-    '@Params[{"userId": ""}, 404, "none"]
-    '@Params[{"otherField": "value"}, 410, "none"]
-    function poll_error(response, responseCode, expectedState)
+    @it("failure")
+    @params(invalid, invalid, "error")
+    @params(invalid, 400, "error")
+    @params({"userId": invalid}, 403, "error")
+    @params({"userId": ""}, 404, "none")
+    @params({"otherField": "value"}, 410, "none")
+    function _(response, responseCode, expectedState)
       m.expectOnce(m.plugin, "signRequest", ["GET", "/api/v1/tokens/authn"], "aut")
       expectedHeaders = {
         "Accept": "application/json"
@@ -190,11 +190,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests logout
+    @describe("tests logout")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test
-    function logout()
+    @it("logout")
+    function _()
       m.expectOnce(m.plugin, "signRequest", ["DELETE", "/api/v1/logout"], "aut")
       expectedHeaders = {
         "Accept": "application/json"
@@ -210,11 +210,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests singRequest
+    @describe("tests singRequest")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test
-    function signRequest()
+    @it("signRequest")
+    function _()
       testTimestamp = 1531234280
       testNonce = "8bab0b10-3cf6-4a95-94b6-0a0b14d19a33"
       authHeader = m.plugin.signRequest("POST", "/path", testNonce, testTimestamp)
@@ -224,21 +224,21 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests getResourceText
+    @describe("tests getResourceText")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test no selection
-    '@Params[invalid]
-    '@Params[{"currentItem": invalid}]
-    function getResourceText_no_selection(currentSelection)
+    @it("no selection")
+    @params(invalid)
+    @params({"currentItem": invalid})
+    function _(currentSelection)
       m.expectOnce(m.plugin, "getInstance", ["currentSelection"], currentSelection)
 
       text = m.plugin.getResourceText()
       m.assertEqual(text, "rqd")
     end function
 
-    '@Test with selection 
-    function getResourceText_selection()
+    @it("with selection")
+    function _()
       m.expectOnce(m.plugin, "getInstance", ["currentSelection"], { "currentItem": { "id": "id1", "title": "t1" } })
 
       text = m.plugin.getResourceText()
@@ -259,14 +259,14 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests getAuthorization
+    @describe("tests getAuthorization")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test
-    '@Params[invalid, 0]
-    '@Params[404, 404]
-    '@Params[503, 503]
-    function getAuthorization(lastResponseCode, expectedCode)
+    @it("getAuthorization")
+    @params(invalid, 0)
+    @params(404, 404)
+    @params(503, 503)
+    function _(lastResponseCode, expectedCode)
       m.plugin.request.lastResponseCode = lastResponseCode
 
       m.expectOnce(m.plugin, "signRequest", ["GET", "/api/v1/authorize"], "aut")
@@ -292,12 +292,12 @@ namespace Applicaster.Tests
       m.assertEqual(m.plugin.getAuthorization(), result)
     end function
 
-    '@Test fail
-    '@Params[invalid]
-    '@Params[{}]
-    '@Params[{"expires":invalid}]
-    '@Params[{"expires":""}]
-    function getAuthorization_fail(response)
+    @it("fail")
+    @params(invalid)
+    @params({})
+    @params({"expires":invalid})
+    @params({"expires":""})
+    function _(response)
       m.expectOnce(m.plugin, "signRequest", ["GET", "/api/v1/authorize"], "aut")
       expectedHeaders = {
         "Accept": "application/json"

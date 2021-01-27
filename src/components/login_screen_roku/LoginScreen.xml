@@ -2,7 +2,7 @@
 <component
     name='LoginScreen'
     extends='UIBScreen'
-    vmclass='LoginScreenVM'>
+    vm='LoginScreenVM'>
 
   <interface></interface>
 

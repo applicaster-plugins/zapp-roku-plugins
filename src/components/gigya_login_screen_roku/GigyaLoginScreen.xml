@@ -2,7 +2,7 @@
 <component
     name='GigyaLoginScreen'
     extends='UIBScreen'
-    vmclass='GigyaLoginScreenVM'>
+    vm='GigyaLoginScreenVM'>
 
   <interface>
   </interface>

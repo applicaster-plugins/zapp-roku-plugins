@@ -1,6 +1,6 @@
-namespace Applicaster.Tests
+namespace Applicaster.tests
 
-  '@TestSuite
+  @suite
   class FullScreenSearchVMTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
@@ -33,20 +33,21 @@ namespace Applicaster.Tests
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests constructor
+    @describe("tests constructor")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test constructor
-    function testConstructor_tests()
+    @it("constructor")
+    function _()
       m.assertEqual(m.vm.focusId, "keyboard")
 
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests processStyles
+    @describe("tests processStyles")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    function processStyles() 
+    @it("processes styles")
+    function _()
       m.assertNotEmpty(m.gridStyle)
       m.assertEqual(m.gridStyle.translation, [1, 2])
       m.assertEqual(m.loadDepth, 5)
@@ -63,11 +64,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests leaving screen cancels searches
+    @describe("tests leaving screen cancels searches")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test 
-    function onHide()
+    @it("onHide")
+    function _()
       loadItemTask = { "id": "loadItemTask" }
       searchDelayTask = { "id": "searchDelayTask" }
       m.vm.searchDelayTask = searchDelayTask
@@ -84,11 +85,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests reset
+    @describe("tests reset")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test 
-    function reset()
+    @it("reset")
+    function _()
       m.expectOnce(m.vm, "setGridVisible", [false])
 
       m.vm.reset()
@@ -100,11 +101,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests showing resets the view when appropriate
+    @describe("tests showing resets the view when appropriate")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test was not showing content
-    function onShow()
+    @it("was not showing content")
+    function _()
       m.vm.isShowingContent = true
       m.expectNone(m.vm, "reset")
 
@@ -113,8 +114,8 @@ namespace Applicaster.Tests
 
     end function
 
-    '@Test was showing content
-    function onShow_wasShowing()
+    @it("was showing content")
+    function _()
       m.vm.isShowingContent = false
       m.expectOnce(m.vm, "reset", [])
 
@@ -126,28 +127,28 @@ namespace Applicaster.Tests
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests left keypress
+    @describe("tests left keypress")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test onKeyPressLeft
-    '@Params["grid", "keyboard"]
-    '@Params["keyboard", "keyboard"]
-    function onKeyPressLeft(currentKey, expectedKey)
+    @it("onKeyPressLeft")
+    @params("grid", "keyboard")
+    @params("keyboard", "keyboard")
+    function _(currentKey, expectedKey)
       m.vm.focusId = currentKey
       m.vm.onKeyPressLeft()
       m.assertEqual(m.vm.focusId, expectedKey)
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests right keypress
+    @describe("tests right keypress")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test onKeyPressRight
-    '@Params["keyboard", true, "grid"]
-    '@Params["grid", true, "grid"]
-    '@Params["keyboard", false, "keyboard"]
-    '@Params["grid", false, "grid"]
-    function onKeyPressRight(currentKey, isGridVisible, expectedKey)
+    @it("onKeyPressRight")
+    @params("keyboard", true, "grid")
+    @params("grid", true, "grid")
+    @params("keyboard", false, "keyboard")
+    @params("grid", false, "grid")
+    function _(currentKey, isGridVisible, expectedKey)
       m.vm.focusId = currentKey
       m.vm.isGridVisible = isGridVisible
       m.vm.onKeyPressRight()
@@ -155,15 +156,15 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests setGridVisible
+    @describe("tests setGridVisible")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test setGridVisible
-    '@Params[true, 2, true, false, false]
-    '@Params[true, 0, false, false, true]
-    '@Params[false, 2, false, true, false]
-    '@Params[false, 0, false, true, false]
-    function setGridVisible(visible, numItems, isGridVisible, isNoSearchVisible, isNotFoundVisible)
+    @it("setGridVisible")
+    @params(true, 2, true, false, false)
+    @params(true, 0, false, false, true)
+    @params(false, 2, false, true, false)
+    @params(false, 0, false, true, false)
+    function _(visible, numItems, isGridVisible, isNoSearchVisible, isNotFoundVisible)
       m.vm.results = createObject("roSGNode", "ZPEntry")
 
       for i = 0 to numItems - 1
@@ -179,15 +180,15 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests perform search
+    @describe("tests perform search")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test performSearch
-    '@Params["q1","s1", 0, "#myLink&q1=s1"]
-    '@Params["q2","s2", 1, "#myLink&q2=s2"]
-    '@Params["q3","s3  ", 1, "#myLink&q3=s3"]
-    '@Params["q4","   s4  ", 1, "#myLink&q4=s4"]
-    function performSearch(searchQuery, text, loadDepth, expectedLink)
+    @it("performSearch")
+    @params("q1","s1", 0, "#myLink&q1=s1")
+    @params("q2","s2", 1, "#myLink&q2=s2")
+    @params("q3","s3  ", 1, "#myLink&q3=s3")
+    @params("q4","   s4  ", 1, "#myLink&q4=s4")
+    function _(searchQuery, text, loadDepth, expectedLink)
       m.vm.searchQueryName = searchQuery
       m.vm.searchText = text
       m.vm.loadDepth = loadDepth
@@ -209,14 +210,14 @@ namespace Applicaster.Tests
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onSearchTextChange
+    @describe("tests onSearchTextChange")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test onSearchTextChange
-    '@Params["one"]
-    '@Params["one2"]
-    '@Params["one2three"]
-    function onSearchTextChang_search_scenarios(text)
+    @it("onSearchTextChange")
+    @params("one")
+    @params("one2")
+    @params("one2three")
+    function _(text)
       loadItemTask = { "id": "loadItemTask" }
       searchDelayTask = { "id": "searchDelayTask" }
       m.vm.searchDelayTask = searchDelayTask
@@ -233,13 +234,13 @@ namespace Applicaster.Tests
       m.assertEqual(m.vm.searchDelayTask, newDelayTask)
     end function
 
-    '@Test no serch scenarios
-    '@Params["o"]
-    '@Params["aa"]
-    '@Params[" aa"]
-    '@Params[" aa "]
-    '@Params["aa  "]
-    function onSearchTextChang_non_search_scenarios(text)
+    @it("no serch scenarios")
+    @params("o")
+    @params("aa")
+    @params(" aa")
+    @params(" aa ")
+    @params("aa  ")
+    function _(text)
       loadItemTask = { "id": "loadItemTask" }
       searchDelayTask = { "id": "searchDelayTask" }
       m.vm.searchDelayTask = searchDelayTask
@@ -257,14 +258,14 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onSearchDelayComplete
+    @describe("tests onSearchDelayComplete")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test 
-    '@Params["one"]
-    '@Params["two"]
-    '@Params["three"]
-    function onSearchDelayComplete(text)
+    @it("onSearchDelayComplete")
+    @params("one")
+    @params("two")
+    @params("three")
+    function _(text)
       m.expectOnce(m.vm, "performSearch", [text])
       m.vm.searchText = text
 

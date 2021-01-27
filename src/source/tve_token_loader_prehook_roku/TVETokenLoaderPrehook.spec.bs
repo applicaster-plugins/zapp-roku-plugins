@@ -1,6 +1,6 @@
-namespace Applicaster.Tests
+namespace Applicaster.tests
 
-  '@TestSuite
+  @suite
   class TVETokenLoaderPrehookTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
@@ -9,7 +9,7 @@ namespace Applicaster.Tests
         "endpoint": "e/"
         "domain": "d"
         "matching_path": "itemType"
-        "matching_value": "video" 
+        "matching_value": "video"
       })
       m.tvePluginJson = TestUtis.createPluginJson("AdobeAccessEnabler", {
         publicKey: "pub"
@@ -36,13 +36,13 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests constructor
+    @describe("tests constructor")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test no loader plugin
-    function testConstructor_prehook_noPlugins()
-      plugins = m.plugin.getClassInstance("Zapp.PluginManager")
-      loaderPlugin = new Zapp.BasePlugin(invalid)
+    @it("no loader plugin")
+    function _()
+      plugins = m.plugin.getClassInstance("zapp.PluginManager")
+      loaderPlugin = new zapp.BasePlugin(invalid)
       adobePlugin = m.plugin.plugins.getPluginById("AdobeAccessEnabler")
 
       m.expectOnce(plugins, "getPluginById", ["tve_token_loader_prehook_roku"], loaderPlugin)
@@ -52,10 +52,10 @@ namespace Applicaster.Tests
       m.assertFalse(m.plugin.isValid)
     end function
 
-    '@Test no adobe config
-    function testConstructor_prehook_no_adobe_config()
-      plugins = m.plugin.getClassInstance("Zapp.PluginManager")
-      loaderPlugin = new Zapp.BasePlugin(m.pluginJson)
+    @it("no adobe config")
+    function _()
+      plugins = m.plugin.getClassInstance("zapp.PluginManager")
+      loaderPlugin = new zapp.BasePlugin(m.pluginJson)
       adobePlugin = invalid
 
       m.expectOnce(plugins, "getPluginById", ["tve_token_loader_prehook_roku"], loaderPlugin)
@@ -65,27 +65,27 @@ namespace Applicaster.Tests
       m.assertFalse(m.plugin.isValid)
     end function
 
-    '@Test
-    function testConstructor_valid()
+    @it("testConstructor_valid")
+    function _()
       m.assertTrue(m.plugin.isValid)
       m.assertNotEmpty(m.plugin.tveConfig)
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests execute
+    @describe("tests execute")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test invalid 
-    function execute_invalid_state()
+    @it("invalid")
+    function _()
       m.plugin.isValid = false
       m.expectNone(m.plugin, "isItemMatch", false)
       m.assertEqual(m.plugin.execute(), "error")
     end function
 
-    '@Test no item
-    '@Params[invalid]
-    '@Params[{"currentItem": invalid}]
-    function execute_no_item(currentSelection)
+    @it("no item")
+    @params(invalid)
+    @params({"currentItem": invalid})
+    function _(currentSelection)
       m.expectOnce(m.plugin, "getInstance", ["currentSelection"], currentSelection)
       m.expectNone(m.plugin, "isItemMatch", false)
 
@@ -93,15 +93,15 @@ namespace Applicaster.Tests
 
     end function
 
-    '@Test no match
-    function execute_item_no_match()
+    @it("no match")
+    function _()
       currentSelection = { "id": "currentSelection" }
-      item = { 
+      item = {
         id: "item"
         url: "url"
         title: "t"
       }
-      currentSelection.currentItem = item 
+      currentSelection.currentItem = item
 
       m.expectOnce(m.plugin, "getInstance", ["currentSelection"], currentSelection)
       m.expectOnce(m.plugin, "isItemMatch", [item], false)
@@ -111,12 +111,12 @@ namespace Applicaster.Tests
 
     end function
 
-    '@Test item - is match
-    '@Params[false, "error"]
-    '@Params[true, "success"]
-    function execute(response, expectedResult)
+    @it("item - is match")
+    @params(false, "error")
+    @params(true, "success")
+    function _(response, expectedResult)
       currentSelection = { "id": "currentSelection" }
-      item = { 
+      item = {
         id: "item"
         title: "t"
       }
@@ -130,37 +130,37 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests isItemMatch
+    @describe("tests isItemMatch")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test 
-    '@Params["all", "", {}, true]
-    '@Params["all", "", {"id":"stuff"}, true]
-    '@Params["", "", {"id":"stuff"}, false]
-    '@Params["json.free", "true", {"id":"stuff"}, false]
-    '@Params["json.free", "true", {"id":"stuff", "json": {"free": false}}, false]
-    '@Params["json.free", "true", {"id":"stuff", "json": {"free": true}}, true]
-    '@Params["itemType", "channel", {"id":"stuff", "itemType": "video"}, false]
-    '@Params["itemType", "video", {"id":"stuff", "itemType": "video"}, true]
-    function isItemMatch(path, value, item, isMatch)
+    @it("isItemMatch")
+    @params("all", "", {}, true)
+    @params("all", "", {"id":"stuff"}, true)
+    @params("", "", {"id":"stuff"}, false)
+    @params("json.free", "true", {"id":"stuff"}, false)
+    @params("json.free", "true", {"id":"stuff", "json": {"free": false}}, false)
+    @params("json.free", "true", {"id":"stuff", "json": {"free": true}}, true)
+    @params("itemType", "channel", {"id":"stuff", "itemType": "video"}, false)
+    @params("itemType", "video", {"id":"stuff", "itemType": "video"}, true)
+    function _(path, value, item, isMatch)
       m.plugin.matchingPath = path
       m.plugin.matchingValue = value
       m.assertEqual(m.plugin.isItemMatch(item), isMatch)
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests getResourceText
+    @describe("tests getResourceText")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test
-    function getResourceText()
+    @it("getResourceText")
+    function _()
       item = { "id": "id1", "title": "t1" }
       m.assertEqual(m.plugin.getResourceText(item), "rqd")
 
     end function
 
-    '@Test using resource xml
-    function getResourceText_using_xml()
+    @it("using resource xml")
+    function _()
       m.plugin.isUsingResourceXml = true
       item = { "id": "id1", "title": "t1" }
       text = m.plugin.getResourceText(item)
@@ -180,11 +180,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests singRequest
+    @describe("tests singRequest")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test
-    function signRequest()
+    @it("signRequest")
+    function _()
       testTimestamp = 1531234280
       testNonce = "8bab0b10-3cf6-4a95-94b6-0a0b14d19a33"
       authHeader = m.plugin.signRequest("POST", "/path", testNonce, testTimestamp)
@@ -194,13 +194,13 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests loadTokens
+    @describe("tests loadTokens")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test only short
-    '@Params[false, false]
-    '@Params[true, true]
-    function loadTokens_only_short(shortResult, expectedResult)
+    @it("only short")
+    @params(false, false)
+    @params(true, true)
+    function _(shortResult, expectedResult)
       item = { "id": "item" }
 
       m.expectOnce(m.plugin, "getSessionStoreValue", ["AdobeAccessEnabler", "token"], "t")
@@ -213,14 +213,14 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests loadShortToken
+    @describe("tests loadShortToken")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test
-    '@Params[invalid, invalid, false]
-    '@Params[{}, invalid, false]
-    '@Params[{serializedToken: "c3Q="}, "st", true]
-    function loadShortToken(response, shortToken, expectedResult)
+    @it("loadShortToken")
+    @params(invalid, invalid, false)
+    @params({}, invalid, false)
+    @params({serializedToken: "c3Q="}, "st", true)
+    function _(response, shortToken, expectedResult)
       item = { "id": "item" }
 
       m.expectOnce(m.plugin, "signRequest", ["GET", "/api/v1/tokens/media"], "aut")

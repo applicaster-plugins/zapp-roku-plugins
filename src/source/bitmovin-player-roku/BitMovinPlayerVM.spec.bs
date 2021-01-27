@@ -1,13 +1,13 @@
-namespace Applicaster.Tests
+namespace Applicaster.tests
 
-  '@TestSuite
+  @suite
   class BitMovinPlayerVMTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
       m.modelLocator = CreateObject("roSGNode", "ModelLocator")
       m.modelLocator.collectionBookmarks = CreateObject("roSGNode", "Bookmarks")
       m.modelLocator.vodItemBookmarks = CreateObject("roSGNode", "Bookmarks")
-      m.modelLocator.plugins = [] 
+      m.modelLocator.plugins = []
       m.modelLocator.locale = "en"
       m.BitmovinPlayerState = { "PLAYING": "playing", "STALLING": "stalling", "PAUSED": "paused", "FINISHED": "finished", "ERROR": "error", "NONE": "none", "SETUP": "setup", "READY": "ready" }
 
@@ -25,13 +25,13 @@ namespace Applicaster.Tests
         }
       }
 
-      m.view = { "id": "#view", "isPlaybackFinished": false, "playbackResult": invalid, "riversJson": m.riversJson } 
+      m.view = { "id": "#view", "isPlaybackFinished": false, "playbackResult": invalid, "riversJson": m.riversJson }
       m.player = {
         "isPlayer": true
         "BitmovinFunctions": { "UNLOAD": "unload", "LOAD": "load", }
         "BitmovinFields": m.BitmovinFields
         "BitmovinPlayerState": m.BitmovinPlayerState
-      } 
+      }
 
       m.vm = new BitMovinPlayerVM(m.view)
     end function
@@ -41,20 +41,20 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests constructor
+    @describe("tests constructor")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test bad configured plugin
-    '@Params[{}]
-    '@Params[{"license_key": invalid }]
-    '@Params[{"license_key": "" }]
-    '@Params[{"license_key": "", }]
-    '@Params[{"license_key": "", }]
-    '@Params[{"license_key": "", "overrideVideoUrl": invalid }]
-    '@Params[{"license_key": "", "overrideVideoUrl": "" }]
-    '@Params[{"overrideVideoUrl": "" }]
-    '@Params[{"overrideVideoUrl": "#override" }]
-    function testConstructor_badConfiguredPlugin(generalJson)
+    @it("bad configured plugin")
+    @params({})
+    @params({"license_key": invalid })
+    @params({"license_key": "" })
+    @params({"license_key": "", })
+    @params({"license_key": "", })
+    @params({"license_key": "", "overrideVideoUrl": invalid })
+    @params({"license_key": "", "overrideVideoUrl": "" })
+    @params({"overrideVideoUrl": "" })
+    @params({"overrideVideoUrl": "#override" })
+    function _(generalJson)
       m.view.riversJson = { "general": generalJson }
       m.vm = new BitMovinPlayerVM(m.view)
 
@@ -65,8 +65,8 @@ namespace Applicaster.Tests
       m.assertFalse(m.vm.isValid)
     end function
 
-    '@Test valid plugin
-    function testConstructor_validPlugin()
+    @it("valid plugin")
+    function _()
       m.view.riversJson = { "general": {
           "license_key": "#key"
           "override_video_url": "#override"
@@ -84,26 +84,26 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onSDKLoadStatusChange
+    @describe("tests onSDKLoadStatusChange")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test onLoadSDKStatusChange other states
-    '@Params["none"]
-    '@Params["notReady"]
-    '@Params["error"]
-    '@Params["loading"]
-    function onLoadSDKStatusChange_otherStates(state)
+    @it("onLoadSDKStatusChange other states")
+    @params("none")
+    @params("notReady")
+    @params("error")
+    @params("loading")
+    function _(state)
       m.expectNone(m.view, "createChild")
 
-      m.vm.onSDKLoadStatusChange(state) 
+      m.vm.onSDKLoadStatusChange(state)
 
       m.assertInvalid(m.vm.player)
       m.assertInvalid(m.vm.playerFunctions)
       m.assertInvalid(m.vm.playerFields)
     end function
 
-    '@Test onLoadSDKStatusChange ready
-    function onLoadSDKStatusChange_ready()
+    @it("onLoadSDKStatusChange ready")
+    function _()
 
       properties = MOM.createBindingProperties(false)
       m.vm.licenseKey = "#key"
@@ -118,7 +118,7 @@ namespace Applicaster.Tests
       }])
       m.expectOnce(m.vm, "setVideoChromeStyle", [])
 
-      m.vm.onSDKLoadStatusChange("ready") 
+      m.vm.onSDKLoadStatusChange("ready")
 
       m.assertEqual(m.vm.state, "ready")
       m.assertEqual(m.vm.player, m.player)
@@ -131,16 +131,16 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onPlayerStateChange
+    @describe("tests onPlayerStateChange")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test onPlayerStateChange - other
-    '@Params["stalling"]
-    '@Params["paused"]
-    '@Params["playing"]
-    '@Params["none"]
-    '@Params["setup"]
-    function onPlayerStateChange(state)
+    @it("onPlayerStateChange - other")
+    @params("stalling")
+    @params("paused")
+    @params("playing")
+    @params("none")
+    @params("setup")
+    function _(state)
       m.vm.playerState = m.BitmovinPlayerState
       m.vm.state = "playing"
       m.vm.player = m.player
@@ -156,13 +156,13 @@ namespace Applicaster.Tests
       m.assertEqual(m.vm.view.duration, 999)
     end function
 
-    '@Test onPlayerStateChange - other - no video node
-    '@Params["stalling"]
-    '@Params["paused"]
-    '@Params["playing"]
-    '@Params["none"]
-    '@Params["setup"]
-    function onPlayerStateChange_no_video_node(state)
+    @it("onPlayerStateChange - other - no video node")
+    @params("stalling")
+    @params("paused")
+    @params("playing")
+    @params("none")
+    @params("setup")
+    function _(state)
       m.vm.playerState = m.BitmovinPlayerState
       m.vm.state = "playing"
       m.vm.player = m.player
@@ -178,8 +178,8 @@ namespace Applicaster.Tests
       m.assertEqual(m.vm.view.duration, 0)
     end function
 
-    '@Test error
-    function onPlayerStateChange_error()
+    @it("error")
+    function _()
       m.vm.playerState = m.BitmovinPlayerState
       m.vm.state = "playing"
 
@@ -191,8 +191,8 @@ namespace Applicaster.Tests
       m.assertEqual(m.vm.state, "error")
     end function
 
-    '@Test finished
-    function onPlayerStateChange_finished()
+    @it("finished")
+    function _()
       m.vm.playerState = m.BitmovinPlayerState
       m.vm.state = "playing"
 
@@ -205,14 +205,14 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onPlayerVideoError
+    @describe("tests onPlayerVideoError")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test onPlayerVideoError
-    '@Params[{"message": "error1"}]
-    '@Params[{"message": "error2"}]
-    '@Params[{"message": "error3"}]
-    function onPlayerVideoError(error)
+    @it("onPlayerVideoError")
+    @params({"message": "error1"})
+    @params({"message": "error2"})
+    @params({"message": "error3"})
+    function _(error)
       m.vm.onPlayerVideoError(error)
       m.assertEqual(m.view.playbackResult.state, "error")
       m.assertEqual(m.view.playbackResult.message, error.message)
@@ -220,24 +220,24 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests onPlayerCurrentTimeChange
+    @describe("tests onPlayerCurrentTimeChange")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test onPlayerCurrentTimeChange
-    '@Params[0]
-    '@Params[100]
-    '@Params[1000]
-    function onPlayerCurrentTimeChange(time)
+    @it("onPlayerCurrentTimeChange")
+    @params(0)
+    @params(100)
+    @params(1000)
+    function _(time)
       m.vm.onPlayerCurrentTimeChange(time)
       m.assertEqual(m.view.position, time)
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests playItem
+    @describe("tests playItem")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test ready
-    function playItem_ready()
+    @it("ready")
+    function _()
       item = { "id": "a" }
       playerData = { "id": "playerData" }
 
@@ -251,8 +251,8 @@ namespace Applicaster.Tests
 
     end function
 
-    '@Test not ready
-    function playItem_not_ready()
+    @it("not ready")
+    function _()
       item = { "id": "a" }
       playerData = { "id": "playerData" }
 
@@ -268,11 +268,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests playBitmovinItem
+    @describe("tests playBitmovinItem")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test playBitmovinItem
-    function playBitmovinItem()
+    @it("playBitmovinItem")
+    function _()
       playerData = { "id": "playerData" }
       videoNode = { "id": "videoNode" }
 
@@ -295,11 +295,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests stopItem
+    @describe("tests stopItem")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test 
-    function stopItem()
+    @it("stopItem")
+    function _()
       m.vm.state = "playing"
       m.vm.player = m.player
       m.vm.playerFunctions = m.player.BitmovinFunctions
@@ -312,7 +312,7 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests getPlayerData
+    @describe("tests getPlayerData")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     'TBD

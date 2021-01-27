@@ -1,9 +1,9 @@
-import "pkg:/source/authorization/BaseAuthPlugin.bs" 
-import "pkg:/source/lib/Request.bs" 
-import "pkg:/source/lib/URI.bs" 
+import "pkg:/source/authorization/BaseAuthPlugin.bs"
+import "pkg:/source/lib/Request.bs"
+import "pkg:/source/lib/URI.bs"
 import "pkg:/source/authorization/JWTUtil.bs"
 
-class AdobePrimetimeAuthPlugin extends Zapp.Auth.BaseAuthPlugin
+class AdobePrimetimeAuthPlugin extends zapp.Auth.BaseAuthPlugin
 
   private request = invalid
   private JWTUtil = invalid
@@ -16,7 +16,7 @@ class AdobePrimetimeAuthPlugin extends Zapp.Auth.BaseAuthPlugin
   private deviceId = ""
 
   public function new(plugin)
-    super("AdobePrimetime", plugin) 
+    super("AdobePrimetime", plugin)
     m.isTokenUsableWithDSP = true
     m.request = m.getClassInstance("ZC.Request")
     m.JWTUtil = m.getClassInstance("ZC.JWTUtil")
@@ -73,7 +73,7 @@ class AdobePrimetimeAuthPlugin extends Zapp.Auth.BaseAuthPlugin
 
     m.logInfo("result is ", result)
 
-    if result <> invalid and result.code <> invalid and result.code <> "" 
+    if result <> invalid and result.code <> invalid and result.code <> ""
       return m.createRegCodeResult(result.code)
     end if
 
@@ -239,7 +239,7 @@ class AdobePrimetimeAuthPlugin extends Zapp.Auth.BaseAuthPlugin
       template = template.replace("{ASSET_ID}", content.id)
       template = template.replace("{ASSET_NAME}", content.title)
       return template
-    else 
+    else
       return m.requestorID
     end if
   end function

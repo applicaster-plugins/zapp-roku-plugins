@@ -24,7 +24,6 @@
 
     
     <script type="text/brightscript" uri="Utils.brs"/>  
-    <script type="text/brightscript" uri="YBPluginGeneric.brs"/>
     <script type="text/brightscript" uri="Chrono.brs"/>  
     <script type="text/brightscript" uri="ViewManager.brs"/>
     <script type="text/brightscript" uri="Request.brs"/>

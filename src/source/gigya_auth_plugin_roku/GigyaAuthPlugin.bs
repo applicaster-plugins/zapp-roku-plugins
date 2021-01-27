@@ -1,10 +1,10 @@
-import "pkg:/source/authorization/BaseAuthPlugin.bs" 
-import "pkg:/source/lib/Request.bs" 
-import "pkg:/source/lib/URI.bs" 
+import "pkg:/source/authorization/BaseAuthPlugin.bs"
+import "pkg:/source/lib/Request.bs"
+import "pkg:/source/lib/URI.bs"
 import "pkg:/source/authorization/JWTUtil.bs"
-import "pkg:/source/authorization/BaseAuthPlugin.bs" 
+import "pkg:/source/authorization/BaseAuthPlugin.bs"
 
-class GigyaAuthPlugin extends Zapp.Auth.BaseAuthPlugin
+class GigyaAuthPlugin extends zapp.Auth.BaseAuthPlugin
 
   public baseUrl = ""
 
@@ -66,7 +66,7 @@ class GigyaAuthPlugin extends Zapp.Auth.BaseAuthPlugin
     url = m.baseUrl + "GetDeviceByPin/" + pinCode
     response = m.request.getJsonSync(url)
 
-    if response <> invalid 
+    if response <> invalid
 
       if response.access_token <> invalid
         token = response.access_token
@@ -74,11 +74,11 @@ class GigyaAuthPlugin extends Zapp.Auth.BaseAuthPlugin
         'TODO - double check these values
         'Especially result and if we need to manipulate parsed.expires
         return m.createAuthData("valid", token, token, token, response, expiresIn)
-      else 
+      else
 
         if response.ErrorCode <> invalid
           error = response.ErrorCode
-        else 
+        else
           error = "Unknown error"
         end if
 

@@ -2,7 +2,7 @@
 <component
     name='RegcodeLoginScreen'
     extends='UIBScreen'
-    vmclass='RegcodeLoginScreenVM'>
+    vm='RegcodeLoginScreenVM'>
 
   <interface></interface>
 

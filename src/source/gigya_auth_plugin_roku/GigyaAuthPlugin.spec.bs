@@ -1,6 +1,6 @@
-namespace Applicaster.Tests
+namespace Applicaster.tests
 
-  '@TestSuite
+  @suite
   class GigyaAuthPluginTests extends Rooibos.BaseTestSuite
 
     override function beforeEach()
@@ -15,7 +15,7 @@ namespace Applicaster.Tests
 
       m.request = { "id": "request" }
 
-      plugin = new Zapp.BasePlugin(pluginConfiguration)
+      plugin = new zapp.BasePlugin(pluginConfiguration)
 
       m.plugin = new GigyaAuthPlugin(plugin)
       m.plugin.request = m.request
@@ -26,17 +26,17 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests constructor
+    @describe("tests constructor")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test
-    function testConstructor_tests()
+    @it("testConstructor_tests")
+    function _()
       pluginConfiguration = {
         "identifier": "gigya_auth_plugin_roku",
         "configuration_json": { "base_url": "host/" }
       }
 
-      plugin = new Zapp.BasePlugin(pluginConfiguration)
+      plugin = new zapp.BasePlugin(pluginConfiguration)
 
       m.plugin = new GigyaAuthPlugin(plugin)
 
@@ -47,11 +47,11 @@ namespace Applicaster.Tests
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests _getAcountInfo
+    @describe("tests _getAcountInfo")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test _getAccountInfo
-    function _getAccountInfo()
+    @it("_getAccountInfo")
+    function _()
       m.plugin.authData = {
         "rawAuthData": {
           "uid": "id"
@@ -67,11 +67,11 @@ namespace Applicaster.Tests
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests _verify
+    @describe("tests _verify")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test invalid token
-    function _verify_has_invalid_token()
+    @it("invalid token")
+    function _()
       m.expectOnce(m.plugin, "isAuthDataExpired", [], true)
       errorResult = { "id": "errorResult" }
 
@@ -80,8 +80,8 @@ namespace Applicaster.Tests
       m.assertEqual(m.plugin._verify(), errorResult)
     end function
 
-    '@Test has_token_not_valid
-    function _verify_has_token_valid()
+    @it("has_token_not_valid")
+    function _()
 
       m.expectOnce(m.plugin, "isAuthDataExpired", [], false)
 
@@ -94,11 +94,11 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests poll
+    @describe("tests poll")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test valid resposne
-    function onPollResponse_valid()
+    @it("valid resposne")
+    function _()
       m.expectOnce(m.plugin, "getSessionStoreValue", [m.plugin.id, "regcode"], "pin")
 
       response = {
@@ -114,9 +114,9 @@ namespace Applicaster.Tests
     end function
 
 
-    '@Test invalid invalid - no data
-    '@Params[invalid]
-    function onPollResponse_invalid(response)
+    @it("invalid invalid - no data")
+    @params(invalid)
+    function _(response)
       m.expectOnce(m.plugin, "getSessionStoreValue", [m.plugin.id, "regcode"], "pin")
       m.expectOnce(m.plugin.request, "getJsonSync", ["host/GetDeviceByPin/pin"], response)
 
@@ -125,9 +125,9 @@ namespace Applicaster.Tests
       m.plugin._poll()
     end function
 
-    '@Test invalid invalid - with data
-    '@Params[{"ErrorCode": "e"}]
-    function onPollResponse_invalid_with_data(response)
+    @it("invalid invalid - with data")
+    @params({"ErrorCode": "e"})
+    function _(response)
       m.expectOnce(m.plugin, "getSessionStoreValue", [m.plugin.id, "regcode"], "pin")
       m.expectOnce(m.plugin.request, "getJsonSync", ["host/GetDeviceByPin/pin"], response)
 
@@ -140,11 +140,11 @@ namespace Applicaster.Tests
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests regcode
+    @describe("tests regcode")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@Test valid
-    function regcode_valid()
+    @it("valid")
+    function _()
       constants = { "id": "constants", "applicasterdeviceid": "did" }
       m.expectOnce(m.plugin, "getInstance", ["constants"], constants)
 
@@ -161,13 +161,13 @@ namespace Applicaster.Tests
       m.assertEqual(m.plugin._regCode(), regCodeResult)
     end function
 
-    '@Test invalid
-    '@Params[{isOK:false}]
-    '@Params[{isOK:true}]
-    '@Params[{isOK:true, data: invalid}]
-    '@Params[{isOK:true, data: {}}]
-    '@Params[{isOK:true, data: {"devicePinCode": invalid}}]
-    function regcode_invalid(response)
+    @it("invalid")
+    @params({isOK:false})
+    @params({isOK:true})
+    @params({isOK:true, data: invalid})
+    @params({isOK:true, data: {}})
+    @params({isOK:true, data: {"devicePinCode": invalid}})
+    function _(response)
       constants = { "id": "constants", "applicasterdeviceid": "did" }
       m.expectOnce(m.plugin, "getInstance", ["constants"], constants)
 
@@ -182,12 +182,12 @@ namespace Applicaster.Tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '@It tests logout
+    @describe("tests logout")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-    '@Test valid resposne
-    function onLogout()
+    @it("valid resposne")
+    function _()
       m.plugin.authData = {
         "access_token": "at"
       }
