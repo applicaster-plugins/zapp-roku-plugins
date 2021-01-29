@@ -36,9 +36,9 @@ namespace Applicaster.tests
 
     @it("testConstructor_tests")
     function _()
-      m.assertEqual(m.plugin.request.__className, "RequestModule")
-      m.assertEqual(m.plugin.JWTUtil.__className, "ZC.JWTUtil")
-      m.assertEqual(m.plugin.uri.__className, "ZC.URI")
+      m.assertEqual(m.plugin.request.__className, "request.RequestModule")
+      m.assertEqual(m.plugin.JWTUtil.__className, "zapp.JWTUtil")
+      m.assertEqual(m.plugin.uri.__className, "zapp.URI")
       m.assertEqual(m.plugin.requestorID, "rqd")
       m.assertEqual(m.plugin.resourceID, "rod")
       m.assertEqual(m.plugin.secret, "sec")
