@@ -8,7 +8,6 @@ end function
 
 
 function execRunLoop()
-  registerLogger("MPXVideoPlaybackPrehookTask")
   m.logMethod("execRunLoop")
 
   resolver = new MPXVideoPlaybackPrehook()

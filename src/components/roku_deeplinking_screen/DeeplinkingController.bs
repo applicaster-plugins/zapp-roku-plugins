@@ -9,15 +9,11 @@ end function
 '++ Overridden methods
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-function getControlName()
-  return "DeeplinkingController"
-end function
-
 function createVM()
   m.logInfo("m.top.riversJson", m.top.riversJson)
   vm = new DeeplinkingControllerVM(m.top.riversJson)
   MVMM.initializeBindings(true)
-  initializeView(m.top.findNode("screenContainer"))
+  mv.initializeView(m.top.findNode("screenContainer"))
   return vm
 end function
 
@@ -36,6 +32,6 @@ function getDefaultRiversJson()
       "style_json": "{}",
       "logo_url": "loginLogo.png",
       "background_url": "pkg:/asset-bundle/background.jpg"
-    } 
+    }
   }
 end function

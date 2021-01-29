@@ -165,7 +165,7 @@ namespace Applicaster.tests
       m.expectOnce(m.vm, "getScreen", ["#lis"], screen)
       m.expectOnce(m.vm, "push", [screen])
       m.expectOnce(m.vm, "setFocus", [screen])
-      m.expectOnce(m.vm, "bindNodeField", [screen, "state", "onLoginScreenStateChange", MOM.createBindingProperties(false)])
+      m.expectOnce(m.vm, "bindNodeField", [screen, "state", "onLoginScreenStateChange", mx.createBindingProperties(false)])
 
       m.vm.showLoginScreen()
     end function

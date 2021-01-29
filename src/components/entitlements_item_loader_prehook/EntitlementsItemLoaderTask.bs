@@ -8,7 +8,7 @@ end function
 
 
 function execRunLoop()
-  registerLogger("EntitlementsItemLoaderTask")
+  log.registerLogger("EntitlementsItemLoaderTask")
   m.logMethod("execRunLoop")
 
   resolver = new EntitlementsItemLoader()

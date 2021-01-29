@@ -1,5 +1,5 @@
 import "pkg:/source/lib/ViewUtils.bs"
-import "pkg:/source/maestro/lib/Utils.bs"
+import "pkg:/source/roku_modules/mc/Utils.brs"
 import "pkg:/source/UIBuilder/view/ComponentVM.bs"
 
 class FullScreenSearchVM extends zapp.UIB.ComponentVM
@@ -31,7 +31,7 @@ class FullScreenSearchVM extends zapp.UIB.ComponentVM
     m.rowTarget = riversJson.data.target
 
     if ZC.ViewUtils.getUIBBool(riversJson.styles, "override_target_screen", false)
-      m.rowTarget = MC.getContentField(riversJson, "data.target_screen")
+      m.rowTarget = mc.getPath(riversJson, "data.target_screen")
       m.logWarn("Using overridden screen name for target!", m.rowTarget)
     end if
 
@@ -54,7 +54,7 @@ class FullScreenSearchVM extends zapp.UIB.ComponentVM
     m.inputStyle = ZC.ViewUtils.makeUIBButtonStyle(styles, "custom_text_input", "textInput", invalid, true)
     m.inputStyle.visible = not m.keyboardStyle.showTextEditBox
     m.minCharacters = ZC.ViewUtils.getUIBInt(styles, "search_min_chars", 3)
-    m.searchQueryName = MC.getContentField(styles, "search_query_name", "q")
+    m.searchQueryName = mc.getPath(styles, "search_query_name", "q")
   end function
 
   private function getGridStyle(styles)

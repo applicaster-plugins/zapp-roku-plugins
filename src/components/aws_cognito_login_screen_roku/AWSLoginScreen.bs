@@ -24,17 +24,13 @@ function init()
     "errorText"
     "errorGroup"
     "errorBackground"
-  ] 
+  ]
 
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '++ Overridden methods
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-function getControlName()
-  return "AWSLoginScreen"
-end function
 
 function createVM()
   vm = new AWSLoginScreenVM(m.top.riversJson)

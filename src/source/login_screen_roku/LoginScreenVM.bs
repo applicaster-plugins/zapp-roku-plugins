@@ -68,8 +68,8 @@ class LoginScreenVM extends zapp.UIB.ScreenVM
   end function
 
   private function isLoginRequired()
-    currentItem = MC.getContentField(m.getInstance("currentSelection"), "currentItem")
-    if currentItem <> invalid and MC.getContentField(currentItem.json, "extensions.requires_authentication", false) = false
+    currentItem = mc.getPath(m.getInstance("currentSelection"), "currentItem")
+    if currentItem <> invalid and mc.getPath(currentItem.json, "extensions.requires_authentication", false) = false
       return false
     else
       return true
@@ -144,7 +144,7 @@ class LoginScreenVM extends zapp.UIB.ScreenVM
     end if
 
     if m.currentScreen <> invalid
-      m.unbindNodeField(m.currentScreen, "state", "onsubScreenStateChange")
+      m.unobserveNodeField(m.currentScreen, "state", m.onsubScreenStateChange)
     end if
 
     m.setField("isSubScreenVisible", screen <> invalid)
@@ -154,7 +154,7 @@ class LoginScreenVM extends zapp.UIB.ScreenVM
     if screen <> invalid
       m.setField("currentScreen", screen)
       m.onsubScreenStateChange(m.currentScreen.state)
-      m.bindNodeField(m.currentScreen, "state", "onSubScreenStateChange", MOM.createBindingProperties(false))
+      m.bindNodeField(m.currentScreen, "state", "onSubScreenStateChange", mx.createBindingProperties(false))
       m.setFocusId("screenContainer")
     else
       m.setFocusId(m.preScreenFocusId)
@@ -282,7 +282,7 @@ class LoginScreenVM extends zapp.UIB.ScreenVM
 
   public function isCapturingAnyKeyPress(key, press)
     'do not anyone escape this screen!
-    if press and key = "back" and not MC.getContentField(m.riversJson, "general.isflowBlocker", true)
+    if press and key = "back" and not mc.getPath(m.riversJson, "general.isflowBlocker", true)
       return false
     else
       return true

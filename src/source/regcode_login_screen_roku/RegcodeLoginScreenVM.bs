@@ -31,7 +31,7 @@ class RegcodeLoginScreenVM extends zapp.UIB.ScreenVM
       m.logError(titleText)
     end if
 
-    if not MC.getContentField(riversJson, "styles.use_refresh_button", true)
+    if not mc.getPath(riversJson, "styles.use_refresh_button", true)
       m.refreshButtonOpacity = 0
     end if
   end function
@@ -71,7 +71,7 @@ class RegcodeLoginScreenVM extends zapp.UIB.ScreenVM
   private function shouldDisplayWithContent(currentSelection)
 
     entitlementsNode = m.getInstance("entitlements")
-    return entitlementsNode@.isLocked(MC.getContentField(currentSelection, "currentItem"))
+    return entitlementsNode@.isLocked(mc.getPath(currentSelection, "currentItem"))
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -105,7 +105,7 @@ namespace Applicaster.tests
     @it("onLoadSDKStatusChange ready")
     function _()
 
-      properties = MOM.createBindingProperties(false)
+      properties = mx.createBindingProperties(false)
       m.vm.licenseKey = "#key"
       m.expectOnce(m.vm.view, "createChild", ["BitmovinPlayerSDK:BitmovinPlayer"], m.player)
       m.expectOnce(m.vm, "bindNodeField", [m.player, "playerState", "onPlayerStateChange", properties], m.player)

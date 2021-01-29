@@ -20,10 +20,10 @@ class DeeplinkingControllerVM extends zapp.UIB.ScreenVM
 
   private function processStyles(styles)
     m.screenIdsByName = {
-      "series": MC.getContentField(styles, "series_screen")
-      "season": MC.getContentField(styles, "series_screen")
-      "episode": MC.getContentField(styles, "episode_screen")
-      "detail": MC.getContentField(styles, "detail_screen")
+      "series": mc.getPath(styles, "series_screen")
+      "season": mc.getPath(styles, "series_screen")
+      "episode": mc.getPath(styles, "episode_screen")
+      "detail": mc.getPath(styles, "detail_screen")
     }
   end function
 
@@ -59,11 +59,11 @@ class DeeplinkingControllerVM extends zapp.UIB.ScreenVM
     m.setField("isLoadingndicatorVisible", false)
 
     if m.currentScreen <> invalid
-      m.unbindNodeField(m.currentScreen, "state", "onPrehookControllerStateChange")
+      m.unobserveNodeField(m.currentScreen, "state", m.onPrehookControllerStateChange)
     end if
 
     if isActive
-      m.bindNodeField(controller, "state", "onPrehookControllerStateChange", MOM.createBindingProperties(false, invalid, true))
+      m.bindNodeField(controller, "state", "onPrehookControllerStateChange", mx.createBindingProperties(false, invalid, true))
       m.setField("currentScreen", controller)
     else
       m.setField("currentScreen", invalid)
@@ -89,7 +89,7 @@ class DeeplinkingControllerVM extends zapp.UIB.ScreenVM
 
   private function getPrehookController()
     m.logInfo("getPrehookController")
-    prehooks = MC.getContentField(m.riversJson, "hooks.preload_plugins")
+    prehooks = mc.getPath(m.riversJson, "hooks.preload_plugins")
 
     if prehooks <> invalid and prehooks.count() > 0
       m.logInfo("this deeplink controller has prehooks")
@@ -113,14 +113,14 @@ class DeeplinkingControllerVM extends zapp.UIB.ScreenVM
     m.setField("isLoadingIndicatorVisible", isActive)
 
     if m.deeplinkingTask <> invalid
-      m.unbindNodeField(m.deeplinkingTask, "deeplinkingData", "onDeeplinkingTaskResult")
+      m.unobserveNodeField(m.deeplinkingTask, "deeplinkingData", m.onDeeplinkingTaskResult)
       m.deeplinkingTask = invalid
     end if
 
     if isActive
       m.logInfo("starting deeplinking task")
       m.deeplinkingTask = m.createInstance("DeeplinkingTask", invalid, "deeplinkingTask")
-      m.bindNodeField(m.deeplinkingTask, "deeplinkingData", "onDeeplinkingTaskResult", MOM.createBindingProperties(false, invalid, true))
+      m.bindNodeField(m.deeplinkingTask, "deeplinkingData", "onDeeplinkingTaskResult", mx.createBindingProperties(false, invalid, true))
 
       m.deeplinkingTask.args = args
       m.deeplinkingTask.control = "run"

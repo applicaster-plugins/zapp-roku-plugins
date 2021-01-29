@@ -52,7 +52,7 @@ class WarningMessageScreenVM extends zapp.UIB.ScreenVM
     isShowingWarning = false
 
     if m.originEntry <> invalid and MC.isString(m.conditionPath) and MC.isString(m.conditionValue)
-      value = MC.getContentField(m.originEntry.json, m.conditionPath, invalid)
+      value = mc.getPath(m.originEntry.json, m.conditionPath, invalid)
 
       if MC.isString(value) and lcase(value) = lcase(m.conditionValue)
         m.logInfo("this content has a value that matches the locking condition")
@@ -127,7 +127,7 @@ class WarningMessageScreenVM extends zapp.UIB.ScreenVM
     m.setField("isContentGroupVisible", true)
     m.setField("isShowingLoadingIndicator", false)
 
-    titleText = MC.getContentField(entry.json, "title", "")
+    titleText = mc.getPath(entry.json, "title", "")
 
     if titleText = ""
       titleText = "This content cannot be displayed"
@@ -135,8 +135,8 @@ class WarningMessageScreenVM extends zapp.UIB.ScreenVM
 
     m.setField("titleText", titleText)
 
-    m.setField("descriptionText", MC.getContentField(entry.json, "description", ""))
-    m.setField("optional1Text", MC.getContentField(entry.json, "extensions.extra_text", ""))
+    m.setField("descriptionText", mc.getPath(entry.json, "description", ""))
+    m.setField("optional1Text", mc.getPath(entry.json, "extensions.extra_text", ""))
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -165,11 +165,11 @@ class WarningMessageScreenVM extends zapp.UIB.ScreenVM
     m.logoWidth = logoSize[0]
     m.logoHeight = logoSize[1]
 
-    m.warningType = MC.getContentField(styles, "warning_type", "entry")
+    m.warningType = mc.getPath(styles, "warning_type", "entry")
     m.warningEntryIndex = ZC.ViewUtils.getUIBInt(styles, "entry_index", -1)
     m.warningEntryDepth = ZC.ViewUtils.getUIBInt(styles, "entry_depth", 1)
 
-    m.warningType = MC.getContentField(styles, "warning_type", "entry")
+    m.warningType = mc.getPath(styles, "warning_type", "entry")
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -17,9 +17,9 @@ class BitMovinPlayerVM extends zapp.BaseZappVM
     super("BitMovinPlayerVM")
     m.view = view
 
-    m.licenseKey = MC.getContentField(view.riversJson, "general.license_key", "")
-    m.overrideVideoUrl = MC.getContentField(view.riversJson, "general.override_video_url", "")
-    themeColor = MC.getContentField(view.riversJson, "styles.theme_color")
+    m.licenseKey = mc.getPath(view.riversJson, "general.license_key", "")
+    m.overrideVideoUrl = mc.getPath(view.riversJson, "general.override_video_url", "")
+    themeColor = mc.getPath(view.riversJson, "styles.theme_color")
 
     if themeColor = invalid
       m.themeColor = "#ffffff"
@@ -41,7 +41,7 @@ class BitMovinPlayerVM extends zapp.BaseZappVM
     m.bitmovinPlayerSDK.uri = "https://cdn.bitmovin.com/player/roku/1.22.0/bitmovinplayer.zip"
     ' Adding the ComponentLibrary node to the scene will start the download of the library
     m.view.appendChild(m.bitmovinPlayerSDK)
-    m.bindNodeField(m.bitmovinPlayerSDK, "loadStatus", "onSDKLoadStatusChange", MOM_createBindingProperties())
+    m.bindNodeField(m.bitmovinPlayerSDK, "loadStatus", "onSDKLoadStatusChange", mx.createBindingProperties())
   end function
 
   private function onSDKLoadStatusChange(status)
@@ -57,7 +57,7 @@ class BitMovinPlayerVM extends zapp.BaseZappVM
       m.playerFields = m.player.BitmovinFields
       m.playerState = m.player.BitmovinPlayerState
       m.setVideoChromeStyle()
-      bindingProperties = MOM.createBindingProperties(false)
+      bindingProperties = mx.createBindingProperties(false)
       m.bindNodeField(m.player, m.playerFields.PLAYER_STATE, "onPlayerStateChange", bindingProperties)
       m.bindNodeField(m.player, m.playerFields.ERROR, "onPlayerVideoError", bindingProperties)
       m.bindNodeField(m.player, m.playerFields.CURRENT_TIME, "onPlayerCurrentTimeChange", bindingProperties)

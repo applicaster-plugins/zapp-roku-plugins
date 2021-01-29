@@ -192,7 +192,7 @@ class RegisterScreenVM extends zapp.UIB.ScreenVM
 
   public function isCapturingAnyKeyPress(key, press)
     'do not anyone escape this screen!
-    if press and key = "back" and not MC.getContentField(m.riversJson, "general.isflowBlocker", true)
+    if press and key = "back" and not mc.getPath(m.riversJson, "general.isflowBlocker", true)
       return false
     else
       return true

@@ -58,7 +58,7 @@ class LogoutScreenVM extends zapp.UIB.ScreenVM
     m.textWidth = ZC.ViewUtils.getUIBInt(styles, "text_w", 1920)
     m.signedOutButtonText = styles.signed_out_button_text
     m.signedOutTitle = styles.signed_out_text
-    m.providerId = MC.getContentField(styles, "provider_id", invalid)
+    m.providerId = mc.getPath(styles, "provider_id", invalid)
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

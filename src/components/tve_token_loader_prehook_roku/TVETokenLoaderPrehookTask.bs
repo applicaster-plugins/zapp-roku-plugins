@@ -8,7 +8,6 @@ end function
 
 
 function execRunLoop()
-  registerLogger("TVETokenLoaderPrehookTask")
   m.logMethod("execRunLoop")
 
   resolver = new TVETokenLoaderPrehook()

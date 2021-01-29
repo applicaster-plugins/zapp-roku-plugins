@@ -11,7 +11,7 @@ function init()
     "labelsGroup"
     "titleText"
     "logoutButton"
-  ] 
+  ]
 
 end function
 
@@ -19,12 +19,8 @@ end function
 '++ Overridden methods
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-function getControlName()
-  return "LogoutScreen"
-end function
-
 function createVM()
   vm = new LogoutScreenVM(m.top.riversJson)
-  setFocus(m.logoutButton)
+  mv.setFocus(m.logoutButton)
   return vm
 end function

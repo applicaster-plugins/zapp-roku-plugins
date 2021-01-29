@@ -18,7 +18,7 @@ class InPlayerAuthPlugin extends zapp.Auth.BaseAuthPlugin
       m.apiUrl = "https://staging-v2.inplayer.com"
     end if
 
-    APIUtils.mixin(m)
+    zapp.APIUtils.mixin(m)
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -114,7 +114,7 @@ class InPlayerAuthPlugin extends zapp.Auth.BaseAuthPlugin
 
     result = m.executeAPIRequest("GET", "accounts/logout", invalid, true, m.authData.accessToken)
 
-    if MC.getContentField(result, "code", -1) = 200
+    if mc.getPath(result, "code", -1) = 200
       return m.createAuthData()
     else
       return m.createErrorFromResult(result)
@@ -129,7 +129,7 @@ class InPlayerAuthPlugin extends zapp.Auth.BaseAuthPlugin
 
     result = m.executeAPIRequest("FORMPOST", "/accounts/forgot-password", params)
 
-    if MC.getContentField(result, "code", -1) = 200
+    if mc.getPath(result, "code", -1) = 200
       return m.createAuthData("valid")
     else
       return m.createErrorFromResult(result)
@@ -149,10 +149,10 @@ class InPlayerAuthPlugin extends zapp.Auth.BaseAuthPlugin
     if result.errors <> invalid and result.errors.count() > 0
       message = result.errors[result.errors.keys()[0]]
     else
-      message = MC.getContentField(result, "message", "Unknown error")
+      message = mc.getPath(result, "message", "Unknown error")
     end if
 
-    code = MC.getContentField(result, "code", -1)
+    code = mc.getPath(result, "code", -1)
     return m.createErrorResult(message, code, result)
   end function
 

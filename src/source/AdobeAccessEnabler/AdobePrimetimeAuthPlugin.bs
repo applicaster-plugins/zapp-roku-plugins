@@ -36,7 +36,7 @@ class AdobePrimetimeAuthPlugin extends zapp.Auth.BaseAuthPlugin
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public override function _getAccountInfo()
-    userId = MC.getContentField(m.authData, "user.userId", "not known yet")
+    userId = mc.getPath(m.authData, "user.userId", "not known yet")
 
     return {
       id: userId

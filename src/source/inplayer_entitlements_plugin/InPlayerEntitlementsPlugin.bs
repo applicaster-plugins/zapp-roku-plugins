@@ -36,7 +36,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
       m.apiUrl = "https://staging-v2.inplayer.com"
     end if
 
-    APIUtils.mixin(m)
+    zapp.APIUtils.mixin(m)
 
   end function
 
@@ -58,7 +58,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
     result = m.execute("GET", "items/access/customers?status=active")
     ids = []
 
-    collection = MC.getContentField(result, "collection")
+    collection = mc.getPath(result, "collection")
     if MC.isArray(collection)
       for each receipt in collection
         'have to load the item to get the external_id
@@ -71,7 +71,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
       end for
 
     else
-      errors = MC.getContentField(result, "errors", "Unknown error")
+      errors = mc.getPath(result, "errors", "Unknown error")
       m.logError("error getting purchased item ids", errors)
     end if
 
@@ -154,7 +154,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
 
     result = m.execute("GET", "items/" + MC.asString(inPlayerId) + "/access")
 
-    content = parseJson(MC.getContentField(result, "item.content", "{}"))
+    content = parseJson(mc.getPath(result, "item.content", "{}"))
     if content.mobile_url <> invalid and content.mobile_url.trim() <> ""
       if item.originalUrl = invalid
         m.logInfo("this item has never been manipulated; storing it's original url")
@@ -163,9 +163,9 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
       item.url = content.mobile_url
       if content.cookies <> invalid
         cookieText = "Cookie:"
-        cookieText += "CloudFront-Policy=" + MC.getContentField(content.cookies, "CloudFront-Policy", "") + "; "
-        cookieText += "CloudFront-Signature=" + MC.getContentField(content.cookies, "CloudFront-Signature", "") + "; "
-        cookieText += "CloudFront-Key-Pair-Id=" + MC.getContentField(content.cookies, "CloudFront-Key-Pair-Id", "") + ";"
+        cookieText += "CloudFront-Policy=" + mc.getPath(content.cookies, "CloudFront-Policy", "") + "; "
+        cookieText += "CloudFront-Signature=" + mc.getPath(content.cookies, "CloudFront-Signature", "") + "; "
+        cookieText += "CloudFront-Key-Pair-Id=" + mc.getPath(content.cookies, "CloudFront-Key-Pair-Id", "") + ";"
         item.HttpHeaders = [cookieText]
       end if
       item.isLoaded = true
@@ -218,7 +218,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
       }
       result = m.execute("FORMPOST", "v2/external-payments/roku/validate", params)
 
-      code = MC.getContentField(result, "code", -1)
+      code = mc.getPath(result, "code", -1)
       'TODO get code for already purchased error and ignore it!
       if code <> 200
         m.logError("failed to register receipt code:", code, result)
@@ -260,18 +260,18 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
     end if
 
     m.logInfo("extensions", item.extensions)
-    id = MC.getContentField(item.json, m.pluginInplayerAssetKey)
+    id = mc.getPath(item.json, m.pluginInplayerAssetKey)
 
     if id = invalid
-      id = MC.getContentField(item.json, "extensions.inplayer_asset_id")
+      id = mc.getPath(item.json, "extensions.inplayer_asset_id")
     end if
 
     if id = invalid
-      assetType = MC.getContentField(item.json, "extensions.inplayer_asset_type")
+      assetType = mc.getPath(item.json, "extensions.inplayer_asset_type")
       m.logInfo("trying to retrieve inplayer external id with inplayer_asset_type", assetType, "and id", item.id)
       if assetType <> invalid
         result = m.execute("GET", "items/assets/external/" + assetType + "/" + item.id)
-        id = MC.getContentField(result, "id")
+        id = mc.getPath(result, "id")
       end if
     end if
 
@@ -293,7 +293,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
   '  * @returns {assocarray|invalid} fee, or invalid if no match
   '  */
   private function getFeeForAccessReceipt(feeReceipt)
-    feeId = MC.getContentField(feeReceipt, "item_id")
+    feeId = mc.getPath(feeReceipt, "item_id")
 
     if feeId <> invalid
       result = m.execute("GET", "items/" + MC.asString(feeId).trim() + "/access-fees")
@@ -331,7 +331,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
 
     if item.external_fees <> invalid
       for each externalFee in item.external_fees
-        externalId = MC.getContentField(externalFee, "external_id")
+        externalId = mc.getPath(externalFee, "external_id")
 
         if externalId <> invalid
           ids.push(externalId)

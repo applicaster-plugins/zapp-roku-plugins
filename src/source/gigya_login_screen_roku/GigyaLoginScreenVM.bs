@@ -65,7 +65,7 @@ class GigyaLoginScreenVM extends zapp.UIB.ScreenVM
       m.logInfo("found login screen, displaying now")
       m.push(screen)
       m.setFocus(screen)
-      m.bindNodeField(screen, "state", "onLoginScreenStateChange", MOM.createBindingProperties(false))
+      m.bindNodeField(screen, "state", "onLoginScreenStateChange", mx.createBindingProperties(false))
 
     else
       m.logError("could not get the screen for", m.riversJson.styles.login_screen)
