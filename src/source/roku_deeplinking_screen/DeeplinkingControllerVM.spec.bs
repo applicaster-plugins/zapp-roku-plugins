@@ -4,11 +4,11 @@ namespace Applicaster.tests
   class DeeplinkingControllerVMTests extends tests.BaseTestSuite
 
     override function beforeEach()
-      m.__mioc = {
-        "User": { "isLoggedIn": false }
+      super.beforeEach()
+      mioc.setInstances({
+        "user": { "isLoggedIn": false }
         "locale": "en"
-      }
-      zapp.TestUtils.setModelLocator(m.__mioc)
+      })
 
       m.riversJson = {
         styles: {
@@ -141,19 +141,19 @@ namespace Applicaster.tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it(" none")
-    @params({ "id" : "screen"})
-    @params({ "id" : "screen", "hooks": {"preload_plugins":invalid}})
-    @params({"hooks": {"preload_plugins":[]}})
+    @params({ "id" : "screen" })
+    @params({ "id" : "screen", "hooks": { "preload_plugins": invalid } })
+    @params({ "hooks": { "preload_plugins": [] } })
     function _(riversJson)
       m.vm.riversJson = riversJson
       m.assertInvalid(m.vm.getPrehookController())
     end function
 
     @it("hooks")
-    @params({ "id" : "s1", "hooks": {"preload_plugins":[{"id": 1}]}})
-    @params({ "id" : "s2", "hooks": {"preload_plugins":[{"id": 1}]}})
-    @params({ "id" : "s3", "hooks": {"preload_plugins":[{"id": 1},{"id": 2}]}})
-    @params({ "id" : "s4", "hooks": {"preload_plugins":[{"id": 1},{"id": 2}]}})
+    @params({ "id" : "s1", "hooks": { "preload_plugins": [{ "id": 1 }] } })
+    @params({ "id" : "s2", "hooks": { "preload_plugins": [{ "id": 1 }] } })
+    @params({ "id" : "s3", "hooks": { "preload_plugins": [{ "id": 1 }, { "id": 2 }] } })
+    @params({ "id" : "s4", "hooks": { "preload_plugins": [{ "id": 1 }, { "id": 2 }] } })
     function _(riversJson)
 
 

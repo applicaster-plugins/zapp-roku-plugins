@@ -4,11 +4,11 @@ namespace Applicaster.tests
   class FullScreenSearchVMTests extends tests.BaseTestSuite
 
     override function beforeEach()
-      m.__mioc = {
+      super.beforeEach()
+      mioc.setInstances({
         "User": { "isLoggedIn": false }
         "locale": "en"
-      }
-      zapp.TestUtils.setModelLocator(m.__mioc)
+      })
 
       m.riversJson = {
         data: { source: "#myLink" }
@@ -184,10 +184,10 @@ namespace Applicaster.tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("performSearch")
-    @params("q1","s1", 0, "#myLink&q1=s1")
-    @params("q2","s2", 1, "#myLink&q2=s2")
-    @params("q3","s3  ", 1, "#myLink&q3=s3")
-    @params("q4","   s4  ", 1, "#myLink&q4=s4")
+    @params("q1", "s1", 0, "#myLink&q1=s1")
+    @params("q2", "s2", 1, "#myLink&q2=s2")
+    @params("q3", "s3  ", 1, "#myLink&q3=s3")
+    @params("q4", "   s4  ", 1, "#myLink&q4=s4")
     function _(searchQuery, text, loadDepth, expectedLink)
       m.vm.searchQueryName = searchQuery
       m.vm.searchText = text

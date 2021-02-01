@@ -4,14 +4,13 @@ namespace Applicaster.tests
   class SegmentAnalyticsPluginTests extends tests.BaseTestSuite
 
     override function beforeEach()
+      super.beforeEach()
       config = {
         "write_key": "#w"
       }
-      m.__mioc = createObject("roSGNode", "ModelLocator")
-      m.__mioc.constants = {
+      mioc.setInstance("constants", {
         "applicasterDeviceId": "#a"
-      }
-      zapp.TestUtils.setModelLocator(m.__mioc)
+      })
 
       m.pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
 

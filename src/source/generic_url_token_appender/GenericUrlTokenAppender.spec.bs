@@ -4,15 +4,11 @@ namespace Applicaster.tests
   class GenericUrlTokenAppenderTests extends tests.BaseTestSuite
 
     override function beforeEach()
-      zapp.mioc.clearClassInstances()
-      m.__mioc = CreateObject("roSGNode", "ModelLocator")
-      m.__mioc.plugins = [TestUtils.CreatePluginJson("generic_url_token_appender", { "provider_id": "pid", "token_key": "t" })]
-
-      zapp.TestUtils.setModelLocator(m.__mioc)
+    super.beforeEach()
+      mioc.setInstance("plugins", [TestUtils.CreatePluginJson("generic_url_token_appender", { "provider_id": "pid", "token_key": "t" })])
 
       m.appender = new GenericUrlTokenAppender()
     end function
-
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("tests constructor")

@@ -4,12 +4,10 @@ namespace Applicaster.tests
   class GeneralTextScreenVMTests extends tests.BaseTestSuite
 
     override function beforeEach()
+      super.beforeEach()
       localStore = createObject("roSGNode", "ZSessionStore")
-      modelLocator = createObject("roSGNode", "ModelLocator")
-      modelLocator.addfields({ "ZPLocalStore": localStore })
-      modelLocator.locale = "en"
-
-      zapp.TestUtils.setModelLocator(modelLocator)
+      mioc.setInstance("ZPLocalStore", localStore)
+      mioc.setInstance("locale", "en")
 
       riversJson = {
         "id": "generalTextScreen"

@@ -4,11 +4,11 @@ namespace Applicaster.tests
   class GigyaLoginScreenVMTests extends tests.BaseTestSuite
 
     override function beforeEach()
-      m.__mioc = {
-        "User": { "isLoggedIn": false }
+      super.beforeEach()
+      mioc.setInstances({
+        "user": { "isLoggedIn": false }
         "locale": "en"
-      }
-      zapp.TestUtils.setModelLocator(m.__mioc)
+      })
 
       riversJson = {
         "id": "myAccount"

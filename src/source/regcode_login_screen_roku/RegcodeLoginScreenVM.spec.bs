@@ -4,12 +4,11 @@ namespace Applicaster.tests
   class RegcodeLoginScreenVMTests extends tests.BaseTestSuite
 
     override function beforeEach()
-      localStore = createObject("roSGNode", "ZSessionStore")
-      m.__mioc = {
+      super.beforeEach()
+      mioc.setInstances({
         "ZPLocalStore": localStore
         "locale": "en"
-      }
-      zapp.TestUtils.setModelLocator(m.__mioc)
+      })
 
       riversJson = {
         "id": "regcodeScreen"
@@ -215,7 +214,7 @@ namespace Applicaster.tests
     @it("fail")
     @params(invalid)
     @params({})
-    @params({"codeText": invalid})
+    @params({ "codeText": invalid })
     function _(result)
       m.expectNone(m.vm, "togglePollTimer")
 
@@ -258,8 +257,8 @@ namespace Applicaster.tests
     @it("fail")
     @params(invalid)
     @params({})
-    @params({"state":"error"})
-    @params({"state":"none"})
+    @params({ "state": "error" })
+    @params({ "state": "none" })
     function _(result)
       m.vm.providerId = "pid"
       m.expectNone(m.vm.analyticsManager, "callFunc")

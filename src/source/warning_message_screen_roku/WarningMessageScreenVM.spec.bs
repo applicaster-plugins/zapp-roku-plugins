@@ -4,10 +4,9 @@ namespace Applicaster.tests
   class WarningMessageScreenVMTests extends tests.BaseTestSuite
 
     override function beforeEach()
+      super.beforeEach()
       localStore = createObject("roSGNode", "ZSessionStore")
-      modelLocator = createObject("roSGNode", "ModelLocator")
-      modelLocator.addfields({ "ZPLocalStore": localStore })
-      zapp.TestUtils.setModelLocator(modelLocator)
+      mioc.setInstance("ZPLocalStore", localStore)
 
       riversJson = {
         "id": "warningScreen"
@@ -29,12 +28,12 @@ namespace Applicaster.tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("matching conditions")
-    @params({field:"v" }, "field", "v")
-    @params({json:{field:"v2"} }, "json.field", "v2")
-    @params({json:{field:"v2 "} }, "json.field", "v2")
-    @params({json:{field:"v2 "} }, "json.field", "v2 ")
-    @params({json:{field:"v2 "} }, "json.field", "V2 ")
-    @params({field:"v", }, "field", "V")
+    @params({ field: "v" }, "field", "v")
+    @params({ json: { field: "v2" } }, "json.field", "v2")
+    @params({ json: { field: "v2 " } }, "json.field", "v2")
+    @params({ json: { field: "v2 " } }, "json.field", "v2 ")
+    @params({ json: { field: "v2 " } }, "json.field", "V2 ")
+    @params({ field: "v", }, "field", "V")
     function _(entry, path, condition)
       m.vm.conditionPath = path
       m.vm.conditionValue = condition
@@ -60,15 +59,15 @@ namespace Applicaster.tests
     end function
 
     @it("not matching conditions")
-    @params({field:"", }, "field", "v")
-    @params({field:"v", }, "field", "")
-    @params({json:{field:"v2"}, }, "json.field", "n2")
-    @params({json:{field:"v2 "}, }, "json.field", "n2")
-    @params({json:{field:"v2 "}, }, "json.field", "n2 ")
-    @params({json:{field:"v2"}, }, "", "v2")
-    @params({json:{field:"v2"}, }, " ", "v2")
-    @params({json:{field:"v2"}, }, "json.field", "")
-    @params({json:{field:"v2"}, }, "json.field", " ")
+    @params({ field: "", }, "field", "v")
+    @params({ field: "v", }, "field", "")
+    @params({ json: { field: "v2" }, }, "json.field", "n2")
+    @params({ json: { field: "v2 " }, }, "json.field", "n2")
+    @params({ json: { field: "v2 " }, }, "json.field", "n2 ")
+    @params({ json: { field: "v2" }, }, "", "v2")
+    @params({ json: { field: "v2" }, }, " ", "v2")
+    @params({ json: { field: "v2" }, }, "json.field", "")
+    @params({ json: { field: "v2" }, }, "json.field", " ")
     function _(entry, path, condition)
       m.vm.conditionPath = path
       m.vm.conditionValue = condition

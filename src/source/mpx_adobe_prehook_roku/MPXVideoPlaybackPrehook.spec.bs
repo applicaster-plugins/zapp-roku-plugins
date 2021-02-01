@@ -4,14 +4,11 @@ namespace Applicaster.tests
   class MPXVideoPlaybackPrehookTests extends tests.BaseTestSuite
 
     override function beforeEach()
-      zapp.mioc.clearClassInstances()
-      m.__mioc = CreateObject("roSGNode", "ModelLocator")
-      m.__mioc.plugins = [TestUtils.CreatePluginJson("mpx_video_playback_prehook_roku", {
+      super.beforeEach()
+      mioc.setInstance("plugins", [TestUtils.CreatePluginJson("mpx_video_playback_prehook_roku", {
           "matching_path": "itemType"
           "matching_value": "video"
-      })]
-
-      zapp.TestUtils.setModelLocator(m.__mioc)
+      })])
 
       m.plugin = new MPXVideoPlaybackPrehook()
     end function
@@ -42,7 +39,7 @@ namespace Applicaster.tests
 
     @it("no item")
     @params(invalid)
-    @params({"currentItem": invalid})
+    @params({ "currentItem": invalid })
     function _(currentSelection)
       m.expectOnce(m.plugin, "getInstance", ["currentSelection"], currentSelection)
       m.expectNone(m.plugin, "isItemMatch")
@@ -93,13 +90,13 @@ namespace Applicaster.tests
 
     @it("isItemMatch")
     @params("all", "", {}, true)
-    @params("all", "", {"id":"stuff"}, true)
-    @params("", "", {"id":"stuff"}, false)
-    @params("json.free", "true", {"id":"stuff"}, false)
-    @params("json.free", "true", {"id":"stuff", "json": {"free": false}}, false)
-    @params("json.free", "true", {"id":"stuff", "json": {"free": true}}, true)
-    @params("itemType", "channel", {"id":"stuff", "itemType": "video"}, false)
-    @params("itemType", "video", {"id":"stuff", "itemType": "video"}, true)
+    @params("all", "", { "id": "stuff" }, true)
+    @params("", "", { "id": "stuff" }, false)
+    @params("json.free", "true", { "id": "stuff" }, false)
+    @params("json.free", "true", { "id": "stuff", "json": { "free": false } }, false)
+    @params("json.free", "true", { "id": "stuff", "json": { "free": true } }, true)
+    @params("itemType", "channel", { "id": "stuff", "itemType": "video" }, false)
+    @params("itemType", "video", { "id": "stuff", "itemType": "video" }, true)
     function _(path, value, item, isMatch)
       m.plugin.matchingPath = path
       m.plugin.matchingValue = value

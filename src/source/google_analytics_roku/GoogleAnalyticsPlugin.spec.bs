@@ -4,16 +4,14 @@ namespace Applicaster.tests
   class GoogleAnalyticsPluginTests extends tests.BaseTestSuite
 
     override function beforeEach()
+      super.beforeEach()
       config = {
         "tracking_id": "#t"
         "user_id": "#u"
       }
-      m.__mioc = createObject("roSGNode", "ModelLocator")
+      mioc.setInstance("buildConfig", { "app_family_id": "#vid" })
+      mioc.setInstance("constants", { "googleAnalyticsClientId": "#c" })
 
-      m.__mioc.buildConfig = { "app_family_id": "#vid" }
-      m.__mioc.constants = { "googleAnalyticsClientId": "#c" }
-
-      zapp.TestUtils.setModelLocator(m.__mioc)
       m.pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "google_analytics_roku" })
       m.plugin = new GoogleAnalyticsPlugin(m.pluginData)
     end function
@@ -67,9 +65,9 @@ namespace Applicaster.tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("is user id allowed")
-    @params("allow-tracking-user-id-for-app-family-aaaa","aaaa", true )
-    @params("allow-tracking-user-id-for-app-familya-aaaa","aaaa", false )
-    @params("allow-tracking-user-id-for-app-family-aaaa","aaaac", false )
+    @params("allow-tracking-user-id-for-app-family-aaaa", "aaaa", true)
+    @params("allow-tracking-user-id-for-app-familya-aaaa", "aaaa", false)
+    @params("allow-tracking-user-id-for-app-family-aaaa", "aaaac", false)
     function _(userIdString, versionId, result)
 
       versionPrefix = "allow-tracking-user-id-for-app-family-"
@@ -85,21 +83,18 @@ namespace Applicaster.tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("constructor_trackUser")
-    @params( "allow-tracking-user-id-for-app-family-aaaa", "aaaa", true )
-    @params( "allow-tracking-user-id-for-app-family-aaac", "aaaa", false )
-    @params( invalid, "aaaa", false )
+    @params("allow-tracking-user-id-for-app-family-aaaa", "aaaa", true)
+    @params("allow-tracking-user-id-for-app-family-aaac", "aaaa", false)
+    @params(invalid, "aaaa", false)
     function _(userID, versionId, result)
 
       config = {
         "tracking_id": "#t"
         "user_id": userID
       }
-      m.__mioc = createObject("roSGNode", "ModelLocator")
+      mioc.setInstance("buildConfig", { "app_family_id": versionId })
+      mioc.setInstance("constants", {})
 
-      m.__mioc.buildConfig = { "app_family_id": versionId }
-      m.__mioc.constants = {}
-
-      zapp.TestUtils.setModelLocator(m.__mioc)
       m.pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "google_analytics_roku" })
       m.plugin = new GoogleAnalyticsPlugin(m.pluginData)
 
@@ -112,8 +107,8 @@ namespace Applicaster.tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("valid")
-    @params("user123", "user123" )
-    @params("user 123", "user%20123" )
+    @params("user123", "user123")
+    @params("user 123", "user%20123")
     function _(userID, encodeUserId)
       params = {
         "uid": encodeUserId
@@ -125,9 +120,9 @@ namespace Applicaster.tests
     end function
 
     @it("return invalid")
-    @params(invalid )
-    @params({} )
-    @params(123 )
+    @params(invalid)
+    @params({})
+    @params(123)
     function _(userID)
       m.plugin.setGoogleTaskUserId(userID)
 

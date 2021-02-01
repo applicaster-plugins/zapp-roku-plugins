@@ -4,7 +4,7 @@ namespace Applicaster.tests
   class TVETokenLoaderPrehookTests extends tests.BaseTestSuite
 
     override function beforeEach()
-      zapp.mioc.clearClassInstances()
+      super.beforeEach()
       m.pluginJson = TestUtis.createPluginJson("tve_token_loader_prehook_roku", {
         "endpoint": "e/"
         "domain": "d"
@@ -18,15 +18,12 @@ namespace Applicaster.tests
         resourceID: "rod"
         base_url: "#url"
       })
-      m.__mioc = CreateObject("roSGNode", "ModelLocator")
-      m.__mioc.plugins = [
+      mioc.setInstance("plugins", [
         m.pluginJson,
         m.tvePluginJson
-      ]
+      ])
 
-      m.__mioc.constants = { "applicasterDeviceId": "did" }
-
-      zapp.TestUtils.setModelLocator(m.__mioc)
+      mioc.setInstance("constants", { "applicasterDeviceId": "did" })
 
       m.plugin = new TVETokenLoaderPrehook()
     end function
@@ -81,7 +78,7 @@ namespace Applicaster.tests
 
     @it("no item")
     @params(invalid)
-    @params({"currentItem": invalid})
+    @params({ "currentItem": invalid })
     function _(currentSelection)
       m.expectOnce(m.plugin, "getInstance", ["currentSelection"], currentSelection)
       m.expectNone(m.plugin, "isItemMatch", false)
@@ -132,13 +129,13 @@ namespace Applicaster.tests
 
     @it("isItemMatch")
     @params("all", "", {}, true)
-    @params("all", "", {"id":"stuff"}, true)
-    @params("", "", {"id":"stuff"}, false)
-    @params("json.free", "true", {"id":"stuff"}, false)
-    @params("json.free", "true", {"id":"stuff", "json": {"free": false}}, false)
-    @params("json.free", "true", {"id":"stuff", "json": {"free": true}}, true)
-    @params("itemType", "channel", {"id":"stuff", "itemType": "video"}, false)
-    @params("itemType", "video", {"id":"stuff", "itemType": "video"}, true)
+    @params("all", "", { "id": "stuff" }, true)
+    @params("", "", { "id": "stuff" }, false)
+    @params("json.free", "true", { "id": "stuff" }, false)
+    @params("json.free", "true", { "id": "stuff", "json": { "free": false } }, false)
+    @params("json.free", "true", { "id": "stuff", "json": { "free": true } }, true)
+    @params("itemType", "channel", { "id": "stuff", "itemType": "video" }, false)
+    @params("itemType", "video", { "id": "stuff", "itemType": "video" }, true)
     function _(path, value, item, isMatch)
       m.plugin.matchingPath = path
       m.plugin.matchingValue = value
@@ -216,7 +213,7 @@ namespace Applicaster.tests
     @it("loadShortToken")
     @params(invalid, invalid, false)
     @params({}, invalid, false)
-    @params({serializedToken: "c3Q="}, "st", true)
+    @params({ serializedToken: "c3Q=" }, "st", true)
     function _(response, shortToken, expectedResult)
       item = { "id": "item" }
 

@@ -4,17 +4,16 @@ namespace Applicaster.tests
   class SegmenetVideoAnalyticsPluginTests extends tests.BaseTestSuite
 
     override function beforeEach()
+      super.beforeEach()
       m.constants = {
         "deviceInfo": { "videoMode": "1080p" }
       }
       m.analyticsManager = { id: "#am" }
 
-      m.__mioc = {
+      mioc.setInstances({
         "constants": m.constants
         "analyticsManager": m.analyticsManager
-      }
-
-      zapp.TestUtils.setModelLocator(m.__mioc)
+      })
 
       m.plugin = new SegmentVideoAnalyticsPlugin(json)
     end function

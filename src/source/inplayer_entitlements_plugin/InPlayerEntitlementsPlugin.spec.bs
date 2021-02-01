@@ -4,12 +4,8 @@ namespace Applicaster.tests
   class InplayerEntitlementsTests extends tests.BaseTestSuite
 
     override function beforeEach()
-      m.__mioc = createObject("roSGNode", "ModelLocator")
-
-      m.__mioc = CreateObject("roSGNode", "ModelLocator")
-      m.__mioc.constants = { id: "constants" }
-      m.__mioc.plugins = []
-      zapp.TestUtils.setModelLocator(m.__mioc)
+      mioc.setInstance("constants", { id: "constants" })
+      mioc.setInstance("plugins", [])
 
       'dependencies for testing plugin creation
 
@@ -27,9 +23,9 @@ namespace Applicaster.tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("invalid token")
-    @params("GET", "foo", {"id":"args"})
-    @params("PUSH", "foo2", {"id":"args2"})
-    @params("PUSH", "foo2", {"id":"args2"})
+    @params("GET", "foo", { "id": "args" })
+    @params("PUSH", "foo2", { "id": "args2" })
+    @params("PUSH", "foo2", { "id": "args2" })
     function _(method, endpoint, args)
       m.plugin.token = invalid
       m.expectNone(m.plugin, "executeApiRequest")
@@ -38,9 +34,9 @@ namespace Applicaster.tests
     end function
 
     @it("execute_valid_token")
-    @params("GET", "foo", {"id":"args"}, {"id":"result"})
-    @params("PUSH", "foo2", {"id":"args2"}, {"id":"result"})
-    @params("PUSH", "foo2", {"id":"args2"}, invalid)
+    @params("GET", "foo", { "id": "args" }, { "id": "result" })
+    @params("PUSH", "foo2", { "id": "args2" }, { "id": "result" })
+    @params("PUSH", "foo2", { "id": "args2" }, invalid)
     function _(method, endpoint, args, result)
       m.expectOnce(m.plugin, "executeApiRequest", [method, endpoint, args, true, "t"], result)
 
@@ -92,10 +88,10 @@ namespace Applicaster.tests
     end function
 
     @it("logged in one purchase")
-    @params([{"code":"fOther"}], invalid, [])
-    @params([{"code":"f1"}], invalid, [])
-    @params([{"code":"f1"}], [], [])
-    @params([{"code":"f1"}], [{external_id:"f1"}], ["f1"])
+    @params([{ "code": "fOther" }], invalid, [])
+    @params([{ "code": "f1" }], invalid, [])
+    @params([{ "code": "f1" }], [], [])
+    @params([{ "code": "f1" }], [{ external_id: "f1" }], ["f1"])
     function _(rokuPurchases, externalFees, expectedIds) as void
       receipt1 = { "id": "f1" }
       response = { "id": "response", "collection": [receipt1] }
@@ -111,10 +107,10 @@ namespace Applicaster.tests
 
     @it("logged in many purchases")
     @params(invalid, invalid, invalid, [])
-    @params({code:"f1"}, invalid, invalid, ["f1"])
-    @params(invalid, {code:"f2"}, invalid, ["f2"])
-    @params(invalid, {code:"f2"}, {code:"f3"}, ["f2","f3"])
-    @params({code:"f1"}, {code:"f2"}, {code:"f3"}, ["f1","f2","f3"])
+    @params({ code: "f1" }, invalid, invalid, ["f1"])
+    @params(invalid, { code: "f2" }, invalid, ["f2"])
+    @params(invalid, { code: "f2" }, { code: "f3" }, ["f2", "f3"])
+    @params({ code: "f1" }, { code: "f2" }, { code: "f3" }, ["f1", "f2", "f3"])
     function _(rr1, rr2, rr3, expectedIds) as void
       rokuPurchases = [{ "code": "f1" }, { "code": "f2" }, { "code": "f3" }]
       receipt1 = { "id": "f1" }
@@ -142,14 +138,14 @@ namespace Applicaster.tests
     @it("logged in")
     @params(invalid, [])
     @params({}, [])
-    @params({collection:[]}, [])
-    @params({collection:[{}]}, [])
-    @params({collection: [{"errors": {"401": "Invalid auth Token"}}]}, [])
-    @params({collection: [{external_fees:invalid}]}, [])
-    @params({collection: [{external_fees:[{external_id: invalid}]}]}, [])
-    @params({collection: [{external_fees:[{external_id: "1"}]}]}, ["1"])
-    @params({collection: [{external_fees:[{external_id: "1"},{external_id: "2"}]}]}, ["1"])
-    @params({collection: [{external_fees:[{external_id: "1"},{external_id: "2"}]}, {external_fees:[{external_id: "3"}]} ]}, ["1", "3"])
+    @params({ collection: [] }, [])
+    @params({ collection: [{}] }, [])
+    @params({ collection: [{ "errors": { "401": "Invalid auth Token" } }] }, [])
+    @params({ collection: [{ external_fees: invalid }] }, [])
+    @params({ collection: [{ external_fees: [{ external_id: invalid }] }] }, [])
+    @params({ collection: [{ external_fees: [{ external_id: "1" }] }] }, ["1"])
+    @params({ collection: [{ external_fees: [{ external_id: "1" }, { external_id: "2" }] }] }, ["1"])
+    @params({ collection: [{ external_fees: [{ external_id: "1" }, { external_id: "2" }] }, { external_fees: [{ external_id: "3" }] }] }, ["1", "3"])
     function _(response, expectedIds) as void
       m.expectOnce(m.plugin, "execute", ["GET", "items/access/customers?status=active"], response)
 
@@ -164,7 +160,7 @@ namespace Applicaster.tests
 
     @it("post Purchases-no failures")
     @params([], true)
-    @params([{"error": "here"}], false)
+    @params([{ "error": "here" }], false)
     function _(response, expectedResult) as void
       rokuPurchases = {}
       m.expectOnce(m.plugin, "sendPurchasesToInPlayer", [rokuPurchases], response)
@@ -180,7 +176,7 @@ namespace Applicaster.tests
     @it("invalid scenarios")
     @params(invalid, invalid)
     @params("t", invalid)
-    @params(invalid, {"id": "1"})
+    @params(invalid, { "id": "1" })
     function _(token, item)
       rokuCatalogItems = [TestUtis.createRokuCatalogItem("1"), TestUtis.createRokuCatalogItem("2"), TestUtis.createRokuCatalogItem("3")]
       m.plugin.currentItem = item
@@ -194,11 +190,11 @@ namespace Applicaster.tests
 
     @it("valid scenarios")
     @params([], [])
-    @params([{external_fees:[{external_id:"1"}]}], ["1"])
-    @params([{external_fees:[{external_id:"1"}]}, {external_fees:[{external_id:"2"}]}], ["1", "2"])
-    @params([{external_fees:[{external_id:"1"}]}, {external_fees:[{external_id:"2"}]}, {external_fees:[{external_id:"3"}]}], ["1", "2", "3"])
-    @params([{external_fees:[{external_id:"4"}]}, {external_fees:[{external_id:"2"}]}, {external_fees:[{external_id:"3"}]}], ["2", "3"])
-    @params([{external_fees:[{external_id:"4"}]}, {external_fees:[{external_id:"5"}]}, {external_fees:[{external_id:"6"}]}], [])
+    @params([{ external_fees: [{ external_id: "1" }] }], ["1"])
+    @params([{ external_fees: [{ external_id: "1" }] }, { external_fees: [{ external_id: "2" }] }], ["1", "2"])
+    @params([{ external_fees: [{ external_id: "1" }] }, { external_fees: [{ external_id: "2" }] }, { external_fees: [{ external_id: "3" }] }], ["1", "2", "3"])
+    @params([{ external_fees: [{ external_id: "4" }] }, { external_fees: [{ external_id: "2" }] }, { external_fees: [{ external_id: "3" }] }], ["2", "3"])
+    @params([{ external_fees: [{ external_id: "4" }] }, { external_fees: [{ external_id: "5" }] }, { external_fees: [{ external_id: "6" }] }], [])
     function _(fees, expectedIds)
       rokuCatalogItems = [TestUtis.createRokuCatalogItem("1"), TestUtis.createRokuCatalogItem("2"), TestUtis.createRokuCatalogItem("3")]
       item = { id: "item" }
@@ -242,10 +238,10 @@ namespace Applicaster.tests
 
     @it("invalid item")
     @params(invalid)
-    @params({"id":"item"})
-    @params({"id":"item", extensions: invalid})
-    @params({"id":"item", extensions: {"other": true}})
-    @params({"id":"item", extensions: {"inplayer_asset_id": invalid}})
+    @params({ "id": "item" })
+    @params({ "id": "item", extensions: invalid })
+    @params({ "id": "item", extensions: { "other": true } })
+    @params({ "id": "item", extensions: { "inplayer_asset_id": invalid } })
     function _(item)
       m.assertFalse(m.plugin.loadItem(item))
     end function
@@ -321,9 +317,9 @@ namespace Applicaster.tests
     @it("server errors")
     @params(invalid, "Error loading item: cid")
     @params({}, "Error loading item: cid")
-    @params({errors:invalid}, "Error loading item: item title")
-    @params({errors:{}}, "Error loading item: item title")
-    @params({errors:{"401":"custom error"}}, "custom error")
+    @params({ errors: invalid }, "Error loading item: item title")
+    @params({ errors: {} }, "Error loading item: item title")
+    @params({ errors: { "401": "custom error" } }, "custom error")
     function _(result, expectedErrorMessage)
 
       item = createObject("roSGNode", "ZPEntry")
@@ -376,8 +372,8 @@ namespace Applicaster.tests
     end function
 
     @it("different pre-existing entitlements")
-    @params("ApplicasterEntitlements","SVOD", "authOnly")
-    @params("JWTEntitlements","AVOD", "ICPOnly")
+    @params("ApplicasterEntitlements", "SVOD", "authOnly")
+    @params("JWTEntitlements", "AVOD", "ICPOnly")
     function _(subType, vodModel, policy)
       m.plugin.vodModel = vodModel
       m.plugin.policy = policy
@@ -430,7 +426,7 @@ namespace Applicaster.tests
     @it("no purchase scenarios")
     @params(invalid)
     @params([])
-    @params([{id:"p1"}])
+    @params([{ id: "p1" }])
     function _(purchases)
       m.plugin.token = invalid
       m.assertEmpty(m.plugin.sendPurchasesToInPlayer(purchases))
@@ -502,8 +498,8 @@ namespace Applicaster.tests
     @it("invalid")
     @params(invalid)
     @params({})
-    @params({id:1})
-    @params({item_id:invalid})
+    @params({ id: 1 })
+    @params({ item_id: invalid })
     function _(feeReceipt)
 
       m.expectNone(m.plugin, "execute")
@@ -513,9 +509,9 @@ namespace Applicaster.tests
     end function
 
     @it("valid")
-    @params(1, "items/1/access-fees", [{"id": 1}], {"id": 1})
-    @params(2, "items/2/access-fees", [{"id": 1}], invalid)
-    @params(2, "items/2/access-fees", [{"id": 1}, {"id": 2}], {"id": 2})
+    @params(1, "items/1/access-fees", [{ "id": 1 }], { "id": 1 })
+    @params(2, "items/2/access-fees", [{ "id": 1 }], invalid)
+    @params(2, "items/2/access-fees", [{ "id": 1 }, { "id": 2 }], { "id": 2 })
     function _(id, endpoint, response, expectedFee)
       feeReceipt = { "id": id, item_id: id, purchased_access_fee_id: id }
 
@@ -532,17 +528,17 @@ namespace Applicaster.tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("getRokuItemForFee")
-    @params(invalid, [{"code":"1"}], invalid)
-    @params({external_fees:invalid}, [{"code":"1"}], invalid)
-    @params({external_fees:[]}, [{"code":"1"}], invalid)
-    @params({external_fees:[{external_id:"2"}]}, [{"code":"1"}], invalid)
-    @params({external_fees:[{external_id:"2"}]}, [{"code":"2"}], {code:"2"})
-    @params({external_fees:[{external_id:"1"}, {external_id:"2"}, {external_id:"3"}]}, [{"code":"1"}], {code:"1"})
-    @params({external_fees:[{external_id:"1"}, {external_id:"2"}, {external_id:"3"}]}, [{"code":"2"}], {code:"2"})
-    @params({external_fees:[{external_id:"1"}, {external_id:"2"}, {external_id:"3"}]}, [{"code":"3"}], {code:"3"})
-    @params({external_fees:[{external_id:"1"}, {external_id:"2"}, {external_id:"3"}]}, [{"code":"1"}, {"code":"2"}, {"code":"3"}], {code:"1"})
-    @params({external_fees:[{external_id:"1"}, {external_id:"2"}, {external_id:"3"}]}, [{"code":"2"}, {"code":"3"}], {code:"2"})
-    @params({external_id:"3"}, [{"code":"1"}, {"code":"2"}, {"code":"3"}], {code:"3"})
+    @params(invalid, [{ "code": "1" }], invalid)
+    @params({ external_fees: invalid }, [{ "code": "1" }], invalid)
+    @params({ external_fees: [] }, [{ "code": "1" }], invalid)
+    @params({ external_fees: [{ external_id: "2" }] }, [{ "code": "1" }], invalid)
+    @params({ external_fees: [{ external_id: "2" }] }, [{ "code": "2" }], { code: "2" })
+    @params({ external_fees: [{ external_id: "1" }, { external_id: "2" }, { external_id: "3" }] }, [{ "code": "1" }], { code: "1" })
+    @params({ external_fees: [{ external_id: "1" }, { external_id: "2" }, { external_id: "3" }] }, [{ "code": "2" }], { code: "2" })
+    @params({ external_fees: [{ external_id: "1" }, { external_id: "2" }, { external_id: "3" }] }, [{ "code": "3" }], { code: "3" })
+    @params({ external_fees: [{ external_id: "1" }, { external_id: "2" }, { external_id: "3" }] }, [{ "code": "1" }, { "code": "2" }, { "code": "3" }], { code: "1" })
+    @params({ external_fees: [{ external_id: "1" }, { external_id: "2" }, { external_id: "3" }] }, [{ "code": "2" }, { "code": "3" }], { code: "2" })
+    @params({ external_id: "3" }, [{ "code": "1" }, { "code": "2" }, { "code": "3" }], { code: "3" })
     function _(fee, rokuPurchases, expected)
       m.assertEqual(m.plugin.getRokuItemForFee(fee, rokuPurchases), expected)
     end function
@@ -553,21 +549,21 @@ namespace Applicaster.tests
 
     @it("no network calls")
     @params(invalid, invalid, invalid)
-    @params(invalid, {extensions:{"inplayer_asset_id":invalid}}, invalid)
-    @params(invalid, {extensions:{"inplayer_asset_id":"123"}}, "123")
+    @params(invalid, { extensions: { "inplayer_asset_id": invalid } }, invalid)
+    @params(invalid, { extensions: { "inplayer_asset_id": "123" } }, "123")
     @params("extensions.custom_id", invalid, invalid)
-    @params("extensions.custom_id", {extensions:{"custom_id": "cid", "inplayer_asset_id":"123"}}, "cid")
+    @params("extensions.custom_id", { extensions: { "custom_id": "cid", "inplayer_asset_id": "123" } }, "cid")
     function _(pluginKey, item, expected)
       m.plugin.pluginInplayerAssetkey = pluginKey
       m.assertEqual(m.plugin.getInplayerId(item), expected)
     end function
 
     @it("network calls")
-    @params({id:"1a", extensions:{"inplayer_asset_type":"jw"}}, "items/assets/external/jw/1a", invalid, invalid)
-    @params({id:"1a", extensions:{"inplayer_asset_type":"jw"}}, "items/assets/external/jw/1a", {}, invalid)
-    @params({id:"1a", extensions:{"inplayer_asset_type":"jw"}}, "items/assets/external/jw/1a", {id:"123"}, "123")
-    @params({id:"2a", extensions:{"inplayer_asset_type":"vimeo"}}, "items/assets/external/vimeo/2a", {id:"111"}, "111")
-    @params({id:"2a", extensions:{"inplayer_asset_type":"vimeo"}}, "items/assets/external/vimeo/2a", invalid, invalid)
+    @params({ id: "1a", extensions: { "inplayer_asset_type": "jw" } }, "items/assets/external/jw/1a", invalid, invalid)
+    @params({ id: "1a", extensions: { "inplayer_asset_type": "jw" } }, "items/assets/external/jw/1a", {}, invalid)
+    @params({ id: "1a", extensions: { "inplayer_asset_type": "jw" } }, "items/assets/external/jw/1a", { id: "123" }, "123")
+    @params({ id: "2a", extensions: { "inplayer_asset_type": "vimeo" } }, "items/assets/external/vimeo/2a", { id: "111" }, "111")
+    @params({ id: "2a", extensions: { "inplayer_asset_type": "vimeo" } }, "items/assets/external/vimeo/2a", invalid, invalid)
     function _(item, endpoint, result, expected)
       m.expectOnce(m.plugin, "execute", ["GET", endpoint], result)
 
