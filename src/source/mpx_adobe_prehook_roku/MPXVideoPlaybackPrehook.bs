@@ -32,8 +32,8 @@ class MPXVideoPlaybackPrehook extends zapp.BaseClass
       m.matchingValue = ""
     end if
 
-    m.request = m.getClassInstance("ZC.Request")
-    m.uri = m.getClassInstance("ZC.URI")
+    m.request = m.getClassInstance("zapp.Request")
+    m.uri = m.getClassInstance("zapp.URI")
 
 
   end function

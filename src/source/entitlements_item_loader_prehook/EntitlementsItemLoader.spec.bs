@@ -1,10 +1,10 @@
 namespace Applicaster.tests
 
   @suite
-  class EntitlementsItemLoaderTests extends Rooibos.BaseTestSuite
+  class EntitlementsItemLoaderTests extends tests.BaseTestSuite
 
     override function beforeEach()
-      ZC.AppService.clearClassInstances()
+      zapp.mioc.clearClassInstances()
       m.modelLocator = CreateObject("roSGNode", "ModelLocator")
       m.modelLocator.plugins = [TestUtils.CreatePluginJson("oc_url_token_loader", {
           "endpoint": "e/"
@@ -13,14 +13,11 @@ namespace Applicaster.tests
           "matching_value": "video"
       })]
 
-      ZC.TestUtils.setModelLocator(m.modelLocator)
+      zapp.TestUtils.setModelLocator(m.modelLocator)
 
       m.loader = new EntitlementsItemLoader()
     end function
 
-    override function afterEach()
-      ZC.TestUtils.unsetModelLocator()
-    end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("tests constructor")
@@ -29,7 +26,7 @@ namespace Applicaster.tests
     @it("no plugin")
     function _()
       m.modelLocator.plugins = []
-      ZC.AppService.clearClassInstances()
+      zapp.mioc.clearClassInstances()
 
       m.loader = new EntitlementsItemLoader()
 
@@ -93,7 +90,7 @@ namespace Applicaster.tests
       m.expectOnce(entitlementsNode, "callFunc", ["isLocked", item], true)
 
       manager = { "id": "manager" }
-      m.expectOnce(m.loader, "getClassInstance", ["Entitlements.EntitlementsManager"], manager)
+      m.expectOnce(m.loader, "getClassInstance", ["zapp.entitlements.EntitlementsManager"], manager)
       m.expectOnce(manager, "loadItem", [item], response)
 
       m.assertEqual(m.loader.execute(), expectedResult)

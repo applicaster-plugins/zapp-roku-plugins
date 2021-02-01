@@ -1,14 +1,14 @@
 namespace Applicaster.tests
 
   @suite
-  class LogoutScreenVmTests extends Rooibos.BaseTestSuite
+  class LogoutScreenVmTests extends tests.BaseTestSuite
 
     override function beforeEach()
       m.modelLocator = {
         "User": { "isLoggedIn": false }
         "locale": "en"
       }
-      ZC.TestUtils.setModelLocator(m.modelLocator)
+      zapp.TestUtils.setModelLocator(m.modelLocator)
 
       m.riversJson = {
         "id": "logoutscreen"
@@ -27,9 +27,6 @@ namespace Applicaster.tests
 
       m.vm = new LogoutScreenVM(m.riversJson)
       m.vm.initialize()
-    end function
-
-    override function afterEach()
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

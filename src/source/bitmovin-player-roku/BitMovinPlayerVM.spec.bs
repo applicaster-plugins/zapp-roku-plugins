@@ -1,7 +1,7 @@
 namespace Applicaster.tests
 
   @suite
-  class BitMovinPlayerVMTests extends Rooibos.BaseTestSuite
+  class BitMovinPlayerVMTests extends tests.BaseTestSuite
 
     override function beforeEach()
       m.modelLocator = CreateObject("roSGNode", "ModelLocator")
@@ -14,7 +14,7 @@ namespace Applicaster.tests
 
       m.BitmovinFields = { "PLAYER_STATE": "playerState", "ERROR": "error", "WARNING": "warning", "SEEK": "seek", "SEEKED": "seeked", "TIME_SHIFT": "timeShift", "TIME_SHIFTED": "timeShifted", "CURRENT_TIME": "currentTime", "SOURCE_LOADED": "sourceLoaded", "SOURCE_UNLOADED": "sourceUnloaded", "PLAY": "play", "METADATA": "metadata", "AUDIO_CHANGED": "audioChanged", "MUTED": "muted", "UNMUTED": "unmuted", "DOWNLOAD_FINISHED": "downloadFinished" }
 
-      ZC.TestUtils.setModelLocator(m.modelLocator)
+      zapp.TestUtils.setModelLocator(m.modelLocator)
 
       m.selection = createObject("roSGNode", "Selection")
 
@@ -36,9 +36,6 @@ namespace Applicaster.tests
       m.vm = new BitMovinPlayerVM(m.view)
     end function
 
-    override function afterEach()
-      ZC.TestUtils.unsetModelLocator()
-    end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("tests constructor")

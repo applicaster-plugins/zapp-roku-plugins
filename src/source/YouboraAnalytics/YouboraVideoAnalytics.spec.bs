@@ -1,10 +1,10 @@
 namespace Applicaster.tests
 
   @suite
-  class YouboraVideoAnalyticsTests extends Rooibos.BaseTestSuite
+  class YouboraVideoAnalyticsTests extends tests.BaseTestSuite
 
     override function beforeEach()
-      ZC.AppService.clearClassInstances()
+      zapp.mioc.clearClassInstances()
 
       m.config = {
         "account_code": "#ac"
@@ -17,9 +17,6 @@ namespace Applicaster.tests
       m.plugin = new YouboraVideoAnalytics(m.pluginData)
     end function
 
-    override function afterEach()
-      ZC.TestUtils.unsetModelLocator()
-    end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("tests videoStart")

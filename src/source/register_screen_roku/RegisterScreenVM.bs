@@ -69,13 +69,13 @@ class RegisterScreenVM extends zapp.UIB.ScreenVM
     m.setField("passwordText", m.localizations.password_placeholder_text)
     m.passwordPlaceholderText = m.passwordText
 
-    inputStyle = ZC.ViewUtils.makeUIBButtonStyle(styles, "general_input", "textInputPlaceholder")
+    inputStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "general_input", "textInputPlaceholder")
 
     m.setField("inputStyle", inputStyle)
 
-    m.registerButtonStyle = ZC.ViewUtils.makeUIBButtonStyle(styles, "register_button", "custom", styles.register_button_text)
+    m.registerButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "register_button", "custom", styles.register_button_text)
 
-    m.maxDebugAccounts = ZC.ViewUtils.getUIBInt(styles, "debug_max_accounts")
+    m.maxDebugAccounts = zapp.viewUtils.getUIBInt(styles, "debug_max_accounts")
 
   end function
 

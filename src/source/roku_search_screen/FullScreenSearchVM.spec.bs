@@ -1,14 +1,14 @@
 namespace Applicaster.tests
 
   @suite
-  class FullScreenSearchVMTests extends Rooibos.BaseTestSuite
+  class FullScreenSearchVMTests extends tests.BaseTestSuite
 
     override function beforeEach()
       m.modelLocator = {
         "User": { "isLoggedIn": false }
         "locale": "en"
       }
-      ZC.TestUtils.setModelLocator(m.modelLocator)
+      zapp.TestUtils.setModelLocator(m.modelLocator)
 
       m.riversJson = {
         data: { source: "#myLink" }

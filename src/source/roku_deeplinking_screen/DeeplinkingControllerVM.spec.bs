@@ -1,14 +1,14 @@
 namespace Applicaster.tests
 
   @suite
-  class DeeplinkingControllerVMTests extends Rooibos.BaseTestSuite
+  class DeeplinkingControllerVMTests extends tests.BaseTestSuite
 
     override function beforeEach()
       m.modelLocator = {
         "User": { "isLoggedIn": false }
         "locale": "en"
       }
-      ZC.TestUtils.setModelLocator(m.modelLocator)
+      zapp.TestUtils.setModelLocator(m.modelLocator)
 
       m.riversJson = {
         styles: {
@@ -20,9 +20,6 @@ namespace Applicaster.tests
       }
 
       m.vm = new DeeplinkingControllerVM(m.riversJson)
-    end function
-
-    override function afterEach()
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

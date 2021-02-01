@@ -1,7 +1,7 @@
 namespace Applicaster.tests
 
   @suite
-  class SegmenetVideoAnalyticsPluginTests extends Rooibos.BaseTestSuite
+  class SegmenetVideoAnalyticsPluginTests extends tests.BaseTestSuite
 
     override function beforeEach()
       m.constants = {
@@ -14,14 +14,11 @@ namespace Applicaster.tests
         "analyticsManager": m.analyticsManager
       }
 
-      ZC.TestUtils.setModelLocator(m.modelLocator)
+      zapp.TestUtils.setModelLocator(m.modelLocator)
 
       m.plugin = new SegmentVideoAnalyticsPlugin(json)
     end function
 
-    override function afterEach()
-      ZC.TestUtils.unsetModelLocator()
-    end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("tests constructor")

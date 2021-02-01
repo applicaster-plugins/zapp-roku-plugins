@@ -1,7 +1,7 @@
 namespace Applicaster.tests
 
   @suite
-  class APMATTests extends Rooibos.BaseTestSuite
+  class APMATTests extends tests.BaseTestSuite
 
     override function beforeEach()
       pluginConfiguration = {
@@ -19,16 +19,13 @@ namespace Applicaster.tests
         "constants": { "applicasterDeviceId": "did" }
       }
 
-      ZC.TestUtils.setModelLocator(modelLocator)
+      zapp.TestUtils.setModelLocator(modelLocator)
 
       plugin = new zapp.BasePlugin(pluginConfiguration)
 
       m.plugin = new AdobePrimetimeAuthPlugin(plugin)
     end function
 
-    override function afterEach()
-      ZC.TestUtils.unsetModelLocator()
-    end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("tests constructor")
@@ -36,7 +33,7 @@ namespace Applicaster.tests
 
     @it("testConstructor_tests")
     function _()
-      m.assertEqual(m.plugin.request.__className, "request.RequestModule")
+      m.assertEqual(m.plugin.request.__className, "request.Request")
       m.assertEqual(m.plugin.JWTUtil.__className, "zapp.JWTUtil")
       m.assertEqual(m.plugin.uri.__className, "zapp.URI")
       m.assertEqual(m.plugin.requestorID, "rqd")

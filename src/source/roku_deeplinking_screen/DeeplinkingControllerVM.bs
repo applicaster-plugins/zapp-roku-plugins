@@ -234,7 +234,7 @@ class DeeplinkingControllerVM extends zapp.UIB.ScreenVM
   end function
 
   function exitFromDeeplinking()
-    ZC.AppService.exitFromDeeplinking()
+    zapp.AppService.exitFromDeeplinking()
   end function
 
 

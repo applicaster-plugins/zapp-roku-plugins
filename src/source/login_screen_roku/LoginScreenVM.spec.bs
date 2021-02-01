@@ -1,7 +1,7 @@
 namespace Applicaster.tests
 
   @suite
-  class LoginScreenVMTests extends Rooibos.BaseTestSuite
+  class LoginScreenVMTests extends tests.BaseTestSuite
     override function beforeEach()
       m.riversJson = {
         "name": "SmallSystemFont"
@@ -54,9 +54,6 @@ namespace Applicaster.tests
       m.vm = new LoginScreenVM(m.riversJson)
       m.vm.initialize()
 
-    end function
-
-    override function afterEach()
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -379,14 +376,14 @@ namespace Applicaster.tests
         }
       }]
 
-      ZC.TestUtils.setModelLocator(m.modelLocator)
+      zapp.TestUtils.setModelLocator(m.modelLocator)
       m.rootBeforeEach = TAAWSLSVMT.beforeEach
       m.rootBeforeEach()
     end function
 
     @afterEach
     function processLogin_integration_afterEach()
-      ZC.TestUtils.unsetModelLocator()
+      zapp.TestUtils.unsetModelLocator()
     end function
 
     @it("valid creds")
@@ -399,7 +396,7 @@ namespace Applicaster.tests
 
       m.vm.processLogin()
 
-      ZC.TestUtils.waitForField(m.vm, "isLoading", 3000, 5)
+      zapp.TestUtils.waitForField(m.vm, "isLoading", 3000, 5)
 
       m.assertEqual(m.vm.state, "finished")
       m.assertFalse(m.vm.isLoading)
@@ -416,7 +413,7 @@ namespace Applicaster.tests
 
       m.vm.processLogin()
 
-      ZC.TestUtils.waitForField(m.vm, "isLoading")
+      zapp.TestUtils.waitForField(m.vm, "isLoading")
 
       m.assertEqual(m.vm.state, "ready")
       m.assertFalse(m.vm.isLoading)

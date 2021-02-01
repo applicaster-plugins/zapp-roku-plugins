@@ -1,7 +1,7 @@
 namespace Applicaster.tests
 
   @suite
-  class SegmentAnalyticsPluginTests extends Rooibos.BaseTestSuite
+  class SegmentAnalyticsPluginTests extends tests.BaseTestSuite
 
     override function beforeEach()
       config = {
@@ -11,16 +11,13 @@ namespace Applicaster.tests
       m.modelLocator.constants = {
         "applicasterDeviceId": "#a"
       }
-      ZC.TestUtils.setModelLocator(m.modelLocator)
+      zapp.TestUtils.setModelLocator(m.modelLocator)
 
       m.pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
 
       m.plugin = new SegmentAnalyticsPlugin(m.pluginData)
     end function
 
-    override function afterEach()
-      ZC.TestUtils.unsetModelLocator()
-    end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("tests constructor")

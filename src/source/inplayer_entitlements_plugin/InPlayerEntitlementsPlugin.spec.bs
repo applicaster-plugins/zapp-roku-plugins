@@ -1,7 +1,7 @@
 namespace Applicaster.tests
 
   @suite
-  class InplayerEntitlementsTests extends Rooibos.BaseTestSuite
+  class InplayerEntitlementsTests extends tests.BaseTestSuite
 
     override function beforeEach()
       m.modelLocator = createObject("roSGNode", "ModelLocator")
@@ -9,7 +9,7 @@ namespace Applicaster.tests
       m.modelLocator = CreateObject("roSGNode", "ModelLocator")
       m.modelLocator.constants = { id: "constants" }
       m.modelLocator.plugins = []
-      ZC.TestUtils.setModelLocator(m.modelLocator)
+      zapp.TestUtils.setModelLocator(m.modelLocator)
 
       'dependencies for testing plugin creation
 
@@ -20,11 +20,6 @@ namespace Applicaster.tests
 
       m.plugin = new InPlayerEntitlementsPlugin(plugin)
       m.plugin.token = "t"
-    end function
-
-    override function afterEach()
-      ZC.TestUtils.unsetModelLocator()
-      ZC.AppService.clearClassInstances()
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

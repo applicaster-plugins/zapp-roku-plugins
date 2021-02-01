@@ -23,8 +23,8 @@ class TVETokenLoaderPrehook extends zapp.BaseClass
   public function new()
     super("TVETokenLoaderPrehook")
     m.plugins = m.getClassInstance("zapp.PluginManager")
-    m.request = m.getClassInstance("ZC.Request")
-    m.uri = m.getClassInstance("ZC.URI")
+    m.request = m.getClassInstance("zapp.Request")
+    m.uri = m.getClassInstance("zapp.URI")
 
     plugin = m.plugins.getPluginById("tve_token_loader_prehook_roku")
     m.tveConfig = m.getTVEConfig()

@@ -1,7 +1,7 @@
 namespace Applicaster.tests
 
   @suite
-  class RegcodeLoginScreenVMTests extends Rooibos.BaseTestSuite
+  class RegcodeLoginScreenVMTests extends tests.BaseTestSuite
 
     override function beforeEach()
       localStore = createObject("roSGNode", "ZSessionStore")
@@ -9,7 +9,7 @@ namespace Applicaster.tests
         "ZPLocalStore": localStore
         "locale": "en"
       }
-      ZC.TestUtils.setModelLocator(m.modelLocator)
+      zapp.TestUtils.setModelLocator(m.modelLocator)
 
       riversJson = {
         "id": "regcodeScreen"
@@ -25,11 +25,6 @@ namespace Applicaster.tests
       m.vm.analyticsManager = m.analyticsManager
 
       m.vm.initialize()
-    end function
-
-    override function afterEach()
-      m.global.delete("zapp")
-      ZC.TestUtils.unsetModelLocator()
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

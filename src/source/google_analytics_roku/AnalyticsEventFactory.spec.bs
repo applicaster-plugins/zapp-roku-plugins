@@ -1,7 +1,7 @@
 namespace Applicaster.tests
 
   @suite
-  class AnalyticsEventFactoryTests extends Rooibos.BaseTestSuite
+  class AnalyticsEventFactoryTests extends tests.BaseTestSuite
 
     override function setup()
       m.analytics = new AnalyticsEventFactory()

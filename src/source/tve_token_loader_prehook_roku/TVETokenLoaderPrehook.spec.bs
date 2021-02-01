@@ -1,10 +1,10 @@
 namespace Applicaster.tests
 
   @suite
-  class TVETokenLoaderPrehookTests extends Rooibos.BaseTestSuite
+  class TVETokenLoaderPrehookTests extends tests.BaseTestSuite
 
     override function beforeEach()
-      ZC.AppService.clearClassInstances()
+      zapp.mioc.clearClassInstances()
       m.pluginJson = TestUtis.createPluginJson("tve_token_loader_prehook_roku", {
         "endpoint": "e/"
         "domain": "d"
@@ -26,14 +26,11 @@ namespace Applicaster.tests
 
       m.modelLocator.constants = { "applicasterDeviceId": "did" }
 
-      ZC.TestUtils.setModelLocator(m.modelLocator)
+      zapp.TestUtils.setModelLocator(m.modelLocator)
 
       m.plugin = new TVETokenLoaderPrehook()
     end function
 
-    override function afterEach()
-      ZC.TestUtils.unsetModelLocator()
-    end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("tests constructor")

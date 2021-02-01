@@ -30,7 +30,7 @@ class FullScreenSearchVM extends zapp.UIB.ComponentVM
 
     m.rowTarget = riversJson.data.target
 
-    if ZC.ViewUtils.getUIBBool(riversJson.styles, "override_target_screen", false)
+    if zapp.viewUtils.getUIBBool(riversJson.styles, "override_target_screen", false)
       m.rowTarget = mc.getPath(riversJson, "data.target_screen")
       m.logWarn("Using overridden screen name for target!", m.rowTarget)
     end if
@@ -38,22 +38,22 @@ class FullScreenSearchVM extends zapp.UIB.ComponentVM
   end function
 
   function processStyles(styles)
-    m.loadDepth = ZC.ViewUtils.getUIBInt(styles, "data_depth", 0)
+    m.loadDepth = zapp.viewUtils.getUIBInt(styles, "data_depth", 0)
     m.gridStyle = m.getGridStyle(styles)
 
     m.keyboardStyle = {
-      translation: ZC.ViewUtils.makeUIBPosition(styles, "keyboard", 300, 500)
-      keyColor: ZC.ViewUtils.transposeUIBColor(styles.key_color)
-      focusedKeyColor: ZC.ViewUtils.transposeUIBColor(styles.focused_key_color)
-      keyboardBitmapUri: ZC.ViewUtils.getPosterUri(styles.keyboard_bitmap_uri)
-      focusBitmapUri: ZC.ViewUtils.getPosterUri(styles.keyboard_focus_bitmap_uri)
-      lowerCase: ZC.ViewUtils.getUIBBool(styles, "keyboard_lower_case", false)
-      showTextEditBox: not ZC.ViewUtils.getUIBBool(styles, "use_custom_text_input", true)
+      translation: zapp.viewUtils.makeUIBPosition(styles, "keyboard", 300, 500)
+      keyColor: zapp.viewUtils.transposeUIBColor(styles.key_color)
+      focusedKeyColor: zapp.viewUtils.transposeUIBColor(styles.focused_key_color)
+      keyboardBitmapUri: zapp.viewUtils.getPosterUri(styles.keyboard_bitmap_uri)
+      focusBitmapUri: zapp.viewUtils.getPosterUri(styles.keyboard_focus_bitmap_uri)
+      lowerCase: zapp.viewUtils.getUIBBool(styles, "keyboard_lower_case", false)
+      showTextEditBox: not zapp.viewUtils.getUIBBool(styles, "use_custom_text_input", true)
     }
 
-    m.inputStyle = ZC.ViewUtils.makeUIBButtonStyle(styles, "custom_text_input", "textInput", invalid, true)
+    m.inputStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "custom_text_input", "textInput", invalid, true)
     m.inputStyle.visible = not m.keyboardStyle.showTextEditBox
-    m.minCharacters = ZC.ViewUtils.getUIBInt(styles, "search_min_chars", 3)
+    m.minCharacters = zapp.viewUtils.getUIBInt(styles, "search_min_chars", 3)
     m.searchQueryName = mc.getPath(styles, "search_query_name", "q")
   end function
 
@@ -61,12 +61,12 @@ class FullScreenSearchVM extends zapp.UIB.ComponentVM
     if m.style <> invalid and m.style.rowList <> invalid
       style = m.style.rowList
       style.itemSize = style.rowItemSize
-      style.itemSpacing = ZC.ViewUtils.makeUIBSize(styles, "grid_spacing", 44, 20)
+      style.itemSpacing = zapp.viewUtils.makeUIBSize(styles, "grid_spacing", 44, 20)
     else
       style = {}
     end if
 
-    style.translation = ZC.ViewUtils.makeUIBPosition(styles, "grid", 300, 500)
+    style.translation = zapp.viewUtils.makeUIBPosition(styles, "grid", 300, 500)
 
     return style
   end function

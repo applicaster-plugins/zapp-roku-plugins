@@ -1,7 +1,7 @@
 namespace Applicaster.tests
 
   @suite
-  class InPlayerAuthPluginTests extends Rooibos.BaseTestSuite
+  class InPlayerAuthPluginTests extends tests.BaseTestSuite
 
     override function beforeEach()
       m.riversJson = {
@@ -25,9 +25,6 @@ namespace Applicaster.tests
       plugin = new zapp.BasePlugin(pluginConfiguration)
 
       m.plugin = new InPlayerAuthPlugin(plugin)
-    end function
-
-    override function afterEach()
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

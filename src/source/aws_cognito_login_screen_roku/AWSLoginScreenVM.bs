@@ -63,11 +63,11 @@ class AWSLoginScreenVM extends zapp.UIB.ScreenVM
   function processStyles(styles)
     m.logInfo("converting rivers json styles into a format our UI controls can consume")
 
-    m.titleStyle = ZC.ViewUtils.makeUIBTextStyle(styles, "title")
-    m.descriptionStyle = ZC.ViewUtils.makeUIBTextStyle(styles, "description")
-    m.optional1Style = ZC.ViewUtils.makeUIBTextStyle(styles, "optional_text1")
-    m.optional2Style = ZC.ViewUtils.makeUIBTextStyle(styles, "optional_text2")
-    m.errorStyle = ZC.ViewUtils.makeUIBTextStyle(styles, "error")
+    m.titleStyle = zapp.viewUtils.makeUIBTextStyle(styles, "title")
+    m.descriptionStyle = zapp.viewUtils.makeUIBTextStyle(styles, "description")
+    m.optional1Style = zapp.viewUtils.makeUIBTextStyle(styles, "optional_text1")
+    m.optional2Style = zapp.viewUtils.makeUIBTextStyle(styles, "optional_text2")
+    m.errorStyle = zapp.viewUtils.makeUIBTextStyle(styles, "error")
 
     m.setField("usernameText", styles.username_placeholder_text)
     m.usernamePlaceholderText = m.usernameText
@@ -75,20 +75,20 @@ class AWSLoginScreenVM extends zapp.UIB.ScreenVM
     m.setField("passwordText", styles.password_placeholder_text)
     m.passwordPlaceholderText = m.passwordText
 
-    m.backgroundColor = ZC.ViewUtils.transposeUIBColor(styles.background_color)
+    m.backgroundColor = zapp.viewUtils.transposeUIBColor(styles.background_color)
     m.backgroundUrl = styles.background_url
     m.logoImageUrl = styles.logo_url
-    m.logoPosition = ZC.ViewUtils.makeUIBPosition(styles, "logo", 100, 33)
-    logoSize = ZC.ViewUtils.makeUIBSize(styles, "logo", 350, 100)
+    m.logoPosition = zapp.viewUtils.makeUIBPosition(styles, "logo", 100, 33)
+    logoSize = zapp.viewUtils.makeUIBSize(styles, "logo", 350, 100)
     m.logoWidth = logoSize[0]
     m.logoHeight = logoSize[1]
 
 
-    inputStyle = ZC.ViewUtils.makeUIBButtonStyle(styles, "general_input", "textInputPlaceholder")
+    inputStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "general_input", "textInputPlaceholder")
 
     m.setField("inputStyle", inputStyle)
 
-    m.loginButtonStyle = ZC.ViewUtils.makeUIBButtonStyle(styles, "login_button", "custom", styles.login_button_text)
+    m.loginButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "login_button", "custom", styles.login_button_text)
 
   end function
 

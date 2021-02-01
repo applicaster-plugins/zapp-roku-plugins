@@ -1,21 +1,18 @@
 namespace Applicaster.tests
 
   @suite
-  class GenericUrlTokenAppenderTests extends Rooibos.BaseTestSuite
+  class GenericUrlTokenAppenderTests extends tests.BaseTestSuite
 
     override function beforeEach()
-      ZC.AppService.clearClassInstances()
+      zapp.mioc.clearClassInstances()
       m.modelLocator = CreateObject("roSGNode", "ModelLocator")
       m.modelLocator.plugins = [TestUtils.CreatePluginJson("generic_url_token_appender", { "provider_id": "pid", "token_key": "t" })]
 
-      ZC.TestUtils.setModelLocator(m.modelLocator)
+      zapp.TestUtils.setModelLocator(m.modelLocator)
 
       m.appender = new GenericUrlTokenAppender()
     end function
 
-    override function afterEach()
-      ZC.TestUtils.unsetModelLocator()
-    end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("tests constructor")
@@ -24,7 +21,7 @@ namespace Applicaster.tests
     @it("no plugin")
     function _()
       m.modelLocator.plugins = []
-      ZC.AppService.clearClassInstances()
+      zapp.mioc.clearClassInstances()
 
       m.appender = new GenericUrlTokenAppender()
 

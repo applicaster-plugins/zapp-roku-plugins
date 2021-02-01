@@ -47,15 +47,15 @@ class LogoutScreenVM extends zapp.UIB.ScreenVM
   function processStyles(styles)
     m.logInfo("converting rivers json styles into a format our UI controls can consume")
 
-    m.titleStyle = ZC.ViewUtils.makeUIBTextStyle(styles, "title")
+    m.titleStyle = zapp.viewUtils.makeUIBTextStyle(styles, "title")
     m.titleText = m.titleStyle.text
-    m.backgroundColor = ZC.ViewUtils.transposeUIBColor(styles.background_color)
+    m.backgroundColor = zapp.viewUtils.transposeUIBColor(styles.background_color)
 
-    m.buttonStyle = ZC.ViewUtils.makeUIBButtonStyle(styles, "logout_button", "custom")
+    m.buttonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "logout_button", "custom")
     m.buttonStyle.normal.delete("text")
-    m.textPosition = ZC.ViewUtils.makeUIBPosition(styles, "text", 0, 310)
-    m.buttonPosition = ZC.ViewUtils.makeUIBPosition(styles, "button", 400, 600)
-    m.textWidth = ZC.ViewUtils.getUIBInt(styles, "text_w", 1920)
+    m.textPosition = zapp.viewUtils.makeUIBPosition(styles, "text", 0, 310)
+    m.buttonPosition = zapp.viewUtils.makeUIBPosition(styles, "button", 400, 600)
+    m.textWidth = zapp.viewUtils.getUIBInt(styles, "text_w", 1920)
     m.signedOutButtonText = styles.signed_out_button_text
     m.signedOutTitle = styles.signed_out_text
     m.providerId = mc.getPath(styles, "provider_id", invalid)

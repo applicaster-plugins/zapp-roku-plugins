@@ -1,13 +1,13 @@
 namespace Applicaster.tests
 
   @suite
-  class WarningMessageScreenVMTests extends Rooibos.BaseTestSuite
+  class WarningMessageScreenVMTests extends tests.BaseTestSuite
 
     override function beforeEach()
       localStore = createObject("roSGNode", "ZSessionStore")
       modelLocator = createObject("roSGNode", "ModelLocator")
       modelLocator.addfields({ "ZPLocalStore": localStore })
-      ZC.TestUtils.setModelLocator(modelLocator)
+      zapp.TestUtils.setModelLocator(modelLocator)
 
       riversJson = {
         "id": "warningScreen"
@@ -22,11 +22,6 @@ namespace Applicaster.tests
       m.vm.analyticsManager = m.analyticsManager
 
       m.vm.initialize()
-    end function
-
-    override function afterEach()
-      m.global.delete("zapp")
-      ZC.TestUtils.unsetModelLocator()
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

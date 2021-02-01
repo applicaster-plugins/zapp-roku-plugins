@@ -146,28 +146,28 @@ class WarningMessageScreenVM extends zapp.UIB.ScreenVM
   function processStyles(styles)
     m.logInfo("converting rivers json styles into a format our UI controls can consume")
 
-    m.titleStyle = ZC.ViewUtils.makeUIBTextStyle(styles, "title")
+    m.titleStyle = zapp.viewUtils.makeUIBTextStyle(styles, "title")
 
-    m.descriptionStyle = ZC.ViewUtils.makeUIBTextStyle(styles, "description")
-    m.optional1Style = ZC.ViewUtils.makeUIBTextStyle(styles, "optional_text1")
-    m.backgroundColor = ZC.ViewUtils.transposeUIBColor(styles.background_color)
+    m.descriptionStyle = zapp.viewUtils.makeUIBTextStyle(styles, "description")
+    m.optional1Style = zapp.viewUtils.makeUIBTextStyle(styles, "optional_text1")
+    m.backgroundColor = zapp.viewUtils.transposeUIBColor(styles.background_color)
     m.backgroundUrl = styles.background_url
     m.logoImageUrl = styles.logo_image_url
 
-    m.doneButtonStyle = ZC.ViewUtils.makeUIBButtonStyle(styles, "done_button", "custom", styles.done_button_text)
+    m.doneButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "done_button", "custom", styles.done_button_text)
 
     m.logoImageUrl = styles.logo_url
-    m.logoPosition = ZC.ViewUtils.makeUIBPosition(styles, "logo", 100, 33)
-    m.textPosition = ZC.ViewUtils.makeUIBPosition(styles, "text", 0, 310)
-    m.textWidth = ZC.ViewUtils.getUIBInt(styles, "text_w", 1920)
-    m.buttonPosition = ZC.ViewUtils.makeUIBPosition(styles, "button", 100, 33)
-    logoSize = ZC.ViewUtils.makeUIBSize(styles, "logo", 350, 100)
+    m.logoPosition = zapp.viewUtils.makeUIBPosition(styles, "logo", 100, 33)
+    m.textPosition = zapp.viewUtils.makeUIBPosition(styles, "text", 0, 310)
+    m.textWidth = zapp.viewUtils.getUIBInt(styles, "text_w", 1920)
+    m.buttonPosition = zapp.viewUtils.makeUIBPosition(styles, "button", 100, 33)
+    logoSize = zapp.viewUtils.makeUIBSize(styles, "logo", 350, 100)
     m.logoWidth = logoSize[0]
     m.logoHeight = logoSize[1]
 
     m.warningType = mc.getPath(styles, "warning_type", "entry")
-    m.warningEntryIndex = ZC.ViewUtils.getUIBInt(styles, "entry_index", -1)
-    m.warningEntryDepth = ZC.ViewUtils.getUIBInt(styles, "entry_depth", 1)
+    m.warningEntryIndex = zapp.viewUtils.getUIBInt(styles, "entry_index", -1)
+    m.warningEntryDepth = zapp.viewUtils.getUIBInt(styles, "entry_depth", 1)
 
     m.warningType = mc.getPath(styles, "warning_type", "entry")
   end function

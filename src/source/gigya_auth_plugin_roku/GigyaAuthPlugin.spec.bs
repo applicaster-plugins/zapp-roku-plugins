@@ -1,7 +1,7 @@
 namespace Applicaster.tests
 
   @suite
-  class GigyaAuthPluginTests extends Rooibos.BaseTestSuite
+  class GigyaAuthPluginTests extends tests.BaseTestSuite
 
     override function beforeEach()
       m.riversJson = {
@@ -20,9 +20,6 @@ namespace Applicaster.tests
       m.plugin = new GigyaAuthPlugin(plugin)
       m.plugin.request = m.request
       m.analyticsManager = { "id": "analyticsManager" }
-    end function
-
-    override function afterEach()
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -1,7 +1,7 @@
 namespace Applicaster.tests
 
   @suite
-  class GeneralTextScreenVMTests extends Rooibos.BaseTestSuite
+  class GeneralTextScreenVMTests extends tests.BaseTestSuite
 
     override function beforeEach()
       localStore = createObject("roSGNode", "ZSessionStore")
@@ -9,7 +9,7 @@ namespace Applicaster.tests
       modelLocator.addfields({ "ZPLocalStore": localStore })
       modelLocator.locale = "en"
 
-      ZC.TestUtils.setModelLocator(modelLocator)
+      zapp.TestUtils.setModelLocator(modelLocator)
 
       riversJson = {
         "id": "generalTextScreen"
@@ -19,11 +19,6 @@ namespace Applicaster.tests
 
       m.vm = new GeneralTextScreenVM(riversJson)
       m.vm.initialize()
-    end function
-
-    override function afterEach()
-      m.global.delete("zapp")
-      ZC.TestUtils.unsetModelLocator()
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

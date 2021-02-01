@@ -1,4 +1,4 @@
-import "pkg:/source/rLog/rLogMixin.brs"
+import "pkg:/source/roku_modules/log/LogMixin.brs"
 import "pkg:/source/tve_token_loader_prehook_roku/TVETokenLoaderPrehook.bs"
 
 
