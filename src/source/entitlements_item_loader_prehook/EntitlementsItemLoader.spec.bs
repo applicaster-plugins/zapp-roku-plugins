@@ -4,16 +4,13 @@ namespace Applicaster.tests
   class EntitlementsItemLoaderTests extends tests.BaseTestSuite
 
     override function beforeEach()
-      zapp.mioc.clearClassInstances()
-      m.modelLocator = CreateObject("roSGNode", "ModelLocator")
-      m.modelLocator.plugins = [TestUtils.CreatePluginJson("oc_url_token_loader", {
+      super.beforeEach()
+      mioc.setIntance("plugins", [TestUtils.CreatePluginJson("oc_url_token_loader", {
           "endpoint": "e/"
           "domain": "d"
           "matching_path": "itemType"
           "matching_value": "video"
-      })]
-
-      zapp.TestUtils.setModelLocator(m.modelLocator)
+      })])
 
       m.loader = new EntitlementsItemLoader()
     end function
@@ -25,7 +22,7 @@ namespace Applicaster.tests
 
     @it("no plugin")
     function _()
-      m.modelLocator.plugins = []
+      m.__mioc.plugins = []
       zapp.mioc.clearClassInstances()
 
       m.loader = new EntitlementsItemLoader()
@@ -44,7 +41,7 @@ namespace Applicaster.tests
 
     @it("no item")
     @params(invalid)
-    @params({"currentItem": invalid})
+    @params({ "currentItem": invalid })
     function _(currentSelection)
       m.expectOnce(m.loader, "getInstance", ["currentSelection"], currentSelection)
       m.expectNone(m.loader, "isItemMatch", false)
@@ -122,13 +119,13 @@ namespace Applicaster.tests
 
     @it("isItemMatch")
     @params("all", "", {}, true)
-    @params("all", "", {"id":"stuff"}, true)
-    @params("", "", {"id":"stuff"}, false)
-    @params("json.free", "true", {"id":"stuff"}, false)
-    @params("json.free", "true", {"id":"stuff", "json": {"free": false}}, false)
-    @params("json.free", "true", {"id":"stuff", "json": {"free": true}}, true)
-    @params("itemType", "channel", {"id":"stuff", "itemType": "video"}, false)
-    @params("itemType", "video", {"id":"stuff", "itemType": "video"}, true)
+    @params("all", "", { "id": "stuff" }, true)
+    @params("", "", { "id": "stuff" }, false)
+    @params("json.free", "true", { "id": "stuff" }, false)
+    @params("json.free", "true", { "id": "stuff", "json": { "free": false } }, false)
+    @params("json.free", "true", { "id": "stuff", "json": { "free": true } }, true)
+    @params("itemType", "channel", { "id": "stuff", "itemType": "video" }, false)
+    @params("itemType", "video", { "id": "stuff", "itemType": "video" }, true)
     function _(path, value, item, isMatch)
       m.loader.matchingPath = path
       m.loader.matchingValue = value

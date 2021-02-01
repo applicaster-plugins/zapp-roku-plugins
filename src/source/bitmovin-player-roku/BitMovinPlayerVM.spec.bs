@@ -4,17 +4,15 @@ namespace Applicaster.tests
   class BitMovinPlayerVMTests extends tests.BaseTestSuite
 
     override function beforeEach()
-      m.modelLocator = CreateObject("roSGNode", "ModelLocator")
-      m.modelLocator.collectionBookmarks = CreateObject("roSGNode", "Bookmarks")
-      m.modelLocator.vodItemBookmarks = CreateObject("roSGNode", "Bookmarks")
-      m.modelLocator.plugins = []
-      m.modelLocator.locale = "en"
+      super.beforeEach()
+      mioc.setIntance("collectionBookmarks", CreateObject("roSGNode", "Bookmarks"))
+      mioc.setIntance("vodItemBookmarks", CreateObject("roSGNode", "Bookmarks"))
+      mioc.setIntance("plugins", [])
+      mioc.setIntance("locale", "en")
       m.BitmovinPlayerState = { "PLAYING": "playing", "STALLING": "stalling", "PAUSED": "paused", "FINISHED": "finished", "ERROR": "error", "NONE": "none", "SETUP": "setup", "READY": "ready" }
 
 
       m.BitmovinFields = { "PLAYER_STATE": "playerState", "ERROR": "error", "WARNING": "warning", "SEEK": "seek", "SEEKED": "seeked", "TIME_SHIFT": "timeShift", "TIME_SHIFTED": "timeShifted", "CURRENT_TIME": "currentTime", "SOURCE_LOADED": "sourceLoaded", "SOURCE_UNLOADED": "sourceUnloaded", "PLAY": "play", "METADATA": "metadata", "AUDIO_CHANGED": "audioChanged", "MUTED": "muted", "UNMUTED": "unmuted", "DOWNLOAD_FINISHED": "downloadFinished" }
-
-      zapp.TestUtils.setModelLocator(m.modelLocator)
 
       m.selection = createObject("roSGNode", "Selection")
 
@@ -43,14 +41,14 @@ namespace Applicaster.tests
 
     @it("bad configured plugin")
     @params({})
-    @params({"license_key": invalid })
-    @params({"license_key": "" })
-    @params({"license_key": "", })
-    @params({"license_key": "", })
-    @params({"license_key": "", "overrideVideoUrl": invalid })
-    @params({"license_key": "", "overrideVideoUrl": "" })
-    @params({"overrideVideoUrl": "" })
-    @params({"overrideVideoUrl": "#override" })
+    @params({ "license_key": invalid })
+    @params({ "license_key": "" })
+    @params({ "license_key": "", })
+    @params({ "license_key": "", })
+    @params({ "license_key": "", "overrideVideoUrl": invalid })
+    @params({ "license_key": "", "overrideVideoUrl": "" })
+    @params({ "overrideVideoUrl": "" })
+    @params({ "overrideVideoUrl": "#override" })
     function _(generalJson)
       m.view.riversJson = { "general": generalJson }
       m.vm = new BitMovinPlayerVM(m.view)
@@ -206,9 +204,9 @@ namespace Applicaster.tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("onPlayerVideoError")
-    @params({"message": "error1"})
-    @params({"message": "error2"})
-    @params({"message": "error3"})
+    @params({ "message": "error1" })
+    @params({ "message": "error2" })
+    @params({ "message": "error3" })
     function _(error)
       m.vm.onPlayerVideoError(error)
       m.assertEqual(m.view.playbackResult.state, "error")

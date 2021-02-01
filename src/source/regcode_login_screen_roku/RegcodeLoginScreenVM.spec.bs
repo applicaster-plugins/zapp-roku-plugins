@@ -5,11 +5,11 @@ namespace Applicaster.tests
 
     override function beforeEach()
       localStore = createObject("roSGNode", "ZSessionStore")
-      m.modelLocator = {
+      m.__mioc = {
         "ZPLocalStore": localStore
         "locale": "en"
       }
-      zapp.TestUtils.setModelLocator(m.modelLocator)
+      zapp.TestUtils.setModelLocator(m.__mioc)
 
       riversJson = {
         "id": "regcodeScreen"

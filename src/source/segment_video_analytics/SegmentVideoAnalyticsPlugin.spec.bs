@@ -9,12 +9,12 @@ namespace Applicaster.tests
       }
       m.analyticsManager = { id: "#am" }
 
-      m.modelLocator = {
+      m.__mioc = {
         "constants": m.constants
         "analyticsManager": m.analyticsManager
       }
 
-      zapp.TestUtils.setModelLocator(m.modelLocator)
+      zapp.TestUtils.setModelLocator(m.__mioc)
 
       m.plugin = new SegmentVideoAnalyticsPlugin(json)
     end function

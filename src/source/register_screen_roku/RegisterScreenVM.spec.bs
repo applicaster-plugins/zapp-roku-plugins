@@ -353,14 +353,14 @@ namespace Applicaster.tests
 
     '@BeforeEach
     function integratin_beforeEach()
-      m.modelLocator = CreateObject("roSGNode", "ModelLocator")
-      m.modelLocator.constants = { "simulateInAppPurchases": true }
-      m.modelLocator.entitlements = CreateObject("roSGNode", "SimpleEntitlements")
-      m.modelLocator.authenticationData = CreateObject("roSGNode", "AuthenticationData")
-      m.modelLocator.buildConfig = {}
+      m.__mioc = CreateObject("roSGNode", "ModelLocator")
+      m.__mioc.constants = { "simulateInAppPurchases": true }
+      m.__mioc.entitlements = CreateObject("roSGNode", "SimpleEntitlements")
+      m.__mioc.authenticationData = CreateObject("roSGNode", "AuthenticationData")
+      m.__mioc.buildConfig = {}
       m.user = CreateObject("roSGNode", "User")
-      m.modelLocator.user = m.user
-      m.modelLocator.plugins = [{
+      m.__mioc.user = m.user
+      m.__mioc.plugins = [{
         "identifier": "aws_cognito_auth_plugin",
         "api": {
           "require_startup_execution": false,
@@ -376,7 +376,7 @@ namespace Applicaster.tests
         }
       }]
 
-      zapp.TestUtils.setModelLocator(m.modelLocator)
+      zapp.TestUtils.setModelLocator(m.__mioc)
       m.rootBeforeEach = TAAWSLSVMT.beforeEach
       m.rootBeforeEach()
     end function

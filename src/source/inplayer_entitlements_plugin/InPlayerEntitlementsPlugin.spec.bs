@@ -4,12 +4,12 @@ namespace Applicaster.tests
   class InplayerEntitlementsTests extends tests.BaseTestSuite
 
     override function beforeEach()
-      m.modelLocator = createObject("roSGNode", "ModelLocator")
+      m.__mioc = createObject("roSGNode", "ModelLocator")
 
-      m.modelLocator = CreateObject("roSGNode", "ModelLocator")
-      m.modelLocator.constants = { id: "constants" }
-      m.modelLocator.plugins = []
-      zapp.TestUtils.setModelLocator(m.modelLocator)
+      m.__mioc = CreateObject("roSGNode", "ModelLocator")
+      m.__mioc.constants = { id: "constants" }
+      m.__mioc.plugins = []
+      zapp.TestUtils.setModelLocator(m.__mioc)
 
       'dependencies for testing plugin creation
 
@@ -72,7 +72,7 @@ namespace Applicaster.tests
 
       plugin = new InPlayerEntitlementsPlugin(plugin)
 
-      m.assertEqual(plugin.authenticationData, m.modelLocator.authenticationData)
+      m.assertEqual(plugin.authenticationData, m.__mioc.authenticationData)
       m.assertEqual(plugin.apiUrl, expectedUrl)
       m.assertEqual(plugin.vodModel, vodModel)
       m.assertEqual(plugin.entitlementsPolicy, entitlementsPolicy)
@@ -186,9 +186,9 @@ namespace Applicaster.tests
       m.plugin.currentItem = item
 
       m.plugin.token = token
-      m.modelLocator.availableProducts.availableProducts = ["something"]
+      m.__mioc.availableProducts.availableProducts = ["something"]
       m.plugin.getAvailableProducts(rokuCatalogItems, ["1"])
-      m.assertEmpty(m.modelLocator.availableProducts.availableProducts)
+      m.assertEmpty(m.__mioc.availableProducts.availableProducts)
 
     end function
 
@@ -204,14 +204,14 @@ namespace Applicaster.tests
       item = { id: "item" }
       m.plugin.currentItem = item
 
-      m.modelLocator.availableProducts.availableProducts = ["something"]
+      m.__mioc.availableProducts.availableProducts = ["something"]
 
       m.expectOnce(m.plugin, "getInPlayerFeesForItem", [item], fees)
 
 
       m.plugin.getAvailableProducts(rokuCatalogItems, purchasedIds)
 
-      products = m.modelLocator.availableProducts.availableProducts
+      products = m.__mioc.availableProducts.availableProducts
       m.assertArrayCount(products, expectedIds.count())
 
       productIds = []

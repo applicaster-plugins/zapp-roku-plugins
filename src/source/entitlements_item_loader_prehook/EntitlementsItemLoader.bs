@@ -50,7 +50,7 @@ class EntitlementsItemLoader extends zapp.BaseClass
       return "success"
     end if
 
-    manager = m.getClassInstance("zapp.zapp.entitlements.EntitlementsManager")
+    manager = m.getClassInstance("zapp.entitlements.EntitlementsManager")
 
 
     if manager.loadItem(item)

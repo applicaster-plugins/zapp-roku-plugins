@@ -7,11 +7,11 @@ namespace Applicaster.tests
       config = {
         "write_key": "#w"
       }
-      m.modelLocator = createObject("roSGNode", "ModelLocator")
-      m.modelLocator.constants = {
+      m.__mioc = createObject("roSGNode", "ModelLocator")
+      m.__mioc.constants = {
         "applicasterDeviceId": "#a"
       }
-      zapp.TestUtils.setModelLocator(m.modelLocator)
+      zapp.TestUtils.setModelLocator(m.__mioc)
 
       m.pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
 

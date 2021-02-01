@@ -4,6 +4,7 @@ namespace Applicaster.tests
   class APMATTests extends tests.BaseTestSuite
 
     override function beforeEach()
+      super.beforeEach()
       pluginConfiguration = {
         "identifier": "AdobeAccessEnabler",
         "configuration_json": {
@@ -15,11 +16,7 @@ namespace Applicaster.tests
         }
       }
 
-      modelLocator = {
-        "constants": { "applicasterDeviceId": "did" }
-      }
-
-      zapp.TestUtils.setModelLocator(modelLocator)
+      mioc.setInstance("constants", { "applicasterDeviceId": "did" })
 
       plugin = new zapp.BasePlugin(pluginConfiguration)
 
@@ -119,8 +116,8 @@ namespace Applicaster.tests
     @it("invalid")
     @params(invalid)
     @params({})
-    @params({code:invalid})
-    @params({code:""})
+    @params({ code: invalid })
+    @params({ code: "" })
     function _(response)
       m.expectOnce(m.plugin, "signRequest", ["POST", "/reggie/v1/rqd/regcode"], "aut")
       expectedHeaders = {
@@ -163,9 +160,9 @@ namespace Applicaster.tests
     @it("failure")
     @params(invalid, invalid, "error")
     @params(invalid, 400, "error")
-    @params({"userId": invalid}, 403, "error")
-    @params({"userId": ""}, 404, "none")
-    @params({"otherField": "value"}, 410, "none")
+    @params({ "userId": invalid }, 403, "error")
+    @params({ "userId": "" }, 404, "none")
+    @params({ "otherField": "value" }, 410, "none")
     function _(response, responseCode, expectedState)
       m.expectOnce(m.plugin, "signRequest", ["GET", "/api/v1/tokens/authn"], "aut")
       expectedHeaders = {
@@ -226,7 +223,7 @@ namespace Applicaster.tests
 
     @it("no selection")
     @params(invalid)
-    @params({"currentItem": invalid})
+    @params({ "currentItem": invalid })
     function _(currentSelection)
       m.expectOnce(m.plugin, "getInstance", ["currentSelection"], currentSelection)
 
@@ -292,8 +289,8 @@ namespace Applicaster.tests
     @it("fail")
     @params(invalid)
     @params({})
-    @params({"expires":invalid})
-    @params({"expires":""})
+    @params({ "expires": invalid })
+    @params({ "expires": "" })
     function _(response)
       m.expectOnce(m.plugin, "signRequest", ["GET", "/api/v1/authorize"], "aut")
       expectedHeaders = {

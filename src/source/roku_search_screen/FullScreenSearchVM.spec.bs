@@ -4,11 +4,11 @@ namespace Applicaster.tests
   class FullScreenSearchVMTests extends tests.BaseTestSuite
 
     override function beforeEach()
-      m.modelLocator = {
+      m.__mioc = {
         "User": { "isLoggedIn": false }
         "locale": "en"
       }
-      zapp.TestUtils.setModelLocator(m.modelLocator)
+      zapp.TestUtils.setModelLocator(m.__mioc)
 
       m.riversJson = {
         data: { source: "#myLink" }

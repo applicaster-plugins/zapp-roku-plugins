@@ -3,11 +3,11 @@ namespace Applicaster.tests
   @suite
   class AWSLoginScreenVMTests extends tests.BaseTestSuite
     override function beforeEach()
-      m.modelLocator = {
-        "User": { "isLoggedIn": false }
+      super.beforeEach()
+      mioc.setInstances(
+      { "user": { "isLoggedIn": false }
         "locale": "en"
-      }
-      zapp.TestUtils.setModelLocator(m.modelLocator)
+      })
 
       m.riversJson = {
         "name": "SmallSystemFont"
@@ -57,13 +57,6 @@ namespace Applicaster.tests
         }
         "localizations": {}
       }
-
-      m.modelLocator = CreateObject("roSGNode", "ModelLocator")
-
-      m.locale = "en"
-      m.modelLocator.locale = m.locale
-
-      zapp.TestUtils.setModelLocator(m.modelLocator)
 
       m.vm = new AWSLoginScreenVM(m.riversJson)
       m.vm.initialize()
@@ -303,13 +296,13 @@ namespace Applicaster.tests
 
     @it("checkCredsValid")
     @params(invalid, invalid, false)
-    @params("","", false)
-    @params("   ","   ", false)
-    @params("valid","", false)
-    @params("valid","   ", false)
+    @params("", "", false)
+    @params("   ", "   ", false)
+    @params("valid", "", false)
+    @params("valid", "   ", false)
     @params(invalid, "valid", false)
-    @params("","valid", false)
-    @params("  ","valid", false)
+    @params("", "valid", false)
+    @params("  ", "valid", false)
     @params("valid", "valid", true)
     function _(username, password, expectedValue)
       m.vm.username = username
@@ -371,15 +364,16 @@ namespace Applicaster.tests
 
     '@BeforeEach
     function integratin_process_login_beforeEach()
-      m.modelLocator = CreateObject("roSGNode", "ModelLocator")
-      m.modelLocator.constants = { "simulateInAppPurchases": true }
-      m.modelLocator.entitlements = CreateObject("roSGNode", "SimpleEntitlements")
-      m.modelLocator.authenticationData = CreateObject("roSGNode", "AuthenticationData")
-      m.modelLocator.buildConfig = {}
+      mioc.createContainer()
+
+      mc.setInstance("constants", { "simulateInAppPurchases": true })
+      mc.setInstance("entitlements", CreateObject("roSGNode", "SimpleEntitlements"))
+      mc.setInstance("authenticationData", CreateObject("roSGNode", "AuthenticationData"))
+      mc.setInstance("buildConfig", {})
       m.user = CreateObject("roSGNode", "User")
-      m.modelLocator.user = m.user
-      m.modelLocator.locale = "en"
-      m.modelLocator.plugins = [{
+      mc.setInstance("user", m.user)
+      mc.setInstance("locale", "en")
+      mc.setInstance("plugins", [{
         "identifier": "aws_cognito_auth_plugin",
         "api": {
           "require_startup_execution": false,
@@ -393,16 +387,15 @@ namespace Applicaster.tests
           "endpoint": "SOME_ENDPOINT"
           "app_client_id": "SOME_CLIENT_ID"
         }
-      }]
+      }])
 
-      zapp.TestUtils.setModelLocator(m.modelLocator)
       m.rootBeforeEach = TAAWSLSVMT.beforeEach
       m.rootBeforeEach()
     end function
 
     '@AfterEach
     function processLogin_integration_afterEach()
-      zapp.TestUtils.unsetModelLocator()
+      mioc.reset()
     end function
 
     @it("valid creds")
@@ -457,8 +450,8 @@ namespace Applicaster.tests
     @it("fail")
     @params(invalid, "Unknown error")
     @params({}, "Unknown error")
-    @params({"state": "error"}, "Unknown error")
-    @params({"state": "error", "message": "m"}, "m")
+    @params({ "state": "error" }, "Unknown error")
+    @params({ "state": "error", "message": "m" }, "m")
     function _(result, expectedMessage)
       m.vm.state = "loading"
       m.expectNone(m.vm, "dismiss")

@@ -18,15 +18,15 @@ namespace Applicaster.tests
         resourceID: "rod"
         base_url: "#url"
       })
-      m.modelLocator = CreateObject("roSGNode", "ModelLocator")
-      m.modelLocator.plugins = [
+      m.__mioc = CreateObject("roSGNode", "ModelLocator")
+      m.__mioc.plugins = [
         m.pluginJson,
         m.tvePluginJson
       ]
 
-      m.modelLocator.constants = { "applicasterDeviceId": "did" }
+      m.__mioc.constants = { "applicasterDeviceId": "did" }
 
-      zapp.TestUtils.setModelLocator(m.modelLocator)
+      zapp.TestUtils.setModelLocator(m.__mioc)
 
       m.plugin = new TVETokenLoaderPrehook()
     end function

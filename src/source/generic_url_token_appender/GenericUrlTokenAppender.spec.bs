@@ -5,10 +5,10 @@ namespace Applicaster.tests
 
     override function beforeEach()
       zapp.mioc.clearClassInstances()
-      m.modelLocator = CreateObject("roSGNode", "ModelLocator")
-      m.modelLocator.plugins = [TestUtils.CreatePluginJson("generic_url_token_appender", { "provider_id": "pid", "token_key": "t" })]
+      m.__mioc = CreateObject("roSGNode", "ModelLocator")
+      m.__mioc.plugins = [TestUtils.CreatePluginJson("generic_url_token_appender", { "provider_id": "pid", "token_key": "t" })]
 
-      zapp.TestUtils.setModelLocator(m.modelLocator)
+      zapp.TestUtils.setModelLocator(m.__mioc)
 
       m.appender = new GenericUrlTokenAppender()
     end function
@@ -20,7 +20,7 @@ namespace Applicaster.tests
 
     @it("no plugin")
     function _()
-      m.modelLocator.plugins = []
+      m.__mioc.plugins = []
       zapp.mioc.clearClassInstances()
 
       m.appender = new GenericUrlTokenAppender()

@@ -5,13 +5,13 @@ namespace Applicaster.tests
 
     override function beforeEach()
       zapp.mioc.clearClassInstances()
-      m.modelLocator = CreateObject("roSGNode", "ModelLocator")
-      m.modelLocator.plugins = [TestUtils.CreatePluginJson("mpx_video_playback_prehook_roku", {
+      m.__mioc = CreateObject("roSGNode", "ModelLocator")
+      m.__mioc.plugins = [TestUtils.CreatePluginJson("mpx_video_playback_prehook_roku", {
           "matching_path": "itemType"
           "matching_value": "video"
       })]
 
-      zapp.TestUtils.setModelLocator(m.modelLocator)
+      zapp.TestUtils.setModelLocator(m.__mioc)
 
       m.plugin = new MPXVideoPlaybackPrehook()
     end function
@@ -23,7 +23,7 @@ namespace Applicaster.tests
 
     @it("no plugin")
     function _()
-      m.modelLocator.plugins = []
+      m.__mioc.plugins = []
       zapp.mioc.clearClassInstances()
 
       m.plugin = new MPXVideoPlaybackPrehook()
