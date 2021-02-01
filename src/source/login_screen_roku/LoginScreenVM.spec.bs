@@ -360,7 +360,7 @@ namespace Applicaster.tests
       mioc.setInstance("entitlements", createObject("roSGNode", "SimpleEntitlements"))
       mioc.setInstance("authenticationData", createObject("roSGNode", "AuthenticationData"))
       mioc.setInstance("buildConfig", {})
-      m.user = createObject("roSGNode", "User")
+      m.user = createObject("roSGNode", "user")
       mioc.setInstance("user", m.user)
       mioc.setInstance("plugins", [{
         "identifier": "aws_cognito_auth_plugin",

@@ -4,7 +4,7 @@ namespace Applicaster.tests
   class GenericUrlTokenAppenderTests extends tests.BaseTestSuite
 
     override function beforeEach()
-    super.beforeEach()
+      super.beforeEach()
       mioc.setInstance("plugins", [TestUtils.CreatePluginJson("generic_url_token_appender", { "provider_id": "pid", "token_key": "t" })])
 
       m.appender = new GenericUrlTokenAppender()
@@ -36,10 +36,10 @@ namespace Applicaster.tests
 
     @it("no item")
     @params(invalid)
-    @params({"currentItem": invalid})
-    @params({"currentItem": {"id": "noUrl"}})
-    @params({"currentItem": {"id": "emptyUrl", "url": invalid}})
-    @params({"currentItem": {"id": "emptyUrl", "url": ""}})
+    @params({ "currentItem": invalid })
+    @params({ "currentItem": { "id": "noUrl" } })
+    @params({ "currentItem": { "id": "emptyUrl", "url": invalid } })
+    @params({ "currentItem": { "id": "emptyUrl", "url": "" } })
     function _(currentSelection)
       m.expectOnce(m.appender, "getInstance", ["currentSelection"], currentSelection)
 

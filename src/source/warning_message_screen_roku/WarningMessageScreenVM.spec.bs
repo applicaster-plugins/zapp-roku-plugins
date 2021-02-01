@@ -6,7 +6,7 @@ namespace Applicaster.tests
     override function beforeEach()
       super.beforeEach()
       localStore = createObject("roSGNode", "ZSessionStore")
-      mioc.setInstance("ZPLocalStore", localStore)
+      mioc.setInstance("localStore", localStore)
 
       riversJson = {
         "id": "warningScreen"

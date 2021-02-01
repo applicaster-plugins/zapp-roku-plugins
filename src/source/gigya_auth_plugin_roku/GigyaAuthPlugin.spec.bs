@@ -4,6 +4,7 @@ namespace Applicaster.tests
   class GigyaAuthPluginTests extends tests.BaseTestSuite
 
     override function beforeEach()
+      super.beforeEach()
       m.riversJson = {
         "id": "myAccount"
       }
@@ -123,7 +124,7 @@ namespace Applicaster.tests
     end function
 
     @it("invalid invalid - with data")
-    @params({"ErrorCode": "e"})
+    @params({ "ErrorCode": "e" })
     function _(response)
       m.expectOnce(m.plugin, "getSessionStoreValue", [m.plugin.id, "regcode"], "pin")
       m.expectOnce(m.plugin.request, "getJsonSync", ["host/GetDeviceByPin/pin"], response)
@@ -159,11 +160,11 @@ namespace Applicaster.tests
     end function
 
     @it("invalid")
-    @params({isOK:false})
-    @params({isOK:true})
-    @params({isOK:true, data: invalid})
-    @params({isOK:true, data: {}})
-    @params({isOK:true, data: {"devicePinCode": invalid}})
+    @params({ isOK: false })
+    @params({ isOK: true })
+    @params({ isOK: true, data: invalid })
+    @params({ isOK: true, data: {} })
+    @params({ isOK: true, data: { "devicePinCode": invalid } })
     function _(response)
       constants = { "id": "constants", "applicasterdeviceid": "did" }
       m.expectOnce(m.plugin, "getInstance", ["constants"], constants)

@@ -4,8 +4,7 @@ namespace Applicaster.tests
   class YouboraVideoAnalyticsTests extends tests.BaseTestSuite
 
     override function beforeEach()
-      zapp.mioc.clearClassInstances()
-
+      super.beforeEach()
       m.config = {
         "account_code": "#ac"
         "is_debug": 1
@@ -23,11 +22,11 @@ namespace Applicaster.tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("no task")
-    @params({ "id" : "content", title: "t1"}, false)
-    @params({ "id" : "content", title: "t2"}, false)
-    @params({ "id" : "content", title: "t2", LIVE: false}, false)
-    @params({ "id" : "content", title: "t2", LIVE: invalid}, false)
-    @params({ "id" : "content", title: "t2", LIVE: true}, true)
+    @params({ "id" : "content", title: "t1" }, false)
+    @params({ "id" : "content", title: "t2" }, false)
+    @params({ "id" : "content", title: "t2", LIVE: false }, false)
+    @params({ "id" : "content", title: "t2", LIVE: invalid }, false)
+    @params({ "id" : "content", title: "t2", LIVE: true }, true)
     function _(content, expectedLive)
       videoNode = { "id": "videoNode" }
       task = { "id": "task" }
@@ -50,11 +49,11 @@ namespace Applicaster.tests
     end function
 
     @it("task previously existed")
-    @params({ "id" : "content", title: "t1"}, false)
-    @params({ "id" : "content", title: "t2"}, false)
-    @params({ "id" : "content", title: "t2", LIVE: false}, false)
-    @params({ "id" : "content", title: "t2", LIVE: invalid}, false)
-    @params({ "id" : "content", title: "t2", LIVE: true}, true)
+    @params({ "id" : "content", title: "t1" }, false)
+    @params({ "id" : "content", title: "t2" }, false)
+    @params({ "id" : "content", title: "t2", LIVE: false }, false)
+    @params({ "id" : "content", title: "t2", LIVE: invalid }, false)
+    @params({ "id" : "content", title: "t2", LIVE: true }, true)
     function _(content, expectedLive)
       videoNode = { "id": "videoNode" }
       task = { "id": "task" }

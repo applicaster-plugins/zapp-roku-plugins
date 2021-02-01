@@ -370,7 +370,7 @@ namespace Applicaster.tests
       mc.setInstance("entitlements", CreateObject("roSGNode", "SimpleEntitlements"))
       mc.setInstance("authenticationData", CreateObject("roSGNode", "AuthenticationData"))
       mc.setInstance("buildConfig", {})
-      m.user = CreateObject("roSGNode", "User")
+      m.user = CreateObject("roSGNode", "user")
       mc.setInstance("user", m.user)
       mc.setInstance("locale", "en")
       mc.setInstance("plugins", [{

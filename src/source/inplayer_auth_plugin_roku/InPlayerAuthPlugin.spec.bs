@@ -4,6 +4,7 @@ namespace Applicaster.tests
   class InPlayerAuthPluginTests extends tests.BaseTestSuite
 
     override function beforeEach()
+      super.beforeEach()
       m.riversJson = {
         "id": "myAccount"
       }
@@ -92,7 +93,7 @@ namespace Applicaster.tests
 
     @it("token not verified  with service")
     @params(invalid)
-    @params({"access_token": invalid})
+    @params({ "access_token": invalid })
     function _(serviceResponse)
       m.expectOnce(m.plugin, "isAuthDataExpired", [], false)
       m.plugin.authData = {
@@ -142,7 +143,7 @@ namespace Applicaster.tests
 
     @it("cannot register")
     @params(invalid)
-    @params({"access_token": invalid})
+    @params({ "access_token": invalid })
     function _(serviceResponse)
       credentials = {
         username: "u"
@@ -207,7 +208,7 @@ namespace Applicaster.tests
 
     @it("cannot login")
     @params(invalid)
-    @params({"access_token": invalid})
+    @params({ "access_token": invalid })
     function _(serviceResponse)
       credentials = {
         username: "u"
@@ -275,9 +276,9 @@ namespace Applicaster.tests
 
     @it("cannot logout on backend")
     @params({})
-    @params({"code": invalid})
-    @params({"code": 400})
-    @params({"code": 403})
+    @params({ "code": invalid })
+    @params({ "code": 400 })
+    @params({ "code": 403 })
     function _(serviceResponse)
       m.plugin.authData = {
         "accessToken": "at"
@@ -321,9 +322,9 @@ namespace Applicaster.tests
     @it("createErrorFromResult")
     @params(invalid, "Unknown error", -1)
     @params({}, "Unknown error", -1)
-    @params({"errors": {"1":"one"}}, "one", -1)
-    @params({"errors": {"1":"one"}, "code": 403}, "one", 403)
-    @params({"errors": {"403":"m403"}, "code": 403}, "m403", 403)
+    @params({ "errors": { "1": "one" } }, "one", -1)
+    @params({ "errors": { "1": "one" }, "code": 403 }, "one", 403)
+    @params({ "errors": { "403": "m403" }, "code": 403 }, "m403", 403)
     function _(result, expectedMessage, expectedCode)
       error = m.plugin.createErrorFromResult(result)
       m.assertEqual(error.code, expectedCode)

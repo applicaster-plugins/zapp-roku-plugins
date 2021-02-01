@@ -3,6 +3,7 @@ namespace Applicaster.tests
   @suite
   class RegisterScreenVMTests extends tests.BaseTestSuite
     override function beforeEach()
+      super.beforeEach()
       m.riversJson = {
         "name": "SmallSystemFont"
         "id": "11937f34-a364-4601-a0du3-1dace40fe0ed"
@@ -285,13 +286,13 @@ namespace Applicaster.tests
 
     @it("checkCredsValid")
     @params(invalid, invalid, false)
-    @params("","", false)
-    @params("   ","   ", false)
-    @params("valid","", false)
-    @params("valid","   ", false)
+    @params("", "", false)
+    @params("   ", "   ", false)
+    @params("valid", "", false)
+    @params("valid", "   ", false)
     @params(invalid, "valid", false)
-    @params("","valid", false)
-    @params("  ","valid", false)
+    @params("", "valid", false)
+    @params("  ", "valid", false)
     @params("valid", "valid", true)
     function _(username, password, expectedValue)
       m.vm.usernameText = username
@@ -354,7 +355,7 @@ namespace Applicaster.tests
     '@BeforeEach
     function integratin_beforeEach()
       m.beforeEach()
-      m.user = createObject("roSGNode", "User")
+      m.user = createObject("roSGNode", "user")
       mioc.setInstance("constants", { "simulateInAppPurchases": true })
       mioc.setInstance("entitlements", createObject("roSGNode", "SimpleEntitlements"))
       mioc.setInstance("authenticationData", createObject("roSGNode", "AuthenticationData"))
@@ -430,8 +431,8 @@ namespace Applicaster.tests
     @it("fail")
     @params(invalid, "Unknown error")
     @params({}, "Unknown error")
-    @params({"state": "error"}, "Unknown error")
-    @params({"state": "error", "message": "m"}, "m")
+    @params({ "state": "error" }, "Unknown error")
+    @params({ "state": "error", "message": "m" }, "m")
     function _(result, expectedMessage)
       m.vm.state = "loading"
       m.expectNone(m.vm, "dismiss")

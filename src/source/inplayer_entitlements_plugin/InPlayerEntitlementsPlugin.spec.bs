@@ -4,6 +4,7 @@ namespace Applicaster.tests
   class InplayerEntitlementsTests extends tests.BaseTestSuite
 
     override function beforeEach()
+      super.beforeEach()
       mioc.setInstance("constants", { id: "constants" })
       mioc.setInstance("plugins", [])
 
