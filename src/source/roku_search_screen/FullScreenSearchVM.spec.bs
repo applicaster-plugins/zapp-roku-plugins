@@ -1,6 +1,6 @@
 namespace Applicaster.tests
 
-  @tags("public")
+  @tags("public", "vm")
   @suite
   class FullScreenSearchVMTests extends tests.BaseTestSuite
 

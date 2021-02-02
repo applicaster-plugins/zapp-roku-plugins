@@ -1,6 +1,6 @@
 namespace Applicaster.tests
 
-  @tags("public", "auth")
+  @tags("public", "auth", "vm")
   @suite
   class LogoutScreenVmTests extends tests.BaseTestSuite
 

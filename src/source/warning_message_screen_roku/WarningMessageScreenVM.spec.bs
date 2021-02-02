@@ -1,6 +1,6 @@
 namespace Applicaster.tests
 
-  @tags("public")
+  @tags("public", "vm")
   @suite
   class WarningMessageScreenVMTests extends tests.BaseTestSuite
 

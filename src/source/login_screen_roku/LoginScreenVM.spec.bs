@@ -1,6 +1,6 @@
 namespace Applicaster.tests
 
-  @tags("public", "auth")
+  @tags("public", "auth", "vm")
   @suite
   class LoginScreenVMTests extends tests.BaseTestSuite
     override function beforeEach()
@@ -391,7 +391,7 @@ namespace Applicaster.tests
 
       m.vm.processLogin()
 
-      zapp.TestUtils.waitForField(m.vm, "isLoading", 3000, 5)
+      tests.utils.waitForField(m.vm, "isLoading", 3000, 5)
 
       m.assertEqual(m.vm.state, "finished")
       m.assertFalse(m.vm.isLoading)
@@ -408,7 +408,7 @@ namespace Applicaster.tests
 
       m.vm.processLogin()
 
-      zapp.TestUtils.waitForField(m.vm, "isLoading")
+      tests.utils.waitForField(m.vm, "isLoading")
 
       m.assertEqual(m.vm.state, "ready")
       m.assertFalse(m.vm.isLoading)

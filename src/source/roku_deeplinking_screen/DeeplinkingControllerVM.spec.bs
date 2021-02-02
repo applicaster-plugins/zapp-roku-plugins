@@ -1,6 +1,6 @@
 namespace Applicaster.tests
 
-  @tags("public")
+  @tags("public", "vm", "deeplinking")
   @suite
   class DeeplinkingControllerVMTests extends tests.BaseTestSuite
 

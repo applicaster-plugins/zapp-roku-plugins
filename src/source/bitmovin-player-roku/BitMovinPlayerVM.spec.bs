@@ -1,6 +1,6 @@
 namespace Applicaster.tests
 
-  @tags("public", "video")
+  @tags("public", "video", "vm")
   @suite
   class BitMovinPlayerVMTests extends tests.BaseTestSuite
 
