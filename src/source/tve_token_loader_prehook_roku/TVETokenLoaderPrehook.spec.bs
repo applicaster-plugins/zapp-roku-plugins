@@ -1,5 +1,6 @@
 namespace Applicaster.tests
 
+  @tags("public", "auth")
   @suite
   class TVETokenLoaderPrehookTests extends tests.BaseTestSuite
 

@@ -1,5 +1,6 @@
 namespace Applicaster.tests
 
+  @tags("public", "anaytics")
   @suite
   class GoogleAnalyticsPluginTests extends tests.BaseTestSuite
 

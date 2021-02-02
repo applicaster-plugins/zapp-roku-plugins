@@ -1,5 +1,6 @@
 namespace Applicaster.tests
 
+  @tags("public", "entitlements")
   @suite
   class InplayerEntitlementsTests extends tests.BaseTestSuite
 

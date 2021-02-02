@@ -1,5 +1,6 @@
 namespace Applicaster.tests
 
+  @tags("public", "video", "analytics")
   @suite
   class SegmenetVideoAnalyticsPluginTests extends tests.BaseTestSuite
 

@@ -1,5 +1,6 @@
 namespace Applicaster.tests
 
+  @tags("public")
   @suite
   class GeneralTextScreenVMTests extends tests.BaseTestSuite
 

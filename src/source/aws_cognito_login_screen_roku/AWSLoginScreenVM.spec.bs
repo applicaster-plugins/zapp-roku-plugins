@@ -1,5 +1,6 @@
 namespace Applicaster.tests
 
+  @tags("public", "auth")
   @suite
   class AWSLoginScreenVMTests extends tests.BaseTestSuite
     override function beforeEach()

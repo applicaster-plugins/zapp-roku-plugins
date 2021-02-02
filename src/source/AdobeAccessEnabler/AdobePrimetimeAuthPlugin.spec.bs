@@ -1,7 +1,8 @@
 namespace Applicaster.tests
 
+  @tags("public", "auth")
   @suite
-  class APMATTests extends tests.BaseTestSuite
+  class AdobePrimetimeAuthpluginTests extends tests.BaseTestSuite
 
     override function beforeEach()
       super.beforeEach()

@@ -1,5 +1,5 @@
 namespace Applicaster.tests
-
+  @tags("public", "auth")
   @suite
   class GigyaAuthPluginTests extends tests.BaseTestSuite
 

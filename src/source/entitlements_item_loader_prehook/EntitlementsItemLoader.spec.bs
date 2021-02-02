@@ -1,5 +1,6 @@
 namespace Applicaster.tests
 
+  @tags("public", "entitelements")
   @suite
   class EntitlementsItemLoaderTests extends tests.BaseTestSuite
 

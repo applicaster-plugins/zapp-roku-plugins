@@ -1,5 +1,6 @@
 namespace Applicaster.tests
 
+  @tags("public", "analytics")
   @suite
   class SegmentAnalyticsPluginTests extends tests.BaseTestSuite
 
