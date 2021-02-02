@@ -152,7 +152,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
       return false
     end if
 
-    result = m.execute("GET", "items/" + MC.asString(inPlayerId) + "/access")
+    result = m.execute("GET", `items/${inPlayerId}/access`)
 
     content = parseJson(mc.getPath(result, "item.content", "{}"))
     if content.mobile_url <> invalid and content.mobile_url.trim() <> ""
@@ -234,7 +234,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
     inPlayerId = m.getInplayerId(item)
 
     if inPlayerId <> invalid
-      result = m.execute("GET", "items/" + MC.asString(inPlayerId).trim() + "/access-fees")
+      result = m.execute("GET", `items/${inPlayerId.trim()}/access-fees`)
 
       if result <> invalid
         for each item in result
@@ -296,7 +296,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
     feeId = mc.getPath(feeReceipt, "item_id")
 
     if feeId <> invalid
-      result = m.execute("GET", "items/" + MC.asString(feeId).trim() + "/access-fees")
+      result = m.execute("GET", `items/${feeId.trim()}/access-fees`)
 
       if MC.isArray(result)
         for each fee in result

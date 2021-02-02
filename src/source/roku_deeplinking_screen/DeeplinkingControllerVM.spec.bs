@@ -167,8 +167,8 @@ namespace Applicaster.tests
       currentScreen = m.vm.getPrehookController()
 
       m.assertEqual(currentScreen, mockScreen)
-      m.AssertArrayCount(currentScreen.hooks, hooks.count())
-      m.AssertArrayContainsSubset(currentScreen.hooks, hooks)
+      m.assertArrayCount(currentScreen.hooks, hooks.count())
+      m.assertArrayContainsSubset(currentScreen.hooks, hooks)
       m.assertInvalid(currentScreen.targetScreen)
       m.assertFalse(currentScreen.isManagingScreensOnCompletion)
 
@@ -286,9 +286,9 @@ namespace Applicaster.tests
 
       selection = m.vm.getDeeplinkingSelectionWithData(deeplinkingData)
 
-      m.AssertEqual(selection.action, "play")
-      m.AssertEqual(selection.currentItem.id, deeplinkingData.entry.id)
-      m.AssertEqual(selection.collection.id, deeplinkingData.entry.id)
+      m.assertEqual(selection.action, "play")
+      m.assertEqual(selection.currentItem.id, deeplinkingData.entry.id)
+      m.assertEqual(selection.collection.id, deeplinkingData.entry.id)
     end function
 
     @it("valid season or series with found episode")
@@ -305,9 +305,9 @@ namespace Applicaster.tests
 
       selection = m.vm.getDeeplinkingSelectionWithData(deeplinkingData)
 
-      m.AssertEqual(selection.action, "play")
-      m.AssertEqual(selection.currentItem.id, "expectedId")
-      m.AssertEqual(selection.collection.id, "expectedId")
+      m.assertEqual(selection.action, "play")
+      m.assertEqual(selection.currentItem.id, "expectedId")
+      m.assertEqual(selection.collection.id, "expectedId")
     end function
 
     @it("sets properties series and season types, invalid episode")
@@ -324,9 +324,9 @@ namespace Applicaster.tests
 
       selection = m.vm.getDeeplinkingSelectionWithData(deeplinkingData)
 
-      m.AssertEqual(selection.action, "play")
-      m.AssertEqual(selection.currentItem.id, deeplinkingData.entry.id)
-      m.AssertEqual(selection.collection.id, deeplinkingData.entry.id)
+      m.assertEqual(selection.action, "play")
+      m.assertEqual(selection.currentItem.id, deeplinkingData.entry.id)
+      m.assertEqual(selection.collection.id, deeplinkingData.entry.id)
     end function
 
     @it("sets properties series and season types, valid episode")
@@ -343,9 +343,9 @@ namespace Applicaster.tests
 
       selection = m.vm.getDeeplinkingSelectionWithData(deeplinkingData)
 
-      m.AssertEqual(selection.action, "play")
-      m.AssertEqual(selection.currentItem.id, deeplinkingData.entry.id)
-      m.AssertEqual(selection.collection.id, deeplinkingData.entry.id)
+      m.assertEqual(selection.action, "play")
+      m.assertEqual(selection.currentItem.id, deeplinkingData.entry.id)
+      m.assertEqual(selection.collection.id, deeplinkingData.entry.id)
     end function
 
     @it("does not set when deeplinkingData is not valid")
@@ -365,7 +365,7 @@ namespace Applicaster.tests
 
       selection = m.vm.getDeeplinkingSelectionWithData(deeplinkingData)
 
-      m.AssertInvalid(selection)
+      m.assertInvalid(selection)
     end function
 
 

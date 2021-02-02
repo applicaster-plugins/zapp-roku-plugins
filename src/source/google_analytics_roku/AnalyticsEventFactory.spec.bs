@@ -32,8 +32,8 @@ namespace Applicaster.tests
 
     @it("booleanString")
     function _()
-      m.AssertEqual(m.analytics.booleanString(true), "True")
-      m.AssertEqual(m.analytics.booleanString(false), "False")
+      m.assertEqual(m.analytics.booleanString(true), "True")
+      m.assertEqual(m.analytics.booleanString(false), "False")
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

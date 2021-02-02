@@ -488,7 +488,7 @@ namespace Applicaster.tests
       m.assertArrayCount(failedReceipts, expectedFailIds.count())
 
       for each id in expectedFailIds
-        m.AssertAAcontainsSubset(failedReceipts, { "code": id })
+        m.assertAAcontainsSubset(failedReceipts, { "code": id })
       end for
 
     end function
