@@ -6,7 +6,7 @@ namespace Applicaster.tests
 
     override function beforeEach()
       super.beforeEach()
-      mioc.setIntance("plugins", [TestUtils.CreatePluginJson("oc_url_token_loader", {
+      mioc.setIntance("plugins", [tests.utils.createPluginJson("oc_url_token_loader", {
           "endpoint": "e/"
           "domain": "d"
           "matching_path": "itemType"

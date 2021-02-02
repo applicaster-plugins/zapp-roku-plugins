@@ -6,7 +6,7 @@ namespace Applicaster.tests
 
     override function beforeEach()
       super.beforeEach()
-      mioc.setInstance("plugins", [TestUtils.CreatePluginJson("mpx_video_playback_prehook_roku", {
+      mioc.setInstance("plugins", [tests.utils.createPluginJson("mpx_video_playback_prehook_roku", {
           "matching_path": "itemType"
           "matching_value": "video"
       })])

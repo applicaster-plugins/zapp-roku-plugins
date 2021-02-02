@@ -6,13 +6,13 @@ namespace Applicaster.tests
 
     override function beforeEach()
       super.beforeEach()
-      m.pluginJson = TestUtis.createPluginJson("tve_token_loader_prehook_roku", {
+      m.pluginJson = tests.utils.createPluginJson("tve_token_loader_prehook_roku", {
         "endpoint": "e/"
         "domain": "d"
         "matching_path": "itemType"
         "matching_value": "video"
       })
-      m.tvePluginJson = TestUtis.createPluginJson("AdobeAccessEnabler", {
+      m.tvePluginJson = tests.utils.createPluginJson("AdobeAccessEnabler", {
         publicKey: "pub"
         secret: "sec"
         requestorID: "rqd"

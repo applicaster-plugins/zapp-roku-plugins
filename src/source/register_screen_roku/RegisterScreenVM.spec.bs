@@ -353,7 +353,7 @@ namespace Applicaster.tests
     @describe("INTEGRATION tests processLogin")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@BeforeEach
+    '@beforeEach
     function integratin_beforeEach()
       m.beforeEach()
       m.user = createObject("roSGNode", "user")

@@ -11,7 +11,7 @@ namespace Applicaster.tests
 
       'dependencies for testing plugin creation
 
-      plugin = new zapp.BasePlugin(PPMT.CreatePluginJson("1", {
+      plugin = new zapp.BasePlugin(tests.utils.createPluginJson("1", {
         "client_id": "id1234"
         "environment": "dev"
       }))
@@ -61,7 +61,7 @@ namespace Applicaster.tests
     @params("dev", "c1234", "SVOD", "authOrICP", true, "https://staging-v2.inplayer.com")
     @params("dev", "d1234", "SVOD", "authAndICP", true, "https://staging-v2.inplayer.com")
     function _(env, id, vodModel, entitlementsPolicy, expectedIsUsingRokuStore, expectedUrl)
-      plugin = new zapp.BasePlugin(PPMT.CreatePluginJson("1", {
+      plugin = new zapp.BasePlugin(tests.utils.createPluginJson("1", {
         "client_id": id
         "environment": env
         "vod_model": vodModel
@@ -578,7 +578,7 @@ namespace Applicaster.tests
     @describe("INTEGRATION tests")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@BeforeEach
+    '@beforeEach
     function integration_beforeEach()
       m.superBeforeEach = InplayerEntitlements.tests.beforeEach
       m.superBeforeEach()

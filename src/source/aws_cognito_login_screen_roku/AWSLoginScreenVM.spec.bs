@@ -363,7 +363,7 @@ namespace Applicaster.tests
     @describe("INTEGRATION tests processLogin")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@BeforeEach
+    '@beforeEach
     function integratin_process_login_beforeEach()
       mioc.createContainer()
 
