@@ -22,13 +22,13 @@
           height='1080'
           color='{{=ViewUtils_UIBColor("background_color")}}' />
 
-      <ZPoster
+      <mv_MPoster
           id='backgroundPoster'
           width='1920'
           height='1080'
           style='{{=ViewUtils_UIBPoster("background")}}' />
 
-      <ZPoster
+      <mv_MPoster
           id='logoPoster'
           style='{{=ViewUtils_UIBPoster("logo")}}' />
     </Group>
@@ -36,7 +36,7 @@
     <Group
         id='contentGroup'
         visible='{{isContentGroupVisible}}'>
-      <MLabel
+      <mv_MLabel
           id='titleLabel'
           style='{{=ViewUtils_UIBLabel("title")}}' />
       <LayoutGroup
@@ -45,38 +45,38 @@
           translation='{{=ViewUtils_UIBPosition("text")}}'
           itemSpacings='{{=ViewUtils_UIBFloatArray("item_spacing")}}'>
 
-        <MLabel
+        <mv_MLabel
             id='text1Label'
             style='{{=ViewUtils_UIBLabel("text1")}}' />
 
-        <MLabel
+        <mv_MLabel
             id='text2Label'
             style='{{=ViewUtils_UIBLabel("text2")}}' />
 
-        <MLabel
+        <mv_MLabel
             id='text3Label'
             style='{{=ViewUtils_UIBLabel("text3")}}' />
 
-        <MLabel
+        <mv_MLabel
             id='text4Label'
             style='{{=ViewUtils_UIBLabel("text4")}}' />
 
-        <MLabel
+        <mv_MLabel
             id='text5Label'
             style='{{=ViewUtils_UIBLabel("text5")}}' />
 
-        <MLabel
+        <mv_MLabel
             id='text6Label'
             style='{{=ViewUtils_UIBLabel("text6")}}' />
 
-        <MLabel
+        <mv_MLabel
             id='codeLabel'
             style='{{=ViewUtils_UIBLabel("code","")}}'
             text='{{codeText}}' />
-        <MLabel
+        <mv_MLabel
             id='supportLabel'
             style='{{=ViewUtils_UIBLabel("support")}}' />
-        <MLabel
+        <mv_MLabel
             id='support2Label'
             style='{{=ViewUtils_UIBLabel("support2")}}' />
 

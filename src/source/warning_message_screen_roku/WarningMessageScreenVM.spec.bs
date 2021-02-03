@@ -1,4 +1,4 @@
-namespace Applicaster.tests
+namespace zapp.tests
 
   @tags("public", "vm")
   @suite

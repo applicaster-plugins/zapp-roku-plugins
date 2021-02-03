@@ -12,39 +12,39 @@
         width='1920'
         height='1080'
         color='{{=ViewUtils_UIBColor("background_color")}}' />
-    <ZPoster
+    <mv_MPoster
         id='backgroundPoster'
         style='{{=ViewUtils_UIBBackgroundPoster("background")}}' />
-    <ZPoster
+    <mv_MPoster
         id='logoPoster'
         uri='{{=ViewUtils_getPosterUri(m.top.riversJson.styles.logo_image_url)}}' />
     <Group
         id='mainGroup'
         visible='{{isMainGroupVisible;fireOnSet}}'>
-      <ZLayoutGroup
+      <mv_MLayoutGroup
           id='labelsGroup'
           layoutDirection='vert'
           translation='{{=ViewUtils_UIBPosition("labels", 230, 310)}}'
           itemSpacings='[56, 56, 26]'>
-        <MLabel
+        <mv_MLabel
             id='titleText'
             style='{{=ViewUtils_UIBLabel("title", invalid, "title")}}'
             width='{{=ViewUtils_UIBInt("label_w")}}' />
-        <MLabel
+        <mv_MLabel
             id='descriptionText'
             style='{{=ViewUtils_UIBLabel("description", invalid, "description")}}'
             width='{{=ViewUtils_UIBInt("label_w")}}' />
-        <MLabel
+        <mv_MLabel
             id='optionalText1'
             style='{{=ViewUtils_UIBLabel("optional_text1", invalid, "optional_text1")}}'
             width='{{=ViewUtils_UIBInt("label_w")}}' />
-        <MLabel
+        <mv_MLabel
             id='optionalText2'
             style='{{=ViewUtils_UIBLabel("optional_text2", invalid, "optional_text2")}}'
             width='{{=ViewUtils_UIBInt("label_w")}}' />
       </ZLayoutGroup>
 
-      <ZLayoutGroup
+      <mv_MLayoutGroup
           id='controlsGroup'
           translation='{{=ViewUtils_UIBPosition("controls",1040,300)}}'
           itemSpacings='[10, 45, 52]'>
@@ -97,11 +97,11 @@
           id='errorGroup'
           translation='[0,0.0]'
           visible='{{isErrorShowing}}'>
-        <ZPoster
+        <mv_MPoster
             id='errorBackground'
             style='{{=ViewUtils_UIBPoster("error_background")}}' />
 
-        <MLabel
+        <mv_MLabel
             id='errorText'
             style='{{=ViewUtils_UIBLabel("error", "")}}'
             text='{{errorText}}' />

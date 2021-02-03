@@ -34,7 +34,7 @@
         layoutDirection='vert'
         translation='{{:textPosition}}'
         itemSpacings='[56, 56, 26]'>
-      <MLabel
+      <mv_MLabel
           id='titleText'
           style='{{:titleStyle}}'
           text='{{titleText}}'
@@ -42,7 +42,7 @@
           horizAlign='center'
           wrap='true' />
 
-      <MLabel
+      <mv_MLabel
           id='descriptionText'
           style='{{:descriptionStyle}}'
           text='{{descriptionText}}'
@@ -50,7 +50,7 @@
           horizAlign='center'
           wrap='true' />
 
-      <MLabel
+      <mv_MLabel
           id='optional1Text'
           style='{{:optional1Style}}'
           text='{{optional1Text}}'

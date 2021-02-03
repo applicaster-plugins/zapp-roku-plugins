@@ -22,7 +22,7 @@
         uri='{{=ViewUtils_UIBStyleField("background_url")}}'
         width='1920'
         height='1080' />
-    <ZPoster
+    <mv_MPoster
         id='logoPoster'
         style='{{=ViewUtils_UIBPoster("logo")}}' />
 

@@ -12,10 +12,10 @@
         width='1920'
         height='1080'
         color='{{=ViewUtils_UIBColor("background_color")}}' />
-    <ZPoster
+    <mv_MPoster
         id='backgroundPoster'
         style='{{=ViewUtils_UIBBackgroundPoster("background")}}' />
-    <ZPoster
+    <mv_MPoster
         id='logoPoster'
         uri='{{=ViewUtils_getPosterUri(m.top.riversJson.styles.logo_image_url)}}' />
 
@@ -23,7 +23,7 @@
         id='focustrap'
         visible='false' />
 
-    <ZLayoutGroup
+    <mv_MLayoutGroup
         id='contentGroup'
         translation='[960, 500]'
         horizAlignment='center'
@@ -31,7 +31,7 @@
       <Rectangle
           id=''
           width='1920' />
-      <MLabel
+      <mv_MLabel
           id='titleText'
           style='{{:titleStyle}}'
           text='{{titleText}}'

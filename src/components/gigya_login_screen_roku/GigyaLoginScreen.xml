@@ -13,7 +13,7 @@
         width='1920'
         height='1080'
         color='{{=ViewUtils_UIBColor("background_color")}}' />
-    <ZPoster
+    <mv_MPoster
         id='backgroundImage'
         style='{{=ViewUtils_UIBPoster("poster")}}'
         loadDisplayMode='scaleToFill'
@@ -27,7 +27,7 @@
         id='conentGroup'
         visible='{{isContentVisible}}'
         translation='[0,0]'>
-      <MLabel
+      <mv_MLabel
           id='title'
           style='{{=ViewUtils_UIBLabel("title")}}' />
       <StylableButton
