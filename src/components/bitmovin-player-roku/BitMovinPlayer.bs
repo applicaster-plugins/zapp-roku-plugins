@@ -21,7 +21,7 @@ end function
 function createVM()
   m.logMethod("createVM")
 
-  m.vm = zapp.video.BitMovinPlayerVM(m.top)
+  m.vm = new BitMovinPlayerVM(m.top)
   m.vm.initialize()
 
   mx.initializeBindings()

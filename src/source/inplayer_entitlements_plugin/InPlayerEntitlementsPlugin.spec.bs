@@ -5,6 +5,7 @@ namespace zapp.tests
   class InplayerEntitlementsTests extends tests.BaseTestSuite
 
     private authenticationData
+    private availableProducts
 
     override function beforeEach()
       super.beforeEach()
@@ -12,6 +13,8 @@ namespace zapp.tests
       mioc.setInstance("plugins", [])
       m.authenticationData = createObject("roSGNode", "AuthenticationData")
       mioc.setInstance("authenticationData", m.authenticationData)
+      m.availableProducts = createObject("roSGNode", "AvailableProducts")
+      mioc.setInstance("availableProducts", m.availableProducts)
 
       'dependencies for testing plugin creation
 
@@ -75,6 +78,7 @@ namespace zapp.tests
       plugin = new InPlayerEntitlementsPlugin(plugin)
 
       m.assertEqual(plugin.authenticationData, m.authenticationData)
+      m.assertEqual(plugin.availableProducts, m.availableProducts)
       m.assertEqual(plugin.apiUrl, expectedUrl)
       m.assertEqual(plugin.vodModel, vodModel)
       m.assertEqual(plugin.entitlementsPolicy, entitlementsPolicy)
@@ -184,7 +188,7 @@ namespace zapp.tests
     @params("t", invalid)
     @params(invalid, { "id": "1" })
     function _(token, item)
-      rokuCatalogItems = [TestUtis.createRokuCatalogItem("1"), TestUtis.createRokuCatalogItem("2"), TestUtis.createRokuCatalogItem("3")]
+      rokuCatalogItems = [tests.utils.createRokuCatalogItem("1"), tests.utils.createRokuCatalogItem("2"), tests.utils.createRokuCatalogItem("3")]
       m.plugin.currentItem = item
 
       m.plugin.token = token
@@ -202,7 +206,7 @@ namespace zapp.tests
     @params([{ external_fees: [{ external_id: "4" }] }, { external_fees: [{ external_id: "2" }] }, { external_fees: [{ external_id: "3" }] }], ["2", "3"])
     @params([{ external_fees: [{ external_id: "4" }] }, { external_fees: [{ external_id: "5" }] }, { external_fees: [{ external_id: "6" }] }], [])
     function _(fees, expectedIds)
-      rokuCatalogItems = [TestUtis.createRokuCatalogItem("1"), TestUtis.createRokuCatalogItem("2"), TestUtis.createRokuCatalogItem("3")]
+      rokuCatalogItems = [tests.utils.createRokuCatalogItem("1"), tests.utils.createRokuCatalogItem("2"), tests.utils.createRokuCatalogItem("3")]
       item = { id: "item" }
       m.plugin.currentItem = item
 

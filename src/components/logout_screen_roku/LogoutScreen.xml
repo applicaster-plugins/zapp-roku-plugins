@@ -47,7 +47,7 @@
           text='{{buttonText}}'
           selected='{(onLogoutButtonSelected(value))}'
           width='610' />
-    </ZLayoutGroup>
+    </mv_MLayoutGroup>
     <LoadingIndicator
         id='loadingIndicator'
         width='1920'

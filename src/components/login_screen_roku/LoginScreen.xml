@@ -42,7 +42,7 @@
             id='optionalText2'
             style='{{=ViewUtils_UIBLabel("optional_text2", invalid, "optional_text2")}}'
             width='{{=ViewUtils_UIBInt("label_w")}}' />
-      </ZLayoutGroup>
+      </mv_MLayoutGroup>
 
       <mv_MLayoutGroup
           id='controlsGroup'
@@ -86,7 +86,7 @@
             visible='{{isLoading;fireOnSet;transform=MOM_transform_invertBoolean}}'
             selected='{(onForgotPasswordButtonSelected(value))}'
             width='610' />
-      </ZLayoutGroup>
+      </mv_MLayoutGroup>
 
       <Group
           id='errorGroup'

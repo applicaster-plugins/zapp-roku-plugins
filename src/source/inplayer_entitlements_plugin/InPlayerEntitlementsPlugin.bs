@@ -97,10 +97,12 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
     products = []
     for each fee in inPlayerFees
       rokuProduct = m.getRokuItemForFee(fee, rokuProducts)
-      if rokuProduct <> invalid and mc.getArrayIndex(purchasedItemIds, rokuProduct.code) = -1 and usedProducts[rokuProduct.code] = invalid
+
+      if rokuProduct <> invalid and mc.collections.getArrayIndex(purchasedItemIds, rokuProduct.code) = -1 and usedProducts[rokuProduct.code] = invalid
         rokuProduct.fee = fee
         usedProducts[rokuProduct.code] = true
         products.push(rokuProduct)
+
       else
         m.logWarn("ignoring fee", fee.id, fee.description, "which can not be mapped to a roku purchase, on item", item)
       end if

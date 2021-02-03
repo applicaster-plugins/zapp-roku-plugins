@@ -42,7 +42,7 @@
             id='optionalText2'
             style='{{=ViewUtils_UIBLabel("optional_text2", invalid, "optional_text2")}}'
             width='{{=ViewUtils_UIBInt("label_w")}}' />
-      </ZLayoutGroup>
+      </mv_MLayoutGroup>
 
       <mv_MLayoutGroup
           id='controlsGroup'
@@ -91,7 +91,7 @@
             selected='{(onRegisterButtonSelected(value))}'
             width='{{=ViewUtils_UIBInt("input_w")}}' />
 
-      </ZLayoutGroup>
+      </mv_MLayoutGroup>
 
       <Group
           id='errorGroup'

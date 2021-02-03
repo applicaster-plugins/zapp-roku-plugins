@@ -2,6 +2,7 @@ import "pkg:/source/plugin-support/PluginManager.bs"
 import "pkg:/source/lib/BaseClass.bs"
 import "pkg:/source/roku_modules/mc/Utils.brs"
 import "pkg:/source/lib/Request.bs"
+import "pkg:/source/entitlements/EntitlementsManager.bs"
 
 ' /**
 '  * @module EntitlementsItemLoader
@@ -51,7 +52,6 @@ class EntitlementsItemLoader extends zapp.BaseClass
     end if
 
     manager = m.getClassInstance("zapp.entitlements.EntitlementsManager")
-
 
     if manager.loadItem(item)
       return "success"
