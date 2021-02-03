@@ -45,7 +45,7 @@ namespace Applicaster.tests
     function _()
       controller = { "id": "controller" }
 
-      m.expectOnce(m.vm, "bindNodefield", [controller, "state", "onPrehookControllerStateChange", mx.createBindingProperties(false, invalid, true)])
+      m.expectOnce(m.vm, "unobserveNodeField", [controller, "state", m.vm.onPrehookControllerStateChange])
 
       m.vm.togglePrehookController(true, controller)
 
@@ -61,7 +61,7 @@ namespace Applicaster.tests
 
       m.expectOnce(m.vm, "unobserveNodeField", [controller, "state", m.vm.onPrehookControllerStateChange])
 
-      m.expectOnce(m.vm, "bindNodefield", [controller, "state", "onPrehookControllerStateChange", mx.createBindingProperties(false, invalid, true)])
+      m.expectOnce(m.vm, "observeNodeField", [controller, "state", m.vm.onPrehookControllerStateChange])
 
       m.vm.togglePrehookController(true, controller)
 
@@ -381,7 +381,7 @@ namespace Applicaster.tests
 
       m.expectNone(m.vm, "unobserveNodeField")
       m.expectNone(m.vm, "createInstance")
-      m.expectNone(m.vm, "bindNodeField")
+      m.expectNone(m.vm, "observeNodeField")
 
       m.vm.toggleDeeplinkingTask(false)
 
@@ -397,7 +397,7 @@ namespace Applicaster.tests
 
       m.expectOnce(m.vm, "unobserveNodeField", [m.vm.deeplinkingTask, "deeplinkingData", m.vm.onDeeplinkingTaskResult])
       m.expectNone(m.vm, "createInstance")
-      m.expectNone(m.vm, "bindNodeField")
+      m.expectNone(m.vm, "observeNodeField")
 
       m.vm.toggleDeeplinkingTask(false)
 
@@ -414,7 +414,7 @@ namespace Applicaster.tests
       args = { "id": "args" }
 
       m.expectOnce(m.vm, "createInstance", ["DeeplinkingTask", invalid, "deeplinkingTask"], deeplinkingTask)
-      m.expectOnce(m.vm, "bindNodeField", [deeplinkingTask, "deeplinkingData", "onDeeplinkingTaskResult", mx.createBindingProperties(false, invalid, true)])
+      m.expectOnce(m.vm, "observeNodeField", [deeplinkingTask, "deeplinkingData", m.vm.onDeeplinkingTaskResult, "value", true])
 
       m.vm.toggleDeeplinkingTask(true, args)
 
@@ -433,7 +433,7 @@ namespace Applicaster.tests
       m.expectOnce(m.vm, "unobserveNodeField", [m.vm.deeplinkingTask, "deeplinkingData", m.vm.onDeeplinkingTaskResult])
 
       m.expectOnce(m.vm, "createInstance", ["DeeplinkingTask", invalid, "deeplinkingTask"], deeplinkingTask)
-      m.expectOnce(m.vm, "bindNodeField", [deeplinkingTask, "deeplinkingData", "onDeeplinkingTaskResult", mx.createBindingProperties(false, invalid, true)])
+      m.expectOnce(m.vm, "observeNodeField", [deeplinkingTask, "deeplinkingData", m.vm.onDeeplinkingTaskResult, "value", true])
 
       m.vm.toggleDeeplinkingTask(true, args)
 

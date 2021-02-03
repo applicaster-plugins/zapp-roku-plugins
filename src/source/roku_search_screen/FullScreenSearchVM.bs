@@ -153,7 +153,7 @@ class FullScreenSearchVM extends zapp.UIB.ComponentVM
       results = createObject("roSGNode", "ZPEntry")
     end if
 
-    MC.setOrAddNodeField(results, "target", m.rowTarget)
+    mc.setOrAddNodeField(results, "target", m.rowTarget)
 
     m.setField("results", results)
     m.setField("jumpToItem", 0)
@@ -181,8 +181,8 @@ class FullScreenSearchVM extends zapp.UIB.ComponentVM
       cellStyle = m.style.cell
       cellStyle.dataMap = m.style.dataMap
       cellStyle.delete("translation")
-      MC.setOrAddNodeField(content, "_style", cellStyle)
-      MC.setOrAddNodeField(content, "_styleId", m.style.id)
+      mc.setOrAddNodeField(content, "_style", cellStyle)
+      mc.setOrAddNodeField(content, "_styleId", m.style.id)
     end if
 
   end function

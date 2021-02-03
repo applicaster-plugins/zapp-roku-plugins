@@ -6,10 +6,10 @@ namespace Applicaster.tests
 
     override function beforeEach()
       super.beforeEach()
-      mioc.setIntance("collectionBookmarks", CreateObject("roSGNode", "Bookmarks"))
-      mioc.setIntance("vodItemBookmarks", CreateObject("roSGNode", "Bookmarks"))
-      mioc.setIntance("plugins", [])
-      mioc.setIntance("locale", "en")
+      mioc.setInstance("collectionBookmarks", CreateObject("roSGNode", "Bookmarks"))
+      mioc.setInstance("vodItemBookmarks", CreateObject("roSGNode", "Bookmarks"))
+      mioc.setInstance("plugins", [])
+      mioc.setInstance("locale", "en")
       m.BitmovinPlayerState = { "PLAYING": "playing", "STALLING": "stalling", "PAUSED": "paused", "FINISHED": "finished", "ERROR": "error", "NONE": "none", "SETUP": "setup", "READY": "ready" }
 
 
@@ -101,13 +101,12 @@ namespace Applicaster.tests
     @it("onLoadSDKStatusChange ready")
     function _()
 
-      properties = mx.createBindingProperties(false)
       m.vm.licenseKey = "#key"
       m.expectOnce(m.vm.view, "createChild", ["BitmovinPlayerSDK:BitmovinPlayer"], m.player)
-      m.expectOnce(m.vm, "bindNodeField", [m.player, "playerState", "onPlayerStateChange", properties], m.player)
-      m.expectOnce(m.vm, "bindNodeField", [m.player, "error", "onPlayerVideoError", properties])
-      m.expectOnce(m.vm, "bindNodeField", [m.player, "currentTime", "onPlayerCurrentTimeChange", properties])
-      m.expectOnce(m.vm, "bindNodeField", [m.player, "sourceLoaded", "onPlayerSourceLoadedChange", properties])
+      m.expectOnce(m.vm, "observeNodeField", [m.player, "playerState", m.vm.onPlayerStateChange])
+      m.expectOnce(m.vm, "observeNodeField", [m.player, "error", m.vm.onPlayerVideoError])
+      m.expectOnce(m.vm, "observeNodeField", [m.player, "currentTime", m.vm.onPlayerCurrentTimeChange])
+      m.expectOnce(m.vm, "observeNodeField", [m.player, "sourceLoaded", m.vm.onPlayerSourceLoadedChange])
 
       m.expectOnce(m.player, "callFunc", [m.player.BitmovinFunctions.SETUP, {
           key: "#key"

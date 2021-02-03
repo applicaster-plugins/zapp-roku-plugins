@@ -24,7 +24,7 @@ function createVM()
   m.vm = Video.BitMovinPlayerVM(m.top)
   m.vm.initialize()
 
-  MVMM.initializeBindings(true)
+  mx.initializeBindings()
 end function
 
 function _applyStyle(styles, localizations, assets)

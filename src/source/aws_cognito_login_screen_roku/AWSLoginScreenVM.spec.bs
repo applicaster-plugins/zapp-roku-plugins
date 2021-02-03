@@ -367,14 +367,14 @@ namespace Applicaster.tests
     function integratin_process_login_beforeEach()
       mioc.createContainer()
 
-      mc.setInstance("constants", { "simulateInAppPurchases": true })
-      mc.setInstance("entitlements", CreateObject("roSGNode", "SimpleEntitlements"))
-      mc.setInstance("authenticationData", CreateObject("roSGNode", "AuthenticationData"))
-      mc.setInstance("buildConfig", {})
+      mioc.setInstance("constants", { "simulateInAppPurchases": true })
+      mioc.setInstance("entitlements", CreateObject("roSGNode", "SimpleEntitlements"))
+      mioc.setInstance("authenticationData", CreateObject("roSGNode", "AuthenticationData"))
+      mioc.setInstance("buildConfig", {})
       m.user = CreateObject("roSGNode", "user")
-      mc.setInstance("user", m.user)
-      mc.setInstance("locale", "en")
-      mc.setInstance("plugins", [{
+      mioc.setInstance("user", m.user)
+      mioc.setInstance("locale", "en")
+      mioc.setInstance("plugins", [{
         "identifier": "aws_cognito_auth_plugin",
         "api": {
           "require_startup_execution": false,

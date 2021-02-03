@@ -6,7 +6,7 @@ namespace Applicaster.tests
 
     override function beforeEach()
       super.beforeEach()
-      mioc.setIntance("plugins", [tests.utils.createPluginJson("oc_url_token_loader", {
+      mioc.setInstance("plugins", [tests.utils.createPluginJson("oc_url_token_loader", {
           "endpoint": "e/"
           "domain": "d"
           "matching_path": "itemType"
@@ -24,7 +24,7 @@ namespace Applicaster.tests
     @it("no plugin")
     function _()
       m.__mioc.plugins = []
-      zapp.mioc.clearClassInstances()
+      mioc.reset()
 
       m.loader = new EntitlementsItemLoader()
 

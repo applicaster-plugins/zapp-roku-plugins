@@ -41,7 +41,7 @@ class BitMovinPlayerVM extends zapp.BaseZappVM
     m.bitmovinPlayerSDK.uri = "https://cdn.bitmovin.com/player/roku/1.22.0/bitmovinplayer.zip"
     ' Adding the ComponentLibrary node to the scene will start the download of the library
     m.view.appendChild(m.bitmovinPlayerSDK)
-    m.bindNodeField(m.bitmovinPlayerSDK, "loadStatus", "onSDKLoadStatusChange", mx.createBindingProperties())
+    m.observeNodeField(m.bitmovinPlayerSDK, "loadStatus", m.onSDKLoadStatusChange)
   end function
 
   private function onSDKLoadStatusChange(status)
@@ -57,13 +57,12 @@ class BitMovinPlayerVM extends zapp.BaseZappVM
       m.playerFields = m.player.BitmovinFields
       m.playerState = m.player.BitmovinPlayerState
       m.setVideoChromeStyle()
-      bindingProperties = mx.createBindingProperties(false)
-      m.bindNodeField(m.player, m.playerFields.PLAYER_STATE, "onPlayerStateChange", bindingProperties)
-      m.bindNodeField(m.player, m.playerFields.ERROR, "onPlayerVideoError", bindingProperties)
-      m.bindNodeField(m.player, m.playerFields.CURRENT_TIME, "onPlayerCurrentTimeChange", bindingProperties)
-      m.bindNodeField(m.player, m.playerFields.SOURCE_LOADED, "onPlayerSourceLoadedChange", bindingProperties)
-      ' m.bindNodeField(m.playerFields.SEEK, "onPlayerSeek", bindingProperties)
-      ' m.bindNodeField(m.playerFields.SEEKED, "onPlayerSeeked", bindingProperties)
+      m.observeNodeField(m.player, m.playerFields.PLAYER_STATE, m.onPlayerStateChange)
+      m.observeNodeField(m.player, m.playerFields.ERROR, m.onPlayerVideoError)
+      m.observeNodeField(m.player, m.playerFields.CURRENT_TIME, m.onPlayerCurrentTimeChange)
+      m.observeNodeField(m.player, m.playerFields.SOURCE_LOADED, m.onPlayerSourceLoadedChange)
+      ' m.observeNodeField(m.playerFields.SEEK, m.onPlayerSeek)
+      ' m.observeNodeField(m.playerFields.SEEKED, m.onPlayerSeeked)
       m.player.callFunc(m.playerFunctions.SETUP, {
         key: m.licenseKey
       })

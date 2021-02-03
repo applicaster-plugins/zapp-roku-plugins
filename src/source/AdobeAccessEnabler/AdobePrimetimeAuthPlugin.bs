@@ -182,7 +182,7 @@ class AdobePrimetimeAuthPlugin extends zapp.Auth.BaseAuthPlugin
         errorCode = 0
       end if
 
-      expireTime = MC.strToLong(result.expires) / 1000
+      expireTime = mc.strToLong(result.expires) / 1000
       secondsTillExpire = m.date.getSecondsUntil(expireTime)
 
       if m.pollResult <> invalid

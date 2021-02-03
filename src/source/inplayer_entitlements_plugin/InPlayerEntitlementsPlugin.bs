@@ -59,7 +59,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
     ids = []
 
     collection = mc.getPath(result, "collection")
-    if MC.isArray(collection)
+    if mc.isArray(collection)
       for each receipt in collection
         'have to load the item to get the external_id
         'inplayer say they will improve this, at which point its hould become m.getExternalIDsFromItem
@@ -97,7 +97,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
     products = []
     for each fee in inPlayerFees
       rokuProduct = m.getRokuItemForFee(fee, rokuProducts)
-      if rokuProduct <> invalid and MC.getArrayIndex(purchasedItemIds, rokuProduct.code) = -1 and usedProducts[rokuProduct.code] = invalid
+      if rokuProduct <> invalid and mc.getArrayIndex(purchasedItemIds, rokuProduct.code) = -1 and usedProducts[rokuProduct.code] = invalid
         rokuProduct.fee = fee
         usedProducts[rokuProduct.code] = true
         products.push(rokuProduct)
@@ -139,7 +139,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
     if m.token = invalid
       errorMessage = "not authenticated with inplayer when retrieving item: " + item.id
       m.logError(errorMessage, item)
-      MC.setOrAddNodeField(item, "errorMessage", errorMessage)
+      mc.setOrAddNodeField(item, "errorMessage", errorMessage)
       return false
     end if
 
@@ -147,7 +147,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
     if inPlayerId = invalid
       errorMessage = "Could not ascertain inplayer id with item: " + item.id
       m.logError(errorMessage, item)
-      MC.setOrAddNodeField(item, "errorMessage", errorMessage)
+      mc.setOrAddNodeField(item, "errorMessage", errorMessage)
 
       return false
     end if
@@ -158,7 +158,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
     if content.mobile_url <> invalid and content.mobile_url.trim() <> ""
       if item.originalUrl = invalid
         m.logInfo("this item has never been manipulated; storing it's original url")
-        MC.setOrAddNodeField(item, "originalUrl", item.url)
+        mc.setOrAddNodeField(item, "originalUrl", item.url)
       end if
       item.url = content.mobile_url
       if content.cookies <> invalid
@@ -174,7 +174,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
 
     errorMessage = m.getErrorMessage(result, "Error loading item: " + item.id)
     m.logError("could not unlock content:", errorMessage)
-    MC.setOrAddNodeField(item, "errorMessage", errorMessage)
+    mc.setOrAddNodeField(item, "errorMessage", errorMessage)
     return false
   end function
 
@@ -276,7 +276,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
     end if
 
     if id <> invalid
-      MC.setOrAddNodeField(item, "inPlayerId", id)
+      mc.setOrAddNodeField(item, "inPlayerId", id)
     else
       m.logError("could not ascertain inplayer asset id, or succefully retrieve the id based on entry.id and inplayer asset type")
     end if
@@ -298,7 +298,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
     if feeId <> invalid
       result = m.execute("GET", `items/${feeId.trim()}/access-fees`)
 
-      if MC.isArray(result)
+      if mc.isArray(result)
         for each fee in result
           if fee.id = feeReceipt.purchased_access_fee_id
             return fee

@@ -163,7 +163,7 @@ namespace Applicaster.tests
       m.expectOnce(m.vm, "getScreen", ["#lis"], screen)
       m.expectOnce(m.vm, "push", [screen])
       m.expectOnce(m.vm, "setFocus", [screen])
-      m.expectOnce(m.vm, "bindNodeField", [screen, "state", "onLoginScreenStateChange", mx.createBindingProperties(false)])
+      m.expectOnce(m.vm, "unobserveNodeField", [screen, "state", m.vm.onLoginScreenStateChange])
 
       m.vm.showLoginScreen()
     end function
@@ -173,7 +173,7 @@ namespace Applicaster.tests
       m.expectOnce(m.vm, "getScreen", ["#lis"], invalid)
       m.expectNone(m.vm, "push")
       m.expectNone(m.vm, "setFocus")
-      m.expectNone(m.vm, "bindNodeField")
+      m.expectNone(m.vm, "unobserveNodeField")
 
       m.vm.showLoginScreen()
     end function

@@ -38,7 +38,7 @@ class AWSLoginScreenVM extends zapp.UIB.ScreenVM
   public function new(riversJson)
     super(riversJson, "AWSLoginScreenVM")
     m.focusId = "usernameInput"
-    KeyboardDialogMixin.mixin(m)
+    zapp.keyboardDialogMixin.mixin(m)
     m.processStyles(m.riversJson.styles)
   end function
 
@@ -152,7 +152,7 @@ class AWSLoginScreenVM extends zapp.UIB.ScreenVM
       m.setField("passwordButtonType", "textInputPlaceholder")
       m.setField("passwordText", m.passwordPlaceholderText)
     else
-      m.setField("passwordText", KeyboardDialogMixin.getHiddenPasswordText(text))
+      m.setField("passwordText", zapp.keyboardDialogMixin.getHiddenPasswordText(text))
       m.password = text
       m.setField("passwordButtonType", "textInput")
     end if

@@ -37,7 +37,7 @@ class RegisterScreenVM extends zapp.UIB.ScreenVM
     super(riversJson, "RegisterScreenVM")
 
     m.focusId = "usernameInput"
-    KeyboardDialogMixin.mixin(m)
+    zapp.keyboardDialogMixin.mixin(m)
     m.processStyles(m.riversJson.styles)
     m.providerId = m.getAuthProviderId()
 
@@ -114,17 +114,17 @@ class RegisterScreenVM extends zapp.UIB.ScreenVM
 
   private function onUsernameKeyboardDialogDismissal(text)
     m.logMethod("onKeyboardDialogDismissal")
-    KeyboardDialogMixin.setTextFromKeyboard(m, "username", text)
+    zapp.keyboardDialogMixin.setTextFromKeyboard(m, "username", text)
   end function
 
   private function onNameKeyboardDialogDismissal(text)
     m.logMethod("onNameKeyboardDialogDismissal")
-    KeyboardDialogMixin.setTextFromKeyboard(m, "name", text)
+    zapp.keyboardDialogMixin.setTextFromKeyboard(m, "name", text)
   end function
 
   private function onPasswordKeyboardDialogDismissal(text)
     m.logMethod("onPasswordKeyboardDialogDismissal")
-    KeyboardDialogMixin.setTextFromKeyboard(m, "password", text, true)
+    zapp.keyboardDialogMixin.setTextFromKeyboard(m, "password", text, true)
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -219,7 +219,7 @@ class RegisterScreenVM extends zapp.UIB.ScreenVM
   public function onKeyPressDown() as boolean
     m.logMethod("onKeyPressDown", m.focusId)
 
-    m.setFocusId(MC.getItemAtOffset(m.focusIds, m.focusId, 1))
+    m.setFocusId(mc.collections.getItemAtOffset(m.focusIds, m.focusId, 1))
 
     return true
   end function
@@ -241,7 +241,7 @@ class RegisterScreenVM extends zapp.UIB.ScreenVM
   public override function onKeyPressUp() as boolean
     m.logMethod("onKeyPressUp", m.focusId)
 
-    m.setFocusId(MC.getItemAtOffset(m.focusIds, m.focusId, -1))
+    m.setFocusId(mc.collections.getItemAtOffset(m.focusIds, m.focusId, -1))
 
     return true
   end function

@@ -22,7 +22,7 @@ namespace Applicaster.tests
     @it("no plugin")
     function _()
       m.__mioc.plugins = []
-      zapp.mioc.clearClassInstances()
+      mioc.reset()
 
       m.plugin = new MPXVideoPlaybackPrehook()
 

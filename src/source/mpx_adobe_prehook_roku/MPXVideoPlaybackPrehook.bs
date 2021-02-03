@@ -64,7 +64,7 @@ class MPXVideoPlaybackPrehook extends zapp.BaseClass
     end if
 
     value = mc.getPath(item.json, m.matchingPath, invalid)
-    if not MC.isString(value)
+    if not mc.isString(value)
       value = formatJson(value)
     end if
     return value = m.matchingValue

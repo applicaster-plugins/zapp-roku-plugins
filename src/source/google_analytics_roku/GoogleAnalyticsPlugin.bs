@@ -86,7 +86,7 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
     suffix = versionId
     s = userIdString
 
-    if MC.isString(s) and MC.isString(prefix) and MC.isString(suffix)
+    if mc.isString(s) and mc.isString(prefix) and mc.isString(suffix)
       if prefix + suffix = s
         return true
       end if
@@ -96,7 +96,7 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
   end function
 
   private function setGoogleTaskUserId(userId)
-    if MC.isString(userId)
+    if mc.isString(userId)
       m.task.customSessionParams = {
         "uid": Box(userId).Escape()
       }

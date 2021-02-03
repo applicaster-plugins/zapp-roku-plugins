@@ -39,7 +39,7 @@ class LoginScreenVM extends zapp.UIB.ScreenVM
   public function new(riversJson)
     super(riversJson, "LoginScreenVM")
     m.focusId = "usernameInput"
-    KeyboardDialogMixin.mixin(m)
+    zapp.keyboardDialogMixin.mixin(m)
     m.processStyles(m.riversJson.styles)
     m.providerId = m.getAuthProviderId()
 
@@ -154,7 +154,7 @@ class LoginScreenVM extends zapp.UIB.ScreenVM
     if screen <> invalid
       m.setField("currentScreen", screen)
       m.onsubScreenStateChange(m.currentScreen.state)
-      m.bindNodeField(m.currentScreen, "state", "onSubScreenStateChange", mx.createBindingProperties(false))
+      m.observeNodeField(m.currentScreen, "state", m.onSubScreenStateChange)
       m.setFocusId("screenContainer")
     else
       m.setFocusId(m.preScreenFocusId)
@@ -180,12 +180,12 @@ class LoginScreenVM extends zapp.UIB.ScreenVM
 
   private function onUsernameKeyboardDialogDismissal(text)
     m.logMethod("onKeyboardDialogDismissal")
-    KeyboardDialogMixin.setTextFromKeyboard(m, "username", text)
+    zapp.keyboardDialogMixin.setTextFromKeyboard(m, "username", text)
   end function
 
   private function onPasswordKeyboardDialogDismissal(text)
     m.logMethod("onPasswordKeyboardDialogDismissal")
-    KeyboardDialogMixin.setTextFromKeyboard(m, "password", text, true)
+    zapp.keyboardDialogMixin.setTextFromKeyboard(m, "password", text, true)
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -313,7 +313,7 @@ class LoginScreenVM extends zapp.UIB.ScreenVM
   public function onKeyPressDown() as boolean
     m.logMethod("onKeyPressDown", m.focusId)
     if not m.isSubScreenVisible
-      m.setFocusId(MC.getItemAtOffset(m.focusIds, m.focusId, 1))
+      m.setFocusId(mc.collections.getItemAtOffset(m.focusIds, m.focusId, 1))
     end if
     return true
   end function
@@ -321,7 +321,7 @@ class LoginScreenVM extends zapp.UIB.ScreenVM
   public override function onKeyPressUp() as boolean
     m.logMethod("onKeyPressUp", m.focusId)
     if not m.isSubScreenVisible
-      m.setFocusId(MC.getItemAtOffset(m.focusIds, m.focusId, -1))
+      m.setFocusId(mc.collections.getItemAtOffset(m.focusIds, m.focusId, -1))
     end if
     return true
   end function

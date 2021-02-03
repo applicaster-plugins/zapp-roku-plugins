@@ -63,7 +63,7 @@ class DeeplinkingControllerVM extends zapp.UIB.ScreenVM
     end if
 
     if isActive
-      m.bindNodeField(controller, "state", "onPrehookControllerStateChange", mx.createBindingProperties(false, invalid, true))
+      m.observeNodeField(controller, "state", m.onPrehookControllerStateChange, "value", true)
       m.setField("currentScreen", controller)
     else
       m.setField("currentScreen", invalid)
@@ -120,7 +120,7 @@ class DeeplinkingControllerVM extends zapp.UIB.ScreenVM
     if isActive
       m.logInfo("starting deeplinking task")
       m.deeplinkingTask = m.createInstance("DeeplinkingTask", invalid, "deeplinkingTask")
-      m.bindNodeField(m.deeplinkingTask, "deeplinkingData", "onDeeplinkingTaskResult", mx.createBindingProperties(false, invalid, true))
+      m.observeNodeField(m.deeplinkingTask, "deeplinkingData", m.onDeeplinkingTaskResult, "value", true)
 
       m.deeplinkingTask.args = args
       m.deeplinkingTask.control = "run"
