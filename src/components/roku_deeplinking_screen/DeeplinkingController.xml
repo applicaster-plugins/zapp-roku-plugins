@@ -12,19 +12,19 @@
         id='backgroundRect'
         width='1920'
         height='1080'
-        color='{{=ViewUtils_UIBColor("background_color")}}' />
+        color='{{=zapp_viewUtils_UIBColor("background_color")}}' />
     <Poster
         id='backgroundPoster'
         loadSync='true'
         loadDisplayMode='scaleToFill'
         loadWidth='1920'
         loadHeight='1080'
-        uri='{{=ViewUtils_UIBStyleField("background_url")}}'
+        uri='{{=zapp_viewUtils_UIBStyleField("background_url")}}'
         width='1920'
         height='1080' />
     <mv_MPoster
         id='logoPoster'
-        style='{{=ViewUtils_UIBPoster("logo")}}' />
+        style='{{=zapp_viewUtils_UIBPoster("logo")}}' />
 
     <DynamicContainer
         id='screenContainer'

@@ -20,17 +20,17 @@
           id='backgroundRect'
           width='1920'
           height='1080'
-          color='{{=ViewUtils_UIBColor("background_color")}}' />
+          color='{{=zapp_viewUtils_UIBColor("background_color")}}' />
 
       <mv_MPoster
           id='backgroundPoster'
           width='1920'
           height='1080'
-          style='{{=ViewUtils_UIBPoster("background")}}' />
+          style='{{=zapp_viewUtils_UIBPoster("background")}}' />
 
       <mv_MPoster
           id='logoPoster'
-          style='{{=ViewUtils_UIBPoster("logo")}}' />
+          style='{{=zapp_viewUtils_UIBPoster("logo")}}' />
     </Group>
 
     <Group
@@ -38,53 +38,53 @@
         visible='{{isContentGroupVisible}}'>
       <mv_MLabel
           id='titleLabel'
-          style='{{=ViewUtils_UIBLabel("title")}}' />
+          style='{{=zapp_viewUtils_UIBLabel("title")}}' />
       <LayoutGroup
           id='labelsGroup'
           layoutDirection='vert'
-          translation='{{=ViewUtils_UIBPosition("text")}}'
-          itemSpacings='{{=ViewUtils_UIBFloatArray("item_spacing")}}'>
+          translation='{{=zapp_viewUtils_UIBPosition("text")}}'
+          itemSpacings='{{=zapp_viewUtils_UIBFloatArray("item_spacing")}}'>
 
         <mv_MLabel
             id='text1Label'
-            style='{{=ViewUtils_UIBLabel("text1")}}' />
+            style='{{=zapp_viewUtils_UIBLabel("text1")}}' />
 
         <mv_MLabel
             id='text2Label'
-            style='{{=ViewUtils_UIBLabel("text2")}}' />
+            style='{{=zapp_viewUtils_UIBLabel("text2")}}' />
 
         <mv_MLabel
             id='text3Label'
-            style='{{=ViewUtils_UIBLabel("text3")}}' />
+            style='{{=zapp_viewUtils_UIBLabel("text3")}}' />
 
         <mv_MLabel
             id='text4Label'
-            style='{{=ViewUtils_UIBLabel("text4")}}' />
+            style='{{=zapp_viewUtils_UIBLabel("text4")}}' />
 
         <mv_MLabel
             id='text5Label'
-            style='{{=ViewUtils_UIBLabel("text5")}}' />
+            style='{{=zapp_viewUtils_UIBLabel("text5")}}' />
 
         <mv_MLabel
             id='text6Label'
-            style='{{=ViewUtils_UIBLabel("text6")}}' />
+            style='{{=zapp_viewUtils_UIBLabel("text6")}}' />
 
         <mv_MLabel
             id='codeLabel'
-            style='{{=ViewUtils_UIBLabel("code","")}}'
+            style='{{=zapp_viewUtils_UIBLabel("code","")}}'
             text='{{codeText}}' />
         <mv_MLabel
             id='supportLabel'
-            style='{{=ViewUtils_UIBLabel("support")}}' />
+            style='{{=zapp_viewUtils_UIBLabel("support")}}' />
         <mv_MLabel
             id='support2Label'
-            style='{{=ViewUtils_UIBLabel("support2")}}' />
+            style='{{=zapp_viewUtils_UIBLabel("support2")}}' />
 
       </LayoutGroup>
 
       <StylableButton
           id='refreshButton'
-          style='{{=ViewUtils_UIBButton("refresh_button")}}'
+          style='{{=zapp_viewUtils_UIBButton("refresh_button")}}'
           opacity='{{:refreshButtonOpacity}}'
           visible='{{isRefreshing;transform=MOM_transform_invertBoolean}}'
           selected='{(onRefreshButtonSelected(value))}' />

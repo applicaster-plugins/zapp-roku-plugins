@@ -11,42 +11,42 @@
         id='backgroundRectangle'
         width='1920'
         height='1080'
-        color='{{=ViewUtils_UIBColor("background_color")}}' />
+        color='{{=zapp_viewUtils_UIBColor("background_color")}}' />
     <mv_MPoster
         id='backgroundPoster'
-        style='{{=ViewUtils_UIBBackgroundPoster("background")}}' />
+        style='{{=zapp_viewUtils_UIBBackgroundPoster("background")}}' />
     <mv_MPoster
         id='logoPoster'
-        uri='{{=ViewUtils_getPosterUri(m.top.riversJson.styles.logo_image_url)}}' />
+        uri='{{=zapp_viewUtils_getPosterUri(m.top.riversJson.styles.logo_image_url)}}' />
     <Group
         id='mainGroup'
         visible='{{isMainGroupVisible;fireOnSet}}'>
       <mv_MLayoutGroup
           id='labelsGroup'
           layoutDirection='vert'
-          translation='{{=ViewUtils_UIBPosition("labels", 230, 310)}}'
+          translation='{{=zapp_viewUtils_UIBPosition("labels", 230, 310)}}'
           itemSpacings='[56, 56, 26]'>
         <mv_MLabel
             id='titleText'
-            style='{{=ViewUtils_UIBLabel("title", invalid, "title")}}'
-            width='{{=ViewUtils_UIBInt("label_w")}}' />
+            style='{{=zapp_viewUtils_UIBLabel("title", invalid, "title")}}'
+            width='{{=zapp_viewUtils_UIBInt("label_w")}}' />
         <mv_MLabel
             id='descriptionText'
-            style='{{=ViewUtils_UIBLabel("description", invalid, "description")}}'
-            width='{{=ViewUtils_UIBInt("label_w")}}' />
+            style='{{=zapp_viewUtils_UIBLabel("description", invalid, "description")}}'
+            width='{{=zapp_viewUtils_UIBInt("label_w")}}' />
         <mv_MLabel
             id='optionalText1'
-            style='{{=ViewUtils_UIBLabel("optional_text1", invalid, "optional_text1")}}'
-            width='{{=ViewUtils_UIBInt("label_w")}}' />
+            style='{{=zapp_viewUtils_UIBLabel("optional_text1", invalid, "optional_text1")}}'
+            width='{{=zapp_viewUtils_UIBInt("label_w")}}' />
         <mv_MLabel
             id='optionalText2'
-            style='{{=ViewUtils_UIBLabel("optional_text2", invalid, "optional_text2")}}'
-            width='{{=ViewUtils_UIBInt("label_w")}}' />
+            style='{{=zapp_viewUtils_UIBLabel("optional_text2", invalid, "optional_text2")}}'
+            width='{{=zapp_viewUtils_UIBInt("label_w")}}' />
       </mv_MLayoutGroup>
 
       <mv_MLayoutGroup
           id='controlsGroup'
-          translation='{{=ViewUtils_UIBPosition("controls",1040,300)}}'
+          translation='{{=zapp_viewUtils_UIBPosition("controls",1040,300)}}'
           itemSpacings='[10, 45, 52]'>
         <StylableButton
             id='usernameInput'
@@ -55,7 +55,7 @@
             text='{{usernameText}}'
             buttonType='{{usernameButtonType}}'
             selected='{(onUsernameButtonSelected(value))}'
-            width='{{=ViewUtils_UIBInt("input_w")}}' />
+            width='{{=zapp_viewUtils_UIBInt("input_w")}}' />
 
         <StylableButton
             id='nameInput'
@@ -64,7 +64,7 @@
             text='{{nameText}}'
             buttonType='{{nameButtonType}}'
             selected='{(onNameButtonSelected(value))}'
-            width='{{=ViewUtils_UIBInt("input_w")}}' />
+            width='{{=zapp_viewUtils_UIBInt("input_w")}}' />
 
         <StylableButton
             id='passwordInput'
@@ -73,7 +73,7 @@
             labelXOffset='9'
             buttonType='{{passwordButtonType}}'
             selected='{(onPasswordButtonSelected(value))}'
-            width='{{=ViewUtils_UIBInt("input_w")}}' />
+            width='{{=zapp_viewUtils_UIBInt("input_w")}}' />
 
         <!-- <StylableButton
             id='confirmPasswordInput'
@@ -82,14 +82,14 @@
             labelXOffset='9'
             buttonType='{{confirmPasswordButtonType}}'
             selected='{(onConfirmPasswordButtonSelected(value))}'
-            width='{{=ViewUtils_UIBInt("input_w")}}' /> -->
+            width='{{=zapp_viewUtils_UIBInt("input_w")}}' /> -->
 
         <StylableButton
             id='registerButton'
             style='{{:registerButtonStyle}}'
             visible='{{isLoading;fireOnSet;transform=MOM_transform_invertBoolean}}'
             selected='{(onRegisterButtonSelected(value))}'
-            width='{{=ViewUtils_UIBInt("input_w")}}' />
+            width='{{=zapp_viewUtils_UIBInt("input_w")}}' />
 
       </mv_MLayoutGroup>
 
@@ -99,11 +99,11 @@
           visible='{{isErrorShowing}}'>
         <mv_MPoster
             id='errorBackground'
-            style='{{=ViewUtils_UIBPoster("error_background")}}' />
+            style='{{=zapp_viewUtils_UIBPoster("error_background")}}' />
 
         <mv_MLabel
             id='errorText'
-            style='{{=ViewUtils_UIBLabel("error", "")}}'
+            style='{{=zapp_viewUtils_UIBLabel("error", "")}}'
             text='{{errorText}}' />
       </Group>
     </Group>

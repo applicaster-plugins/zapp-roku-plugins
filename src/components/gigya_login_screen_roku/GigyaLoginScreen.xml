@@ -12,10 +12,10 @@
         id='backgroundRectangle'
         width='1920'
         height='1080'
-        color='{{=ViewUtils_UIBColor("background_color")}}' />
+        color='{{=zapp_viewUtils_UIBColor("background_color")}}' />
     <mv_MPoster
         id='backgroundImage'
-        style='{{=ViewUtils_UIBPoster("poster")}}'
+        style='{{=zapp_viewUtils_UIBPoster("poster")}}'
         loadDisplayMode='scaleToFill'
         loadWidth='1920'
         loadHeight='1080'
@@ -29,14 +29,14 @@
         translation='[0,0]'>
       <mv_MLabel
           id='title'
-          style='{{=ViewUtils_UIBLabel("title")}}' />
+          style='{{=zapp_viewUtils_UIBLabel("title")}}' />
       <StylableButton
           id='loginButton'
-          style='{{=ViewUtils_UIBButton("login_button")}}'
+          style='{{=zapp_viewUtils_UIBButton("login_button")}}'
           selected='{(onLoginButtonSelected(value))}' />
       <StylableButton
           id='skipButton'
-          style='{{=ViewUtils_UIBButton("skip_button")}}'
+          style='{{=zapp_viewUtils_UIBButton("skip_button")}}'
           selected='{(onSkipButtonSelected(value))}' />
     </Group>
 

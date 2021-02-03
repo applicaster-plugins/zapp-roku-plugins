@@ -11,13 +11,13 @@
         id='backgroundRectangle'
         width='1920'
         height='1080'
-        color='{{=ViewUtils_UIBColor("background_color")}}' />
+        color='{{=zapp_viewUtils_UIBColor("background_color")}}' />
     <mv_MPoster
         id='backgroundPoster'
-        style='{{=ViewUtils_UIBBackgroundPoster("background")}}' />
+        style='{{=zapp_viewUtils_UIBBackgroundPoster("background")}}' />
     <mv_MPoster
         id='logoPoster'
-        uri='{{=ViewUtils_getPosterUri(m.top.riversJson.styles.logo_image_url)}}' />
+        uri='{{=zapp_viewUtils_getPosterUri(m.top.riversJson.styles.logo_image_url)}}' />
 
     <Button
         id='focustrap'

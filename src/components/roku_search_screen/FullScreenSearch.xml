@@ -11,11 +11,11 @@
     <mv_MLabel
         id='noSearchLabel'
         visible='{{isNoSearchLabelVisible}}'
-        style='{{=ViewUtils_UIBLabel("no_items")}}' />
+        style='{{=zapp_viewUtils_UIBLabel("no_items")}}' />
     <mv_MLabel
         id='notFoundLabel'
         visible='{{isNotFoundLabelVisible}}'
-        style='{{=ViewUtils_UIBLabel("not_found")}}' />
+        style='{{=zapp_viewUtils_UIBLabel("not_found")}}' />
 
     <StylableButton
         id='textInput'
@@ -36,8 +36,8 @@
         style='{{gridStyle}}'
         jumpToItem='{{jumpToItem}}'
         itemSelected='{(onSelectItem(value))}'
-        numColumns='{{=ViewUtils_UIBInt("number_of_columns", 2)}}'
-        numRows='{{=ViewUtils_UIBInt("number_of_rows", 3)}}'
+        numColumns='{{=zapp_viewUtils_UIBInt("number_of_columns", 2)}}'
+        numRows='{{=zapp_viewUtils_UIBInt("number_of_rows", 3)}}'
         itemComponentName='ZPowerCell' />
 
     <LoadingIndicator
