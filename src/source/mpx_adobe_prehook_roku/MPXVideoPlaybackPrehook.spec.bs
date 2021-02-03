@@ -21,9 +21,7 @@ namespace zapp.tests
 
     @it("no plugin")
     function _()
-      m.__mioc.plugins = []
-      mioc.reset()
-
+      mioc.setInstance("plugins", [])
       m.plugin = new MPXVideoPlaybackPrehook()
 
       m.assertNotInvalid(m.plugin.plugins)

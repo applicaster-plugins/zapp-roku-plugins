@@ -31,7 +31,7 @@ namespace zapp.tests
 
     @it("testConstructor_tests")
     function _()
-      m.assertEqual(m.plugin.request.__className, "request.Request")
+      m.assertEqual(m.plugin.request.__className, "zapp.Request")
       m.assertEqual(m.plugin.JWTUtil.__className, "zapp.JWTUtil")
       m.assertEqual(m.plugin.uri.__className, "zapp.URI")
       m.assertEqual(m.plugin.requestorID, "rqd")

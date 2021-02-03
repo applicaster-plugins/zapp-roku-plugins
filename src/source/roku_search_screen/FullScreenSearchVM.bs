@@ -2,7 +2,7 @@ import "pkg:/source/lib/ViewUtils.bs"
 import "pkg:/source/roku_modules/mc/Utils.brs"
 import "pkg:/source/UIBuilder/view/ComponentVM.bs"
 
-class FullScreenSearchVM extends zapp.UIB.ComponentVM
+class FullScreenSearchVM extends zapp.uib.ComponentVM
 
   public results = invalid
   public isGridVisible = false

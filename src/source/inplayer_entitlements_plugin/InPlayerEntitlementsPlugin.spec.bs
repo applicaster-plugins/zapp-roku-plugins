@@ -1,13 +1,17 @@
 namespace zapp.tests
 
-  @tags("public", "entitlements")
+@tags("public", "entitlements")
   @suite
   class InplayerEntitlementsTests extends tests.BaseTestSuite
+
+    private authenticationData
 
     override function beforeEach()
       super.beforeEach()
       mioc.setInstance("constants", { id: "constants" })
       mioc.setInstance("plugins", [])
+      m.authenticationData = createObject("roSGNode", "AuthenticationData")
+      mioc.setInstance("authenticationData", m.authenticationData)
 
       'dependencies for testing plugin creation
 
@@ -70,7 +74,7 @@ namespace zapp.tests
 
       plugin = new InPlayerEntitlementsPlugin(plugin)
 
-      m.assertEqual(plugin.authenticationData, m.__mioc.authenticationData)
+      m.assertEqual(plugin.authenticationData, m.authenticationData)
       m.assertEqual(plugin.apiUrl, expectedUrl)
       m.assertEqual(plugin.vodModel, vodModel)
       m.assertEqual(plugin.entitlementsPolicy, entitlementsPolicy)
@@ -184,9 +188,9 @@ namespace zapp.tests
       m.plugin.currentItem = item
 
       m.plugin.token = token
-      m.__mioc.availableProducts.availableProducts = ["something"]
+      m.availableProducts.availableProducts = ["something"]
       m.plugin.getAvailableProducts(rokuCatalogItems, ["1"])
-      m.assertEmpty(m.__mioc.availableProducts.availableProducts)
+      m.assertEmpty(m.availableProducts.availableProducts)
 
     end function
 
@@ -202,14 +206,14 @@ namespace zapp.tests
       item = { id: "item" }
       m.plugin.currentItem = item
 
-      m.__mioc.availableProducts.availableProducts = ["something"]
+      m.availableProducts.availableProducts = ["something"]
 
       m.expectOnce(m.plugin, "getInPlayerFeesForItem", [item], fees)
 
 
       m.plugin.getAvailableProducts(rokuCatalogItems, purchasedIds)
 
-      products = m.__mioc.availableProducts.availableProducts
+      products = m.availableProducts.availableProducts
       m.assertArrayCount(products, expectedIds.count())
 
       productIds = []

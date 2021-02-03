@@ -17,8 +17,7 @@ namespace zapp.tests
 
     @it("no plugin")
     function _()
-      m.__mioc.plugins = []
-      mioc.reset()
+      mioc.setInstance("plugins", [])
 
       m.appender = new GenericUrlTokenAppender()
 

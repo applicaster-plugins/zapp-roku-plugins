@@ -2,7 +2,7 @@ import "pkg:/source/UIBuilder/view/ScreenVM.bs"
 import "pkg:/source/lib/ViewUtils.bs"
 import "pkg:/source/mixin/KeyboardDialogMixin.bs"
 
-class LoginScreenVM extends zapp.UIB.ScreenVM
+class LoginScreenVM extends zapp.uib.ScreenVM
 
   'styles
   public inputStyle = invalid

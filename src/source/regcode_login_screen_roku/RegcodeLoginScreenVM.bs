@@ -3,7 +3,7 @@ import "pkg:/source/lib/ViewUtils.bs"
 import "pkg:/source/plugin-support/BasePlugin.bs"
 import "pkg:/source/plugin-support/PluginManager.bs"
 
-class RegcodeLoginScreenVM extends zapp.UIB.ScreenVM
+class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
 
   'styles
   public isContentGroupVisible = false

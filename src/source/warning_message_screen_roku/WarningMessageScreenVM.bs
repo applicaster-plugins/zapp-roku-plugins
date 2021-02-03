@@ -1,7 +1,7 @@
 import "pkg:/source/UIBuilder/view/ScreenVM.bs"
 import "pkg:/source/lib/ViewUtils.bs"
 
-class WarningMessageScreenVM extends zapp.UIB.ScreenVM
+class WarningMessageScreenVM extends zapp.uib.ScreenVM
 
   'styles
   public isContentGroupVisible = false
