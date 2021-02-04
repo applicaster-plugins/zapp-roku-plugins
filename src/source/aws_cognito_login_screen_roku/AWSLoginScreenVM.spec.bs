@@ -366,8 +366,7 @@ namespace zapp.tests
 
     @beforeEach
     function integratin_process_login_beforeEach()
-      mioc.createContainer()
-
+      m.beforeEach()
       mioc.setInstance("constants", { "simulateInAppPurchases": true })
       mioc.setInstance("entitlements", CreateObject("roSGNode", "SimpleEntitlements"))
       mioc.setInstance("authenticationData", CreateObject("roSGNode", "AuthenticationData"))

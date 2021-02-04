@@ -589,8 +589,7 @@ namespace zapp.tests
 
     @beforeEach
     function integration_beforeEach()
-      m.superBeforeEach = InplayerEntitlements.tests.beforeEach
-      m.superBeforeEach()
+      m.beforeEach()
       m.item = createObject("roSGNode", "ZPEntry")
       m.item.extensions = {
         "inplayer_asset_id": 73823
