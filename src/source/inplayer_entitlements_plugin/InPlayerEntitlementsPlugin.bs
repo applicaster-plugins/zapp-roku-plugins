@@ -3,7 +3,6 @@ import "pkg:/source/lib/AdminAPI.bs"
 import "pkg:/source/lib/APIUtils.bs"
 
 class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugin
-
   private entitlementsPolicy = ""
   private vodModel = ""
 
@@ -18,8 +17,6 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
     m.isItemRequiredToLoadEntitlements = true
     m.requiresLoadToAscertainEntitlements = true
 
-    m.validPolicies = ["none", "authOnly", "ICPOnly", "authOrICP", "authAndICP"]
-    m.validVodModels = ["none", "SVOD", "AVOD", "TVOD", "TVODAndSVOD"]
     m.authenticationData = m.getInstance("authenticationData")
     m.assetKey = plugin.getStringValue("inplayer_custom_asset_key", "")
     m.entitlementsPolicy = plugin.getStringValue("entitlements_policy", "none", m.validPolicies)
@@ -97,12 +94,10 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
     products = []
     for each fee in inPlayerFees
       rokuProduct = m.getRokuItemForFee(fee, rokuProducts)
-
       if rokuProduct <> invalid and mc.collections.getArrayIndex(purchasedItemIds, rokuProduct.code) = -1 and usedProducts[rokuProduct.code] = invalid
         rokuProduct.fee = fee
         usedProducts[rokuProduct.code] = true
         products.push(rokuProduct)
-
       else
         m.logWarn("ignoring fee", fee.id, fee.description, "which can not be mapped to a roku purchase, on item", item)
       end if
@@ -112,24 +107,24 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
   end function
 
   public override function getEntitlements() as dynamic
-  entitlementsNode = m.getInstance("entitlements")
+    entitlements = m.getInstance("entitlements")
 
-    if entitlementsNode = invalid or entitlementsNode.subType() <> "SimpleEntitlements"
+    if entitlements = invalid or entitlements.subType() <> "SimpleEntitlements"
       m.logInfo("the current IOC registred entitlements object is incompatible with this plugin, creating a new entitlements object")
-      entitlementsNode = m.createInstance("SimpleEntitlements", invalid, "entitlements")
-      m.setInstance("entitlements", entitlementsNode)
+      entitlements = m.createInstance("SimpleEntitlements", invalid, "entitlements")
+      m.setInstance("entitlements", entitlements)
     end if
 
-    entitlementsNode.availableProducts = m.availableProducts
-    entitlementsNode.authenticationData = m.authenticationData
-    entitlementsNode.policy = m.entitlementsPolicy
-    entitlementsNode.vodModel = m.vodModel
-    entitlementsNode.requiresLoadToAscertainEntitlements = true
-    entitlementsNode@.configure()
+    entitlements.availableProducts = m.availableProducts
+    entitlements.authenticationData = m.authenticationData
+    entitlements.policy = m.entitlementsPolicy
+    entitlements.vodModel = m.vodModel
+    entitlements.requiresLoadToAscertainEntitlements = true
+    entitlements@.configure()
     if m.soonestExpiration <> -1
-      entitlementsNode.expiryTimeInSeconds = m.soonestExpiration
+      entitlements.expiryTimeInSeconds = m.soonestExpiration
     end if
-    return entitlementsNode
+    return entitlements
   end function
 
   public override function loadItem(item) as boolean
@@ -157,7 +152,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
     result = m.execute("GET", `items/${inPlayerId}/access`)
 
     content = parseJson(mc.getPath(result, "item.content", "{}"))
-    if content.mobile_url <> invalid and content.mobile_url.trim() <> ""
+    if content <> invalid and content.mobile_url <> invalid and content.mobile_url.trim() <> ""
       if item.originalUrl = invalid
         m.logInfo("this item has never been manipulated; storing it's original url")
         mc.setOrAddNodeField(item, "originalUrl", item.url)
@@ -236,7 +231,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
     inPlayerId = m.getInplayerId(item)
 
     if inPlayerId <> invalid
-      result = m.execute("GET", `items/${inPlayerId.trim()}/access-fees`)
+      result = m.execute("GET", "items/" + MU.asString(inPlayerId).trim() + "/access-fees")
 
       if result <> invalid
         for each item in result
@@ -298,7 +293,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
     feeId = mc.getPath(feeReceipt, "item_id")
 
     if feeId <> invalid
-      result = m.execute("GET", `items/${feeId.trim()}/access-fees`)
+      result = m.execute("GET", "items/" + MU.asString(feeId).trim() + "/access-fees")
 
       if mc.isArray(result)
         for each fee in result
