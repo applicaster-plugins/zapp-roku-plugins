@@ -360,10 +360,11 @@ namespace zapp.tests
 
     @ignore("- only use these with your own creds, and for non suit tests")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @tags("integration")
     @describe("INTEGRATION tests processLogin")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@beforeEach
+    @beforeEach
     function integratin_process_login_beforeEach()
       mioc.createContainer()
 
@@ -394,7 +395,10 @@ namespace zapp.tests
       m.rootBeforeEach()
     end function
 
-    '@AfterEach
+    @afterEach
+    function namespace_itGroup_afterEach()
+
+    end function
     function processLogin_integration_afterEach()
       mioc.reset()
     end function

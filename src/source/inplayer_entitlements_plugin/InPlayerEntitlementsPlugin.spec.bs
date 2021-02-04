@@ -583,10 +583,11 @@ namespace zapp.tests
 
     @ignore("")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @tags("integration")
     @describe("INTEGRATION tests")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    '@beforeEach
+    @beforeEach
     function integration_beforeEach()
       m.superBeforeEach = InplayerEntitlements.tests.beforeEach
       m.superBeforeEach()

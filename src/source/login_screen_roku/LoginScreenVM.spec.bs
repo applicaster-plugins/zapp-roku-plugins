@@ -351,6 +351,7 @@ namespace zapp.tests
 
     @ignore("- only use these with your own creds, and for non suit tests")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @tags("integration")
     @describe("INTEGRATION tests processLogin")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

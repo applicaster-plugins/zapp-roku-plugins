@@ -7,7 +7,7 @@ namespace zapp.tests
     override function beforeEach()
       super.beforeEach()
       localStore = createObject("roSGNode", "ZSessionStore")
-      mioc.setInstance("localStore", localStore)
+      mioc.setInstance("zp_localStore", localStore)
       mioc.setInstance("locale", "en")
 
       riversJson = {
