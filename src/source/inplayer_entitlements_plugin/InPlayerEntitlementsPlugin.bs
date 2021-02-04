@@ -257,7 +257,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
       return item.inPlayerId
     end if
 
-    m.logInfo("extensions", item.extensions)
+    m.logInfo("extensions", item.json.extensions)
     id = mc.getPath(item.json, m.pluginInplayerAssetKey)
 
     if id = invalid

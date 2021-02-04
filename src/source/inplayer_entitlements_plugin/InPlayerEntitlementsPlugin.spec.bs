@@ -248,8 +248,9 @@ namespace zapp.tests
     function _()
       m.plugin.token = invalid
       item = createObject("roSGNode", "ZPEntry")
-      item.extensions = {
-        inplayer_asset_id: "xid"
+      item.json = { extensions: {
+          inplayer_asset_id: "xid"
+        }
       }
       m.assertFalse(m.plugin.loadItem(item))
 
@@ -570,7 +571,7 @@ namespace zapp.tests
     @params(invalid, { json: { extensions: { "inplayer_asset_id": invalid } } }, invalid)
     @params(invalid, { json: { extensions: { "inplayer_asset_id": "123" } } }, "123")
     @params("extensions.custom_id", invalid, invalid)
-    @params("extensions.custom_id", { json: {extensions: { "custom_id": "cid", "inplayer_asset_id": "123" }} }, "cid")
+    @params("extensions.custom_id", { json: { extensions: { "custom_id": "cid", "inplayer_asset_id": "123" } } }, "cid")
     function _(pluginKey, item, expected)
       m.plugin.pluginInplayerAssetkey = pluginKey
       m.assertEqual(m.plugin.getInplayerId(item), expected)
@@ -599,8 +600,9 @@ namespace zapp.tests
     function integration_beforeEach()
       m.beforeEach()
       m.item = createObject("roSGNode", "ZPEntry")
-      m.item.extensions = {
-        "inplayer_asset_id": 73823
+      m.item.json = { extensions: {
+          "inplayer_asset_id": 73823
+        }
       }
       'DO NOT COMMIT THIS TOKEN
       m.plugin.currentItem = m.item
@@ -642,9 +644,11 @@ namespace zapp.tests
     @it("loadItem")
     function _()
       item = createObject("roSGNode", "ZPEntry")
-      item.extensions = {
-        "inplayer_asset_id": 73823
+      item.json = { extensions: {
+          "inplayer_asset_id": 73823
+        }
       }
+
       m.plugin.loadItem(item)
       m.logInfo("item", item.url)
 
