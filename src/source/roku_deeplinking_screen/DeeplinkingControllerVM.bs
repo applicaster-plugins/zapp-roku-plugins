@@ -110,7 +110,7 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
 
   public function toggleDeeplinkingTask(isActive, args = invalid)
     m.logMethod("toggleDeeplinkingTask", isActive, args)
-    m.setField("isLoadingIndicatorVisible", isActive)
+    m.toggleLoadingIndicator(isActive)
 
     if m.deeplinkingTask <> invalid
       m.unobserveNodeField(m.deeplinkingTask, "deeplinkingData", m.onDeeplinkingTaskResult)
@@ -163,6 +163,9 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
     if parentScreen <> invalid and deeplinkingData.itemType <> "channel"
       m.isShowingParentScreen = true
       m.setField("currentScreen", parentScreen)
+      m.toggleNavMenuFocus(false)
+      m.onContentStateChange(parentScreen.state)
+      m.observeNodeField(parentScreen, "state", m.onContentStateChange)
     end if
 
     m.isDeeplinkingApplied = true
@@ -195,8 +198,12 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
   '++ private impl
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+  private function toggleLoadingIndicator(isActive)
+    m.setField("isLoadingIndicatorVisible", isActive)
+  end function
+
   private function dismissDeeplinkingController()
-    m.setField("isLoadingIndicatorVisible", false)
+    m.toggleLoadingIndicator(true)
 
     if m.isLiveDeeplink or not m.isShowingPrehooks
       m.logInfo("going to go back, if possible")
@@ -234,7 +241,7 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
   end function
 
   function exitFromDeeplinking()
-    zapp.AppService.exitFromDeeplinking()
+    zapp.appService.exitFromDeeplinking()
   end function
 
 
@@ -249,6 +256,11 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
     m.dismissDeeplinkingController()
 
     return true
+  end function
+
+  private function onContentStateChange(state)
+    m.logInfo("DEEP LINK PARENT SCREEN STATE", state)
+    m.toggleLoadingIndicator(state = "loading")
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
