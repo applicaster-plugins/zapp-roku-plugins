@@ -30,7 +30,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests constructor")
+    @describe("constructor")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("testConstructor_test")
@@ -59,7 +59,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests _getAcountInfo")
+    @describe("_getAcountInfo")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("_getAccountInfo")
@@ -78,7 +78,7 @@ namespace zapp.tests
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests _verify")
+    @describe("_verify")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("invalid token")
@@ -139,7 +139,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests register")
+    @describe("register")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("cannot register")
@@ -204,7 +204,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests login")
+    @describe("login")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("cannot login")
@@ -261,7 +261,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests logout")
+    @describe("logout")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("not logged in")
@@ -317,7 +317,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests createErrorFromResult")
+    @describe("createErrorFromResult")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("createErrorFromResult")

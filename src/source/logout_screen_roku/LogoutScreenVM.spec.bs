@@ -31,7 +31,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests constructor")
+    @describe("constructor")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("constructor")
@@ -49,7 +49,7 @@ namespace zapp.tests
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests onLogoutButtonSelected")
+    @describe("onLogoutButtonSelected")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("not logged out yet")
@@ -71,7 +71,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests logout")
+    @describe("logout")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("all providers")
@@ -85,7 +85,7 @@ namespace zapp.tests
 
       m.expectOnce(m.vm, "getInstance", ["analyticsManager"], analyticsManager)
 
-      m.expectOnce(m.vm, "createAuthTask", ["execLogOutAll", invalid, "onLogoutComplete"], authTask)
+      m.expectOnce(m.vm, "createAuthTask", ["execLogOutAll", invalid, m.vm.onLogoutComplete], authTask)
 
       m.vm.logout()
 
@@ -109,7 +109,7 @@ namespace zapp.tests
 
       m.expectOnce(m.vm, "getInstance", ["analyticsManager"], analyticsManager)
 
-      m.expectOnce(m.vm, "createAUthTask", ["execLogOut", providerId, "onLogoutComplete"], authTask)
+      m.expectOnce(m.vm, "createAUthTask", ["execLogOut", providerId, m.vm.onLogoutComplete], authTask)
       m.vm.providerId = providerid
 
       m.vm.logout()
@@ -122,7 +122,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests onKeyPressBack")
+    @describe("onKeyPressBack")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("not signing out")
@@ -143,7 +143,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests onLogoutCompplete")
+    @describe("onLogoutCompplete")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 

@@ -27,7 +27,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests booleanString")
+    @describe("booleanString")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("booleanString")
@@ -37,7 +37,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests propertiesToLabel")
+    @describe("propertiesToLabel")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("AMT_propertiesToLabel")
@@ -66,7 +66,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests padString")
+    @describe("padString")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("AMT_padString")
@@ -86,7 +86,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests timeFormat")
+    @describe("timeFormat")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("AMT_timeFormat")
@@ -101,7 +101,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests voucherDictionary")
+    @describe("voucherDictionary")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("no grace period")
@@ -135,7 +135,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests itemDictionary")
+    @describe("itemDictionary")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("channelItemType")
@@ -157,7 +157,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests playVOD")
+    @describe("playVOD")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("AMT_playVOD")
@@ -181,7 +181,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests clickItem")
+    @describe("clickItem")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("AMT_clickItem")
@@ -205,7 +205,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests clickCategory")
+    @describe("clickCategory")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("AMT_clickCategory")
@@ -229,7 +229,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests launchApp")
+    @describe("launchApp")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("AMT_launchApp")
@@ -243,7 +243,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests viewStoreFront")
+    @describe("viewStoreFront")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("AMT_viewStorefront")
@@ -267,7 +267,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests tapStoreFrontButton")
+    @describe("tapStoreFrontButton")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("AMT_tapStorefrontButton")
@@ -291,7 +291,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests startPurchase")
+    @describe("startPurchase")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("AMT_startPurchase")
@@ -315,7 +315,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests completePurchase")
+    @describe("completePurchase")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("AMT_completePurchase")
@@ -339,7 +339,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests canclePurchase")
+    @describe("canclePurchase")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("AMT_cancelPurchase")
@@ -363,7 +363,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests purchaseError")
+    @describe("purchaseError")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("AMT_purchaseError")
@@ -387,7 +387,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests openMenu")
+    @describe("openMenu")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("AMT_openMenu")
@@ -401,7 +401,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests openSearch")
+    @describe("openSearch")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("AMT_openSearch")
@@ -415,7 +415,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests clickSearchResults")
+    @describe("clickSearchResults")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("AMT_clickSearchResults")
@@ -429,7 +429,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests selectMenuItem")
+    @describe("selectMenuItem")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("AMT_selectMenuItem")
@@ -443,7 +443,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests pauseVOD")
+    @describe("pauseVOD")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("AMT_pauseVOD")
@@ -467,7 +467,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests unpauseVOD")
+    @describe("unpauseVOD")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("AMT_unpauseVOD")
@@ -491,7 +491,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests startLogin")
+    @describe("startLogin")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("startLogin")
@@ -505,7 +505,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests login succeeds")
+    @describe("login succeeds")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("loginSucceeds")
@@ -519,7 +519,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests loginDoesNotSucceed")
+    @describe("loginDoesNotSucceed")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("loginDoesNotSucceed")

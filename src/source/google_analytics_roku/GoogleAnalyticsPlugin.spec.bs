@@ -19,7 +19,7 @@ namespace zapp.tests
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests constructor")
+    @describe("constructor")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("constructor")
@@ -31,7 +31,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests start")
+    @describe("start")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("start")
@@ -51,7 +51,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests identifyAsAnonymous")
+    @describe("identifyAsAnonymous")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("identifies as Anonymous")
@@ -62,7 +62,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests is tracking user Id allowed")
+    @describe("is tracking user Id allowed")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("is user id allowed")
@@ -80,7 +80,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests trackUserIdAllowedFlag")
+    @describe("trackUserIdAllowedFlag")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("constructor_trackUser")
@@ -104,7 +104,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests setGoogleTaskUserId")
+    @describe("setGoogleTaskUserId")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("valid")

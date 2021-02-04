@@ -81,7 +81,7 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
   private function refreshLogin()
     m.logInfo("calling authTask to refresh login")
 
-    m.authTask = m.createAuthTask("execLoad", m.providerId, "onRefreshLoginComplete")
+    m.authTask = m.createAuthTask("execLoad", m.providerId, m.onRefreshLoginComplete)
 
     m.setField("isContentGroupVisible", false)
   end function
@@ -115,7 +115,7 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
     m.logMethod("onPollTimerFire")
 
     m.cancelTask(m.authTask)
-    m.authTask = m.createAuthTask("execPoll", m.providerId, "onPollComplete")
+    m.authTask = m.createAuthTask("execPoll", m.providerId, m.onPollComplete)
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -128,7 +128,7 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
     m.togglePollTimer(false)
     m.cancelTask(m.authTask)
 
-    m.authTask = m.createAuthTask("execRegcode", m.providerId, "onLoadCodeComplete")
+    m.authTask = m.createAuthTask("execRegcode", m.providerId, m.onLoadCodeComplete)
 
     m.setField("isRefreshing", true)
     m.setField("isShowingLoadingIndicator", true)

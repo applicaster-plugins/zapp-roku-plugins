@@ -19,7 +19,7 @@ namespace zapp.tests
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests videoStart")
+    @describe("videoStart")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("no task")
@@ -73,7 +73,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests videoEnd")
+    @describe("videoEnd")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("invalid task does not crash")
@@ -92,7 +92,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests adTrackingEvent")
+    @describe("adTrackingEvent")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("no task")

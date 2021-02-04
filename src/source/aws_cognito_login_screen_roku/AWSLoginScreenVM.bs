@@ -167,7 +167,7 @@ class AWSLoginScreenVM extends zapp.uib.ScreenVM
   private function refreshLogin()
     m.logInfo("calling authTask to refresh login")
 
-    m.authTask = m.createAuthTask("execLoad", "aws_cognito_auth_plugin", "onRefreshComplete")
+    m.authTask = m.createAuthTask("execLoad", "aws_cognito_auth_plugin", m.onRefreshComplete)
 
     m.setField("isRefreshing", true)
     m.setField("isLoginButtonEnabled", false)
@@ -203,7 +203,7 @@ class AWSLoginScreenVM extends zapp.uib.ScreenVM
       creds = m.createInstance("AuthenticationCredentials")
       creds.username = m.userName
       creds.password = m.password
-      m.authTask = m.createAuthTask("execLogIn", "aws_cognito_auth_plugin", "onLoginComplete", creds)
+      m.authTask = m.createAuthTask("execLogIn", "aws_cognito_auth_plugin", m.onLoginComplete, creds)
 
       m.setField("isLoginButtonEnabled", false)
 

@@ -34,7 +34,7 @@ namespace zapp.tests
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests constructor")
+    @describe("constructor")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("constructor")
@@ -44,7 +44,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests processStyles")
+    @describe("processStyles")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("processes styles")
@@ -65,7 +65,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests leaving screen cancels searches")
+    @describe("leaving screen cancels searches")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("onHide")
@@ -86,7 +86,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests reset")
+    @describe("reset")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("reset")
@@ -102,7 +102,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests showing resets the view when appropriate")
+    @describe("showing resets the view when appropriate")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("was not showing content")
@@ -128,7 +128,7 @@ namespace zapp.tests
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests left keypress")
+    @describe("left keypress")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("onKeyPressLeft")
@@ -141,7 +141,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests right keypress")
+    @describe("right keypress")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("onKeyPressRight")
@@ -157,7 +157,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests setGridVisible")
+    @describe("setGridVisible")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("setGridVisible")
@@ -181,7 +181,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests perform search")
+    @describe("perform search")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("performSearch")
@@ -211,7 +211,7 @@ namespace zapp.tests
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests onSearchTextChange")
+    @describe("onSearchTextChange")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("onSearchTextChange")
@@ -259,7 +259,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests onSearchDelayComplete")
+    @describe("onSearchDelayComplete")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("onSearchDelayComplete")

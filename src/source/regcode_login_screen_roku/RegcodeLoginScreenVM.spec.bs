@@ -28,7 +28,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests load")
+    @describe("load")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("displayedInPrehook not showing")
@@ -75,7 +75,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests shouldDisplayWithContent")
+    @describe("shouldDisplayWithContent")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("shouldDisplayWithContent")
@@ -92,7 +92,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests refreshLogin")
+    @describe("refreshLogin")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("refreshLogin")
@@ -102,7 +102,7 @@ namespace zapp.tests
     function _(providerId)
       authTask = { "id": "authTask" }
 
-      m.expectOnce(m.vm, "createAuthTask", ["execLoad", providerId, "onRefreshLoginComplete"], authTask)
+      m.expectOnce(m.vm, "createAuthTask", ["execLoad", providerId, m.vm.onRefreshLoginComplete], authTask)
       m.vm.providerId = providerId
 
       m.vm.refreshLogin()
@@ -113,7 +113,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests onRefreshLoginComplete")
+    @describe("onRefreshLoginComplete")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("success")
@@ -143,7 +143,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests onRefreshButtonSelected")
+    @describe("onRefreshButtonSelected")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("onRefreshButtonSelected")
@@ -153,7 +153,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests onPollTimerFire")
+    @describe("onPollTimerFire")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("onTimerFire_true")
@@ -166,7 +166,7 @@ namespace zapp.tests
       m.vm.providerId = "pid"
 
       m.expectOnce(m.vm, "cancelTask", [m.vm.authTask])
-      m.expectOnce(m.vm, "createAuthTask", ["execPoll", "pid", "onPollComplete"], newAuthTask)
+      m.expectOnce(m.vm, "createAuthTask", ["execPoll", "pid", m.vm.onPollComplete], newAuthTask)
 
       m.vm.onPollTimerFire(value)
       m.assertEqual(m.vm.authTask, newAuthTask)
@@ -175,7 +175,7 @@ namespace zapp.tests
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests loadCode")
+    @describe("loadCode")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("loadCode")
@@ -186,7 +186,7 @@ namespace zapp.tests
       newAuthTask = { "id": "newAuthTask" }
 
       m.expectOnce(m.vm, "cancelTask", [m.vm.authTask])
-      m.expectOnce(m.vm, "createAuthTask", ["execRegcode", "pid", "onLoadCodeComplete"], newAuthTask)
+      m.expectOnce(m.vm, "createAuthTask", ["execRegcode", "pid", m.vm.onLoadCodeComplete], newAuthTask)
 
       m.vm.loadCode()
 
@@ -197,7 +197,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests onLoadCodecomplete")
+    @describe("onLoadCodecomplete")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("success")
@@ -227,7 +227,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests togglePollTimer")
+    @describe("togglePollTimer")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("togglePollTimer")
@@ -240,7 +240,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests onPollComplete")
+    @describe("onPollComplete")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("valid")
@@ -270,7 +270,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests onKeyPressBack")
+    @describe("onKeyPressBack")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("onKeyPressBack")

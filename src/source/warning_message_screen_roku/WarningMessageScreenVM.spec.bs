@@ -25,7 +25,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests load")
+    @describe("load")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("matching conditions")
@@ -82,7 +82,7 @@ namespace zapp.tests
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests onDoneButtonSelected")
+    @describe("onDoneButtonSelected")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("onDoneButtonSelected")
@@ -94,7 +94,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests onKeyPressBack")
+    @describe("onKeyPressBack")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("onKeyPressBack")
@@ -106,7 +106,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests showMessage")
+    @describe("showMessage")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 

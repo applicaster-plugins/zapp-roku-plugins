@@ -9,7 +9,6 @@ namespace zapp.tests
       mioc.setInstance("collectionBookmarks", CreateObject("roSGNode", "Bookmarks"))
       mioc.setInstance("vodItemBookmarks", CreateObject("roSGNode", "Bookmarks"))
       mioc.setInstance("plugins", [])
-      mioc.setInstance("locale", "en")
       m.BitmovinPlayerState = { "PLAYING": "playing", "STALLING": "stalling", "PAUSED": "paused", "FINISHED": "finished", "ERROR": "error", "NONE": "none", "SETUP": "setup", "READY": "ready" }
 
 
@@ -37,7 +36,7 @@ namespace zapp.tests
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests constructor")
+    @describe("constructor")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("bad configured plugin")
@@ -80,7 +79,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests onSDKLoadStatusChange")
+    @describe("onSDKLoadStatusChange")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("onLoadSDKStatusChange other states")
@@ -126,7 +125,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests onPlayerStateChange")
+    @describe("onPlayerStateChange")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("onPlayerStateChange - other")
@@ -200,7 +199,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests onPlayerVideoError")
+    @describe("onPlayerVideoError")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("onPlayerVideoError")
@@ -215,7 +214,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests onPlayerCurrentTimeChange")
+    @describe("onPlayerCurrentTimeChange")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("onPlayerCurrentTimeChange")
@@ -228,7 +227,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests playItem")
+    @describe("playItem")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("ready")
@@ -263,7 +262,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests playBitmovinItem")
+    @describe("playBitmovinItem")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("playBitmovinItem")
@@ -290,7 +289,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests stopItem")
+    @describe("stopItem")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("stopItem")
@@ -307,7 +306,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests getPlayerData")
+    @describe("getPlayerData")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     'TBD

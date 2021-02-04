@@ -31,7 +31,7 @@ namespace zapp.tests
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests constructor")
+    @describe("constructor")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("no loader plugin")
@@ -67,7 +67,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests execute")
+    @describe("execute")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("invalid")
@@ -125,7 +125,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests isItemMatch")
+    @describe("isItemMatch")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("isItemMatch")
@@ -144,7 +144,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests getResourceText")
+    @describe("getResourceText")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("getResourceText")
@@ -175,7 +175,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests singRequest")
+    @describe("singRequest")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("signRequest")
@@ -189,7 +189,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests loadTokens")
+    @describe("loadTokens")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("only short")
@@ -208,7 +208,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests loadShortToken")
+    @describe("loadShortToken")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("loadShortToken")

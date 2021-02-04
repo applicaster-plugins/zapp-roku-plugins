@@ -21,7 +21,7 @@ namespace zapp.tests
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests constructor")
+    @describe("constructor")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("testConstructor_tests")
@@ -33,7 +33,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests getVideoResolution")
+    @describe("getVideoResolution")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("getVideoResolution")
@@ -48,7 +48,7 @@ namespace zapp.tests
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests videoStart")
+    @describe("videoStart")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("videoStart")
@@ -66,7 +66,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests videoEnd")
+    @describe("videoEnd")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("videoEnd")
@@ -82,7 +82,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests videoPause")
+    @describe("videoPause")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("videoPause")
@@ -95,7 +95,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests videoResume")
+    @describe("videoResume")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("videoResume")
@@ -108,7 +108,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests videoHeartbeat")
+    @describe("videoHeartbeat")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("videoHeartbeat")
@@ -124,7 +124,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests adBreakStart")
+    @describe("adBreakStart")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("adBreakStart")
@@ -137,7 +137,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests adBreakEnd")
+    @describe("adBreakEnd")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("adBreakEnd")
@@ -150,7 +150,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests onSubtitleChange")
+    @describe("onSubtitleChange")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("onSubtitleChange")
@@ -172,7 +172,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests getAudioLanguage")
+    @describe("getAudioLanguage")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("known")
@@ -207,7 +207,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests getSubtitleLanguage")
+    @describe("getSubtitleLanguage")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("known")
@@ -242,7 +242,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests getProperties")
+    @describe("getProperties")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("getProperties")
@@ -284,7 +284,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests postSegementEvent")
+    @describe("postSegementEvent")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("postSegementEvent")

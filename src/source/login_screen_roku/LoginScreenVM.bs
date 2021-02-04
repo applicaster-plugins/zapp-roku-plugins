@@ -193,7 +193,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   private function refreshLogin()
     m.logInfo("calling authTask to refresh login")
 
-    m.authTask = m.createAuthTask("execLoad", m.providerId, "onRefreshComplete")
+    m.authTask = m.createAuthTask("execLoad", m.providerId, m.onRefreshComplete)
 
     m.setField("isRefreshing", true)
     m.setField("isMainGroupVisible", false)
@@ -231,7 +231,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
       creds = m.createInstance("AuthenticationCredentials")
       creds.username = m.usernameText
       creds.password = m.password
-      m.authTask = m.createAuthTask("execLogIn", m.providerId, "onLoginComplete", creds)
+      m.authTask = m.createAuthTask("execLogIn", m.providerId, m.onLoginComplete, creds)
 
       m.setField("isLoginButtonEnabled", false)
 

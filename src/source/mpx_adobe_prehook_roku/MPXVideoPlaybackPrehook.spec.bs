@@ -16,7 +16,7 @@ namespace zapp.tests
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests constructor")
+    @describe("constructor")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("no plugin")
@@ -33,7 +33,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests execute")
+    @describe("execute")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("no item")
@@ -84,7 +84,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests isItemMatch")
+    @describe("isItemMatch")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("isItemMatch")

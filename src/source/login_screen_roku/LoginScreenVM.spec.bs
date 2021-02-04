@@ -60,7 +60,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests constructor")
+    @describe("constructor")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("constructor")
@@ -70,7 +70,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests processStyles")
+    @describe("processStyles")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @ignore("- FIXME -this vm method uses new ViewStyle methods, so the tests are out of date")
@@ -124,7 +124,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests onLoginButtonSelected")
+    @describe("onLoginButtonSelected")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
@@ -156,7 +156,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests onUsernameButtonSelected")
+    @describe("onUsernameButtonSelected")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("onUsernameButtonSelected")
@@ -165,14 +165,14 @@ namespace zapp.tests
     function _(text, expectedText)
       m.vm.username = text
 
-      m.expectOnce(m.vm, "showKeyboardDialog", ["Enter your username", expectedText, "onUsernameKeyboardDialogDismissal"])
+      m.expectOnce(m.vm, "showKeyboardDialog", ["Enter your username", expectedText, m.vm.onUsernameKeyboardDialogDismissal])
 
       m.vm.onUsernameButtonSelected(true)
 
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests onPasswordButtonSelected")
+    @describe("onPasswordButtonSelected")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("onPasswordButtonSelected")
@@ -188,7 +188,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests onUsernameKeyboardDialogDismissal")
+    @describe("onUsernameKeyboardDialogDismissal")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("onUsernameKeyboardDialogDismissal")
@@ -208,7 +208,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests onPasswordKeyboardDialogDismissal")
+    @describe("onPasswordKeyboardDialogDismissal")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("onPasswordKeyboardDialogDismissal")
@@ -230,7 +230,7 @@ namespace zapp.tests
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests onKeyPressUp")
+    @describe("onKeyPressUp")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("onKeyPressUp")
@@ -245,7 +245,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests onKeyPressDown")
+    @describe("onKeyPressDown")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("onKeyPressDown")
@@ -260,7 +260,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests onKeyPressBack")
+    @describe("onKeyPressBack")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("onKeyPressBack - first field")
@@ -283,7 +283,7 @@ namespace zapp.tests
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests checkCredsValid")
+    @describe("checkCredsValid")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("checkCredsValid")
@@ -306,7 +306,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests processLogin")
+    @describe("processLogin")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("invalid creds")
@@ -330,7 +330,7 @@ namespace zapp.tests
       authTask = { "id": "authTask" }
       creds = { "id": "creds" }
 
-      m.expectOnce(m.vm, "createAuthTask", ["execLogIn", "aws_cognito_auth_plugin", "onLoginComplete", creds], authTask)
+      m.expectOnce(m.vm, "createAuthTask", ["execLogIn", "aws_cognito_auth_plugin", m.vm.onLoginComplete, creds], authTask)
       m.expectOnce(m.vm, "createInstance", ["AuthenticationCredentials"], creds)
 
       m.vm.processLogin()
@@ -417,7 +417,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests onLoginComplete")
+    @describe("onLoginComplete")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("valid")
@@ -451,14 +451,14 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests refreshLogin")
+    @describe("refreshLogin")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("refreshLogin")
     function _()
       authTask = { "id": "authTask" }
 
-      m.expectOnce(m.vm, "createAuthTask", ["execLoad", "aws_cognito_auth_plugin", "onRefreshComplete"], authTask)
+      m.expectOnce(m.vm, "createAuthTask", ["execLoad", "aws_cognito_auth_plugin", m.vm.onRefreshComplete], authTask)
 
       m.vm.refreshLogin()
 
@@ -469,7 +469,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests onRefreshComplete")
+    @describe("onRefreshComplete")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("sucess")

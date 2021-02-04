@@ -92,7 +92,7 @@ class WarningMessageScreenVM extends zapp.uib.ScreenVM
       end if
       if warningEntry <> invalid
         m.logInfo("loading required entry to display mesage", warningEntry.id)
-        m.executeLoadItemTask(warningEntry.id, warningEntry, "onLoadedChildEntry", 0)
+        m.executeLoadItemTask(warningEntry.id, warningEntry, m.onLoadedChildEntry, 0)
       end if
     end if
 

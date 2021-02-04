@@ -26,7 +26,7 @@ namespace zapp.tests
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests constructor")
+    @describe("constructor")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("testConstructor_tests")
@@ -43,7 +43,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests getAccountInfo")
+    @describe("getAccountInfo")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("getAccountInfo")
@@ -62,7 +62,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests verify")
+    @describe("verify")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("expired")
@@ -90,7 +90,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests regcode")
+    @describe("regcode")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("valid")
@@ -137,7 +137,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests poll")
+    @describe("poll")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("valid")
@@ -185,7 +185,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests logout")
+    @describe("logout")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("logout")
@@ -205,7 +205,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests singRequest")
+    @describe("singRequest")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("signRequest")
@@ -219,7 +219,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests getResourceText")
+    @describe("getResourceText")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("no selection")
@@ -254,7 +254,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests getAuthorization")
+    @describe("getAuthorization")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("getAuthorization")

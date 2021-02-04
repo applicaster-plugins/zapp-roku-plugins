@@ -37,7 +37,7 @@ class GigyaLoginScreenVM extends zapp.uib.ScreenVM
   private function refreshLogin()
     m.logInfo("calling authTask to refresh login")
 
-    m.authTask = m.createAuthTask("execLoad", "gigya_auth_plugin_roku", "onRefreshComplete")
+    m.authTask = m.createAuthTask("execLoad", "gigya_auth_plugin_roku", m.onRefreshComplete)
 
     m.setField("isRefreshing", true)
     m.setField("isContentVisible", false)

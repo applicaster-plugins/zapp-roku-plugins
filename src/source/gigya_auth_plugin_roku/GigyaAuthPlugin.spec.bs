@@ -24,7 +24,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests constructor")
+    @describe("constructor")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("testConstructor_tests")
@@ -45,7 +45,7 @@ namespace zapp.tests
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests _getAcountInfo")
+    @describe("_getAcountInfo")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("_getAccountInfo")
@@ -65,7 +65,7 @@ namespace zapp.tests
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests _verify")
+    @describe("_verify")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("invalid token")
@@ -92,7 +92,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests poll")
+    @describe("poll")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("valid resposne")
@@ -138,7 +138,7 @@ namespace zapp.tests
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests regcode")
+    @describe("regcode")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("valid")
@@ -180,7 +180,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests logout")
+    @describe("logout")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 

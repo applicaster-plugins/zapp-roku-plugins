@@ -27,7 +27,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests execute")
+    @describe("execute")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("invalid token")
@@ -52,7 +52,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests constructor")
+    @describe("constructor")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("testConstructor_test")
@@ -87,7 +87,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests getPurchasedItemIds")
+    @describe("getPurchasedItemIds")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("not logged in")
@@ -145,7 +145,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests post purchases")
+    @describe("post purchases")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("post Purchases-no failures")
@@ -160,7 +160,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests getAvailableProducts")
+    @describe("getAvailableProducts")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("invalid scenarios")
@@ -241,7 +241,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests loaItem")
+    @describe("loaItem")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("noToken")
@@ -364,7 +364,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests getEntitlements")
+    @describe("getEntitlements")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("previous existing entitlements")
@@ -440,7 +440,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests sendPurchasesToInPlayer")
+    @describe("sendPurchasesToInPlayer")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("no purchase scenarios")
@@ -512,7 +512,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests getFeeForAccessReceipt")
+    @describe("getFeeForAccessReceipt")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("invalid")
@@ -544,7 +544,7 @@ namespace zapp.tests
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests getRokuItemForFee")
+    @describe("getRokuItemForFee")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("getRokuItemForFee")
@@ -563,7 +563,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests getInplayerId")
+    @describe("getInplayerId")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("no network calls")

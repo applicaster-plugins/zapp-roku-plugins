@@ -147,7 +147,7 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
       creds.username = m.usernameText
       creds.password = m.password
       creds.passwordConfirmation = m.password
-      m.authTask = m.createAuthTask("execRegister", m.providerId, "onRegisterComplete", creds)
+      m.authTask = m.createAuthTask("execRegister", m.providerId, m.onRegisterComplete, creds)
 
       m.setField("isLoginButtonEnabled", false)
 

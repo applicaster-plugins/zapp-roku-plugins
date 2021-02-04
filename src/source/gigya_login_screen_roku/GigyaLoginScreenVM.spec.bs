@@ -24,7 +24,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests constructor")
+    @describe("constructor")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("testConstructor_tests")
@@ -36,7 +36,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests load")
+    @describe("load")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("not shown before")
@@ -60,14 +60,14 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests refreshLogin")
+    @describe("refreshLogin")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("refreshLogin")
     function _()
       authTask = { "id": "authTask" }
 
-      m.expectOnce(m.vm, "createAuthTask", ["execLoad", "gigya_auth_plugin_roku", "onRefreshComplete"], authTask)
+      m.expectOnce(m.vm, "createAuthTask", ["execLoad", "gigya_auth_plugin_roku", m.vm.onRefreshComplete], authTask)
 
       m.vm.refreshLogin()
 
@@ -78,7 +78,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests onRefreshComplete")
+    @describe("onRefreshComplete")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("sucess")
@@ -118,7 +118,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests button callbacks")
+    @describe("button callbacks")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("- focused on loginButton")
@@ -140,7 +140,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests onKeyPressBack")
+    @describe("onKeyPressBack")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("onKeyPressBack")
@@ -153,7 +153,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests showLoginScreen")
+    @describe("showLoginScreen")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("found")
@@ -179,7 +179,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("tests onLoginStateChanged")
+    @describe("onLoginStateChanged")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("success")
