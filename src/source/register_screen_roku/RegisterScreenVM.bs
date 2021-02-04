@@ -3,7 +3,6 @@ import "pkg:/source/lib/ViewUtils.bs"
 import "pkg:/source/mixin/KeyboardDialogMixin.bs"
 
 class RegisterScreenVM extends zapp.uib.ScreenVM
-
   'styles
   public inputStyle = invalid
   public registerButtonStyle = invalid
@@ -15,13 +14,15 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
   public isCredsValid = false
   public isRegisterButtonEnabled = false
   public isMainGroupVisible = true
+  public isDoneGroupVisible = false
   public nameButtonType = "textInput"
   public usernameButtonType = "textInput"
   public passwordButtonType = "textInput"
 
   public usernameText = ""
   public username = ""
-  public nameText = ""
+  public humanNameText = ""
+  public humanName = ""
   public passwordText = ""
   public password = ""
 
@@ -63,8 +64,8 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
     m.setField("usernameText", m.localizations.username_placeholder_text)
     m.usernamePlaceholderText = m.usernameText
 
-    m.setField("nameText", m.localizations.name_placeholder_text)
-    m.namePlaceholderText = m.nameText
+    m.setField("humanNameText", m.localizations.name_placeholder_text)
+    m.namePlaceholderText = m.humanNameText
 
     m.setField("passwordText", m.localizations.password_placeholder_text)
     m.passwordPlaceholderText = m.passwordText
@@ -88,7 +89,7 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
   end function
 
   public function onNameButtonSelected(value)
-    m.showKeyboardDialog("Enter your name", m.name, "onNameKeyboardDialogDismissal")
+    m.showKeyboardDialog("Enter your name", m.humanName, "onNameKeyboardDialogDismissal")
   end function
 
   public function onPasswordButtonSelected(value)
@@ -119,7 +120,7 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
 
   private function onNameKeyboardDialogDismissal(text)
     m.logMethod("onNameKeyboardDialogDismissal")
-    zapp.keyboardDialogMixin.setTextFromKeyboard(m, "name", text)
+    zapp.keyboardDialogMixin.setTextFromKeyboard(m, "humanName", text)
   end function
 
   private function onPasswordKeyboardDialogDismissal(text)
@@ -132,7 +133,7 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public function checkCredsValid()
-    m.setField("isCredsValid", m.usernameText <> invalid and m.usernameText.trim() <> "" and m.password <> invalid and m.password.trim() <> "" and m.nameText <> invalid and m.nameText.trim() <> "")
+    m.setField("isCredsValid", m.usernameText <> invalid and m.usernameText.trim() <> "" and m.password <> invalid and m.password.trim() <> "" and m.humanNameText <> invalid and m.humanNameText.trim() <> "")
 
     m.setField("isRegisterButtonEnabled", m.isCredsValid and not m.isLoading)
   end function
@@ -142,7 +143,7 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
 
     if m.isCredsValid
       creds = m.createInstance("AuthenticationCredentials")
-      creds.name = m.nameText
+      creds.name = m.humanNameText
       creds.username = m.usernameText
       creds.password = m.password
       creds.passwordConfirmation = m.password
@@ -192,7 +193,7 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
 
   public function isCapturingAnyKeyPress(key, press)
     'do not anyone escape this screen!
-    if press and key = "back" and not mc.getPath(m.riversJson, "general.isflowBlocker", true)
+    if press and key = "back" and not MU.getContentField(m.riversJson, "general.isflowBlocker", true)
       return false
     else
       return true
@@ -219,7 +220,7 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
   public function onKeyPressDown() as boolean
     m.logMethod("onKeyPressDown", m.focusId)
 
-    m.setFocusId(mc.collections.getItemAtOffset(m.focusIds, m.focusId, 1))
+    m.setFocusId(mc.getPath(m.focusIds, m.focusId, 1))
 
     return true
   end function
@@ -241,7 +242,7 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
   public override function onKeyPressUp() as boolean
     m.logMethod("onKeyPressUp", m.focusId)
 
-    m.setFocusId(mc.collections.getItemAtOffset(m.focusIds, m.focusId, -1))
+    m.setFocusId(mc.getPath(m.focusIds, m.focusId, -1))
 
     return true
   end function

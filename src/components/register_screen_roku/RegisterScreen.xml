@@ -61,7 +61,7 @@
             id='nameInput'
             style='{{:inputStyle}}'
             labelXOffset='9'
-            text='{{nameText}}'
+            text='{{humanNameText}}'
             buttonType='{{nameButtonType}}'
             selected='{(onNameButtonSelected(value))}'
             width='{{=zapp_viewUtils_UIBInt("input_w")}}' />
