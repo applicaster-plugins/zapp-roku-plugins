@@ -1,10 +1,10 @@
 namespace zapp.tests
-
   @tags("public", "analytics")
   @suite
   class AnalyticsEventFactoryTests extends tests.BaseTestSuite
 
     override function setup()
+      super.setup()
       m.analytics = new AnalyticsEventFactory()
       m.testItem = CreateObject("roSGNode", "GridContent")
       m.testItem.id = "12345"
@@ -62,7 +62,7 @@ namespace zapp.tests
       properties["array"] = [1, 2, 3]
       properties["assocarray"] = { a: 1 }
       properties["invalid"] = invalid
-      m.assertEqual(m.analytics.propertiesToLabel(properties), "array=;assocarray=;boolean=true;double=1.23457e-12;float=243.573;integer=42;invalid=;longinteger=2349823492;string=hi")
+      m.assertEqual(m.analytics.propertiesToLabel(properties), "array=;assocarray=;boolean=true;double=-10.7654;float=243.573;integer=42;invalid=;longinteger=2349823492;string=hi")
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

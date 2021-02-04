@@ -132,11 +132,11 @@ namespace zapp.tests
     @params("all", "", {}, true)
     @params("all", "", { "id": "stuff" }, true)
     @params("", "", { "id": "stuff" }, false)
-    @params("json.free", "true", { "id": "stuff" }, false)
-    @params("json.free", "true", { "id": "stuff", "json": { "free": false } }, false)
-    @params("json.free", "true", { "id": "stuff", "json": { "free": true } }, true)
-    @params("itemType", "channel", { "id": "stuff", "itemType": "video" }, false)
-    @params("itemType", "video", { "id": "stuff", "itemType": "video" }, true)
+    @params("free", "true", { "id": "stuff" }, false)
+    @params("free", "true", { "id": "stuff", "json": { "free": false } }, false)
+    @params("free", "true", { "id": "stuff", "json": { "free": true } }, true)
+    @params("itemType", "channel", { "id": "stuff", "json": { "itemType": "video" } }, false)
+    @params("itemType", "video", { "id": "stuff", "json": { "itemType": "video" } }, true)
     function _(path, value, item, isMatch)
       m.plugin.matchingPath = path
       m.plugin.matchingValue = value
@@ -160,17 +160,17 @@ namespace zapp.tests
       item = { "id": "id1", "title": "t1" }
       text = m.plugin.getResourceText(item)
 
-      expected = "<rss"
-      expected += chr(10) + "    version=""2.0"""
-      expected += chr(10) + "    xmlns:media=""http://search.yahoo.com/mrss/"">"
-      expected += chr(10) + "  <channel>"
-      expected += chr(10) + "    <title>rqd</title>"
-      expected += chr(10) + "    <item>"
-      expected += chr(10) + "      <title>t1</title>"
-      expected += chr(10) + "      <guid>id1</guid>"
-      expected += chr(10) + "    </item>"
-      expected += chr(10) + "  </channel>"
-      expected += chr(10) + "</rss>"
+      expected = `<rss
+    version='2.0'
+    xmlns:media='http://search.yahoo.com/mrss/'>
+  <channel>
+    <title>rqd</title>
+    <item>
+      <title>t1</title>
+      <guid>id1</guid>
+    </item>
+  </channel>
+</rss>`
       m.assertEqual(text, expected)
     end function
 

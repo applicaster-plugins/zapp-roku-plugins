@@ -22,7 +22,7 @@ namespace zapp.tests
       m.appender = new GenericUrlTokenAppender()
 
       m.assertNotInvalid(m.appender.plugins)
-      m.assertFalse(m.appender.isValid)
+      m.assertTrue(m.appender.isValid)
     end function
 
     @it("valid plugin")

@@ -121,11 +121,11 @@ namespace zapp.tests
     @params("all", "", {}, true)
     @params("all", "", { "id": "stuff" }, true)
     @params("", "", { "id": "stuff" }, false)
-    @params("json.free", "true", { "id": "stuff" }, false)
-    @params("json.free", "true", { "id": "stuff", "json": { "free": false } }, false)
-    @params("json.free", "true", { "id": "stuff", "json": { "free": true } }, true)
-    @params("itemType", "channel", { "id": "stuff", "itemType": "video" }, false)
-    @params("itemType", "video", { "id": "stuff", "itemType": "video" }, true)
+    @params("free", "true", { "id": "stuff" }, false)
+    @params("free", "true", { "id": "stuff", "json": { "free": false } }, false)
+    @params("free", "true", { "id": "stuff", "json": { "free": true } }, true)
+    @params("itemType", "channel", { "id": "stuff", json: { "itemType": "video" } }, false)
+    @params("itemType", "video", { "id": "stuff", json: { "itemType": "video" } }, true)
     function _(path, value, item, isMatch)
       m.loader.matchingPath = path
       m.loader.matchingValue = value
