@@ -89,6 +89,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
       m.availableProducts.availableProducts = []
       return
     end if
+
     inPlayerFees = m.getInPlayerFeesForItem(m.currentItem)
     usedProducts = {}
     products = []
@@ -231,7 +232,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
     inPlayerId = m.getInplayerId(item)
 
     if inPlayerId <> invalid
-      result = m.execute("GET", "items/" + MU.asString(inPlayerId).trim() + "/access-fees")
+      result = m.execute("GET", `items/${inPlayerId}/access-fees`)
 
       if result <> invalid
         for each item in result
@@ -267,7 +268,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
       assetType = mc.getPath(item.json, "extensions.inplayer_asset_type")
       m.logInfo("trying to retrieve inplayer external id with inplayer_asset_type", assetType, "and id", item.id)
       if assetType <> invalid
-        result = m.execute("GET", "items/assets/external/" + assetType + "/" + item.id)
+        result = m.execute("GET", `items/assets/external/${assetType}/${item.id}`)
         id = mc.getPath(result, "id")
       end if
     end if
@@ -293,7 +294,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
     feeId = mc.getPath(feeReceipt, "item_id")
 
     if feeId <> invalid
-      result = m.execute("GET", "items/" + MU.asString(feeId).trim() + "/access-fees")
+      result = m.execute("GET", `items/${feeId}/access-fees`)
 
       if mc.isArray(result)
         for each fee in result
