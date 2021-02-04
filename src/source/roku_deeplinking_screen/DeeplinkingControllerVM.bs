@@ -58,9 +58,7 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
     m.logMethod("togglePrehookController", isActive)
     m.setField("isLoadingndicatorVisible", false)
 
-    if m.currentScreen <> invalid
-      m.unobserveNodeField(m.currentScreen, "state", m.onPrehookControllerStateChange)
-    end if
+    m.unobserveNodeField(m.currentScreen, "state", m.onPrehookControllerStateChange)
 
     if isActive
       m.observeNodeField(controller, "state", m.onPrehookControllerStateChange, "value", true)
@@ -112,10 +110,8 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
     m.logMethod("toggleDeeplinkingTask", isActive, args)
     m.toggleLoadingIndicator(isActive)
 
-    if m.deeplinkingTask <> invalid
-      m.unobserveNodeField(m.deeplinkingTask, "deeplinkingData", m.onDeeplinkingTaskResult)
-      m.deeplinkingTask = invalid
-    end if
+    m.unobserveNodeField(m.deeplinkingTask, "deeplinkingData", m.onDeeplinkingTaskResult)
+    m.deeplinkingTask = invalid
 
     if isActive
       m.logInfo("starting deeplinking task")

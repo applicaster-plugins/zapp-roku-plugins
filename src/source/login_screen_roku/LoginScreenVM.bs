@@ -143,9 +143,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
       m.preScreenFocusId = m.focusId
     end if
 
-    if m.currentScreen <> invalid
-      m.unobserveNodeField(m.currentScreen, "state", m.onsubScreenStateChange)
-    end if
+    m.unobserveNodeField(m.currentScreen, "state", m.onsubScreenStateChange)
 
     m.setField("isSubScreenVisible", screen <> invalid)
     m.setField("isMainGroupVisible", screen = invalid)
