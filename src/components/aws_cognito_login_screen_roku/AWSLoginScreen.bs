@@ -7,25 +7,6 @@ import "pkg:/source/aws_cognito_login_screen_roku/AWSLoginScreenVM.bs"
 function init()
   m.top.isConsumingOriginEntry = true
   m.top.isForcingMenuHidden = true
-  m.top._styledControlIds = [
-    "backgroundRect"
-    "backgroundPoster"
-    "logoPoster"
-    "labelsGroup"
-    "titleText"
-    "descriptionText"
-    "optional1Text"
-    "optional2Text"
-    "controlsGroup"
-    "usernameInput"
-    "passwordInput"
-    "loginButton"
-    "loadingIndicator"
-    "errorText"
-    "errorGroup"
-    "errorBackground"
-  ]
-
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
