@@ -1,5 +1,4 @@
 namespace zapp.tests
-  @only
   @tags("public", "auth", "vm")
   @suite
   class RegisterScreenVMTests extends tests.BaseTestSuite
@@ -269,7 +268,7 @@ namespace zapp.tests
       m.vm.humanNameText = "name"
       m.vm.password = "pass"
       m.vm.providerId = "p"
-      
+
       authTask = { "id": "authTask" }
       creds = { "id": "creds" }
 

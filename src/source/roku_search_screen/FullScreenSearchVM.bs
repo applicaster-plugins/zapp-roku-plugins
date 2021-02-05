@@ -1,6 +1,7 @@
 import "pkg:/source/lib/ViewUtils.bs"
 import "pkg:/source/roku_modules/mc/Utils.brs"
 import "pkg:/source/UIBuilder/view/ComponentVM.bs"
+import "pkg:/source/zapp-controls/CollectionRowUtils.bs"
 
 class FullScreenSearchVM extends zapp.uib.ComponentVM
 
@@ -58,8 +59,8 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
   end function
 
   private function getGridStyle(styles)
-    if m.style <> invalid and m.style.rowList <> invalid
-      style = m.style.rowList
+    if m.style <> invalid and m.style.cell <> invalid
+      style = zapp.collectionRowUtils.getRowListStyle(styles, m.style.cell.normal)
       style.itemSize = style.rowItemSize
       style.itemSpacing = zapp.viewUtils.makeUIBSize(styles, "grid_spacing", 44, 20)
     else

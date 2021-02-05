@@ -1,5 +1,5 @@
 namespace zapp.tests
-
+  @only
   @tags("public", "vm")
   @suite
   class WarningMessageScreenVMTests extends tests.BaseTestSuite
@@ -30,10 +30,10 @@ namespace zapp.tests
 
     @it("matching conditions")
     @params({ field: "v" }, "field", "v")
-    @params({ json: { field: "v2" } }, "json.field", "v2")
-    @params({ json: { field: "v2 " } }, "json.field", "v2")
-    @params({ json: { field: "v2 " } }, "json.field", "v2 ")
-    @params({ json: { field: "v2 " } }, "json.field", "V2 ")
+    @params({ json: { field: "v2" } }, "field", "v2")
+    @params({ json: { field: "v2 " } }, "field", "v2")
+    @params({ json: { field: "v2 " } }, "field", "v2 ")
+    @params({ json: { field: "v2 " } }, "field", "V2 ")
     @params({ field: "v", }, "field", "V")
     function _(entry, path, condition)
       m.vm.conditionPath = path
@@ -48,7 +48,7 @@ namespace zapp.tests
 
     end function
 
-    @it("no entry")
+    @it("dismisses when there is no entry")
     function _()
       m.expectNone(m.vm, "CVM_load")
       m.expectOnce(m.vm, "dismiss", ["success"])

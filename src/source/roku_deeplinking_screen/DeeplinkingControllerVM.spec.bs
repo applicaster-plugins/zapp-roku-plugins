@@ -1,5 +1,4 @@
 namespace zapp.tests
-
   @tags("public", "vm", "deeplinking")
   @suite
   class DeeplinkingControllerVMTests extends tests.BaseTestSuite
@@ -44,8 +43,10 @@ namespace zapp.tests
     @it("set controller - none set")
     function _()
       controller = { "id": "controller" }
+      m.vm.currentScreen = { "id": "currentScreen" }
 
-      m.expectOnce(m.vm, "unobserveNodeField", [controller, "state", m.vm.onPrehookControllerStateChange])
+      m.expectOnce(m.vm, "unobserveNodeField", [m.vm.currentScreen, "state", m.vm.onPrehookControllerStateChange])
+      m.expectOnce(m.vm, "observeNodeField", [controller, "state", m.vm.onPrehookControllerStateChange, "value", true])
 
       m.vm.togglePrehookController(true, controller)
 
@@ -61,7 +62,7 @@ namespace zapp.tests
 
       m.expectOnce(m.vm, "unobserveNodeField", [controller, "state", m.vm.onPrehookControllerStateChange])
 
-      m.expectOnce(m.vm, "observeNodeField", [controller, "state", m.vm.onPrehookControllerStateChange])
+      m.expectOnce(m.vm, "observeNodeField", [controller, "state", m.vm.onPrehookControllerStateChange, "value", true])
 
       m.vm.togglePrehookController(true, controller)
 
@@ -194,7 +195,7 @@ namespace zapp.tests
     @describe("applyDeeplinking")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @it("invalid selection")
+    @it("dismisses early if selection is invalid")
     function _()
       deeplinkingData = {
         "id": "deeplinkingData"
@@ -212,7 +213,7 @@ namespace zapp.tests
 
     end function
 
-    @it("video and parent screen present")
+    @it("displays both video and parent screens if configured")
     @params(true)
     @params(false)
     function _(isLaunchDeeplink)
@@ -233,6 +234,8 @@ namespace zapp.tests
       m.expectOnce(m.vm, "playSelection", [selection])
       m.expectOnce(m.vm, "setInstance", ["currentSelection", selection])
       m.expectOnceOrNone(m.vm, "signalAppLaunchComplete", isLaunchDeeplink, [])
+      m.expectOnce(m.vm, "toggleNavMenuFocus", [false])
+      m.expectOnce(m.vm, "observeNodeField", [parentScreen, "state", m.vm.onContentStateCHange])
 
       m.vm.applyDeepLinking(deeplinkingData)
 
@@ -241,7 +244,7 @@ namespace zapp.tests
 
     end function
 
-    @it("only video")
+    @it("plays only video if not configured to show screen")
     @params(true)
     @params(false)
     function _(isLaunchDeeplink)
@@ -276,7 +279,7 @@ namespace zapp.tests
     @params("vod")
     @params("collection")
     function _(itemType)
-      collection = Applicaster.Selection.tests.createCollection(3)
+      collection = m.createCollection(3)
       deeplinkingData = createObject("roSGNode", "DeeplinkingData")
       deeplinkingData.action = "play"
       deeplinkingData.itemType = itemType
@@ -295,7 +298,7 @@ namespace zapp.tests
     @params("series")
     @params("season")
     function _(itemType)
-      collection = Applicaster.Selection.tests.createCollection(3)
+      collection = m.createCollection(3)
       collection.id = "expectedId"
       deeplinkingData = createObject("roSGNode", "DeeplinkingData")
       deeplinkingData.action = "play"
@@ -314,7 +317,7 @@ namespace zapp.tests
     @params("series")
     @params("season")
     function _(itemType)
-      collection = Applicaster.Selection.tests.createCollection(3)
+      collection = m.createCollection(3)
       deeplinkingData = createObject("roSGNode", "DeeplinkingData")
       deeplinkingData.action = "play"
       deeplinkingData.itemType = itemType
@@ -333,7 +336,7 @@ namespace zapp.tests
     @params("series")
     @params("season")
     function _(itemType)
-      collection = Applicaster.Selection.tests.createCollection(3)
+      collection = m.createCollection(3)
       deeplinkingData = createObject("roSGNode", "DeeplinkingData")
       deeplinkingData.action = "play"
       deeplinkingData.itemType = itemType
@@ -355,7 +358,7 @@ namespace zapp.tests
     @params("season")
     @params("series")
     function _(itemType)
-      collection = Applicaster.Selection.tests.createCollection(3)
+      collection = m.createCollection(3)
       deeplinkingData = createObject("roSGNode", "DeeplinkingData")
       deeplinkingData.action = "play"
       deeplinkingData.itemType = itemType
@@ -379,7 +382,7 @@ namespace zapp.tests
     function _(navMenuFocusable)
       m.vm.isNAvMenuFocusable = navMenuFocusable
 
-      m.expectNone(m.vm, "unobserveNodeField")
+      m.expectOnce(m.vm, "unobserveNodeField")
       m.expectNone(m.vm, "createInstance")
       m.expectNone(m.vm, "observeNodeField")
 
@@ -456,6 +459,20 @@ namespace zapp.tests
       m.expectOnce(m.vm, "applyDeeplinking", [data])
 
       m.vm.onDeeplinkingTaskResult(data)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '++ util
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    private function createCollection(numberOfItems)
+      collection = createObject("roSGNode", "ContentNode")
+      collection.id = "series1"
+
+      for i = 0 to numberOfItems - 1
+        node = collection.CreateChild("ContentNode")
+        node.id = i.tostr()
+      end for
+      return collection
     end function
 
   end class

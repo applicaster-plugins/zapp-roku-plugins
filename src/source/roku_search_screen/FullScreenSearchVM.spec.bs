@@ -1,5 +1,5 @@
 namespace zapp.tests
-
+  @only
   @tags("public", "vm")
   @suite
   class FullScreenSearchVMTests extends tests.BaseTestSuite
