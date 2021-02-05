@@ -33,7 +33,7 @@
         id='loadingIndicator'
         width='1920'
         height='1080'
-        isActive='{{isLoadingIndicatorVisible;fireOnSet}}'
+        isActive='{{isLoadingIndicatorVisible}}'
         backgroundVisible='false'
         text='' />
   </children>

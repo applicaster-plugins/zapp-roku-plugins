@@ -86,7 +86,7 @@
           id='refreshButton'
           style='{{=zapp_viewUtils_UIBButton("refresh_button")}}'
           opacity='{{:refreshButtonOpacity}}'
-          visible='{{isRefreshing;transform=MOM_transform_invertBoolean}}'
+          visible='{{isRefreshing:transform=MOM_transform_invertBoolean}}'
           selected='{(onRefreshButtonSelected(value))}' />
     </Group>
 
@@ -95,7 +95,7 @@
         width='1920'
         height='1080'
         translation='[0,0]'
-        isActive='{{isShowingLoadingIndicator;fireOnSet}}'
+        isActive='{{isShowingLoadingIndicator}}'
         backgroundVisible='false'
         text='' />
 

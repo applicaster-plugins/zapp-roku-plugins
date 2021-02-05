@@ -30,7 +30,7 @@
         uri='{{:logoImageUrl}}' />
     <Group
         id='loginGroup'
-        visible='{{isRefreshing;fireOnSet;transform=MOM_transform_invertBoolean}}'>
+        visible='{{isRefreshing:transform=MOM_transform_invertBoolean}}'>
       <LayoutGroup
           id='labelsGroup'
           layoutDirection='vert'
@@ -88,7 +88,7 @@
         <ZActionButton
             id='loginButton'
             style='{{:loginButtonStyle}}'
-            visible='{{isLoading;fireonset;transform=MOM_transform_invertBoolean}}'
+            visible='{{isLoading:transform=MOM_transform_invertBoolean}}'
             selected='{(onLoginButtonSelected(value))}'
             width='610' />
 
@@ -120,7 +120,7 @@
         width='100'
         height='100'
         translation='[1000,500]'
-        isActive='{{isLoading;fireOnSet}}'
+        isActive='{{isLoading}}'
         backgroundVisible='false'
         text='' />
 
@@ -129,7 +129,7 @@
         width='1920'
         height='1080'
         translation='[0,0]'
-        isActive='{{isRefreshing;fireOnSet}}'
+        isActive='{{isRefreshing}}'
         backgroundVisible='false'
         text='' />
   </children>

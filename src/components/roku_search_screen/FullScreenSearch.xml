@@ -44,7 +44,7 @@
         id='loadingIndicator'
         width='1920'
         height='1080'
-        isActive='{{isLoading;fireOnSet}}'
+        isActive='{{isLoading}}'
         backgroundVisible='false'
         translation='[0,0]'
         text='' />

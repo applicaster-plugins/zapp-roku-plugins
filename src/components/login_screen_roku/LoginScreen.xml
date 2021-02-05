@@ -20,7 +20,7 @@
         uri='{{=zapp_viewUtils_getPosterUri(m.top.riversJson.styles.logo_image_url)}}' />
     <Group
         id='loginGroup'
-        visible='{{isMainGroupVisible;fireOnSet}}'>
+        visible='{{isMainGroupVisible}}'>
       <mv_MLayoutGroup
           id='labelsGroup'
           layoutDirection='vert'
@@ -69,14 +69,14 @@
         <ZActionButton
             id='loginButton'
             style='{{:loginButtonStyle}}'
-            visible='{{isLoading;fireOnSet;transform=MOM_transform_invertBoolean}}'
+            visible='{{isLoading:transform=MOM_transform_invertBoolean}}'
             selected='{(onLoginButtonSelected(value))}'
             width='610' />
 
         <ZActionButton
             id='registerButton'
             style='{{:registerButtonStyle}}'
-            visible='{{isLoading;fireOnSet;transform=MOM_transform_invertBoolean}}'
+            visible='{{isLoading:transform=MOM_transform_invertBoolean}}'
             selected='{(onRegisterButtonSelected(value))}'
             width='610' />
 
@@ -84,7 +84,7 @@
             id='forgotPasswordButton'
             style='{{:forgotPasswordButtonStyle}}'
             enabled='{{isLoginButtonEnabled}}'
-            visible='{{isLoading;fireOnSet;transform=MOM_transform_invertBoolean}}'
+            visible='{{isLoading:transform=MOM_transform_invertBoolean}}'
             selected='{(onForgotPasswordButtonSelected(value))}'
             width='610' />
       </mv_MLayoutGroup>
@@ -109,7 +109,7 @@
         width='100'
         height='100'
         translation='[1000,500]'
-        isActive='{{isLoading;fireOnSet}}'
+        isActive='{{isLoading}}'
         backgroundVisible='false'
         text='' />
 
@@ -118,7 +118,7 @@
         width='1920'
         height='1080'
         translation='[0,0]'
-        isActive='{{isRefreshing;fireOnSet}}'
+        isActive='{{isRefreshing}}'
         backgroundVisible='false'
         text='' />
 

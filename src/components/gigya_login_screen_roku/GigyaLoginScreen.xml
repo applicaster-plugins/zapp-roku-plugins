@@ -45,7 +45,7 @@
         width='1920'
         height='1080'
         translation='[0,0]'
-        isActive='{{isRefreshing;fireOnSet}}'
+        isActive='{{isRefreshing}}'
         backgroundVisible='false'
         text='' />
 
