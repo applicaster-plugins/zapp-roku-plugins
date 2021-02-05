@@ -39,7 +39,7 @@
           horizAlign='center'
           wrap='true' />
 
-      <StylableButton
+      <ZActionButton
           id='logoutButton'
           translation='['
           visible='{{:isButtonVisible}}'

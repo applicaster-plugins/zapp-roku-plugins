@@ -1,5 +1,5 @@
 namespace zapp.tests
-
+  @only
   @tags("public", "auth", "vm")
   @suite
   class RegisterScreenVMTests extends tests.BaseTestSuite
@@ -69,89 +69,32 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("processStyles")
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    @ignore("- FIXME -this vm method uses new ViewStyle methods, so the tests are out of date")
-    @it("processStyles")
-    function _()
-      m.vm.processStyles(m.riversJson.styles)
-
-      m.assertEqual(m.vm.backgroundColor, "#0000ffff")
-      m.assertEqual(m.vm.titleStyle.text, "#title_text")
-      m.assertEqual(m.vm.titleStyle.font, "Small,23")
-      m.assertEqual(m.vm.titleStyle.color, "#0000ffff")
-
-      m.assertEqual(m.vm.descriptionStyle.text, "#description_text")
-      m.assertEqual(m.vm.descriptionStyle.font, "Small,23")
-      m.assertEqual(m.vm.descriptionStyle.color, "#0000ffff")
-
-      m.assertEqual(m.vm.errorStyle.font, "Small,23")
-      m.assertEqual(m.vm.errorStyle.color, "#0000ffff")
-
-      m.assertEqual(m.vm.optional1Style.text, "#optional_text1_text")
-      m.assertEqual(m.vm.optional1Style.font, "Small,23")
-      m.assertEqual(m.vm.optional1Style.color, "#0000ffff")
-
-      m.assertEqual(m.vm.optional2Style.text, "#optional_text2_text")
-      m.assertEqual(m.vm.optional2Style.font, "Small,23")
-      m.assertEqual(m.vm.optional2Style.color, "#0000ffff")
-
-      'login button
-      m.assertEqual(m.vm.loginButtonStyle.buttonType, "center")
-      m.assertEqual(m.vm.loginButtonStyle.text, "#login_button_text")
-
-      m.assertEqual(m.vm.loginButtonStyle.normal.font, "Small,23")
-      m.assertEqual(m.vm.loginButtonStyle.normal.color, "#0000ffff")
-
-      m.assertEqual(m.vm.loginButtonStyle.highlighted.font, "Small,23")
-      m.assertEqual(m.vm.loginButtonStyle.highlighted.color, "#0000ffff")
-
-      'input button
-      m.assertInvalid(m.vm.inputStyle.buttonType)
-
-      m.assertEqual(m.vm.inputStyle.normal.font, "Small,23")
-      m.assertEqual(m.vm.inputStyle.normal.color, "#0000ffff")
-
-      m.assertEqual(m.vm.inputStyle.highlighted.font, "Small,23")
-      m.assertEqual(m.vm.inputStyle.highlighted.color, "#0000ffff")
-      m.assertEqual(m.vm.inputStyle.placeholderFont, "Small,23")
-
-      m.assertEqual(m.vm.usernamePlaceholderText, "#username_placeholder_text")
-      m.assertEqual(m.vm.passwordPlaceholderText, "#password_placeholder_text")
-
-    end function
-
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("onRegisterButtonSelected")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-    @it("onRegisterButtonSelected")
+    @it("call process when creds are valid")
     function _()
       m.vm.isLoading = false
       m.vm.isCredsValid = true
 
-      m.expectOnce(m.vm, "processLogin")
+      m.expectOnce(m.vm, "register")
 
       m.vm.onRegisterButtonSelected(true)
     end function
 
-    @it("in progress")
-    function _()
-      m.vm.isLoading = true
-      m.expectNone(m.vm, "processLogin")
 
-      m.vm.onRegisterButtonSelected(true)
-    end function
-
-    @it("invalid creds")
+    @it("shows error when creds are invalid")
     function _()
       m.vm.isLoading = false
       m.vm.isCredsValid = false
-      m.expectNone(m.vm, "processLogin")
+      m.expectNone(m.vm, "register")
 
       m.vm.onRegisterButtonSelected(true)
+
+      m.assertTrue(m.vm.isErrorShowing)
+      m.assertEqual(m.vm.errorText, "Please enter your email address and password")
+
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -226,16 +169,15 @@ namespace zapp.tests
       m.assertEqual(m.vm.passwordButtonType, expectedButtonStyle)
     end function
 
-
-
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("onKeyPressUp")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("onKeyPressUp")
     @params("usernameInput", "usernameInput")
-    @params("passwordInput", "usernameInput")
-    @params("loginButton", "passwordInput")
+    @params("nameInput", "usernameInput")
+    @params("passwordInput", "nameInput")
+    @params("registerButton", "passwordInput")
     function _(focusId, expectedFocusId)
       m.vm.focusId = focusId
 
@@ -248,9 +190,10 @@ namespace zapp.tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("onKeyPressDown")
-    @params("usernameInput", "passwordInput")
-    @params("passwordInput", "loginButton")
-    @params("loginButton", "loginButton")
+    @params("usernameInput", "nameInput")
+    @params("nameInput", "passwordInput")
+    @params("passwordInput", "registerButton")
+    @params("registerButton", "registerButton")
     function _(focusId, expectedFocusId)
       m.vm.focusId = focusId
 
@@ -262,42 +205,40 @@ namespace zapp.tests
     @describe("onKeyPressBack")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @it("onKeyPressBack - first field")
+    @it("dismisses")
     function _()
       m.vm.focusId = "usernameInput"
-
-      m.assertFalse(m.vm.onKeyPressBack())
-      m.assertEqual(m.vm.focusId, "usernameInput")
-    end function
-
-    @it("onKeyPressBack - otherField")
-    @params("passwordInput")
-    @params("loginButton")
-    function _(focusId)
-      m.vm.focusId = focusId
-      m.expectOnce(m.vm, "onKeyPressUp", invalid, true)
+      m.expectOnce(m.vm, "dismiss", ["cancel"])
 
       m.assertTrue(m.vm.onKeyPressBack())
     end function
-
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("checkCredsValid")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("checkCredsValid")
-    @params(invalid, invalid, false)
-    @params("", "", false)
-    @params("   ", "   ", false)
-    @params("valid", "", false)
-    @params("valid", "   ", false)
-    @params(invalid, "valid", false)
-    @params("", "valid", false)
-    @params("  ", "valid", false)
-    @params("valid", "valid", true)
-    function _(username, password, expectedValue)
+    @params("", invalid, invalid, false)
+    @params("", "", "", false)
+    @params("", "   ", "   ", false)
+    @params("", "valid", "", false)
+    @params("", "valid", "   ", false)
+    @params(invalid, invalid, "valid", false)
+    @params(invalid, "", "valid", false)
+    @params(invalid, "  ", "valid", false)
+    @params(invalid, invalid, invalid, false)
+    @params("name", "", "", false)
+    @params("name", "   ", "   ", false)
+    @params("name", "valid", "", false)
+    @params("name", "valid", "   ", false)
+    @params("name", invalid, "valid", false)
+    @params("name", "", "valid", false)
+    @params("name", "  ", "valid", false)
+    @params("name", "valid", "valid", true)
+    function _(name, username, password, expectedValue)
       m.vm.usernameText = username
       m.vm.password = password
+      m.vm.humanNameText = name
 
       m.vm.checkCredsValid()
 
@@ -305,7 +246,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("processLogin")
+    @describe("register")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("invalid creds")
@@ -315,24 +256,27 @@ namespace zapp.tests
       m.expectNone(m.vm, "createInstance")
       m.expectNone(m.vm, "createAuthTask")
 
-      m.vm.processLogin()
+      m.vm.register()
 
       m.assertFalse(m.vm.isLoading)
 
     end function
 
-    @it("valid creds")
+    @it("starts auth task if creds are valid")
     function _()
       m.vm.isCredsValid = true
       m.vm.usernameText = "user"
+      m.vm.humanNameText = "name"
       m.vm.password = "pass"
+      m.vm.providerId = "p"
+      
       authTask = { "id": "authTask" }
       creds = { "id": "creds" }
 
-      m.expectOnce(m.vm, "createAuthTask", ["execLogIn", "aws_cognito_auth_plugin", m.vm.onLoginComplete, creds], authTask)
+      m.expectOnce(m.vm, "createAuthTask", ["execRegister", "p", m.vm.onRegisterComplete, creds], authTask)
       m.expectOnce(m.vm, "createInstance", ["AuthenticationCredentials"], creds)
 
-      m.vm.processLogin()
+      m.vm.register()
 
       m.assertEqual(m.vm.authTask, authTask)
 
@@ -341,7 +285,7 @@ namespace zapp.tests
       m.assertEqual(m.vm.state, "loading")
 
       m.assertTrue(m.vm.isLoading)
-      m.assertFalse(m.vm.isLoginButtonEnabled)
+      m.assertFalse(m.vm.isRegisterButtonEnabled)
       m.assertFalse(m.vm.isErrorShowing)
       m.assertEmpty(m.vm.errorText)
 
@@ -351,7 +295,7 @@ namespace zapp.tests
     @ignore("- only use these with your own creds, and for non suit tests")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @tags("integration")
-    @describe("INTEGRATION tests processLogin")
+    @describe("INTEGRATION tests register")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @beforeEach
@@ -389,7 +333,7 @@ namespace zapp.tests
 
       m.expectOnce(m.vm, "createInstance", ["AuthenticationCredentials"], createObject("roSGNode", "AuthenticationCredentials"))
 
-      m.vm.processLogin()
+      m.vm.register()
 
       tests.utils.waitForField(m.vm, "isLoading", 3000, 5)
 
@@ -397,7 +341,7 @@ namespace zapp.tests
       m.assertFalse(m.vm.isLoading)
     end function
 
-    @it("processLogin_integration_test_invalid")
+    @it("register_integration_test_invalid")
     function _()
 
       m.vm.isCredsValid = true
@@ -406,7 +350,7 @@ namespace zapp.tests
 
       m.expectOnce(m.vm, "createInstance", ["AuthenticationCredentials"], createObject("roSGNode", "AuthenticationCredentials"))
 
-      m.vm.processLogin()
+      m.vm.register()
 
       tests.utils.waitForField(m.vm, "isLoading")
 
@@ -416,21 +360,21 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("onLoginComplete")
+    @describe("onRegisterComplete")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @it("valid")
+    @it("dismisses when valid")
     function _()
       m.vm.state = "loading"
       m.expectOnce(m.vm, "dismiss", ["success"])
 
-      m.vm.onLoginComplete({ "state": "valid" })
+      m.vm.onRegisterComplete({ "state": "valid" })
 
       m.assertFalse(m.vm.isLoading)
 
     end function
 
-    @it("fail")
+    @it("does not dismiss on error")
     @params(invalid, "Unknown error")
     @params({}, "Unknown error")
     @params({ "state": "error" }, "Unknown error")
@@ -439,68 +383,13 @@ namespace zapp.tests
       m.vm.state = "loading"
       m.expectNone(m.vm, "dismiss")
 
-      m.vm.onLoginComplete(result)
+      m.vm.onRegisterComplete(result)
 
       m.assertFalse(m.vm.isLoading)
       m.assertEqual(m.vm.state, "ready")
       m.assertEqual(m.vm.errorText, expectedMessage)
       m.assertTrue(m.vm.isErrorShowing)
-      m.assertTrue(m.vm.isLoginButtonEnabled)
-
-    end function
-
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("refreshLogin")
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    @it("refreshLogin")
-    function _()
-      authTask = { "id": "authTask" }
-
-      m.expectOnce(m.vm, "createAuthTask", ["execLoad", "aws_cognito_auth_plugin", m.vm.onRefreshComplete], authTask)
-
-      m.vm.refreshLogin()
-
-      m.assertEqual(m.vm.authTask, authTask)
-
-      m.assertTrue(m.vm.isRefreshing)
-      m.assertFalse(m.vm.isLoginButtonEnabled)
-    end function
-
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("onRefreshComplete")
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    @it("sucess")
-    function _()
-      user = { "id": "user", isLoggedIn: true }
-      m.expectOnce(m.vm, "getInstance", ["user"], user)
-
-      m.vm.isLoading = true
-      m.vm.isRefreshing = true
-
-      m.vm.onRefreshComplete({})
-
-      m.assertEqual(m.vm.state, "success")
-
-      m.assertFalse(m.vm.isRefreshing)
-      m.assertFalse(m.vm.isLoading)
-
-    end function
-
-
-    @it("failure")
-    function _()
-      user = { "id": "user", isLoggedIn: false }
-      m.expectOnce(m.vm, "getInstance", ["user"], user)
-      m.vm.isLoading = true
-      m.vm.isRefreshing = true
-      m.vm.onRefreshComplete({})
-
-      m.assertNotEqual(m.vm.state, "success")
-
-      m.assertFalse(m.vm.isRefreshing)
-      m.assertFalse(m.vm.isLoading)
+      m.assertTrue(m.vm.isRegisterButtonEnabled)
 
     end function
 

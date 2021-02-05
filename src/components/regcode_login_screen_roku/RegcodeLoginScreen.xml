@@ -82,7 +82,7 @@
 
       </LayoutGroup>
 
-      <StylableButton
+      <ZActionButton
           id='refreshButton'
           style='{{=zapp_viewUtils_UIBButton("refresh_button")}}'
           opacity='{{:refreshButtonOpacity}}'

@@ -1,15 +1,10 @@
 namespace zapp.tests
-
   @tags("public", "auth", "vm")
   @suite
   class RegcodeLoginScreenVMTests extends tests.BaseTestSuite
 
     override function beforeEach()
       super.beforeEach()
-      mioc.setInstances({
-        "ZPLocalStore": localStore
-        "locale": "en"
-      })
 
       riversJson = {
         "id": "regcodeScreen"
@@ -116,7 +111,7 @@ namespace zapp.tests
     @describe("onRefreshLoginComplete")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @it("success")
+    @it("dimsisses on success")
     function _()
       user = { "id": "user", isLoggedIn: true }
       m.expectOnce(m.vm, "getInstance", ["user"], user)
@@ -128,11 +123,12 @@ namespace zapp.tests
 
     end function
 
-    @it("not valid")
+    @it("does not dismiss on failure")
     function _()
       user = { "id": "user", isLoggedIn: false }
       m.expectOnce(m.vm, "getInstance", ["user"], user)
       m.expectOnce(m.vm, "loadCode", [])
+      m.expectOnce(m.vm, "signalAppLaunchDialog", [false])
       m.expectNone(m.vm, "dismiss")
 
       m.vm.onRefreshLoginComplete({})
@@ -250,6 +246,7 @@ namespace zapp.tests
 
       m.expectOnce(m.vm.analyticsManager, "callFunc", ["trackEvent", "Signed In", "page_loaded", { "provider": "pid" }])
 
+      m.expectOnce(m.vm, "signalAppLaunchDialog", [true])
       m.expectOnce(m.vm, "dismiss", ["success"])
 
       m.vm.onPollComplete(result)
@@ -273,7 +270,7 @@ namespace zapp.tests
     @describe("onKeyPressBack")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @it("onKeyPressBack")
+    @it("cancels when pressing back")
     function _()
       m.expectOnce(m.vm, "dismiss", ["cancel"])
       m.vm.onKeyPressBack()

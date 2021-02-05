@@ -149,7 +149,7 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
       creds.passwordConfirmation = m.password
       m.authTask = m.createAuthTask("execRegister", m.providerId, m.onRegisterComplete, creds)
 
-      m.setField("isLoginButtonEnabled", false)
+      m.setField("isRegisterButtonEnabled", false)
 
       m.setField("isLoading", true)
       m.setField("errorText", "")
@@ -172,7 +172,7 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
         m.setField("errorText", "Unknown error")
       end if
       m.setField("isErrorShowing", true)
-      m.setField("isLoginButtonEnabled", true)
+      m.setField("isRegisterButtonEnabled", true)
     end if
 
     m.setField("isLoading", false)
@@ -220,7 +220,7 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
   public function onKeyPressDown() as boolean
     m.logMethod("onKeyPressDown", m.focusId)
 
-    m.setFocusId(mc.getPath(m.focusIds, m.focusId, 1))
+    m.setFocusId(mc.collections.getItemAtOffset(m.focusIds, m.focusId, 1))
 
     return true
   end function
@@ -242,7 +242,7 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
   public override function onKeyPressUp() as boolean
     m.logMethod("onKeyPressUp", m.focusId)
 
-    m.setFocusId(mc.getPath(m.focusIds, m.focusId, -1))
+    m.setFocusId(mc.collections.getItemAtOffset(m.focusIds, m.focusId, -1))
 
     return true
   end function

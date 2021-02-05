@@ -48,7 +48,7 @@
           id='controlsGroup'
           translation='{{=zapp_viewUtils_UIBPosition("controls",1040,300)}}'
           itemSpacings='[10, 45, 52]'>
-        <StylableButton
+        <ZActionButton
             id='usernameInput'
             style='{{:inputStyle}}'
             labelXOffset='9'
@@ -57,7 +57,7 @@
             selected='{(onUsernameButtonSelected(value))}'
             width='{{=zapp_viewUtils_UIBInt("input_w")}}' />
 
-        <StylableButton
+        <ZActionButton
             id='nameInput'
             style='{{:inputStyle}}'
             labelXOffset='9'
@@ -66,7 +66,7 @@
             selected='{(onNameButtonSelected(value))}'
             width='{{=zapp_viewUtils_UIBInt("input_w")}}' />
 
-        <StylableButton
+        <ZActionButton
             id='passwordInput'
             text='{{passwordText}}'
             style='{{:inputStyle}}'
@@ -75,7 +75,7 @@
             selected='{(onPasswordButtonSelected(value))}'
             width='{{=zapp_viewUtils_UIBInt("input_w")}}' />
 
-        <!-- <StylableButton
+        <!-- <ZActionButton
             id='confirmPasswordInput'
             text='{{confirmPasswordText}}'
             style='{{:inputStyle}}'
@@ -84,9 +84,10 @@
             selected='{(onConfirmPasswordButtonSelected(value))}'
             width='{{=zapp_viewUtils_UIBInt("input_w")}}' /> -->
 
-        <StylableButton
+        <ZActionButton
             id='registerButton'
             style='{{:registerButtonStyle}}'
+            enabled='{{isRegisterButtonEnabled}}'
             visible='{{isLoading;fireOnSet;transform=MOM_transform_invertBoolean}}'
             selected='{(onRegisterButtonSelected(value))}'
             width='{{=zapp_viewUtils_UIBInt("input_w")}}' />

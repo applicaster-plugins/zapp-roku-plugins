@@ -30,11 +30,11 @@
       <mv_MLabel
           id='title'
           style='{{=zapp_viewUtils_UIBLabel("title")}}' />
-      <StylableButton
+      <ZActionButton
           id='loginButton'
           style='{{=zapp_viewUtils_UIBButton("login_button")}}'
           selected='{(onLoginButtonSelected(value))}' />
-      <StylableButton
+      <ZActionButton
           id='skipButton'
           style='{{=zapp_viewUtils_UIBButton("skip_button")}}'
           selected='{(onSkipButtonSelected(value))}' />

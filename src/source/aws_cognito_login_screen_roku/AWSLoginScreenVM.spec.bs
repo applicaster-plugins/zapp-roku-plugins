@@ -1,5 +1,4 @@
 namespace zapp.tests
-
   @tags("public", "auth", "vm")
   @suite
   class AWSLoginScreenVMTests extends tests.BaseTestSuite
@@ -272,15 +271,17 @@ namespace zapp.tests
     @describe("onKeyPressBack")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @it("onKeyPressBack - first field")
+    @it("exits app if on first field and not dismissable")
     function _()
       m.vm.focusId = "usernameInput"
 
-      m.assertFalse(m.vm.onKeyPressBack())
+      m.expectOnce(m.vm, "exitApp", [invalid, true])
+
+      m.assertTrue(m.vm.onKeyPressBack())
       m.assertEqual(m.vm.focusId, "usernameInput")
     end function
 
-    @it("onKeyPressBack - otherField")
+    @it("goes back on other field")
     @params("passwordInput")
     @params("loginButton")
     function _(focusId)
@@ -439,10 +440,11 @@ namespace zapp.tests
     @describe("onLoginComplete")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @it("valid")
+    @it("dismisses succesfully on complete and signals app launch")
     function _()
       m.vm.state = "loading"
       m.expectOnce(m.vm, "dismiss", ["success"])
+      m.expectOnce(m.vm, "signalAppLaunchDialog", [true])
 
       m.vm.onLoginComplete({ "state": "valid" })
 
@@ -491,7 +493,7 @@ namespace zapp.tests
     @describe("onRefreshComplete")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @it("sucess")
+    @it("dismiesses if the use is logged in")
     function _()
       user = { "id": "user", isLoggedIn: true }
       m.expectOnce(m.vm, "getInstance", ["user"], user)
@@ -502,17 +504,17 @@ namespace zapp.tests
 
       m.vm.onRefreshComplete({})
 
-      m.assertFalse(m.vm.isRefreshing)
+      m.assertTrue(m.vm.isRefreshing)
       m.assertFalse(m.vm.isLoading)
 
     end function
 
 
-    @it("failure")
+    @it("does not dismiss if the user is not logged in")
     function _()
       user = { "id": "user", isLoggedIn: false }
       m.expectOnce(m.vm, "getInstance", ["user"], user)
-      m.expectOnce(m.vm, "dismiss", ["success"])
+      m.expectOnce(m.vm, "signalAppLaunchDialog", [false])
       m.vm.isLoading = true
       m.vm.isRefreshing = true
       m.vm.onRefreshComplete({})

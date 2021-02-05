@@ -1,6 +1,6 @@
 namespace zapp.tests
 
-  @tags("public", "auth", "vm")
+  @tags("public", "auth", "vm", "deprecated")
   @suite
   class GigyaLoginScreenVMTests extends tests.BaseTestSuite
 
