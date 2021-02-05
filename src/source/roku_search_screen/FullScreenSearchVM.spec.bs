@@ -1,5 +1,5 @@
 namespace zapp.tests
-  @only
+
   @tags("public", "vm")
   @suite
   class FullScreenSearchVMTests extends tests.BaseTestSuite
@@ -47,20 +47,33 @@ namespace zapp.tests
     @describe("processStyles")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @it("processes styles")
+    @it("parses general style info")
     function _()
-      m.assertNotEmpty(m.gridStyle)
-      m.assertEqual(m.gridStyle.translation, [1, 2])
-      m.assertEqual(m.loadDepth, 5)
-      m.assertEqual(m.minCharacters, 6)
-      m.assertEqual(m.searchQueryName, "#q")
-      m.assertNotEmpty(m.keyboardStyle)
-      m.assertEqual(m.keyboardStyle.translation, [3, 4])
-      m.assertEqual(m.keyboardStyle.keyColor, "#ffaabbcc")
-      m.assertEqual(m.keyboardStyle.keyColor, "#ffaabbdd")
-      m.assertEqual(m.keyboardStyle.bitmapUri, "#keyboard_bitmap_uri")
-      m.assertEqual(m.keyboardStyle.focusBitmapUri, "#keyboard_focus_bitmap_uri")
-      m.assertEqual(m.keyboardStyle.lowercase, true)
+      m.assertEqual(m.vm.loadDepth, 5)
+      m.assertEqual(m.vm.minCharacters, 6)
+      m.assertEqual(m.vm.searchQueryName, "#q")
+      m.assertNotEmpty(m.vm.keyboardStyle)
+      m.assertEqual(m.vm.keyboardStyle.translation, [3, 4])
+      m.assertEqual(m.vm.keyboardStyle.keyColor, "#aabbccff")
+      m.assertEqual(m.vm.keyboardStyle.keyboardBitmapUri, "pkg:/asset-bundle/#keyboard_bitmap_uri")
+      m.assertEqual(m.vm.keyboardStyle.focusBitmapUri, "pkg:/asset-bundle/#keyboard_focus_bitmap_uri")
+      m.assertEqual(m.vm.keyboardStyle.lowercase, true)
+
+    end function
+
+    @tags("fixme")
+    @it("corectly parses grid style from the cell style")
+    function _()
+      cellStyle = {
+        cell: {
+
+          size: [300, 300]
+          item_component: "mycell"
+        }
+      }
+      gridStyle = m.vm.getGridStyle(m.vm.style, cellStyle)
+      m.assertNotEmpty(gridStyle)
+      m.assertEqual(gridStyle.translation, [1, 2])
 
     end function
 

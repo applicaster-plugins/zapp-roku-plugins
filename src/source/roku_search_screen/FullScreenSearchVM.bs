@@ -40,7 +40,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
 
   function processStyles(styles)
     m.loadDepth = zapp.viewUtils.getUIBInt(styles, "data_depth", 0)
-    m.gridStyle = m.getGridStyle(styles)
+    m.gridStyle = m.getGridStyle(styles, m.cellStyle)
 
     m.keyboardStyle = {
       translation: zapp.viewUtils.makeUIBPosition(styles, "keyboard", 300, 500)
@@ -58,9 +58,9 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     m.searchQueryName = mc.getPath(styles, "search_query_name", "q")
   end function
 
-  private function getGridStyle(styles)
-    if m.style <> invalid and m.style.cell <> invalid
-      style = zapp.collectionRowUtils.getRowListStyle(styles, m.style.cell.normal)
+  private function getGridStyle(styles, cellStyle)
+    if cellStyle <> invalid
+      style = zapp.collectionRowUtils.getRowListStyle(styles, cellStyle.normal)
       style.itemSize = style.rowItemSize
       style.itemSpacing = zapp.viewUtils.makeUIBSize(styles, "grid_spacing", 44, 20)
     else

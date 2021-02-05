@@ -122,7 +122,7 @@
         backgroundVisible='false'
         text='' />
 
-    <DynamicContainer
+    <mv_DynamicContainer
         id='screenContainer'
         visible='{{isSubScreenVisible}}'
         isDestroyingChildViewsOnRemoval='true'

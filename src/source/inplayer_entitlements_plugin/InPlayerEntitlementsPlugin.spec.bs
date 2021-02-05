@@ -258,10 +258,10 @@ namespace zapp.tests
 
     @it("invalid item")
     @params(invalid)
-    @params({ "id": "item" })
-    @params({ "id": "item", extensions: invalid })
-    @params({ "id": "item", extensions: { "other": true } })
-    @params({ "id": "item", extensions: { "inplayer_asset_id": invalid } })
+    @params({ "id": "item", json: {} })
+    @params({ "id": "item", json: { extensions: invalid } })
+    @params({ "id": "item", json: { extensions: { "other": true } } })
+    @params({ "id": "item", json: { extensions: { "inplayer_asset_id": invalid } } })
     function _(item)
       m.assertFalse(m.plugin.loadItem(item))
     end function
@@ -301,8 +301,10 @@ namespace zapp.tests
       item = createObject("roSGNode", "ZPEntry")
       item.addFields({
         id: "item"
-        extensions: {
-          inplayer_asset_id: "xid"
+        json: {
+          extensions: {
+            inplayer_asset_id: "xid"
+          }
         }
         url: "ourl"
       })
@@ -346,8 +348,10 @@ namespace zapp.tests
       item.id = "cid"
       item.title = "item title"
       item.addFields({
-        extensions: {
-          inplayer_asset_id: "xid"
+        json: {
+          extensions: {
+            inplayer_asset_id: "xid"
+          }
         }
         url: "ourl"
       })

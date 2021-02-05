@@ -279,7 +279,7 @@ namespace zapp.tests
     @params("vod")
     @params("collection")
     function _(itemType)
-      collection = m.createCollection(3)
+      collection = tests.utils.createCollection(3)
       deeplinkingData = createObject("roSGNode", "DeeplinkingData")
       deeplinkingData.action = "play"
       deeplinkingData.itemType = itemType
@@ -298,7 +298,7 @@ namespace zapp.tests
     @params("series")
     @params("season")
     function _(itemType)
-      collection = m.createCollection(3)
+      collection = tests.utils.createCollection(3)
       collection.id = "expectedId"
       deeplinkingData = createObject("roSGNode", "DeeplinkingData")
       deeplinkingData.action = "play"
@@ -317,7 +317,7 @@ namespace zapp.tests
     @params("series")
     @params("season")
     function _(itemType)
-      collection = m.createCollection(3)
+      collection = tests.utils.createCollection(3)
       deeplinkingData = createObject("roSGNode", "DeeplinkingData")
       deeplinkingData.action = "play"
       deeplinkingData.itemType = itemType
@@ -336,7 +336,7 @@ namespace zapp.tests
     @params("series")
     @params("season")
     function _(itemType)
-      collection = m.createCollection(3)
+      collection = tests.utils.createCollection(3)
       deeplinkingData = createObject("roSGNode", "DeeplinkingData")
       deeplinkingData.action = "play"
       deeplinkingData.itemType = itemType
@@ -358,7 +358,7 @@ namespace zapp.tests
     @params("season")
     @params("series")
     function _(itemType)
-      collection = m.createCollection(3)
+      collection = tests.utils.createCollection(3)
       deeplinkingData = createObject("roSGNode", "DeeplinkingData")
       deeplinkingData.action = "play"
       deeplinkingData.itemType = itemType
@@ -459,20 +459,6 @@ namespace zapp.tests
       m.expectOnce(m.vm, "applyDeeplinking", [data])
 
       m.vm.onDeeplinkingTaskResult(data)
-    end function
-
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '++ util
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    private function createCollection(numberOfItems)
-      collection = createObject("roSGNode", "ContentNode")
-      collection.id = "series1"
-
-      for i = 0 to numberOfItems - 1
-        node = collection.CreateChild("ContentNode")
-        node.id = i.tostr()
-      end for
-      return collection
     end function
 
   end class

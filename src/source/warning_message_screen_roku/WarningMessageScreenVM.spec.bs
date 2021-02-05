@@ -1,5 +1,4 @@
 namespace zapp.tests
-  @only
   @tags("public", "vm")
   @suite
   class WarningMessageScreenVMTests extends tests.BaseTestSuite
@@ -28,17 +27,13 @@ namespace zapp.tests
     @describe("load")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @it("matching conditions")
-    @params({ field: "v" }, "field", "v")
+    @it("loads when the conditions match")
     @params({ json: { field: "v2" } }, "field", "v2")
-    @params({ json: { field: "v2 " } }, "field", "v2")
-    @params({ json: { field: "v2 " } }, "field", "v2 ")
-    @params({ json: { field: "v2 " } }, "field", "V2 ")
-    @params({ field: "v", }, "field", "V")
+    @params({ json: { field2: "v1" } }, "field2", "v1")
     function _(entry, path, condition)
       m.vm.conditionPath = path
       m.vm.conditionValue = condition
-      m.expectOnce(m.vm, "load_ComponentVM")
+      m.expectOnce(m.vm, "super4_load")
       m.expectNone(m.vm, "dismiss")
       m.vm.originEntry = entry
 
@@ -50,7 +45,7 @@ namespace zapp.tests
 
     @it("dismisses when there is no entry")
     function _()
-      m.expectNone(m.vm, "CVM_load")
+      m.expectNone(m.vm, "super4_load")
       m.expectOnce(m.vm, "dismiss", ["success"])
 
       m.vm.originEntry = invalid
@@ -59,20 +54,15 @@ namespace zapp.tests
 
     end function
 
-    @it("not matching conditions")
-    @params({ field: "", }, "field", "v")
-    @params({ field: "v", }, "field", "")
+    @it("dismisses when the values don't match")
     @params({ json: { field: "v2" }, }, "json.field", "n2")
-    @params({ json: { field: "v2 " }, }, "json.field", "n2")
-    @params({ json: { field: "v2 " }, }, "json.field", "n2 ")
     @params({ json: { field: "v2" }, }, "", "v2")
     @params({ json: { field: "v2" }, }, " ", "v2")
-    @params({ json: { field: "v2" }, }, "json.field", "")
     @params({ json: { field: "v2" }, }, "json.field", " ")
     function _(entry, path, condition)
       m.vm.conditionPath = path
       m.vm.conditionValue = condition
-      m.expectNone(m.vm, "CVM_load")
+      m.expectNone(m.vm, "super4_load")
       m.expectOnce(m.vm, "dismiss", ["success"])
       m.vm.originEntry = entry
 
@@ -114,9 +104,11 @@ namespace zapp.tests
     function _()
       entry = { "id": "entry"
         title: "#t"
-        description: "#d"
-        extensions: {
-          extra_text: "#e"
+        json: {
+          description: "#d"
+          extensions: {
+            extra_text: "#e"
+          }
         }
       }
 
