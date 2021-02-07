@@ -5,6 +5,8 @@ class GigyaLoginScreenVM extends zapp.uib.ScreenVM
   public isContentVisible = false
   public isRefreshing = true
 
+  private authTask
+
   public function new(riversJson)
     super(riversJson, "GigyaLoginScreenVM")
     m.focusId = "loginButton"
@@ -39,13 +41,13 @@ class GigyaLoginScreenVM extends zapp.uib.ScreenVM
 
     m.authTask = m.createAuthTask("execLoad", "gigya_auth_plugin_roku", m.onRefreshComplete)
 
-    m.setField("isRefreshing", true)
-    m.setField("isContentVisible", false)
+    m.isRefreshing = true
+    m.isContentVisible = false
   end function
 
   private function onRefreshComplete(result)
     m.logMethod("onRefreshComplete", result)
-    m.setField("isLoading", false)
+    m.isLoading = false
 
     if m.getInstance("user").isLoggedIn
       analytics = m.getInstance("analyticsManager")
@@ -54,8 +56,8 @@ class GigyaLoginScreenVM extends zapp.uib.ScreenVM
       m.dismiss("success")
     end if
 
-    m.setField("isRefreshing", false)
-    m.setField("isContentVisible", true)
+    m.isRefreshing = false
+    m.isContentVisible = true
   end function
 
   private function showLoginScreen()
@@ -79,7 +81,7 @@ class GigyaLoginScreenVM extends zapp.uib.ScreenVM
 
       if state = "success"
         m.logInfo("login completed!")
-        m.setField("state", "success")
+        m.state = "success"
       else
         m.setFocusId("loginButton")
       end if

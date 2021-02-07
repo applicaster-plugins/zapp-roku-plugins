@@ -9,7 +9,8 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
   private isShowingPrehooks = false
   private isShowingParentScreen = false
   private isDeeplinkingApplied = false
-
+  private deeplinkingTask = invalid
+  
   public screenIdsByName = {}
 
   public function new(riversJson)
@@ -56,15 +57,15 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
 
   private function togglePrehookController(isActive, controller = invalid)
     m.logMethod("togglePrehookController", isActive)
-    m.setField("isLoadingndicatorVisible", false)
+    m.isLoadingIndicatorVisible = false
 
     m.unobserveNodeField(m.currentScreen, "state", m.onPrehookControllerStateChange)
 
     if isActive
       m.observeNodeField(controller, "state", m.onPrehookControllerStateChange, "value", true)
-      m.setField("currentScreen", controller)
+      m.currentScreen = controller
     else
-      m.setField("currentScreen", invalid)
+      m.currentScreen = invalid
     end if
 
     m.isShowingPrehooks = m.currentScreen <> invalid
@@ -72,7 +73,7 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
 
   private function onPrehookControllerStateChange(state)
     m.logInfo("prehook state changed", state)
-    m.setField("currentScreen", invalid)
+    m.currentScreen = invalid
 
     if state = "success"
 
@@ -158,7 +159,7 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
 
     if parentScreen <> invalid and deeplinkingData.itemType <> "channel"
       m.isShowingParentScreen = true
-      m.setField("currentScreen", parentScreen)
+      m.currentScreen = parentScreen
       m.toggleNavMenuFocus(false)
       m.onContentStateChange(parentScreen.state)
       m.observeNodeField(parentScreen, "state", m.onContentStateChange)
@@ -195,7 +196,7 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   private function toggleLoadingIndicator(isActive)
-    m.setField("isLoadingIndicatorVisible", isActive)
+    m.isLoadingIndicatorVisible = isActive
   end function
 
   private function dismissDeeplinkingController()

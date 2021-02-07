@@ -5,9 +5,6 @@ import "pkg:/source/authorization/JWTUtil.bs"
 
 class AdobePrimetimeAuthPlugin extends zapp.Auth.BaseAuthPlugin
 
-  private request = invalid
-  private JWTUtil = invalid
-  private uri = invalid
   private resourceID = ""
   private requestorID = ""
   private secret = ""
@@ -15,20 +12,24 @@ class AdobePrimetimeAuthPlugin extends zapp.Auth.BaseAuthPlugin
   private baseUrl = ""
   private deviceId = ""
 
+  @injectClass("zapp.Request")
+  private request
+
+  @injectClass("zapp.JWTUtil")
+  private JWTUtil
+
+  @injectClass("zapp.URI")
+  private uri
+
   public function new(plugin)
     super("AdobePrimetime", plugin)
     m.isTokenUsableWithDSP = true
-    m.request = m.getClassInstance("zapp.Request")
-    m.JWTUtil = m.getClassInstance("zapp.JWTUtil")
-    m.uri = m.getClassInstance("zapp.URI")
-    m.request = m.getClassInstance("zapp.Request")
     m.resourceID = plugin.getStringValue("resourceID", "")
     m.requestorID = plugin.getStringValue("requestorID", "")
     m.secret = plugin.getStringValue("secret", "")
     m.publicKey = plugin.getStringValue("publicKey", "")
     m.baseUrl = plugin.getStringValue("base_url", "https://api.auth.adobe.com")
-    constants = m.getInstance("constants")
-    m.deviceId = constants.applicasterDeviceId
+    m.deviceId = m.getInstance("constants").applicasterDeviceId
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

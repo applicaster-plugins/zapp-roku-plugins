@@ -3,12 +3,15 @@ import "pkg:/source/roku_modules/mc/Utils.brs"
 import "pkg:/source/UIBuilder/view/ComponentVM.bs"
 import "pkg:/source/zapp-controls/CollectionRowUtils.bs"
 
+@strict
+@useSetField
 class FullScreenSearchVM extends zapp.uib.ComponentVM
 
   public results = invalid
   public isGridVisible = false
   public isNoSearchLabelVisible = false
   public isNotFoundLabelVisible = false
+  public cellStyle = false
 
   public keyboardStyle = {}
   public gridStyle = {}
@@ -22,7 +25,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
   private searchQueryName = "q"
   private isShowingContent = false
   private rowTarget = invalid
-
+  
   public function new(riversJson)
     super(riversJson, "FullScreenSearchVM")
     m.focusId = "keyboard"
@@ -77,7 +80,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public override function load()
-    m.setField("state", "ready")
+    m.state = "ready"
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -102,7 +105,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
   public function onSearchTextChange(text)
     m.logInfo("text is now", text, "waiting before searching")
 
-    m.setField("searchText", text)
+    m.searchText = text
     m.cancelWaitTimer(m.searchDelayTask)
     m.cancelTask(m.loadItemTask)
 
@@ -111,7 +114,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     else
       m.logVerbose("too few chars. ignoring")
       m.setGridVisible(false)
-      m.setField("isLoading", false)
+      m.isLoading = false
     end if
 
   end function
@@ -130,7 +133,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
   private function performSearch(text)
     m.logMethod("performSearch")
 
-    m.setField("isLoading", true)
+    m.isLoading = true
     m.setGridVisible(true)
     entry = createObject("roSGNode", "ZPEntry")
     entry.itemType = "feed"
@@ -145,7 +148,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     m.logMethod("onFeedResult")
 
     m.toggleLoadingItemTask(false)
-    m.setField("isLoading", false)
+    m.isLoading = false
 
     if result.isOk and result.data.itemType <> "problemDetailsResponse" and result.data.getChildCount() > 0
       results = result.data.getChild(0)
@@ -156,18 +159,18 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
 
     mc.setOrAddNodeField(results, "target", m.rowTarget)
 
-    m.setField("results", results)
-    m.setField("jumpToItem", 0)
+    m.results = results
+    m.jumpToItem = 0
     m.setGridVisible(true)
   end function
 
   private function setGridVisible(isGridVisible)
-    m.setField("isGridVisible", isGridVisible and m.results.getChildCount() > 0)
-    m.setField("isNotFoundLabelVisible", isGridVisible and m.results.getChildCount() = 0 and not m.isLoading)
-    m.setField("isNoSearchLabelVisible", not isGridVisible and not m.isLoading)
+    m.isGridVisible = isGridVisible and m.results.getChildCount() > 0
+    m.isNotFoundLabelVisible = isGridVisible and m.results.getChildCount() = 0 and not m.isLoading
+    m.isNoSearchLabelVisible = not isGridVisible and not m.isLoading
 
     if not m.isGridVisible
-      m.setField("results", createObject("roSGnode", "ZPEntry"))
+      m.results = createObject("roSGnode", "ZPEntry")
     end if
 
     if not m.isGridVisible and m.focusId = "grid"
@@ -212,10 +215,10 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
   end function
 
   private function reset()
-    m.setField("jumpToItem", 0)
-    m.setField("results", createObject("roSGNode", "ZPEntry"))
+    m.jumpToItem = 0
+    m.results = createObject("roSGNode", "ZPEntry")
     m.setGridVisible(false)
-    m.setField("searchText", "")
+    m.searchText = ""
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

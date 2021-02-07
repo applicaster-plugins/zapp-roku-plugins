@@ -14,9 +14,11 @@ class EntitlementsItemLoader extends zapp.BaseClass
   private matchingPath = ""
   private matchingValue = ""
 
+  @injectClass("zapp.PluginManager")
+  private plugins
+
   public function new()
     super("EntitlementsItemLoader")
-    m.plugins = m.getClassInstance("zapp.PluginManager")
 
     plugin = m.plugins.getPluginById("entitlements_item_loader_prehook")
     m.isValid = plugin.isValid

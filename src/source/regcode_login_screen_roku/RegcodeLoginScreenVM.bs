@@ -13,13 +13,15 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
   public isRefreshing = false
 
   private authTask = invalid
-  private analyticsManager = invalid
   private providerId = invalid
   private refreshButtonOpacity = 1
+  private isValid = false
+
+  @inject("analyticsManager")
+  private analyticsManager
 
   public function new(riversJson)
     super(riversJson, "RegcodeLoginScreenVM")
-    m.analyticsManager = m.getInstance("analyticsManager")
 
     m.focusId = "refreshButton"
 
@@ -27,8 +29,7 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
 
     if m.providerId = invalid
       m.isValid = false
-      m.titleText = "No auth provider found. Make sure you have specified at least one auth provider"
-      m.logError(titleText)
+      m.logError("No auth provider found. Make sure you have specified at least one auth provider")
     end if
 
     if not mc.getPath(riversJson, "styles.use_refresh_button", true)
@@ -61,7 +62,7 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
     else
       m.logInfo("not displaying in prehook")
       m.analyticsManager@.trackEvent("Waiting Page", "page_loaded", { "Provider": m.providerId })
-      m.setField("isContentGroupVisible", true)
+      m.isContentGroupVisible = true
       m.loadCode()
     end if
 
@@ -83,18 +84,18 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
 
     m.authTask = m.createAuthTask("execLoad", m.providerId, m.onRefreshLoginComplete)
 
-    m.setField("isContentGroupVisible", false)
+    m.isContentGroupVisible = false
   end function
 
 
   private function onRefreshLoginComplete(result)
     m.logMethod("onRefreshLoginComplete", result)
-    m.setField("isShowingLoadingIndicator", false)
+    m.isShowingLoadingIndicator = false
 
     if m.getInstance("user").isLoggedIn
       m.dismiss("success")
     else
-      m.setField("isContentGroupVisible", true)
+      m.isContentGroupVisible = true
       m.signalAppLaunchDialog(false)
       m.loadCode()
     end if
@@ -130,31 +131,31 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
 
     m.authTask = m.createAuthTask("execRegcode", m.providerId, m.onLoadCodeComplete)
 
-    m.setField("isRefreshing", true)
-    m.setField("isShowingLoadingIndicator", true)
+    m.isRefreshing = true
+    m.isShowingLoadingIndicator = true
   end function
 
   private function onLoadCodeComplete(result)
     m.logMethod("onLoadCodeComplete")
-    m.setField("isShowingLoadingIndicator", false)
-    m.setField("isRefreshing", false)
+    m.isShowingLoadingIndicator = false
+    m.isRefreshing = false
 
     if result <> invalid and result.regcode <> invalid
       m.logInfo("received code", result.regcode)
-      m.setField("codeText", result.regcode)
+      m.codeText = result.regcode
       m.togglePollTimer(true)
     else
       m.logWarn("received illegal code")
-      m.setField("codeText", "")
+      m.codeText = ""
     end if
 
   end function
 
   private function togglePollTimer(isActive)
-    m.setField("pollTimerControl", "stop")
+    m.pollTimerControl = "stop"
 
     if isActive
-      m.setField("pollTimerControl", "start")
+      m.pollTimerControl = "start"
     end if
   end function
 

@@ -10,10 +10,12 @@ class GenericUrlTokenAppender extends zapp.BaseClass
 
   private providerId = ""
   private tokenKey = ""
+  private isValid
 
+  @injectClass("zapp.PluginManager")
+  private plugins
   public function new()
     super("GenericUrlTokenAppender")
-    m.plugins = m.getClassInstance("zapp.PluginManager")
 
     plugin = m.plugins.getPluginById("generic_url_token_appender")
 

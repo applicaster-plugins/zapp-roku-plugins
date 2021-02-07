@@ -8,10 +8,12 @@ class GigyaAuthPlugin extends zapp.Auth.BaseAuthPlugin
 
   public baseUrl = ""
 
+  @injectClass("zapp.Request")
+  private request
+
   public function new(plugin)
     super("GigyaAuthPlugin", plugin)
     m.baseUrl = plugin.getStringValue("base_url")
-    m.request = m.getClassInstance("zapp.Request")
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

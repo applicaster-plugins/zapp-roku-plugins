@@ -13,12 +13,18 @@ class MPXVideoPlaybackPrehook extends zapp.BaseClass
   public isValid = false
   private matchingPath = ""
   private matchingValue = ""
-  private request = invalid
-  private uri = invalid
+
+  @injectClass("zapp.PluginManager")
+  private plugins
+
+  @injectClass("zapp.Request")
+  private request
+
+  @injectClass("zapp.URI")
+  private uri
 
   public function new()
     super("MPXVideoPlaybackPrehook")
-    m.plugins = m.getClassInstance("zapp.PluginManager")
 
     plugin = m.plugins.getPluginById("mpx_video_playback_prehook_roku")
     m.isValid = plugin.isValid
@@ -31,11 +37,6 @@ class MPXVideoPlaybackPrehook extends zapp.BaseClass
       m.matchingPath = ""
       m.matchingValue = ""
     end if
-
-    m.request = m.getClassInstance("zapp.Request")
-    m.uri = m.getClassInstance("zapp.URI")
-
-
   end function
 
   public function execute()

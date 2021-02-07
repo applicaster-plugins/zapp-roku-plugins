@@ -35,6 +35,8 @@ class AWSLoginScreenVM extends zapp.uib.ScreenVM
   public passwordPlaceholderText = ""
   public backgroundColor = "#000000ff"
 
+  private authTask
+
   public function new(riversJson)
     super(riversJson, "AWSLoginScreenVM")
     m.focusId = "usernameInput"
@@ -69,10 +71,10 @@ class AWSLoginScreenVM extends zapp.uib.ScreenVM
     m.optional2Style = zapp.viewUtils.makeUIBTextStyle(styles, "optional_text2")
     m.errorStyle = zapp.viewUtils.makeUIBTextStyle(styles, "error")
 
-    m.setField("usernameText", styles.username_placeholder_text)
+    m.usernameText = styles.username_placeholder_text
     m.usernamePlaceholderText = m.usernameText
 
-    m.setField("passwordText", styles.password_placeholder_text)
+    m.passwordText = styles.password_placeholder_text
     m.passwordPlaceholderText = m.passwordText
 
     m.backgroundColor = zapp.viewUtils.transposeUIBColor(styles.background_color)
@@ -86,7 +88,7 @@ class AWSLoginScreenVM extends zapp.uib.ScreenVM
 
     inputStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "general_input", "textInputPlaceholder")
 
-    m.setField("inputStyle", inputStyle)
+    m.inputStyle = inputStyle
 
     m.loginButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "login_button", "custom", styles.login_button_text)
 
@@ -102,20 +104,20 @@ class AWSLoginScreenVM extends zapp.uib.ScreenVM
     if not m.isLoading and m.isCredsValid
       m.processLogin()
     else if not m.isCredsValid
-      m.setField("errorText", "Please enter your email address and password")
-      m.setfield("isErrorShowing", true)
+      m.errorText = "Please enter your email address and password"
+      m.isErrorShowing = true
     else
       m.logWarn("ignoring loging button, while loading")
     end if
   end function
 
   public function onUsernameButtonSelected(value)
-
+    'bs:disable-next-line
     m.showKeyboardDialog("Enter your username", m.username, "onUsernameKeyboardDialogDismissal")
   end function
 
   public function onPasswordButtonSelected(value)
-
+    'bs:disable-next-line
     m.showKeyboardDialog("Enter your password", m.password, "onPasswordKeyboardDialogDismissal", true)
   end function
 
@@ -127,16 +129,16 @@ class AWSLoginScreenVM extends zapp.uib.ScreenVM
     m.logMethod("onKeyboardDialogDismissal")
 
     if text.trim() = ""
-      m.setField("usernameText", m.usernamePlaceholderText)
-      m.setField("usernameButtonType", "textInputPlaceholder")
+      m.usernameText = m.usernamePlaceholderText
+      m.usernameButtonType = "textInputPlaceholder"
       m.username = ""
-      m.setField("usernameText", m.usernamePlaceholderText)
+      m.usernameText = m.usernamePlaceholderText
     else
-      m.setField("usernameText", text)
+      m.usernameText = text
       'set the username to lower case letters
       lCaseUserName = LCase(text)
       m.username = lCaseUserName
-      m.setField("usernameButtonType", "textInput")
+      m.usernameButtonType = "textInput"
     end if
 
     m.checkCredsValid()
@@ -147,14 +149,14 @@ class AWSLoginScreenVM extends zapp.uib.ScreenVM
     m.logMethod("onPasswordKeyboardDialogDismissal")
 
     if text.trim() = ""
-      m.setField("passwordText", m.passwordPlaceholderText)
+      m.passwordText = m.passwordPlaceholderText
       m.password = ""
-      m.setField("passwordButtonType", "textInputPlaceholder")
-      m.setField("passwordText", m.passwordPlaceholderText)
+      m.passwordButtonType = "textInputPlaceholder"
+      m.passwordText = m.passwordPlaceholderText
     else
-      m.setField("passwordText", zapp.keyboardDialogMixin.getHiddenPasswordText(text))
+      m.passwordText = zapp.keyboardDialogMixin.getHiddenPasswordText(text)
       m.password = text
-      m.setField("passwordButtonType", "textInput")
+      m.passwordButtonType = "textInput"
     end if
 
     m.checkCredsValid()
@@ -169,18 +171,18 @@ class AWSLoginScreenVM extends zapp.uib.ScreenVM
 
     m.authTask = m.createAuthTask("execLoad", "aws_cognito_auth_plugin", m.onRefreshComplete)
 
-    m.setField("isRefreshing", true)
-    m.setField("isLoginButtonEnabled", false)
+    m.isRefreshing = true
+    m.isLoginButtonEnabled = false
   end function
 
   private function onRefreshComplete(result)
     m.logMethod("onRefreshComplete", result)
-    m.setField("isLoading", false)
+    m.isLoading = false
 
     if m.getInstance("user").isLoggedIn
       m.dismiss("success")
     else
-      m.setField("isRefreshing", false)
+      m.isRefreshing = false
       m.signalAppLaunchDialog(false)
     end if
 
@@ -191,9 +193,9 @@ class AWSLoginScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public function checkCredsValid()
-    m.setField("isCredsValid", m.username <> invalid and m.username.trim() <> "" and m.password <> invalid and m.password.trim() <> "")
+    m.isCredsValid = m.username <> invalid and m.username.trim() <> "" and m.password <> invalid and m.password.trim() <> ""
 
-    m.setField("isLoginButtonEnabled", m.isCredsValid and not m.isLoading)
+    m.isLoginButtonEnabled = m.isCredsValid and not m.isLoading
   end function
 
   public function processLogin()
@@ -205,12 +207,12 @@ class AWSLoginScreenVM extends zapp.uib.ScreenVM
       creds.password = m.password
       m.authTask = m.createAuthTask("execLogIn", "aws_cognito_auth_plugin", m.onLoginComplete, creds)
 
-      m.setField("isLoginButtonEnabled", false)
+      m.isLoginButtonEnabled = false
 
-      m.setField("isLoading", true)
-      m.setField("errorText", "")
-      m.setField("isErrorShowing", false)
-      m.setField("state", "loading")
+      m.isLoading = true
+      m.errorText = ""
+      m.isErrorShowing = false
+      m.state = "loading"
     end if
   end function
 
@@ -222,17 +224,17 @@ class AWSLoginScreenVM extends zapp.uib.ScreenVM
       m.signalAppLaunchDialog(true)
       m.dismiss("success")
     else
-      m.setField("state", "ready")
+      m.state = "ready"
       if result <> invalid and result.message <> invalid
-        m.setField("errorText", result.message)
+        m.errorText = result.message
       else
-        m.setField("errorText", "Unknown error")
+        m.errorText = "Unknown error"
       end if
-      m.setField("isErrorShowing", true)
-      m.setField("isLoginButtonEnabled", true)
+      m.isErrorShowing = true
+      m.isLoginButtonEnabled = true
     end if
 
-    m.setField("isLoading", false)
+    m.isLoading = false
 
   end function
 
@@ -289,9 +291,9 @@ class AWSLoginScreenVM extends zapp.uib.ScreenVM
     m.logMethod("onKeyPressDown", m.focusId)
 
     if m.focusId = "usernameInput"
-      m.setField("focusId", "passwordInput")
+      m.focusId = "passwordInput"
     else if m.focusId = "passwordInput"
-      m.setField("focusId", "loginButton")
+      m.focusId = "loginButton"
     end if
 
     return true
@@ -310,9 +312,9 @@ class AWSLoginScreenVM extends zapp.uib.ScreenVM
     m.logMethod("onKeyPressUp", m.focusId)
 
     if m.focusId = "passwordInput"
-      m.setField("focusId", "usernameInput")
+      m.focusId = "usernameInput"
     else if m.focusId = "loginButton"
-      m.setField("focusId", "passwordInput")
+      m.focusId = "passwordInput"
     end if
 
     return true

@@ -118,14 +118,14 @@ class WarningMessageScreenVM extends zapp.uib.ScreenVM
   end function
 
   private function showGenericErrorMessage()
-    m.setField("isShowingLoadingIndicator", false)
+    m.isShowingLoadingIndicator = false
 
     'this is already showing by default
   end function
 
   private function showMessage(entry)
-    m.setField("isContentGroupVisible", true)
-    m.setField("isShowingLoadingIndicator", false)
+    m.isContentGroupVisible = true
+    m.isShowingLoadingIndicator = false
 
     titleText = mc.getPath(entry, "title", "")
 
@@ -133,10 +133,10 @@ class WarningMessageScreenVM extends zapp.uib.ScreenVM
       titleText = "This content cannot be displayed"
     end if
 
-    m.setField("titleText", titleText)
+    m.titleText = titleText
 
-    m.setField("descriptionText", mc.getPath(entry.json, "description", ""))
-    m.setField("optional1Text", mc.getPath(entry.json, "extensions.extra_text", ""))
+    m.descriptionText = mc.getPath(entry.json, "description", "")
+    m.optional1Text = mc.getPath(entry.json, "extensions.extra_text", "")
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

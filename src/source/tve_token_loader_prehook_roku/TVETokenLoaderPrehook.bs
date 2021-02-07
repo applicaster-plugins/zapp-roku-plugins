@@ -17,15 +17,17 @@ class TVETokenLoaderPrehook extends zapp.BaseClass
   private isUsingResourceXml = false
   private tveConfig = invalid
 
-  private request = invalid
-  private uri = invalid
+  @injectClass("zapp.PluginManager")
+  private plugins
+
+  @injectClass("zapp.Request")
+  private request
+
+  @injectClass("zapp.URI")
+  private uri
 
   public function new()
     super("TVETokenLoaderPrehook")
-    m.plugins = m.getClassInstance("zapp.PluginManager")
-    m.request = m.getClassInstance("zapp.Request")
-    m.uri = m.getClassInstance("zapp.URI")
-
     plugin = m.plugins.getPluginById("tve_token_loader_prehook_roku")
     m.tveConfig = m.getTVEConfig()
     m.isValid = plugin.isValid and m.tveConfig <> invalid

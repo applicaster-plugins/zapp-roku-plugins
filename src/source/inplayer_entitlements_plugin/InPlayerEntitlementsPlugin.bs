@@ -6,10 +6,21 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
   private entitlementsPolicy = ""
   private vodModel = ""
 
-  private authenticationData = invalid
   private date = invalid
   private soonestExpiration = -1
   private pluginInplayerAssetKey = ""
+
+  private assetKey
+  private clientId
+  private token
+  private apiUrl
+
+  'mixin api methods
+  private createResult = zapp.APIUtils.createResult
+  private executeApiRequest = zapp.APIUtils.executeApiRequest
+
+  @inject("authenticationData")
+  private authenticationData
 
   public function new(plugin)
     super("ApplicasterEntitlementsPlugin", plugin)
@@ -17,7 +28,6 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
     m.isItemRequiredToLoadEntitlements = true
     m.requiresLoadToAscertainEntitlements = true
 
-    m.authenticationData = m.getInstance("authenticationData")
     m.assetKey = plugin.getStringValue("inplayer_custom_asset_key", "")
     m.entitlementsPolicy = plugin.getStringValue("entitlements_policy", "none", m.validPolicies)
     m.vodModel = plugin.getStringValue("vod_model", "AVOD", m.validVodModels)
@@ -32,8 +42,6 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
     else
       m.apiUrl = "https://staging-v2.inplayer.com"
     end if
-
-    zapp.APIUtils.mixin(m)
 
   end function
 

@@ -8,6 +8,10 @@ class InPlayerAuthPlugin extends zapp.Auth.BaseAuthPlugin
 
   public apiUrl = "" ' note this is used by APIMixin
 
+  'mixin api methods
+  private createResult = zapp.APIUtils.createResult
+  private executeApiRequest = zapp.APIUtils.executeApiRequest
+
   public function new(plugin)
     super("InPlayerAuthPlugin", plugin)
     m.clientId = plugin.getStringValue("client_id")
@@ -17,8 +21,6 @@ class InPlayerAuthPlugin extends zapp.Auth.BaseAuthPlugin
     else
       m.apiUrl = "https://staging-v2.inplayer.com"
     end if
-
-    zapp.APIUtils.mixin(m)
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

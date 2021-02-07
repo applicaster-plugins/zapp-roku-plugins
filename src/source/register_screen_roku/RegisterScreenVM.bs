@@ -34,6 +34,8 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
   private maxDebugAccounts = 1
   private debugAccountId = 0
 
+  private authTask
+
   public function new(riversJson)
     super(riversJson, "RegisterScreenVM")
 
@@ -61,18 +63,18 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   function processStyles(styles)
-    m.setField("usernameText", m.localizations.username_placeholder_text)
+    m.usernameText = m.localizations.username_placeholder_text
     m.usernamePlaceholderText = m.usernameText
 
-    m.setField("humanNameText", m.localizations.name_placeholder_text)
+    m.humanNameText = m.localizations.name_placeholder_text
     m.namePlaceholderText = m.humanNameText
 
-    m.setField("passwordText", m.localizations.password_placeholder_text)
+    m.passwordText = m.localizations.password_placeholder_text
     m.passwordPlaceholderText = m.passwordText
 
     inputStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "general_input", "textInputPlaceholder")
 
-    m.setField("inputStyle", inputStyle)
+    m.inputStyle = inputStyle
 
     m.registerButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "register_button", "custom", styles.register_button_text)
 
@@ -85,14 +87,17 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public function onUsernameButtonSelected(value)
+    'bs:disable-next-line
     m.showKeyboardDialog("Enter your username", m.username, "onUsernameKeyboardDialogDismissal")
   end function
 
   public function onNameButtonSelected(value)
+    'bs:disable-next-line
     m.showKeyboardDialog("Enter your name", m.humanName, "onNameKeyboardDialogDismissal")
   end function
 
   public function onPasswordButtonSelected(value)
+    'bs:disable-next-line
     m.showKeyboardDialog("Enter your password", m.password, "onPasswordKeyboardDialogDismissal", true)
   end function
 
@@ -102,8 +107,8 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
     if not m.isLoading and m.isCredsValid
       m.register()
     else if not m.isCredsValid
-      m.setField("errorText", "Please enter your email address and password")
-      m.setfield("isErrorShowing", true)
+      m.errorText = "Please enter your email address and password"
+      m.isErrorShowing = true
     else
       m.logWarn("ignoring register button, while loading")
     end if
@@ -133,9 +138,9 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public function checkCredsValid()
-    m.setField("isCredsValid", m.usernameText <> invalid and m.usernameText.trim() <> "" and m.password <> invalid and m.password.trim() <> "" and m.humanNameText <> invalid and m.humanNameText.trim() <> "")
+    m.isCredsValid = m.usernameText <> invalid and m.usernameText.trim() <> "" and m.password <> invalid and m.password.trim() <> "" and m.humanNameText <> invalid and m.humanNameText.trim() <> ""
 
-    m.setField("isRegisterButtonEnabled", m.isCredsValid and not m.isLoading)
+    m.isRegisterButtonEnabled = m.isCredsValid and not m.isLoading
   end function
 
   public function register()
@@ -149,12 +154,12 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
       creds.passwordConfirmation = m.password
       m.authTask = m.createAuthTask("execRegister", m.providerId, m.onRegisterComplete, creds)
 
-      m.setField("isRegisterButtonEnabled", false)
+      m.isRegisterButtonEnabled = false
 
-      m.setField("isLoading", true)
-      m.setField("errorText", "")
-      m.setField("isErrorShowing", false)
-      m.setField("state", "loading")
+      m.isLoading = true
+      m.errorText = ""
+      m.isErrorShowing = false
+      m.state = "loading"
     end if
   end function
 
@@ -165,17 +170,17 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
       m.logInfo("Register successful")
       m.dismiss("success")
     else
-      m.setField("state", "ready")
+      m.state = "ready"
       if result <> invalid and result.message <> invalid
-        m.setField("errorText", result.message)
+        m.errorText = result.message
       else
-        m.setField("errorText", "Unknown error")
+        m.errorText = "Unknown error"
       end if
-      m.setField("isErrorShowing", true)
-      m.setField("isRegisterButtonEnabled", true)
+      m.isErrorShowing = true
+      m.isRegisterButtonEnabled = true
     end if
 
-    m.setField("isLoading", false)
+    m.isLoading = false
 
   end function
 

@@ -19,6 +19,7 @@ class LogoutScreenVM extends zapp.uib.ScreenVM
   private signedOutButtonText = ""
   private signedOutTitle = ""
   private providerId = invalid
+  private authTask
 
   public function new(riversJson)
     super(riversJson, "LogoutScreenVM")
@@ -95,16 +96,16 @@ class LogoutScreenVM extends zapp.uib.ScreenVM
     end if
 
     m.isLoggedOut = true
-    m.setField("isShowingLoadingIndicator", true)
-    m.setField("isButtonVisible", false)
+    m.isShowingLoadingIndicator = true
+    m.isButtonVisible = false
   end function
 
   function onLogoutComplete(result)
     m.logMethod("onLogoutComplete")
-    m.setField("isShowingLoadingIndicator", false)
-    m.setField("isButtonVisible", true)
-    m.setField("buttonText", m.signedOutButtonText)
-    m.setField("titleText", m.signedOutTitle)
+    m.isShowingLoadingIndicator = false
+    m.isButtonVisible = true
+    m.buttonText = m.signedOutButtonText
+    m.titleText = m.signedOutTitle
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
