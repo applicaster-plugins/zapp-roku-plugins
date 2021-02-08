@@ -300,8 +300,8 @@ class AWSLoginScreenVM extends zapp.uib.ScreenVM
     return true
   end function
 
-  public function onKeyPressOption() as boolean
-    m.logMethod("onKeyPressOption", m.focusId)
+  public function onKeyPressOptions() as boolean
+    m.logMethod("onKeyPressOptions", m.focusId)
 
     m.onUsernameKeyboardDialogDismissal(m.riversJson.styles.debug_username)
     m.onPasswordKeyboardDialogDismissal(m.riversJson.styles.debug_password)

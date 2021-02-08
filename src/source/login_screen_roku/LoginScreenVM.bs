@@ -330,8 +330,8 @@ class LoginScreenVM extends zapp.uib.ScreenVM
     return true
   end function
 
-  public function onKeyPressOption() as boolean
-    m.logMethod("onKeyPressOption", m.focusId)
+  public function onKeyPressOptions() as boolean
+    m.logMethod("onKeyPressOptions", m.focusId)
     m.debugAccountId++
     if m.debugAccountId > m.maxDebugAccounts
       m.debugAccountId = 1

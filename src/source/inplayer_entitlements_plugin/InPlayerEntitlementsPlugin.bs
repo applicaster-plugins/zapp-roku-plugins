@@ -15,12 +15,12 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
   private token
   private apiUrl
 
+  @inject("authenticationData")
+  private authenticationData
+
   'mixin api methods
   private createResult = zapp.APIUtils.createResult
   private executeApiRequest = zapp.APIUtils.executeApiRequest
-
-  @inject("authenticationData")
-  private authenticationData
 
   public function new(plugin)
     super("ApplicasterEntitlementsPlugin", plugin)
