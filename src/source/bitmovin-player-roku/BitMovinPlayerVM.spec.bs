@@ -105,7 +105,7 @@ namespace zapp.tests
       m.expectOnce(m.vm, "observeNodeField", [m.player, "playerState", m.vm.onPlayerStateChange])
       m.expectOnce(m.vm, "observeNodeField", [m.player, "error", m.vm.onPlayerVideoError])
       m.expectOnce(m.vm, "observeNodeField", [m.player, "currentTime", m.vm.onPlayerCurrentTimeChange])
-      m.expectOnce(m.vm, "observeNodeField", [m.player, "sourceLoaded", m.vm.onPlayerSourceLoadedChange])
+      ' m.expectOnce(m.vm, "observeNodeField", [m.player, "sourceLoaded", m.vm.onPlayerSourceLoadedChange])
 
       m.expectOnce(m.player, "callFunc", [m.player.BitmovinFunctions.SETUP, {
           key: "#key"
