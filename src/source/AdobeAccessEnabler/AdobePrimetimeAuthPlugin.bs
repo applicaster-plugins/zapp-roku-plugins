@@ -10,7 +10,9 @@ class AdobePrimetimeAuthPlugin extends zapp.Auth.BaseAuthPlugin
   private secret = ""
   private publicKey = ""
   private baseUrl = ""
-  private deviceId = ""
+
+  @inject("constants", "applicasterDeviceId")
+  private deviceId
 
   @injectClass("zapp.Request")
   private request
@@ -29,7 +31,6 @@ class AdobePrimetimeAuthPlugin extends zapp.Auth.BaseAuthPlugin
     m.secret = plugin.getStringValue("secret", "")
     m.publicKey = plugin.getStringValue("publicKey", "")
     m.baseUrl = plugin.getStringValue("base_url", "https://api.auth.adobe.com")
-    m.deviceId = m.getInstance("constants").applicasterDeviceId
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
