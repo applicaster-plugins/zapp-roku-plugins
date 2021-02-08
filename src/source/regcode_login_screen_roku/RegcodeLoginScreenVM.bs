@@ -11,10 +11,10 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
   public isShowingLoadingIndicator = true
   public pollTimerControl = "stop"
   public isRefreshing = false
+  public refreshButtonOpacity = 1
 
   private authTask = invalid
   private providerId = invalid
-  private refreshButtonOpacity = 1
   private isValid = false
 
   @inject("analyticsManager")

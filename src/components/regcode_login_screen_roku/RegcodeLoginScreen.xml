@@ -86,7 +86,7 @@
           id='refreshButton'
           style='{{=zapp_viewUtils_UIBButton("refresh_button")}}'
           opacity='{{:refreshButtonOpacity}}'
-          visible='{{isRefreshing:transform=MOM_transform_invertBoolean}}'
+          visible='{{isRefreshing:transform=mx_transform_invertBoolean}}'
           selected='{(onRefreshButtonSelected(value))}' />
     </Group>
 

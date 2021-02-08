@@ -36,11 +36,15 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
 
   private authTask
 
+  'mixin keyboard
+  private showKeyboardDialog = zapp.keyboardDialogMixin.showKeyboardDialog
+  private _onKeyboardDialogButtonSelected = zapp.keyboardDialogMixin.onKeyboardDialogButtonSelected
+  private _closeKeyboardDialog = zapp.keyboardDialogMixin.closeKeyboardDialog
+
   public function new(riversJson)
     super(riversJson, "RegisterScreenVM")
 
     m.focusId = "usernameInput"
-    zapp.keyboardDialogMixin.mixin(m)
     m.processStyles(m.riversJson.styles)
     m.providerId = m.getAuthProviderId()
 
@@ -87,17 +91,14 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public function onUsernameButtonSelected(value)
-    'bs:disable-next-line
     m.showKeyboardDialog("Enter your username", m.username, "onUsernameKeyboardDialogDismissal")
   end function
 
   public function onNameButtonSelected(value)
-    'bs:disable-next-line
     m.showKeyboardDialog("Enter your name", m.humanName, "onNameKeyboardDialogDismissal")
   end function
 
   public function onPasswordButtonSelected(value)
-    'bs:disable-next-line
     m.showKeyboardDialog("Enter your password", m.password, "onPasswordKeyboardDialogDismissal", true)
   end function
 

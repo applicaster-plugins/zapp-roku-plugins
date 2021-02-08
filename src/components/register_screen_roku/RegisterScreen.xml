@@ -75,20 +75,11 @@
             selected='{(onPasswordButtonSelected(value))}'
             width='{{=zapp_viewUtils_UIBInt("input_w")}}' />
 
-        <!-- <ZActionButton
-            id='confirmPasswordInput'
-            text='{{confirmPasswordText}}'
-            style='{{:inputStyle}}'
-            labelXOffset='9'
-            buttonType='{{confirmPasswordButtonType}}'
-            selected='{(onConfirmPasswordButtonSelected(value))}'
-            width='{{=zapp_viewUtils_UIBInt("input_w")}}' /> -->
-
         <ZActionButton
             id='registerButton'
             style='{{:registerButtonStyle}}'
             enabled='{{isRegisterButtonEnabled}}'
-            visible='{{isLoading:transform=MOM_transform_invertBoolean}}'
+            visible='{{isLoading:transform=mx_transform_invertBoolean}}'
             selected='{(onRegisterButtonSelected(value))}'
             width='{{=zapp_viewUtils_UIBInt("input_w")}}' />
 

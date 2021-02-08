@@ -1,4 +1,5 @@
 import "pkg:/source/aws_cognito_login_screen_roku/AWSLoginScreenVM.bs"
+import "pkg:/source/roku_modules/mx/VMTransformFunctions.brs"
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '++ Initialization
