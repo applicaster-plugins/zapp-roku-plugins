@@ -18,7 +18,7 @@ namespace zapp.tests
 
       plugin = new zapp.BasePlugin(pluginConfiguration)
 
-      m.plugin = new GigyaAuthPlugin(plugin)
+      m.plugin = new ZGigyaAuthPlugin(plugin)
       m.plugin.request = m.request
       m.analyticsManager = { "id": "analyticsManager" }
     end function
@@ -36,7 +36,7 @@ namespace zapp.tests
 
       plugin = new zapp.BasePlugin(pluginConfiguration)
 
-      m.plugin = new GigyaAuthPlugin(plugin)
+      m.plugin = new ZGigyaAuthPlugin(plugin)
 
       m.assertEqual(m.plugin.baseUrl, "host/")
       m.assertNotInvalid(m.plugin.request)
