@@ -1,0 +1,237 @@
+namespace zapp.tests
+
+  @tags("public", "auth")
+  @suite
+  class TVETokenLoaderPrehookTests extends tests.BaseTestSuite
+
+    override function beforeEach()
+      super.beforeEach()
+      m.pluginJson = tests.utils.createPluginJson("tve_token_loader_prehook_roku", {
+        "endpoint": "e/"
+        "domain": "d"
+        "matching_path": "itemType"
+        "matching_value": "video"
+      })
+      m.tvePluginJson = tests.utils.createPluginJson("AdobeAccessEnabler", {
+        publicKey: "pub"
+        secret: "sec"
+        requestorID: "rqd"
+        resourceID: "rod"
+        base_url: "#url"
+      })
+      mioc.setInstance("plugins", [
+        m.pluginJson,
+        m.tvePluginJson
+      ])
+
+      mioc.setInstance("constants", { "applicasterDeviceId": "did" })
+
+      m.plugin = new TVETokenLoaderPrehook()
+    end function
+
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("constructor")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("no loader plugin")
+    function _()
+      plugins = m.plugin.getClassInstance("zapp.PluginManager")
+      loaderPlugin = new zapp.BasePlugin(invalid)
+      adobePlugin = m.plugin.plugins.getPluginById("AdobeAccessEnabler")
+
+      m.expectOnce(plugins, "getPluginById", ["tve_token_loader_prehook_roku"], loaderPlugin)
+      m.expectOnce(plugins, "getPluginById", ["AdobeAccessEnabler"], adobePlugin)
+
+      m.plugin = new TVETokenLoaderPrehook()
+      m.assertFalse(m.plugin.isValid)
+    end function
+
+    @it("no adobe config")
+    function _()
+      plugins = m.plugin.getClassInstance("zapp.PluginManager")
+      loaderPlugin = new zapp.BasePlugin(m.pluginJson)
+      adobePlugin = invalid
+
+      m.expectOnce(plugins, "getPluginById", ["tve_token_loader_prehook_roku"], loaderPlugin)
+      m.expectOnce(plugins, "getPluginById", ["AdobeAccessEnabler"], adobePlugin)
+
+      m.plugin = new TVETokenLoaderPrehook()
+      m.assertFalse(m.plugin.isValid)
+    end function
+
+    @it("testConstructor_valid")
+    function _()
+      m.assertTrue(m.plugin.isValid)
+      m.assertNotEmpty(m.plugin.tveConfig)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("execute")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("invalid")
+    function _()
+      m.plugin.isValid = false
+      m.expectNone(m.plugin, "isItemMatch", false)
+      m.assertEqual(m.plugin.execute(), "error")
+    end function
+
+    @it("no item")
+    @params(invalid)
+    @params({ "currentItem": invalid })
+    function _(currentSelection)
+      m.expectOnce(m.plugin, "getInstance", ["currentSelection"], currentSelection)
+      m.expectNone(m.plugin, "isItemMatch", false)
+
+      m.assertEqual(m.plugin.execute(), "error")
+
+    end function
+
+    @it("no match")
+    function _()
+      currentSelection = { "id": "currentSelection" }
+      item = {
+        id: "item"
+        url: "url"
+        title: "t"
+      }
+      currentSelection.currentItem = item
+
+      m.expectOnce(m.plugin, "getInstance", ["currentSelection"], currentSelection)
+      m.expectOnce(m.plugin, "isItemMatch", [item], false)
+      m.expectNone(m.plugin, "loadTokens")
+
+      m.assertEqual(m.plugin.execute(), "success")
+
+    end function
+
+    @it("item - is match")
+    @params(false, "error")
+    @params(true, "success")
+    function _(response, expectedResult)
+      currentSelection = { "id": "currentSelection" }
+      item = {
+        id: "item"
+        title: "t"
+      }
+      currentSelection.currentItem = item
+      m.expectOnce(m.plugin, "getInstance", ["currentSelection"], currentSelection)
+      m.expectOnce(m.plugin, "isItemMatch", [item], true)
+
+      m.expectOnce(m.plugin, "loadTokens", [item], response)
+
+      m.assertEqual(m.plugin.execute(), expectedResult)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("isItemMatch")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("isItemMatch")
+    @params("all", "", {}, true)
+    @params("all", "", { "id": "stuff" }, true)
+    @params("", "", { "id": "stuff" }, false)
+    @params("free", "true", { "id": "stuff" }, false)
+    @params("free", "true", { "id": "stuff", "json": { "free": false } }, false)
+    @params("free", "true", { "id": "stuff", "json": { "free": true } }, true)
+    @params("itemType", "channel", { "id": "stuff", "json": { "itemType": "video" } }, false)
+    @params("itemType", "video", { "id": "stuff", "json": { "itemType": "video" } }, true)
+    function _(path, value, item, isMatch)
+      m.plugin.matchingPath = path
+      m.plugin.matchingValue = value
+      m.assertEqual(m.plugin.isItemMatch(item), isMatch)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("getResourceText")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("getResourceText")
+    function _()
+      item = { "id": "id1", "title": "t1" }
+      m.assertEqual(m.plugin.getResourceText(item), "rqd")
+
+    end function
+
+    @it("using resource xml")
+    function _()
+      m.plugin.isUsingResourceXml = true
+      item = { "id": "id1", "title": "t1" }
+      text = m.plugin.getResourceText(item)
+
+      expected = `<rss
+    version='2.0'
+    xmlns:media='http://search.yahoo.com/mrss/'>
+  <channel>
+    <title>rqd</title>
+    <item>
+      <title>t1</title>
+      <guid>id1</guid>
+    </item>
+  </channel>
+</rss>`
+      m.assertEqual(text, expected)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("singRequest")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("signRequest")
+    function _()
+      testTimestamp = 1531234280
+      testNonce = "8bab0b10-3cf6-4a95-94b6-0a0b14d19a33"
+      authHeader = m.plugin.signRequest("POST", "/path", testNonce, testTimestamp)
+      m.assertNotInvalid(authHeader)
+      m.assertEqual(authHeader, "POST requestor_id=rqd, nonce=8bab0b10-3cf6-4a95-94b6-0a0b14d19a33, signature_method=HMAC-SHA1, request_time=1531234280000, request_uri=/path, public_key=pub, signature=f2WXvZ00hPL81BL0L9J8xHxxZp0=")
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("loadTokens")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("only short")
+    @params(false, false)
+    @params(true, true)
+    function _(shortResult, expectedResult)
+      item = { "id": "item" }
+
+      m.expectOnce(m.plugin, "getSessionStoreValue", ["AdobeAccessEnabler", "token"], "t")
+      m.expectOnce(m.plugin, "setSessionStoreValue", ["tve", "short-token", invalid])
+      m.expectOnce(m.plugin, "loadShortToken", [item], shortResult)
+
+      m.plugin.isLoadingShortToken = true
+
+      m.assertEqual(m.plugin.loadTokens(item), expectedResult)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("loadShortToken")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("loadShortToken")
+    @params(invalid, invalid, false)
+    @params({}, invalid, false)
+    @params({ serializedToken: "c3Q=" }, "st", true)
+    function _(response, shortToken, expectedResult)
+      item = { "id": "item" }
+
+      m.expectOnce(m.plugin, "signRequest", ["GET", "/api/v1/tokens/media"], "aut")
+      expectedHeaders = {
+        "Accept": "application/json"
+        "Authorization": "aut"
+      }
+      m.expectOnce(m.plugin, "getResourceText", [item], "rt")
+
+      url = "#url/api/v1/tokens/media?deviceId=did&requestor=rqd&resource=rt"
+      m.expectOnce(m.plugin.request, "getJsonSync", [url, expectedHeaders], response)
+
+      m.expectOnce(m.plugin, "setSessionStoreValue", ["tve", "short-token", shortToken])
+
+      m.assertEqual(m.plugin.loadShortToken(item), expectedResult)
+    end function
+
+  end class
+end namespace

@@ -1,4 +1,5 @@
 import "pkg:/source/aws_cognito_login_screen_roku/AWSLoginScreenVM.bs"
+import "pkg:/source/roku_modules/mx/VMTransformFunctions.brs"
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '++ Initialization
@@ -7,39 +8,13 @@ import "pkg:/source/aws_cognito_login_screen_roku/AWSLoginScreenVM.bs"
 function init()
   m.top.isConsumingOriginEntry = true
   m.top.isForcingMenuHidden = true
-  M_createNodeVars() 
-  m.top._styledControlIds = [
-    "backgroundRect"
-    "backgroundPoster"
-    "logoPoster"
-    "labelsGroup"
-    "titleText"
-    "descriptionText"
-    "optional1Text"
-    "optional2Text"
-    "controlsGroup"
-    "usernameInput"
-    "passwordInput"
-    "loginButton"
-    "loadingIndicator"
-    "errorText"
-    "errorGroup"
-    "errorBackground"
-  ] 
-
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '++ Overridden methods
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-function getControlName()
-  return "AWSLoginScreen"
-end function
-
 function createVM()
   vm = new AWSLoginScreenVM(m.top.riversJson)
-  applyStyleJsonToScreen()
-
   return vm
 end function

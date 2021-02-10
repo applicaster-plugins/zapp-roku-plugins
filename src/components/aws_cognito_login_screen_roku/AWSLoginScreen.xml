@@ -1,17 +1,18 @@
 <?xml version='1.0' encoding='utf-8'?>
 <component
     name='AWSLoginScreen'
-    extends='ZUIBScreen'>
+    extends='UIBScreen'
+    vm='AWSLoginScreenVM'>
 
   <interface></interface>
 
   <children>
     <Rectangle
         id='backgroundRect'
-        color='{{:vm.backgroundColor}}' />
+        color='{{:backgroundColor}}' />
     <Poster
         id='backgroundPoster'
-        uri='{{:vm.backgroundUrl}}'
+        uri='{{:backgroundUrl}}'
         loadSync='true'
         loadDisplayMode='scaleToFill'
         loadWidth='1920'
@@ -21,41 +22,41 @@
     <Poster
         id='logoPoster'
         loadSync='true'
-        translation='{{:vm.logoPosition}}'
-        loadWidth='{{:vm.logoWidth}}'
-        loadHeight='{{:vm.logoHeight}}'
-        width='{{:vm.logoWidth}}'
-        height='{{:vm.logoHeight}}'
-        uri='{{:vm.logoImageUrl}}' />
+        translation='{{:logoPosition}}'
+        loadWidth='{{:logoWidth}}'
+        loadHeight='{{:logoHeight}}'
+        width='{{:logoWidth}}'
+        height='{{:logoHeight}}'
+        uri='{{:logoImageUrl}}' />
     <Group
         id='loginGroup'
-        visible='{{vm.isRefreshing, isSettingInitialValue=true,transform=MOM_transform_invertBoolean}}'>
+        visible='{{isRefreshing:transform=mx_transform_invertBoolean}}'>
       <LayoutGroup
           id='labelsGroup'
           layoutDirection='vert'
           translation='[230,310]'
           itemSpacings='[56, 56, 26]'>
-        <MLabel
+        <mv_MLabel
             id='titleText'
-            style='{{:vm.titleStyle}}'
+            style='{{:titleStyle}}'
             wrap='true'
             width='610' />
 
-        <MLabel
+        <mv_MLabel
             id='descriptionText'
-            style='{{:vm.descriptionStyle}}'
+            style='{{:descriptionStyle}}'
             wrap='true'
             width='610' />
 
-        <MLabel
+        <mv_MLabel
             id='optional1Text'
-            style='{{:vm.optional1Style}}'
+            style='{{:optional1Style}}'
             wrap='true'
             width='610' />
 
-        <MLabel
+        <mv_MLabel
             id='optional2Text'
-            style='{{:vm.optional2Style}}'
+            style='{{:optional2Style}}'
             wrap='true'
             width='610' />
 
@@ -67,27 +68,28 @@
           itemSpacings='[10, 45, 52]'>
         <ZActionButton
             id='usernameInput'
-            style='{{:vm.inputStyle}}'
+            style='{{:inputStyle}}'
             labelXOffset='9'
-            text='{{vm.usernameText}}'
-            buttonType='{{vm.usernameButtonType}}'
-            selected='{(vm.onUsernameButtonSelected,isSettingInitialValue=false)}'
+            text='{{usernameText}}'
+            buttonType='{{usernameButtonType}}'
+            selected='{(onUsernameButtonSelected(value))}'
             width='610' />
 
+            
         <ZActionButton
             id='passwordInput'
-            text='{{vm.passwordText}}'
-            style='{{:vm.inputStyle}}'
+            text='{{passwordText}}'
+            style='{{:inputStyle}}'
             labelXOffset='9'
-            buttonType='{{vm.passwordButtonType}}'
-            selected='{(vm.onPasswordButtonSelected,isSettingInitialValue=false)}'
+            buttonType='{{passwordButtonType}}'
+            selected='{(onPasswordButtonSelected(value))}'
             width='610' />
 
         <ZActionButton
             id='loginButton'
-            style='{{:vm.loginButtonStyle}}'
-            visible='{{vm.isLoading,  isSettingInitialValue=true,transform=MOM_transform_invertBoolean}}'
-            selected='{(vm.onLoginButtonSelected,isSettingInitialValue=false)}'
+            style='{{:loginButtonStyle}}'
+            visible='{{isLoading:transform=mx_transform_invertBoolean}}'
+            selected='{(onLoginButtonSelected(value))}'
             width='610' />
 
       </LayoutGroup>
@@ -95,21 +97,21 @@
       <Group
           id='errorGroup'
           translation='[1720,0.0]'
-          visible='{{vm.isErrorShowing}}'>
+          visible='{{isErrorShowing}}'>
         <Poster
             id='errorBackground'
             blendColor='#42454A'
             uri='pkg:/asset-bundle/button-backgrounds.9.png'
             width='500'
             height='180' />
-        <MLabel
+        <mv_MLabel
             id='errorText'
             width='500'
             height='180'
             vertAlign='center'
             horizAlign='center'
-            style='{{vm.errorStyle}}'
-            text='{{vm.errorText}}' />
+            style='{{errorStyle}}'
+            text='{{errorText}}' />
       </Group>
     </Group>
 
@@ -118,7 +120,7 @@
         width='100'
         height='100'
         translation='[1000,500]'
-        isActive='{{vm.isLoading, isSettingInitialValue=true}}'
+        isActive='{{isLoading}}'
         backgroundVisible='false'
         text='' />
 
@@ -127,7 +129,7 @@
         width='1920'
         height='1080'
         translation='[0,0]'
-        isActive='{{vm.isRefreshing, isSettingInitialValue=true}}'
+        isActive='{{isRefreshing}}'
         backgroundVisible='false'
         text='' />
   </children>

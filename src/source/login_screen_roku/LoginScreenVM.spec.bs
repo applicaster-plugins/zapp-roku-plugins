@@ -1,0 +1,513 @@
+namespace zapp.tests
+  @tags("public", "auth", "vm")
+  @suite
+  class LoginScreenVMTests extends tests.BaseTestSuite
+    override function beforeEach()
+      super.beforeEach()
+
+      m.riversJson = {
+        "name": "SmallSystemFont"
+        "id": "11937f34-a364-4601-a0du3-1dace40fe0ed"
+        "styles": {
+          "title_text": "#title_text"
+          "description_text": "#description_text"
+          "optional_text1_text": "#optional_text1_text"
+          "optional_text2_text": "#optional_text2_text"
+          "login_button_text": "#login_button_text"
+          "username_placeholder_text": "#username_placeholder_text"
+          "password_placeholder_text": "#password_placeholder_text"
+          "title_font_name": "SmallSystemFont"
+          "title_font_size": "23"
+          "title_color": "#ff0000ff"
+          "description_font_name": "SmallSystemFont"
+          "description_font_size": "23"
+          "description_color": "#ff0000ff"
+          "error_font_name": "SmallSystemFont"
+          "error_font_size": "23"
+          "error_color": "#ff0000ff"
+          "optional_text1_font_name": "SmallSystemFont"
+          "optional_text1_font_size": "23"
+          "optional_text1_color": "#ff0000ff"
+          "optional_text2_font_name": "SmallSystemFont"
+          "optional_text2_font_size": "23"
+          "optional_text2_color": "#ff0000ff"
+          "input_font_name": "SmallSystemFont"
+          "input_font_size": "23"
+          "input_placeholder_font_name": "SmallSystemFont"
+          "input_placeholder_font_size": "23"
+          "input_color": "#ff0000ff"
+          "input_highlighted_font_name": "SmallSystemFont"
+          "input_highlighted_font_size": "23"
+          "input_highlighted_color": "#ff0000ff"
+          "login_button_font_name": "SmallSystemFont"
+          "login_button_font_size": "23"
+          "login_button_color": "#ff0000ff"
+          "login_button_background_color": "#ff0000ff"
+          "login_button_highlighted_font_name": "SmallSystemFont"
+          "login_button_highlighted_font_size": "23"
+          "login_button_highlighted_color": "#ff0000ff"
+          "login_button_highlighted_background_color": "#ff0000ff"
+          "input_color": "#ff0000ff"
+          "input_placeholder_color": "#ff0000ff"
+          "background_color": "#ff0000ff"
+        }
+      }
+
+      m.vm = new LoginScreenVM(m.riversJson)
+      m.vm.initialize()
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("constructor")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("constructor")
+    function _()
+      m.assertEqual(m.vm.focusId, "usernameInput")
+      m.assertEqual(m.vm.riversJson, m.riversJson)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("processStyles")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @ignore("- FIXME -this vm method uses new ViewStyle methods, so the tests are out of date")
+    @it("processStyles")
+    function _()
+      m.vm.processStyles(m.riversJson.styles)
+
+      m.assertEqual(m.vm.backgroundColor, "#0000ffff")
+      m.assertEqual(m.vm.titleStyle.text, "#title_text")
+      m.assertEqual(m.vm.titleStyle.font, "Small,23")
+      m.assertEqual(m.vm.titleStyle.color, "#0000ffff")
+
+      m.assertEqual(m.vm.descriptionStyle.text, "#description_text")
+      m.assertEqual(m.vm.descriptionStyle.font, "Small,23")
+      m.assertEqual(m.vm.descriptionStyle.color, "#0000ffff")
+
+      m.assertEqual(m.vm.errorStyle.font, "Small,23")
+      m.assertEqual(m.vm.errorStyle.color, "#0000ffff")
+
+      m.assertEqual(m.vm.optional1Style.text, "#optional_text1_text")
+      m.assertEqual(m.vm.optional1Style.font, "Small,23")
+      m.assertEqual(m.vm.optional1Style.color, "#0000ffff")
+
+      m.assertEqual(m.vm.optional2Style.text, "#optional_text2_text")
+      m.assertEqual(m.vm.optional2Style.font, "Small,23")
+      m.assertEqual(m.vm.optional2Style.color, "#0000ffff")
+
+      'login button
+      m.assertEqual(m.vm.loginButtonStyle.buttonType, "center")
+      m.assertEqual(m.vm.loginButtonStyle.text, "#login_button_text")
+
+      m.assertEqual(m.vm.loginButtonStyle.normal.font, "Small,23")
+      m.assertEqual(m.vm.loginButtonStyle.normal.color, "#0000ffff")
+
+      m.assertEqual(m.vm.loginButtonStyle.highlighted.font, "Small,23")
+      m.assertEqual(m.vm.loginButtonStyle.highlighted.color, "#0000ffff")
+
+      'input button
+      m.assertInvalid(m.vm.inputStyle.buttonType)
+
+      m.assertEqual(m.vm.inputStyle.normal.font, "Small,23")
+      m.assertEqual(m.vm.inputStyle.normal.color, "#0000ffff")
+
+      m.assertEqual(m.vm.inputStyle.highlighted.font, "Small,23")
+      m.assertEqual(m.vm.inputStyle.highlighted.color, "#0000ffff")
+      m.assertEqual(m.vm.inputStyle.placeholderFont, "Small,23")
+
+      m.assertEqual(m.vm.usernamePlaceholderText, "#username_placeholder_text")
+      m.assertEqual(m.vm.passwordPlaceholderText, "#password_placeholder_text")
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onLoginButtonSelected")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+    @it("onLoginButtonSelected")
+    function _()
+      m.vm.isLoading = false
+      m.vm.isCredsValid = true
+
+      m.expectOnce(m.vm, "processLogin")
+
+      m.vm.onLoginButtonSelected(true)
+    end function
+
+    @it("in progress")
+    function _()
+      m.vm.isLoading = true
+      m.expectNone(m.vm, "processLogin")
+
+      m.vm.onLoginButtonSelected(true)
+    end function
+
+    @it("invalid creds")
+    function _()
+      m.vm.isLoading = false
+      m.vm.isCredsValid = false
+      m.expectNone(m.vm, "processLogin")
+
+      m.vm.onLoginButtonSelected(true)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onUsernameButtonSelected")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("onUsernameButtonSelected")
+    @params("", "")
+    @params("other", "other")
+    function _(text, expectedText)
+      m.vm.username = text
+
+      m.expectOnce(m.vm, "showKeyboardDialog", ["Enter your username", expectedText, "onUsernameKeyboardDialogDismissal"])
+
+      m.vm.onUsernameButtonSelected(true)
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onPasswordButtonSelected")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("onPasswordButtonSelected")
+    @params("", "")
+    @params("other", "other")
+    function _(text, expectedText)
+      m.vm.password = text
+
+      m.expectOnce(m.vm, "showKeyboardDialog", ["Enter your password", expectedText, "onPasswordKeyboardDialogDismissal", true])
+
+      m.vm.onPasswordButtonSelected(true)
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onUsernameKeyboardDialogDismissal")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("onUsernameKeyboardDialogDismissal")
+    @params("", "placeholder", "textInputPlaceholder")
+    @params("   ", "placeholder", "textInputPlaceholder")
+    @params("george@foo.bar", "george@foo.bar", "textInput")
+    function _(text, expectedText, expectedButtonStyle)
+
+      m.expectOnce(m.vm, "checkCredsValid")
+
+      m.vm.usernamePlaceholderText = "placeholder"
+
+      m.vm.onUsernameKeyboardDialogDismissal(text)
+
+      m.assertEqual(m.vm.usernameText, expectedText)
+      m.assertEqual(m.vm.usernameButtonType, expectedButtonStyle)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onPasswordKeyboardDialogDismissal")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("onPasswordKeyboardDialogDismissal")
+    @params("", "placeholder", "textInputPlaceholder", "")
+    @params("   ", "placeholder", "textInputPlaceholder", "")
+    @params("12345678", "********", "textInput", "12345678")
+    function _(text, expectedText, expectedButtonStyle, expectedPassword)
+
+      m.vm.passwordPlaceholderText = "placeholder"
+      m.expectOnce(m.vm, "checkCredsValid")
+
+      m.vm.onPasswordKeyboardDialogDismissal(text)
+
+      m.assertEqual(m.vm.passwordText, expectedText)
+      m.assertEqual(m.vm.password, expectedPassword)
+      m.assertEqual(m.vm.passwordButtonType, expectedButtonStyle)
+    end function
+
+
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onKeyPressUp")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("onKeyPressUp")
+    @params("usernameInput", "usernameInput")
+    @params("passwordInput", "usernameInput")
+    @params("loginButton", "passwordInput")
+    function _(focusId, expectedFocusId)
+      m.vm.focusId = focusId
+
+      m.assertTrue(m.vm.onKeyPressUp())
+      m.assertEqual(m.vm.focusId, expectedFocusId)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onKeyPressDown")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("onKeyPressDown")
+    @params("usernameInput", "passwordInput")
+    @params("passwordInput", "loginButton")
+    @params("loginButton", "registerButton")
+    @params("registerButton", "forgotPasswordButton")
+    @params("forgotPasswordButton", "forgotPasswordButton")
+    function _(focusId, expectedFocusId)
+      m.vm.focusId = focusId
+
+      m.assertTrue(m.vm.onKeyPressDown())
+      m.assertEqual(m.vm.focusId, expectedFocusId)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onKeyPressBack")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("dismisses if subscreen is not visible")
+    function _()
+      m.vm.isSubScreenVisible = false
+      m.expectOnce(m.vm, "dismiss", ["cancel"])
+
+      m.assertTrue(m.vm.onKeyPressBack())
+      m.assertEqual(m.vm.focusId, "usernameInput")
+    end function
+
+
+    @it("does not dismiss if subscreen is visible")
+    function _()
+      m.vm.isSubScreenVisible = true
+      m.expectNone(m.vm, "dismiss", ["cancel"])
+
+      m.assertTrue(m.vm.onKeyPressBack())
+      m.assertEqual(m.vm.focusId, "usernameInput")
+    end function
+
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("checkCredsValid")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("checkCredsValid")
+    @params(invalid, invalid, false)
+    @params("", "", false)
+    @params("   ", "   ", false)
+    @params("valid", "", false)
+    @params("valid", "   ", false)
+    @params(invalid, "valid", false)
+    @params("", "valid", false)
+    @params("  ", "valid", false)
+    @params("valid", "valid", true)
+    function _(username, password, expectedValue)
+      m.vm.usernameText = username
+      m.vm.password = password
+
+      m.vm.checkCredsValid()
+
+      m.assertEqual(m.vm.isCredsValid, expectedValue)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("processLogin")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("invalid creds")
+    function _()
+      m.vm.isCredsValid = false
+
+      m.expectNone(m.vm, "createInstance")
+      m.expectNone(m.vm, "createAuthTask")
+
+      m.vm.processLogin()
+
+      m.assertFalse(m.vm.isLoading)
+
+    end function
+
+    @it("valid creds")
+    function _()
+      m.vm.isCredsValid = true
+      m.vm.usernameText = "user"
+      m.vm.password = "pass"
+      m.vm.providerID = "p"
+      authTask = { "id": "authTask" }
+      creds = { "id": "creds" }
+
+      m.expectOnce(m.vm, "createAuthTask", ["execLogIn", "p", m.vm.onLoginComplete, creds], authTask)
+      m.expectOnce(m.vm, "createInstance", ["AuthenticationCredentials"], creds)
+
+      m.vm.processLogin()
+
+      m.assertEqual(m.vm.authTask, authTask)
+
+      m.assertEqual(creds.username, "user")
+      m.assertEqual(creds.password, "pass")
+      m.assertEqual(m.vm.state, "loading")
+
+      m.assertTrue(m.vm.isLoading)
+      m.assertFalse(m.vm.isLoginButtonEnabled)
+      m.assertFalse(m.vm.isErrorShowing)
+      m.assertEmpty(m.vm.errorText)
+
+
+    end function
+
+    @ignore("- only use these with your own creds, and for non suit tests")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @tags("integration")
+    @describe("INTEGRATION tests processLogin")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @beforeEach
+    override function integratin_processLogin_beforeEach()
+      m.beforeEach()
+      mioc.setInstance("constants", { "simulateInAppPurchases": true })
+      mioc.setInstance("entitlements", createObject("roSGNode", "SimpleEntitlements"))
+      mioc.setInstance("authenticationData", createObject("roSGNode", "AuthenticationData"))
+      mioc.setInstance("buildConfig", {})
+      m.user = createObject("roSGNode", "user")
+      mioc.setInstance("user", m.user)
+      mioc.setInstance("plugins", [{
+        "identifier": "aws_cognito_auth_plugin",
+        "api": {
+          "require_startup_execution": false,
+          "class_name": "AwsCognitoAuthPlugin",
+          "interfaces": ["IAuthProvider"]
+        },
+        "type": "auth_provider"
+        "configuration_json": {
+          "host": "SOME_HOST"
+          "region": "SOME_REGION"
+          "endpoint": "SOME_ENDPOINT"
+          "app_client_id": "SOME_CLIENT_ID"
+        }
+      }])
+
+    end function
+
+    @it("valid creds")
+    function _()
+      m.vm.isCredsValid = true
+      m.vm.usernameText = "SOME_USER@email.com"
+      m.vm.password = "SOME_PASSWORD"
+
+      m.expectOnce(m.vm, "createInstance", ["AuthenticationCredentials"], createObject("roSGNode", "AuthenticationCredentials"))
+
+      m.vm.processLogin()
+
+      tests.utils.waitForField(m.vm, "isLoading", 3000, 5)
+
+      m.assertEqual(m.vm.state, "finished")
+      m.assertFalse(m.vm.isLoading)
+    end function
+
+    @it("processLogin_integration_test_invalid")
+    function _()
+
+      m.vm.isCredsValid = true
+      m.vm.usernameText = "user"
+      m.vm.password = "pass"
+
+      m.expectOnce(m.vm, "createInstance", ["AuthenticationCredentials"], createObject("roSGNode", "AuthenticationCredentials"))
+
+      m.vm.processLogin()
+
+      tests.utils.waitForField(m.vm, "isLoading")
+
+      m.assertEqual(m.vm.state, "ready")
+      m.assertFalse(m.vm.isLoading)
+      m.assertEqual(m.vm.errorText, "User does not exist.")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onLoginComplete")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("valid")
+    function _()
+      m.vm.state = "loading"
+      m.expectOnce(m.vm, "dismiss", ["success"])
+      m.expectOnce(m.vm, "signalAppLaunchDialog", [true])
+
+      m.vm.onLoginComplete({ "state": "valid" })
+
+      m.assertFalse(m.vm.isLoading)
+
+    end function
+
+    @it("fail")
+    @params(invalid, "Unknown error")
+    @params({}, "Unknown error")
+    @params({ "state": "error" }, "Unknown error")
+    @params({ "state": "error", "message": "m" }, "m")
+    function onLoginComplete_fail(result, expectedMessage)
+      m.vm.state = "loading"
+      m.expectNone(m.vm, "dismiss")
+
+      m.vm.onLoginComplete(result)
+
+      m.assertFalse(m.vm.isLoading)
+      m.assertEqual(m.vm.state, "ready")
+      m.assertEqual(m.vm.errorText, expectedMessage)
+      m.assertTrue(m.vm.isErrorShowing)
+      m.assertTrue(m.vm.isLoginButtonEnabled)
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("refreshLogin")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("refreshLogin")
+    function _()
+      authTask = { "id": "authTask" }
+      m.vm.providerId = "p"
+
+      m.expectOnce(m.vm, "createAuthTask", ["execLoad", "p", m.vm.onRefreshComplete], authTask)
+
+      m.vm.refreshLogin()
+
+      m.assertEqual(m.vm.authTask, authTask)
+
+      m.assertTrue(m.vm.isRefreshing)
+      m.assertFalse(m.vm.isLoginButtonEnabled)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onRefreshComplete")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("dismisses on succesful refresh")
+    function _()
+      user = { "id": "user", isLoggedIn: true }
+      m.expectOnce(m.vm, "getInstance", ["user"], user)
+      m.expectOnce(m.vm, "dismiss", ["success"])
+
+      m.vm.isLoading = true
+      m.vm.isRefreshing = true
+
+      m.vm.onRefreshComplete({})
+
+    end function
+
+
+    @it("does not dismiss on refresh failure")
+    function _()
+      user = { "id": "user", isLoggedIn: false }
+      m.expectOnce(m.vm, "getInstance", ["user"], user)
+      m.expectNone(m.vm, "dismiss", ["success"])
+      m.expectOnce(m.vm, "signalAppLaunchDialog", [false])
+
+      m.vm.isLoading = true
+      m.vm.isRefreshing = true
+      m.vm.onRefreshComplete({})
+
+      m.assertNotEqual(m.vm.state, "success")
+
+      m.assertFalse(m.vm.isRefreshing)
+      m.assertFalse(m.vm.isLoading)
+
+    end function
+
+  end class
+end namespace

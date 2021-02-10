@@ -2,7 +2,7 @@
 <!-- Copyright 2016 Roku Corp.  All Rights Reserved. -->
 
 <component name="Communication" extends="Task">
-  <script type="text/brightscript" uri="pkg:/source/maestro/lib/ThreadUtils.brs" />
+  
 
   <interface>
 
@@ -23,9 +23,8 @@
 
   </interface>
   
-  <script type="text/brightscript" uri="pkg:/source/maestro/lib/ThreadUtils.brs" />
+  
   <script type="text/brightscript" uri="Utils.brs"/> 
-  <script type="text/brightscript" uri="Communication.brs"/>
   <script type="text/brightscript" uri="Request.brs"/>
 
 </component>

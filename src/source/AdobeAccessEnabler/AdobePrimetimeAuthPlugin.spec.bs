@@ -1,0 +1,314 @@
+namespace zapp.tests
+
+  @tags("public", "auth")
+  @suite
+  class AdobePrimetimeAuthpluginTests extends tests.BaseTestSuite
+
+    override function beforeEach()
+      super.beforeEach()
+      pluginConfiguration = {
+        "identifier": "AdobeAccessEnabler",
+        "configuration_json": {
+          publicKey: "pub"
+          secret: "sec"
+          requestorID: "rqd"
+          resourceID: "rod"
+          base_url: "#url"
+        }
+      }
+
+      mioc.setInstance("constants", { "applicasterDeviceId": "did" })
+
+      plugin = new zapp.BasePlugin(pluginConfiguration)
+
+      m.plugin = new AdobePrimetimeAuthPlugin(plugin)
+    end function
+
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("constructor")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("testConstructor_tests")
+    function _()
+      m.assertEqual(m.plugin.request.__className, "zapp.Request")
+      m.assertEqual(m.plugin.JWTUtil.__className, "zapp.JWTUtil")
+      m.assertEqual(m.plugin.uri.__className, "zapp.URI")
+      m.assertEqual(m.plugin.requestorID, "rqd")
+      m.assertEqual(m.plugin.resourceID, "rod")
+      m.assertEqual(m.plugin.secret, "sec")
+      m.assertEqual(m.plugin.publicKey, "pub")
+      m.assertEqual(m.plugin.baseUrl, "#url")
+      m.assertEqual(m.plugin.deviceId, "did")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("getAccountInfo")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("getAccountInfo")
+    function _()
+      m.plugin.authData = {
+        "user": {
+          userId: "id"
+        }
+      }
+      m.assertEqual(m.plugin._getAccountInfo(), {
+        id: "id"
+        email: "anonymous@anon.com"
+        username: "anonymous"
+      })
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("verify")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("expired")
+    function _()
+      result = { "id": "result" }
+
+      m.expectOnce(m.plugin, "isAuthDataExpired", [], true)
+      m.expectNone(m.plugin, "getAuthorization", [])
+      m.expectOnce(m.plugin, "createErrorResult", ["Invalid token for verification"], result)
+
+      m.assertEqual(m.plugin._verify(), result)
+    end function
+
+    @it("valid")
+    function _()
+      result = { "id": "result" }
+
+      m.expectOnce(m.plugin, "isAuthDataExpired", [], false)
+      m.expectOnce(m.plugin, "getAuthorization", [], result)
+
+      m.expectNone(m.plugin, "createErrorResult")
+
+      m.assertEqual(m.plugin._verify(), result)
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("regcode")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("valid")
+    function _()
+      response = {
+        "id": "0c0166e1-9596-4826-a6a4-85a19692d2f4"
+        "code": "c"
+      }
+      m.expectOnce(m.plugin, "signRequest", ["POST", "/reggie/v1/rqd/regcode"], "aut")
+      expectedHeaders = {
+        "Accept": "application/json"
+        "Authorization": "aut"
+      }
+
+      url = "#url/reggie/v1/rqd/regcode"
+      m.expectOnce(m.plugin.request, "post", [url, "deviceId=did", expectedHeaders], response)
+
+      result = { "id": "result" }
+      m.expectOnce(m.plugin, "createRegCodeResult", ["c"], result)
+
+      m.assertEqual(m.plugin._regcode(), result)
+    end function
+
+    @it("invalid")
+    @params(invalid)
+    @params({})
+    @params({ code: invalid })
+    @params({ code: "" })
+    function _(response)
+      m.expectOnce(m.plugin, "signRequest", ["POST", "/reggie/v1/rqd/regcode"], "aut")
+      expectedHeaders = {
+        "Accept": "application/json"
+        "Authorization": "aut"
+      }
+
+      url = "#url/reggie/v1/rqd/regcode"
+      m.expectOnce(m.plugin.request, "post", [url, "deviceId=did", expectedHeaders], response)
+
+      result = { "id": "result" }
+      m.expectOnce(m.plugin, "createRegCodeResult", [invalid, -1, "Unknown error"], result)
+
+      m.assertEqual(m.plugin._regcode(), result)
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("poll")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("valid")
+    function _()
+      m.expectOnce(m.plugin, "signRequest", ["GET", "/api/v1/tokens/authn"], "aut")
+      expectedHeaders = {
+        "Accept": "application/json"
+        "Authorization": "aut"
+      }
+
+      url = "#url/api/v1/tokens/authn?deviceId=did&requestor=rqd"
+      response = { "id": "result", "userId": "uid" }
+      m.expectOnce(m.plugin.request, "getJsonSync", [url, expectedHeaders], response)
+
+      result = { "id": "result" }
+      m.expectOnce(m.plugin, "getAuthorization", [], result)
+
+      m.assertEqual(m.plugin._poll(), result)
+    end function
+
+    @it("failure")
+    @params(invalid, invalid, "error")
+    @params(invalid, 400, "error")
+    @params({ "userId": invalid }, 403, "error")
+    @params({ "userId": "" }, 404, "none")
+    @params({ "otherField": "value" }, 410, "none")
+    function _(response, responseCode, expectedState)
+      m.expectOnce(m.plugin, "signRequest", ["GET", "/api/v1/tokens/authn"], "aut")
+      expectedHeaders = {
+        "Accept": "application/json"
+        "Authorization": "aut"
+      }
+      m.plugin.request.lastResponseCode = responseCode
+
+      url = "#url/api/v1/tokens/authn?deviceId=did&requestor=rqd"
+      m.expectOnce(m.plugin.request, "getJsonSync", [url, expectedHeaders], response)
+
+      result = { "id": "result", "state": "error" }
+      m.expectOnce(m.plugin, "createErrorResult", ["Unknown error"], result)
+
+      m.assertEqual(m.plugin._poll(), result)
+
+      m.assertEqual(result.state, expectedState)
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("logout")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("logout")
+    function _()
+      m.expectOnce(m.plugin, "signRequest", ["DELETE", "/api/v1/logout"], "aut")
+      expectedHeaders = {
+        "Accept": "application/json"
+        "Authorization": "aut"
+      }
+      url = "#url/api/v1/logout?deviceId=did"
+      m.expectOnce(m.plugin.request, "delete", [url, invalid, expectedHeaders])
+
+      result = { "id": "result" }
+      m.expectOnce(m.plugin, "createAuthData", [], result)
+
+      m.assertEqual(m.plugin._logOut(), result)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("singRequest")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("signRequest")
+    function _()
+      testTimestamp = 1531234280
+      testNonce = "8bab0b10-3cf6-4a95-94b6-0a0b14d19a33"
+      authHeader = m.plugin.signRequest("POST", "/path", testNonce, testTimestamp)
+      m.assertNotInvalid(authHeader)
+      m.assertEqual(authHeader, "POST requestor_id=rqd, nonce=8bab0b10-3cf6-4a95-94b6-0a0b14d19a33, signature_method=HMAC-SHA1, request_time=1531234280000, request_uri=/path, public_key=pub, signature=f2WXvZ00hPL81BL0L9J8xHxxZp0=")
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("getResourceText")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("no selection")
+    @params(invalid)
+    @params({ "currentItem": invalid })
+    function _(currentSelection)
+      m.expectOnce(m.plugin, "getInstance", ["currentSelection"], currentSelection)
+
+      text = m.plugin.getResourceText()
+      m.assertEqual(text, "rqd")
+    end function
+
+    @it("with selection")
+    function _()
+      m.expectOnce(m.plugin, "getInstance", ["currentSelection"], { "currentItem": { "id": "id1", "title": "t1" } })
+
+      text = m.plugin.getResourceText()
+      ' expected = "<rss"
+      ' expected += chr(10) + "    version=""2.0"""
+      ' expected += chr(10) + "    xmlns:media=""http://search.yahoo.com/mrss/"">"
+      ' expected += chr(10) + "  <channel>"
+      ' expected += chr(10) + "    <title>rqd</title>"
+      ' expected += chr(10) + "    <item>"
+      ' expected += chr(10) + "      <title>t1</title>"
+      ' expected += chr(10) + "      <guid>id1</guid>"
+      ' expected += chr(10) + "    </item>"
+      ' expected += chr(10) + "  </channel>"
+      ' expected += chr(10) + "</rss>"
+
+      expected = "rqd"
+      m.assertEqual(text, expected)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("getAuthorization")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("getAuthorization")
+    @params(invalid, 0)
+    @params(404, 404)
+    @params(503, 503)
+    function _(lastResponseCode, expectedCode)
+      m.plugin.request.lastResponseCode = lastResponseCode
+
+      m.expectOnce(m.plugin, "signRequest", ["GET", "/api/v1/authorize"], "aut")
+      expectedHeaders = {
+        "Accept": "application/json"
+        "Authorization": "aut"
+      }
+      url = "#url/api/v1/authorize?deviceId=did&requestor=rqd&resource=rqd"
+
+      response = {
+        "expires": "1589402085000"
+      }
+      m.expectOnce(m.plugin.request, "getJsonSync", [url, expectedHeaders], response)
+      m.expectOnce(m.plugin.date, "getSecondsUntil", [mc.strToLong("1589402085000") / 1000], 9999)
+      m.plugin.pollResult = { "id": "pollResult" }
+
+      result = { "id": "result" }
+      token = formatJson(response)
+      m.expectOnce(m.plugin, "createAuthData", ["valid", token, token, token, response, 9999, expectedCode, "", m.plugin.pollResult], result)
+
+      m.expectNone(m.plugin, "createErrorResult")
+
+      m.assertEqual(m.plugin.getAuthorization(), result)
+    end function
+
+    @it("fail")
+    @params(invalid)
+    @params({})
+    @params({ "expires": invalid })
+    @params({ "expires": "" })
+    function _(response)
+      m.expectOnce(m.plugin, "signRequest", ["GET", "/api/v1/authorize"], "aut")
+      expectedHeaders = {
+        "Accept": "application/json"
+        "Authorization": "aut"
+      }
+      url = "#url/api/v1/authorize?deviceId=did&requestor=rqd&resource=rqd"
+
+      m.expectOnce(m.plugin.request, "getJsonSync", [url, expectedHeaders], response)
+
+      result = { "id": "result" }
+      token = formatJson(response)
+      m.expectNone(m.plugin, "createAuthData")
+      m.expectOnce(m.plugin, "createErrorResult", ["Unknown error"], result)
+
+      m.assertEqual(m.plugin.getAuthorization(), result)
+    end function
+
+  end class
+end namespace

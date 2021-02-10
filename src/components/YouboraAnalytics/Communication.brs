@@ -30,7 +30,7 @@ sub _run()
 	'Endless loop to listen for events
     while true
 
-        msg = MTU_waitPort(0, m.port)
+        msg = wait(0, m.port)
         mt = type(msg)
         
         if mt = "roSGNodeEvent"

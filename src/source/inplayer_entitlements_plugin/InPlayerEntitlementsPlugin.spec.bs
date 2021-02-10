@@ -1,0 +1,670 @@
+namespace zapp.tests
+  @tags("public", "entitlements")
+  @suite
+  class InplayerEntitlementsTests extends tests.BaseTestSuite
+
+    private authenticationData
+    private availableProducts
+
+    override function beforeEach()
+      super.beforeEach()
+      mioc.setInstance("constants", { id: "constants" })
+      mioc.setInstance("plugins", [])
+      m.authenticationData = createObject("roSGNode", "AuthenticationData")
+      mioc.setInstance("authenticationData", m.authenticationData)
+      m.availableProducts = createObject("roSGNode", "AvailableProducts")
+      mioc.setInstance("availableProducts", m.availableProducts)
+
+      'dependencies for testing plugin creation
+
+      plugin = new zapp.BasePlugin(tests.utils.createPluginJson("1", {
+        "client_id": "id1234"
+        "environment": "dev"
+      }))
+
+      m.plugin = new InPlayerEntitlementsPlugin(plugin)
+      m.plugin.token = "t"
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("execute")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("invalid token")
+    @params("GET", "foo", { "id": "args" })
+    @params("PUSH", "foo2", { "id": "args2" })
+    @params("PUSH", "foo2", { "id": "args2" })
+    function _(method, endpoint, args)
+      m.plugin.token = invalid
+      m.expectNone(m.plugin, "executeApiRequest")
+
+      m.assertInvalid(m.plugin.execute(method, endpoint, args))
+    end function
+
+    @it("execute_valid_token")
+    @params("GET", "foo", { "id": "args" }, { "id": "result" })
+    @params("PUSH", "foo2", { "id": "args2" }, { "id": "result" })
+    @params("PUSH", "foo2", { "id": "args2" }, invalid)
+    function _(method, endpoint, args, result)
+      m.expectOnce(m.plugin, "executeApiRequest", [method, endpoint, args, true, "t"], result)
+
+      m.assertEqual(m.plugin.execute(method, endpoint, args), result)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("constructor")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("testConstructor_test")
+    @params("prod", "123", "AVOD", "none", false, "https://services.inplayer.com")
+    @params("prod", "123", "SVOD", "none", false, "https://services.inplayer.com")
+    @params("prod", "1234", "SVOD", "none", false, "https://services.inplayer.com")
+    @params("dev", "123", "AVOD", "none", false, "https://staging-v2.inplayer.com")
+    @params("dev", "123", "SVOD", "none", false, "https://staging-v2.inplayer.com")
+    @params("dev", "1234", "SVOD", "none", false, "https://staging-v2.inplayer.com")
+    @params("dev", "a123", "AVOD", "authOnly", false, "https://staging-v2.inplayer.com")
+    @params("dev", "b123", "SVOD", "ICPOnly", true, "https://staging-v2.inplayer.com")
+    @params("dev", "c1234", "SVOD", "authOrICP", true, "https://staging-v2.inplayer.com")
+    @params("dev", "d1234", "SVOD", "authAndICP", true, "https://staging-v2.inplayer.com")
+    function _(env, id, vodModel, entitlementsPolicy, expectedIsUsingRokuStore, expectedUrl)
+      plugin = new zapp.BasePlugin(tests.utils.createPluginJson("1", {
+        "client_id": id
+        "environment": env
+        "vod_model": vodModel
+        "entitlements_policy": entitlementsPolicy
+      }))
+
+      plugin = new InPlayerEntitlementsPlugin(plugin)
+
+      m.assertEqual(plugin.authenticationData, m.authenticationData)
+      m.assertEqual(plugin.availableProducts, m.availableProducts)
+      m.assertEqual(plugin.apiUrl, expectedUrl)
+      m.assertEqual(plugin.vodModel, vodModel)
+      m.assertEqual(plugin.entitlementsPolicy, entitlementsPolicy)
+      m.assertEqual(plugin.clientId, id)
+      m.assertEqual(plugin.isUsingRokuStore, expectedIsUsingRokuStore)
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("getPurchasedItemIds")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("not logged in")
+    function _()
+      m.plugin.token = invalid
+      m.assertEmpty(m.plugin.getPurchasedItemIds([]))
+    end function
+
+    @it("logged in one purchase")
+    @params([{ "code": "fOther" }], invalid, [])
+    @params([{ "code": "f1" }], invalid, [])
+    @params([{ "code": "f1" }], [], [])
+    @params([{ "code": "f1" }], [{ external_id: "f1" }], ["f1"])
+    function _(rokuPurchases, externalFees, expectedIds) as void
+      receipt1 = { "id": "f1" }
+      response = { "id": "response", "collection": [receipt1] }
+      fee1 = { "id": "fee1", external_fees: externalFees }
+
+      m.expectOnce(m.plugin, "execute", ["GET", "items/access/customers?status=active"], response)
+      m.expectOnce(m.plugin, "getFeeForAccessReceipt", [receipt1], fee1)
+
+      result = m.plugin.getPurchasedItemIds(rokuPurchases)
+      m.assertArrayContainsSubset(result, expectedIds)
+
+    end function
+
+    @it("logged in many purchases")
+    @params(invalid, invalid, invalid, [])
+    @params({ code: "f1" }, invalid, invalid, ["f1"])
+    @params(invalid, { code: "f2" }, invalid, ["f2"])
+    @params(invalid, { code: "f2" }, { code: "f3" }, ["f2", "f3"])
+    @params({ code: "f1" }, { code: "f2" }, { code: "f3" }, ["f1", "f2", "f3"])
+    function _(rr1, rr2, rr3, expectedIds) as void
+      rokuPurchases = [{ "code": "f1" }, { "code": "f2" }, { "code": "f3" }]
+      receipt1 = { "id": "f1" }
+      receipt2 = { "id": "f2" }
+      receipt3 = { "id": "f3" }
+      response = { "id": "response", "collection": [receipt1, receipt2, receipt3] }
+
+      fee1 = { "id": "fee1" }
+      fee2 = { "id": "fee2" }
+      fee3 = { "id": "fee3" }
+
+      m.expectOnce(m.plugin, "execute", ["GET", "items/access/customers?status=active"], response)
+      m.expectOnce(m.plugin, "getFeeForAccessReceipt", [receipt1], fee1)
+      m.expectOnce(m.plugin, "getFeeForAccessReceipt", [receipt2], fee2)
+      m.expectOnce(m.plugin, "getFeeForAccessReceipt", [receipt3], fee3)
+      m.expectOnce(m.plugin, "getRokuItemForFee", [fee1, rokuPurchases], rr1)
+      m.expectOnce(m.plugin, "getRokuItemForFee", [fee2, rokuPurchases], rr2)
+      m.expectOnce(m.plugin, "getRokuItemForFee", [fee3, rokuPurchases], rr3)
+
+      result = m.plugin.getPurchasedItemIds(rokuPurchases)
+      m.assertArrayContainsSubset(result, expectedIds)
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("post purchases")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("post Purchases-no failures")
+    @params([], true)
+    @params([{ "error": "here" }], false)
+    function _(response, expectedResult) as void
+      rokuPurchases = {}
+      m.expectOnce(m.plugin, "sendPurchasesToInPlayer", [rokuPurchases], response)
+
+      result = m.plugin.postPurchases(rokuPurchases)
+      m.assertEqual(result, expectedResult)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("getAvailableProducts")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("invalid scenarios")
+    @params(invalid, invalid)
+    @params("t", invalid)
+    @params(invalid, { "id": "1" })
+    function _(token, item)
+      rokuCatalogItems = [tests.utils.createRokuCatalogItem("1"), tests.utils.createRokuCatalogItem("2"), tests.utils.createRokuCatalogItem("3")]
+      m.plugin.currentItem = item
+
+      m.plugin.token = token
+      m.availableProducts.availableProducts = ["something"]
+      m.plugin.getAvailableProducts(rokuCatalogItems, ["1"])
+      m.assertEmpty(m.availableProducts.availableProducts)
+
+    end function
+
+    @it("valid scenarios - no purchases")
+    @params([], [])
+    @params([{ external_fees: [{ external_id: "1" }] }], ["1"])
+    @params([{ external_fees: [{ external_id: "1" }] }, { external_fees: [{ external_id: "2" }] }], ["1", "2"])
+    @params([{ external_fees: [{ external_id: "1" }] }, { external_fees: [{ external_id: "2" }] }, { external_fees: [{ external_id: "3" }] }], ["1", "2", "3"])
+    @params([{ external_fees: [{ external_id: "4" }] }, { external_fees: [{ external_id: "2" }] }, { external_fees: [{ external_id: "3" }] }], ["2", "3"])
+    @params([{ external_fees: [{ external_id: "4" }] }, { external_fees: [{ external_id: "5" }] }, { external_fees: [{ external_id: "6" }] }], [])
+    function _(fees, expectedIds)
+      rokuCatalogItems = [tests.utils.createRokuCatalogItem("1"), tests.utils.createRokuCatalogItem("2"), tests.utils.createRokuCatalogItem("3")]
+      item = { id: "item" }
+      m.plugin.currentItem = item
+
+      m.availableProducts.availableProducts = ["something"]
+
+      m.expectOnce(m.plugin, "getInPlayerFeesForItem", [item], fees)
+
+      purchasedIds = []
+      m.plugin.getAvailableProducts(rokuCatalogItems, purchasedIds)
+
+      products = m.availableProducts.availableProducts
+      m.assertArrayCount(products, expectedIds.count())
+
+      productIds = []
+      for each product in products
+        productIds.push(product.code)
+      end for
+
+      m.assertArrayContainsSubset(productIds, expectedIds)
+
+    end function
+
+    @it("valid scenarios - some purchases")
+    @params(["1", "2", "3"], [])
+    @params(["2", "3"], ["1"])
+    @params(["3"], ["1", "2"])
+    @params([], ["1", "2", "3"])
+    function _(purchasedIds, expectedIds)
+
+      fees = [{ external_fees: [{ external_id: "1" }] }, { external_fees: [{ external_id: "2" }] }, { external_fees: [{ external_id: "3" }] }]
+
+      rokuCatalogItems = [tests.utils.createRokuCatalogItem("1"), tests.utils.createRokuCatalogItem("2"), tests.utils.createRokuCatalogItem("3")]
+      item = { id: "item" }
+      m.plugin.currentItem = item
+
+      m.availableProducts.availableProducts = ["something"]
+
+      m.expectOnce(m.plugin, "getInPlayerFeesForItem", [item], fees)
+
+      m.plugin.getAvailableProducts(rokuCatalogItems, purchasedIds)
+
+      products = m.availableProducts.availableProducts
+      m.assertArrayCount(products, expectedIds.count())
+
+      productIds = []
+      for each product in products
+        productIds.push(product.code)
+      end for
+
+      m.assertArrayContainsSubset(productIds, expectedIds)
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("loaItem")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("noToken")
+    function _()
+      m.plugin.token = invalid
+      item = createObject("roSGNode", "ZPEntry")
+      item.json = { extensions: {
+          inplayer_asset_id: "xid"
+        }
+      }
+      m.assertFalse(m.plugin.loadItem(item))
+
+    end function
+
+    @it("invalid item")
+    @params(invalid)
+    @params({ "id": "item", json: {} })
+    @params({ "id": "item", json: { extensions: invalid } })
+    @params({ "id": "item", json: { extensions: { "other": true } } })
+    @params({ "id": "item", json: { extensions: { "inplayer_asset_id": invalid } } })
+    function _(item)
+      m.assertFalse(m.plugin.loadItem(item))
+    end function
+
+    @it("valid-just url")
+    function _()
+      item = createObject("roSGNode", "ZPEntry")
+      item.addFields({
+        id: "item"
+        extensions: {
+          inplayer_asset_id: "xid"
+        }
+        url: "ourl"
+      })
+
+
+      result = {
+        id: "result"
+        item: {
+          content: formatJson({ mobile_url: "changedUrl" })
+        }
+      }
+      m.expectOnce(m.plugin, "getInplayerId", [item], "xid")
+
+      m.expectOnce(m.plugin, "execute", ["GET", "items/xid/access"], result)
+
+      m.assertTrue(m.plugin.loadItem(item))
+
+      m.assertInvalid(item.error)
+      m.assertEqual(item.originalUrl, "ourl")
+      m.assertEqual(item.url, "changedUrl")
+
+    end function
+
+    @it("valid-cookies")
+    function _()
+      item = createObject("roSGNode", "ZPEntry")
+      item.addFields({
+        id: "item"
+        json: {
+          extensions: {
+            inplayer_asset_id: "xid"
+          }
+        }
+        url: "ourl"
+      })
+
+
+      result = {
+        id: "result"
+        item: {
+          content: formatJson({
+            mobile_url: "changedUrl"
+            cookies: {
+              "CloudFront-Policy": "cfpolicy"
+              "CloudFront-Signature": "cfsig"
+              "CloudFront-Key-Pair-Id": "cfid"
+            }
+          })
+        }
+      }
+      m.expectOnce(m.plugin, "getInplayerId", [item], "xid")
+
+      m.expectOnce(m.plugin, "execute", ["GET", "items/xid/access"], result)
+
+      m.assertTrue(m.plugin.loadItem(item))
+
+      m.assertInvalid(item.error)
+      m.assertEqual(item.originalUrl, "ourl")
+      m.assertEqual(item.url, "changedUrl")
+      m.assertArrayContains(item.HttpHeaders, "Cookie:CloudFront-Policy=cfpolicy; CloudFront-Signature=cfsig; CloudFront-Key-Pair-Id=cfid;")
+
+    end function
+
+    @it("server errors")
+    @params(invalid, "Error loading item: cid")
+    @params({}, "Error loading item: cid")
+    @params({ errors: invalid }, "Error loading item: cid")
+    @params({ errors: {} }, "Error loading item: cid")
+    @params({ errors: { "401": "custom error" } }, "custom error")
+    function _(result, expectedErrorMessage)
+
+      item = createObject("roSGNode", "ZPEntry")
+      item.id = "cid"
+      item.title = "item title"
+      item.addFields({
+        json: {
+          extensions: {
+            inplayer_asset_id: "xid"
+          }
+        }
+        url: "ourl"
+      })
+
+      m.expectOnce(m.plugin, "getInplayerId", [item], "xid")
+      m.expectOnce(m.plugin, "execute", ["GET", "items/xid/access"], result)
+
+      m.assertFalse(m.plugin.loadItem(item))
+
+      m.assertEqual(item.errorMessage, expectedErrorMessage)
+      m.assertInvalid(item.originalUrl)
+      m.assertEqual(item.url, "ourl")
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("getEntitlements")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("previous existing entitlements")
+    @params("SVOD", "authOnly")
+    @params("AVOD", "ICPOnly")
+    function _(vodModel, policy)
+      m.plugin.vodModel = vodModel
+      m.plugin.policy = policy
+
+      entitlementsNode = { "id": "entitlements" }
+      m.expectOnce(m.plugin, "getInstance", ["entitlements"], entitlementsNode)
+      m.expectOnce(entitlementsNode, "subType", [], "SimpleEntitlements")
+      m.expectOnce(entitlementsNode, "callFunc", ["configure"])
+
+      m.expectNone(m.plugin, "setInstance")
+
+      result = m.plugin.getEntitlements()
+
+      m.assertEqual(result, entitlementsNode)
+      m.assertTrue(result.requiresLoadToAscertainEntitlements)
+      m.assertEqual(result.authenticationData, m.plugin.authenticationData)
+      m.assertEqual(result.availableProducts, m.plugin.availableProducts)
+      m.assertEqual(result.authenticationData, m.plugin.authenticationData)
+
+    end function
+
+    @it("different pre-existing entitlements")
+    @params("ApplicasterEntitlements", "SVOD", "authOnly")
+    @params("JWTEntitlements", "AVOD", "ICPOnly")
+    function _(subType, vodModel, policy)
+      m.plugin.vodModel = vodModel
+      m.plugin.policy = policy
+
+      oldEntitlements = { "id": "oldentitlements" }
+      m.expectOnce(m.plugin, "getInstance", ["entitlements"], oldEntitlements)
+      m.expectOnce(oldEntitlements, "subType", [], subType)
+      entitlementsNode = { "id": "entitlements" }
+      m.expectOnce(m.plugin, "createInstance", ["SimpleEntitlements", invalid, "entitlements"], entitlementsNode)
+      m.expectOnce(entitlementsNode, "callFunc", ["configure"])
+      m.expectOnce(m.plugin, "setInstance", ["entitlements", entitlementsNode])
+
+      result = m.plugin.getEntitlements()
+
+      m.assertEqual(result, entitlementsNode)
+      m.assertTrue(result.requiresLoadToAscertainEntitlements)
+      m.assertEqual(result.authenticationData, m.plugin.authenticationData)
+      m.assertEqual(result.availableProducts, m.plugin.availableProducts)
+      m.assertEqual(result.authenticationData, m.plugin.authenticationData)
+
+    end function
+
+    @it("no previous existing entitlements")
+    @params("SVOD", "authOnly")
+    @params("AVOD", "ICPOnly")
+    function _(vodModel, policy)
+      m.plugin.vodModel = vodModel
+      m.plugin.policy = policy
+
+      m.expectOnce(m.plugin, "getInstance", ["entitlements"], invalid)
+      entitlementsNode = { "id": "entitlements" }
+      m.expectOnce(m.plugin, "createInstance", ["SimpleEntitlements", invalid, "entitlements"], entitlementsNode)
+      m.expectOnce(entitlementsNode, "callFunc", ["configure"])
+      m.expectOnce(m.plugin, "setInstance", ["entitlements", entitlementsNode])
+
+      result = m.plugin.getEntitlements()
+
+      m.assertEqual(result, entitlementsNode)
+      m.assertTrue(result.requiresLoadToAscertainEntitlements)
+      m.assertEqual(result.authenticationData, m.plugin.authenticationData)
+      m.assertEqual(result.availableProducts, m.plugin.availableProducts)
+      m.assertEqual(result.authenticationData, m.plugin.authenticationData)
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("sendPurchasesToInPlayer")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("no purchase scenarios")
+    @params(invalid)
+    @params([])
+    @params([{ id: "p1" }])
+    function _(purchases)
+      m.plugin.token = invalid
+      m.assertEmpty(m.plugin.sendPurchasesToInPlayer(purchases))
+    end function
+
+    @it("one purchase")
+    @params(400, 1)
+    @params(201, 1)
+    @params(200, 0)
+    function _(code, expectedFailCount)
+      p1 = { code: "99_100", purchaseId: "r1" }
+      purchases = [p1]
+
+      expectedParams = {
+        receipt: "r1"
+        product_name: "99_100"
+      }
+      result = {
+        "code": code
+      }
+      m.expectOnce(m.plugin, "execute", ["FORMPOST", "v2/external-payments/roku/validate", expectedParams], result)
+
+      m.assertArrayCount(m.plugin.sendPurchasesToInPlayer(purchases), expectedFailCount)
+    end function
+
+    @it("multiple purchases")
+    @params(400, 408, 500, ["a_100", "b_101", "c_102"])
+    @params(201, 200, 200, ["a_100"])
+    @params(200, 200, 400, ["c_102"])
+    function _(code1, code2, code3, expectedFailIds)
+      p1 = { code: "99_101", purchaseId: "r1" }
+      p2 = { code: "98_102", purchaseId: "r2" }
+      p3 = { code: "97_103", purchaseId: "r3" }
+      purchases = [p1, p2, p3]
+
+      expectedParams1 = {
+        receipt: "r1"
+        product_name: "99_101"
+      }
+      r1 = { "code": code1 }
+      expectedParams2 = {
+        receipt: "r2"
+        product_name: "98_102"
+      }
+      r2 = { "code": code2 }
+      expectedParams3 = {
+        receipt: "r3"
+        product_name: "97_103"
+      }
+      r3 = { "code": code3 }
+
+      m.expectOnce(m.plugin, "execute", ["FORMPOST", "v2/external-payments/roku/validate", expectedParams1], r1)
+      m.expectOnce(m.plugin, "execute", ["FORMPOST", "v2/external-payments/roku/validate", expectedParams2], r2)
+      m.expectOnce(m.plugin, "execute", ["FORMPOST", "v2/external-payments/roku/validate", expectedParams3], r3)
+
+      failedReceipts = m.plugin.sendPurchasesToInPlayer(purchases)
+      m.assertArrayCount(failedReceipts, expectedFailIds.count())
+
+      for each id in expectedFailIds
+        m.assertAAcontainsSubset(failedReceipts, { "code": id })
+      end for
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("getFeeForAccessReceipt")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("invalid")
+    @params(invalid)
+    @params({})
+    @params({ id: 1 })
+    @params({ item_id: invalid })
+    function _(feeReceipt)
+
+      m.expectNone(m.plugin, "execute")
+
+      m.assertInvalid(m.plugin.getFeeForAccessReceipt(feeReceipt))
+
+    end function
+
+    @it("valid")
+    @params(1, "items/1/access-fees", [{ "id": 1 }], { "id": 1 })
+    @params(2, "items/2/access-fees", [{ "id": 1 }], invalid)
+    @params(2, "items/2/access-fees", [{ "id": 1 }, { "id": 2 }], { "id": 2 })
+    function _(id, endpoint, response, expectedFee)
+      feeReceipt = { "id": id, item_id: id, purchased_access_fee_id: id }
+
+      m.expectOnce(m.plugin, "execute", ["GET", endpoint], response)
+
+      fee = m.plugin.getFeeForAccessReceipt(feeReceipt)
+
+      m.assertEqual(fee, expectedFee)
+    end function
+
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("getRokuItemForFee")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("getRokuItemForFee")
+    @params(invalid, [{ "code": "1" }], invalid)
+    @params({ external_fees: invalid }, [{ "code": "1" }], invalid)
+    @params({ external_fees: [] }, [{ "code": "1" }], invalid)
+    @params({ external_fees: [{ external_id: "2" }] }, [{ "code": "1" }], invalid)
+    @params({ external_fees: [{ external_id: "2" }] }, [{ "code": "2" }], { code: "2" })
+    @params({ external_fees: [{ external_id: "1" }, { external_id: "2" }, { external_id: "3" }] }, [{ "code": "1" }], { code: "1" })
+    @params({ external_fees: [{ external_id: "1" }, { external_id: "2" }, { external_id: "3" }] }, [{ "code": "2" }], { code: "2" })
+    @params({ external_fees: [{ external_id: "1" }, { external_id: "2" }, { external_id: "3" }] }, [{ "code": "3" }], { code: "3" })
+    @params({ external_fees: [{ external_id: "1" }, { external_id: "2" }, { external_id: "3" }] }, [{ "code": "1" }, { "code": "2" }, { "code": "3" }], { code: "1" })
+    @params({ external_fees: [{ external_id: "1" }, { external_id: "2" }, { external_id: "3" }] }, [{ "code": "2" }, { "code": "3" }], { code: "2" })
+    function _(fee, rokuPurchases, expected)
+      m.assertEqual(m.plugin.getRokuItemForFee(fee, rokuPurchases), expected)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("getInplayerId")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("no network calls")
+    @params(invalid, invalid, invalid)
+    @params(invalid, { json: { extensions: { "inplayer_asset_id": invalid } } }, invalid)
+    @params(invalid, { json: { extensions: { "inplayer_asset_id": "123" } } }, "123")
+    @params("extensions.custom_id", invalid, invalid)
+    @params("extensions.custom_id", { json: { extensions: { "custom_id": "cid", "inplayer_asset_id": "123" } } }, "cid")
+    function _(pluginKey, item, expected)
+      m.plugin.pluginInplayerAssetkey = pluginKey
+      m.assertEqual(m.plugin.getInplayerId(item), expected)
+    end function
+
+    @it("network calls")
+    @params({ id: "1a", json: { extensions: { "inplayer_asset_type": "jw" } } }, "items/assets/external/jw/1a", invalid, invalid)
+    @params({ id: "1a", json: { extensions: { "inplayer_asset_type": "jw" } } }, "items/assets/external/jw/1a", {}, invalid)
+    @params({ id: "1a", json: { extensions: { "inplayer_asset_type": "jw" } } }, "items/assets/external/jw/1a", { id: "123" }, "123")
+    @params({ id: "2a", json: { extensions: { "inplayer_asset_type": "vimeo" } } }, "items/assets/external/vimeo/2a", { id: "111" }, "111")
+    @params({ id: "2a", json: { extensions: { "inplayer_asset_type": "vimeo" } } }, "items/assets/external/vimeo/2a", invalid, invalid)
+    function _(item, endpoint, result, expected)
+
+      m.expectOnce(m.plugin, "execute", ["GET", endpoint], result)
+      m.assertEqual(m.plugin.getInplayerId(item), expected)
+    end function
+
+
+    @ignore("")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @tags("integration")
+    @describe("INTEGRATION tests")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @beforeEach
+    function integration_beforeEach()
+      m.beforeEach()
+      m.item = createObject("roSGNode", "ZPEntry")
+      m.item.json = { extensions: {
+          "inplayer_asset_id": 73823
+        }
+      }
+      'DO NOT COMMIT THIS TOKEN
+      m.plugin.currentItem = m.item
+      m.plugin.token = "CHANGE ME"
+    end function
+
+    @it("integration_makePurhcase")
+    function _()
+
+      purchases = InplayerEntitlements.tests.make_live_purchase()
+      m.plugin.sendPurchasesToInPlayer(purchases)
+    end function
+
+    function make_live_purchase(code = "73228_17870")
+      channelStore = new zapp.RokuChannelStoreModule(false)
+      rcs = channelStore.getChannelStore()
+      m.logInfo("MAKING ROKU PURCHASE", code)
+      result = channelStore.doRokuPurchase(invalid, code, 1)
+      m.logInfo("purhcased", result)
+      return result
+    end function
+
+    function getProducts()
+      channelStore = new zapp.RokuChannelStoreModule(false)
+      rcs = channelStore.getChannelStore()
+      result = channelStore.getRokuCatalog(rcs)
+      m.logInfo("products", result)
+      return result
+    end function
+
+    @it("getAvailableProducts")
+    function _()
+      products = InplayerEntitlements.tests.getProducts()
+      m.plugin.getAvailableProducts(products, [])
+
+      m.logInfo("products", m.plugin.availableProducts.availableProducts)
+    end function
+
+    @it("loadItem")
+    function _()
+      item = createObject("roSGNode", "ZPEntry")
+      item.json = { extensions: {
+          "inplayer_asset_id": 73823
+        }
+      }
+
+      m.plugin.loadItem(item)
+      m.logInfo("item", item.url)
+
+    end function
+
+    @it("getPurchasedItemIds")
+    function _()
+      products = InplayerEntitlements.tests.getProducts()
+      result = m.plugin.getPurchasedItemIds(products)
+      m.logInfo("item ids", result)
+
+    end function
+
+  end class
+end namespace

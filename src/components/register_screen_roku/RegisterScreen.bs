@@ -1,4 +1,5 @@
 import "pkg:/source/register_screen_roku/RegisterScreenVM.bs"
+import "pkg:/source/roku_modules/mx/VMTransformFunctions.brs"
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '++ Initialization
@@ -7,18 +8,14 @@ import "pkg:/source/register_screen_roku/RegisterScreenVM.bs"
 function init()
   m.top.isConsumingOriginEntry = true
   m.top.isForcingMenuHidden = true
-  initializeView(m.top.findNode("labelsGroup"))
-  initializeView(m.top.findNode("controlsGroup"))
-  initializeView(m.top.findNode("doneGroup"))
+  mv.initializeView(m.top.findNode("labelsGroup"))
+  mv.initializeView(m.top.findNode("controlsGroup"))
+  mv.initializeView(m.top.findNode("doneGroup"))
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '++ Overridden methods
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-function getControlName()
-  return "RegisterScreen"
-end function
 
 function createVM()
   vm = new RegisterScreenVM(m.top.riversJson)

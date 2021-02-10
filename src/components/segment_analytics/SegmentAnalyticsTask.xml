@@ -13,9 +13,6 @@
 
   </interface>
 
-  <!-- will need to be updated by app developers for the given app folder structure -->
-  <script type="text/brightscript" uri="SegmentAnalyticsTask.brs" />
-
   <script type="text/brightscript" uri="pkg:/source/segment_analytics/SegmentAnalytics.brs" />
 
 </component>

@@ -1,7 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
 <component
     name='LogoutScreen'
-    extends='ZUIBScreen'>
+    extends='UIBScreen'
+    vm='LogoutScreenVM'>
 
   <interface></interface>
 
@@ -10,19 +11,19 @@
         id='backgroundRectangle'
         width='1920'
         height='1080'
-        color='{{=ViewUtils_UIBColor("background_color")}}' />
-    <ZPoster
+        color='{{=zapp_viewUtils_UIBColor("background_color")}}' />
+    <mv_MPoster
         id='backgroundPoster'
-        style='{{=ViewUtils_UIBBackgroundPoster("background")}}' />
-    <ZPoster
+        style='{{=zapp_viewUtils_UIBBackgroundPoster("background")}}' />
+    <mv_MPoster
         id='logoPoster'
-        uri='{{=ViewUtils_getPosterUri(m.top.riversJson.styles.logo_image_url)}}' />
+        uri='{{=zapp_viewUtils_getPosterUri(m.top.riversJson.styles.logo_image_url)}}' />
 
     <Button
         id='focustrap'
         visible='false' />
 
-    <ZLayoutGroup
+    <mv_MLayoutGroup
         id='contentGroup'
         translation='[960, 500]'
         horizAlignment='center'
@@ -30,29 +31,29 @@
       <Rectangle
           id=''
           width='1920' />
-      <MLabel
+      <mv_MLabel
           id='titleText'
-          style='{{:vm.titleStyle}}'
-          text='{{vm.titleText}}'
-          width='{{vm.textWidth}}'
+          style='{{:titleStyle}}'
+          text='{{titleText}}'
+          width='{{textWidth}}'
           horizAlign='center'
           wrap='true' />
 
       <ZActionButton
           id='logoutButton'
           translation='['
-          visible='{{:vm.isButtonVisible}}'
-          style='{{:vm.buttonStyle}}'
-          text='{{vm.buttonText}}'
-          selected='{(vm.onLogoutButtonSelected,isSettingInitialValue=false)}'
+          visible='{{:isButtonVisible}}'
+          style='{{:buttonStyle}}'
+          text='{{buttonText}}'
+          selected='{(onLogoutButtonSelected(value))}'
           width='610' />
-    </ZLayoutGroup>
+    </mv_MLayoutGroup>
     <LoadingIndicator
         id='loadingIndicator'
         width='1920'
         height='1080'
         translation='[0,0]'
-        isActive='{{vm.isShowingLoadingIndicator, isSettingInitialValue=true}}'
+        isActive='{{isShowingLoadingIndicator}}'
         backgroundVisible='false'
         text='' />
 

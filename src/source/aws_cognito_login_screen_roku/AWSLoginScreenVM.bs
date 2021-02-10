@@ -1,323 +1,324 @@
-import "pkg:/source/UIBuilder/view/ZUIBScreenVM.bs"
+import "pkg:/source/UIBuilder/view/ScreenVM.bs"
 import "pkg:/source/lib/ViewUtils.bs"
 import "pkg:/source/mixin/KeyboardDialogMixin.bs"
 
-namespace TAAWSLSVM
-  class AWSLoginScreenVM extends ZUIBScreenVM
+class AWSLoginScreenVM extends zapp.uib.ScreenVM
 
-    'styles
-    public titleStyle = invalid
-    public descriptionStyle = invalid
-    public optional1Style = invalid
-    public optional2Style = invalid
-    public inputStyle = invalid
-    public loginButtonStyle = invalid
-    public errorStyle = invalid
-    public logoPosition = [100, 33]
-    public logoWidth = 350
-    public logoHeight = 100
-    public logoImageUrl = ""
+  'styles
+  public titleStyle = invalid
+  public descriptionStyle = invalid
+  public optional1Style = invalid
+  public optional2Style = invalid
+  public inputStyle = invalid
+  public loginButtonStyle = invalid
+  public errorStyle = invalid
+  public logoPosition = [100, 33]
+  public logoWidth = 350
+  public logoHeight = 100
+  public logoImageUrl = ""
+  public backgroundUrl = ""
 
-    public isCredsValid = false
-    public isLoginButtonEnabled = false
-    public isRefreshing = true
-    public isLoading = false
-    public usernameButtonType = "textInput"
-    public passwordButtonType = "textInput"
+  public isCredsValid = false
+  public isLoginButtonEnabled = false
+  public isRefreshing = true
+  public usernameButtonType = "textInput"
+  public passwordButtonType = "textInput"
 
-    public usernameText = ""
-    public username = ""
-    public passwordText = ""
-    public password = ""
+  public usernameText = ""
+  public username = ""
+  public passwordText = ""
+  public password = ""
 
-    public errorText = ""
-    public isErrorShowing = false
-    public usernamePlaceholderText = ""
-    public passwordPlaceholderText = ""
-    public backgroundColor = "#000000ff"
+  public errorText = ""
+  public isErrorShowing = false
+  public usernamePlaceholderText = ""
+  public passwordPlaceholderText = ""
+  public backgroundColor = "#000000ff"
 
-    public function new(riversJson)
-      super(riversJson, "AWSLoginScreenVM")
-      m.focusId = "usernameInput"
-      KeyboardDialogMixin.mixin(m)
-      m.processStyles(m.riversJson.styles)
-    end function
+  private authTask
+  'mixin keyboard
+  private showKeyboardDialog = zapp.keyboardDialogMixin.showKeyboardDialog
+  private _onKeyboardDialogButtonSelected = zapp.keyboardDialogMixin.onKeyboardDialogButtonSelected
+  private _closeKeyboardDialog = zapp.keyboardDialogMixin.closeKeyboardDialog
 
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '++ Overridden
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  public function new(riversJson)
+    super(riversJson, "AWSLoginScreenVM")
+    m.focusId = "usernameInput"
+    m.processStyles(m.riversJson.styles)
+  end function
 
-    public override function createContent()
-      m.logInfo("createContent is overridden in this screen")
-    end function
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Overridden
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    public override function load() as boolean
-      m.logInfo("load - refreshing login")
-      m.refreshLogin() 
+  public override function createContent()
+    m.logInfo("createContent is overridden in this screen")
+  end function
+
+  public override function load() as boolean
+    m.logInfo("load - refreshing login")
+    m.refreshLogin()
+    return true
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ styles
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  function processStyles(styles)
+    m.logInfo("converting rivers json styles into a format our UI controls can consume")
+
+    m.titleStyle = zapp.viewUtils.makeUIBTextStyle(styles, "title")
+    m.descriptionStyle = zapp.viewUtils.makeUIBTextStyle(styles, "description")
+    m.optional1Style = zapp.viewUtils.makeUIBTextStyle(styles, "optional_text1")
+    m.optional2Style = zapp.viewUtils.makeUIBTextStyle(styles, "optional_text2")
+    m.errorStyle = zapp.viewUtils.makeUIBTextStyle(styles, "error")
+
+    m.usernameText = styles.username_placeholder_text
+    m.usernamePlaceholderText = m.usernameText
+
+    m.passwordText = styles.password_placeholder_text
+    m.passwordPlaceholderText = m.passwordText
+
+    m.backgroundColor = zapp.viewUtils.transposeUIBColor(styles.background_color)
+    m.backgroundUrl = styles.background_url
+    m.logoImageUrl = styles.logo_url
+    m.logoPosition = zapp.viewUtils.makeUIBPosition(styles, "logo", 100, 33)
+    logoSize = zapp.viewUtils.makeUIBSize(styles, "logo", 350, 100)
+    m.logoWidth = logoSize[0]
+    m.logoHeight = logoSize[1]
+
+
+    inputStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "general_input", "textInputPlaceholder")
+
+    m.inputStyle = inputStyle
+
+    m.loginButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "login_button", "custom", styles.login_button_text)
+
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ callbacks
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public function onLoginButtonSelected(value)
+    m.logMethod("onLoginButtonSelected")
+
+    if not m.isLoading and m.isCredsValid
+      m.processLogin()
+    else if not m.isCredsValid
+      m.errorText = "Please enter your email address and password"
+      m.isErrorShowing = true
+    else
+      m.logWarn("ignoring loging button, while loading")
+    end if
+  end function
+
+  public function onUsernameButtonSelected(value)
+    m.showKeyboardDialog("Enter your username", m.username, "onUsernameKeyboardDialogDismissal")
+  end function
+
+  public function onPasswordButtonSelected(value)
+    m.showKeyboardDialog("Enter your password", m.password, "onPasswordKeyboardDialogDismissal", true)
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Keyboard dialog
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function onUsernameKeyboardDialogDismissal(text)
+    m.logMethod("onKeyboardDialogDismissal")
+
+    if text.trim() = ""
+      m.usernameText = m.usernamePlaceholderText
+      m.usernameButtonType = "textInputPlaceholder"
+      m.username = ""
+      m.usernameText = m.usernamePlaceholderText
+    else
+      m.usernameText = text
+      'set the username to lower case letters
+      lCaseUserName = LCase(text)
+      m.username = lCaseUserName
+      m.usernameButtonType = "textInput"
+    end if
+
+    m.checkCredsValid()
+
+  end function
+
+  private function onPasswordKeyboardDialogDismissal(text)
+    m.logMethod("onPasswordKeyboardDialogDismissal")
+
+    if text.trim() = ""
+      m.passwordText = m.passwordPlaceholderText
+      m.password = ""
+      m.passwordButtonType = "textInputPlaceholder"
+      m.passwordText = m.passwordPlaceholderText
+    else
+      m.passwordText = zapp.keyboardDialogMixin.getHiddenPasswordText(text)
+      m.password = text
+      m.passwordButtonType = "textInput"
+    end if
+
+    m.checkCredsValid()
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ refresh
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function refreshLogin()
+    m.logInfo("calling authTask to refresh login")
+
+    m.authTask = m.createAuthTask("execLoad", "aws_cognito_auth_plugin", m.onRefreshComplete)
+
+    m.isRefreshing = true
+    m.isLoginButtonEnabled = false
+  end function
+
+  private function onRefreshComplete(result)
+    m.logMethod("onRefreshComplete", result)
+    m.isLoading = false
+
+    if m.getInstance("user").isLoggedIn
+      m.dismiss("success")
+    else
+      m.isRefreshing = false
+      m.signalAppLaunchDialog(false)
+    end if
+
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ login
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public function checkCredsValid()
+    m.isCredsValid = m.username <> invalid and m.username.trim() <> "" and m.password <> invalid and m.password.trim() <> ""
+
+    m.isLoginButtonEnabled = m.isCredsValid and not m.isLoading
+  end function
+
+  public function processLogin()
+    m.logInfo("logging in")
+
+    if m.isCredsValid
+      creds = m.createInstance("AuthenticationCredentials")
+      creds.username = m.userName
+      creds.password = m.password
+      m.authTask = m.createAuthTask("execLogIn", "aws_cognito_auth_plugin", m.onLoginComplete, creds)
+
+      m.isLoginButtonEnabled = false
+
+      m.isLoading = true
+      m.errorText = ""
+      m.isErrorShowing = false
+      m.state = "loading"
+    end if
+  end function
+
+  public function onLoginComplete(result)
+    m.logMethod("onLoginComplete", result)
+
+    if result <> invalid and result.state = "valid"
+      m.logInfo("logged in succesfull")
+      m.signalAppLaunchDialog(true)
+      m.dismiss("success")
+    else
+      m.state = "ready"
+      if result <> invalid and result.message <> invalid
+        m.errorText = result.message
+      else
+        m.errorText = "Unknown error"
+      end if
+      m.isErrorShowing = true
+      m.isLoginButtonEnabled = true
+    end if
+
+    m.isLoading = false
+
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ launch support
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  override function sendLaunchBecaon()
+    'we handle this manually
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Key Handling
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public function isCapturingAnyKeyPress(key, press)
+    'do not anyone escape this screen!
+    if press and key = "back" and not mc.getPath(m.riversJson, "general.isflowBlocker", true)
+      return false
+    else
       return true
-    end function
+    end if
+  end function
 
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '++ styles
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  public function onKeyPressBack() as boolean
+    isDismissable = m.getTopField("isDismissable")
+    m.logMethod("onKeyPressBack", m.focusId, isDismissable)
 
-    function processStyles(styles)
-      m.logInfo("converting rivers json styles into a format our UI controls can consume")
-
-      m.titleStyle = ViewUtils.makeUIBTextStyle(styles, "title")
-      m.descriptionStyle = ViewUtils.makeUIBTextStyle(styles, "description")
-      m.optional1Style = ViewUtils.makeUIBTextStyle(styles, "optional_text1")
-      m.optional2Style = ViewUtils.makeUIBTextStyle(styles, "optional_text2")
-      m.errorStyle = ViewUtils.makeUIBTextStyle(styles, "error")
-
-      m.setField("usernameText", styles.username_placeholder_text)
-      m.usernamePlaceholderText = m.usernameText
-
-      m.setField("passwordText", styles.password_placeholder_text)
-      m.passwordPlaceholderText = m.passwordText
-
-      m.backgroundColor = ViewUtils.transposeUIBColor(styles.background_color)
-      m.backgroundUrl = styles.background_url
-      m.logoImageUrl = styles.logo_url
-      m.logoPosition = ViewUtils.makeUIBPosition(styles, "logo", 100, 33)
-      logoSize = ViewUtils.makeUIBSize(styles, "logo", 350, 100)
-      m.logoWidth = logoSize[0]
-      m.logoHeight = logoSize[1]
-
-
-      inputStyle = ViewUtils.makeUIBButtonStyle(styles, "general_input", "textInputPlaceholder")
-
-      m.setField("inputStyle", inputStyle)
-
-      m.loginButtonStyle = ViewUtils.makeUIBButtonStyle(styles, "login_button", "custom", styles.login_button_text)
-
-    end function
-
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '++ callbacks
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    public function onLoginButtonSelected(value)
-      m.logMethod("onLoginButtonSelected")
-
-      if not m.isLoading and m.isCredsValid
-        m.processLogin()
-      else if not m.isCredsValid
-        m.setField("errorText", "Please enter your email address and password")
-        m.setfield("isErrorShowing", true)
+    if m.focusId = "usernameInput"
+      if isDismissable = true
+        m.dismiss("cancel")
+        return true
       else
-        m.logWarn("ignoring loging button, while loading")
-      end if
-    end function
-
-    public function onUsernameButtonSelected(value)
-
-      m.showKeyboardDialog("Enter your username", m.username, "onUsernameKeyboardDialogDismissal")
-    end function
-
-    public function onPasswordButtonSelected(value)
-
-      m.showKeyboardDialog("Enter your password", m.password, "onPasswordKeyboardDialogDismissal", true)
-    end function
-
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '++ Keyboard dialog
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    private function onUsernameKeyboardDialogDismissal(text)
-      m.logMethod("onKeyboardDialogDismissal")
-
-      if text.trim() = ""
-        m.setField("usernameText", m.usernamePlaceholderText)
-        m.setField("usernameButtonType", "textInputPlaceholder")
-        m.username = ""
-        m.setField("usernameText", m.usernamePlaceholderText)
-      else
-        m.setField("usernameText", text)
-        'set the username to lower case letters
-        lCaseUserName = LCase(text)
-        m.username = lCaseUserName
-        m.setField("usernameButtonType", "textInput")
-      end if 
-
-      m.checkCredsValid()
-
-    end function
-
-    private function onPasswordKeyboardDialogDismissal(text)
-      m.logMethod("onPasswordKeyboardDialogDismissal")
-
-      if text.trim() = ""
-        m.setField("passwordText", m.passwordPlaceholderText)
-        m.password = ""
-        m.setField("passwordButtonType", "textInputPlaceholder")
-        m.setField("passwordText", m.passwordPlaceholderText)
-      else
-        m.setField("passwordText", KeyboardDialogMixin.getHiddenPasswordText(text))
-        m.password = text
-        m.setField("passwordButtonType", "textInput")
-      end if 
-
-      m.checkCredsValid()
-    end function
-
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '++ refresh
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    private function refreshLogin()
-      m.logInfo("calling authTask to refresh login")
-
-      m.authTask = m.createAuthTask("execLoad", "aws_cognito_auth_plugin", "onRefreshComplete")
-
-      m.setField("isRefreshing", true)
-      m.setField("isLoginButtonEnabled", false)
-    end function
-
-    private function onRefreshComplete(result)
-      m.logMethod("onRefreshComplete", result)
-      m.setField("isLoading", false)
-
-      if m.getInstance("user").isLoggedIn
-        m.dismiss("success")
-      else
-        m.setField("isRefreshing", false)
-        m.signalAppLaunchDialog(false)
-      end if
-
-    end function
-
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '++ login
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    public function checkCredsValid()
-      m.setField("isCredsValid", m.username <> invalid and m.username.trim() <> "" and m.password <> invalid and m.password.trim() <> "")
-
-      m.setField("isLoginButtonEnabled", m.isCredsValid and not m.isLoading)
-    end function
-
-    public function processLogin()
-      m.logInfo("logging in")
-
-      if m.isCredsValid
-        creds = m.createInstance("AuthenticationCredentials")
-        creds.username = m.userName
-        creds.password = m.password
-        m.authTask = m.createAuthTask("execLogIn", "aws_cognito_auth_plugin", "onLoginComplete", creds)
-
-        m.setField("isLoginButtonEnabled", false)
-
-        m.setField("isLoading", true)
-        m.setField("errorText", "")
-        m.setField("isErrorShowing", false)
-        m.setField("state", "loading")
-      end if
-    end function
-
-    public function onLoginComplete(result)
-      m.logMethod("onLoginComplete", result)
-
-      if result <> invalid and result.state = "valid"
-        m.logInfo("logged in succesfull")
-        m.signalAppLaunchDialog(true)
-        m.dismiss("success")
-      else
-        m.setField("state", "ready")
-        if result <> invalid and result.message <> invalid
-          m.setField("errorText", result.message)
-        else
-          m.setField("errorText", "Unknown error")
-        end if
-        m.setField("isErrorShowing", true)
-        m.setField("isLoginButtonEnabled", true)
-      end if
-
-      m.setField("isLoading", false)
-
-    end function
-
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '++ launch support
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    override function sendLaunchBecaon()
-      'we handle this manually
-    end function
-
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '++ Key Handling
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    public function isCapturingAnyKeyPress(key, press)
-      'do not anyone escape this screen!
-      if press and key = "back" and not MU.getContentField(m.riversJson, "general.isflowBlocker", true)
-        return false
-      else
+        m.exitApp(invlaid, true)
         return true
       end if
-    end function
+    else
+      return m.onKeyPressUp()
+    end if
 
-    public function onKeyPressBack() as boolean
-      isDismissable = m.getTopField("isDismissable")
-      m.logMethod("onKeyPressBack", m.focusId, isDismissable)
+    return false
+  end function
+  public function onKeyPressRight() as boolean
 
-      if m.focusId = "usernameInput"
-        if isDismissable = true
-          m.dismiss("cancel")
-          return true
-        else
-          m.exitApp(invlaid, true)
-          return true
-        end if
-      else
-        return m.onKeyPressUp()
-      end if
+    if m.focusId = "loginButton" and m.riversJson.styles.debug_skip_on_right = true
+      m.logWarn("skipping debug flag is on")
+      m.onLoginComplete(true)
+    end if
 
-      return false
-    end function
-    public function onKeyPressRight() as boolean
+    return false
+  end function
 
-      if m.focusId = "loginButton" and m.riversJson.styles.debug_skip_on_right = true
-        m.logWarn("skipping debug flag is on")
-        m.onLoginComplete(true)
-      end if
+  public function onKeyPressDown() as boolean
+    m.logMethod("onKeyPressDown", m.focusId)
 
-      return false
-    end function
+    if m.focusId = "usernameInput"
+      m.focusId = "passwordInput"
+    else if m.focusId = "passwordInput"
+      m.focusId = "loginButton"
+    end if
 
-    public function onKeyPressDown() as boolean
-      m.logMethod("onKeyPressDown", m.focusId)
+    return true
+  end function
 
-      if m.focusId = "usernameInput"
-        m.setField("focusId", "passwordInput")
-      else if m.focusId = "passwordInput"
-        m.setField("focusId", "loginButton")
-      end if
+  public function onKeyPressOptions() as boolean
+    m.logMethod("onKeyPressOptions", m.focusId)
 
-      return true
-    end function
+    m.onUsernameKeyboardDialogDismissal(m.riversJson.styles.debug_username)
+    m.onPasswordKeyboardDialogDismissal(m.riversJson.styles.debug_password)
 
-    public function onKeyPressOption() as boolean
-      m.logMethod("onKeyPressOption", m.focusId)
+    return true
+  end function
 
-      m.onUsernameKeyboardDialogDismissal(m.riversJson.styles.debug_username)
-      m.onPasswordKeyboardDialogDismissal(m.riversJson.styles.debug_password)
+  public override function onKeyPressUp() as boolean
+    m.logMethod("onKeyPressUp", m.focusId)
 
-      return true
-    end function
+    if m.focusId = "passwordInput"
+      m.focusId = "usernameInput"
+    else if m.focusId = "loginButton"
+      m.focusId = "passwordInput"
+    end if
 
-    public override function onKeyPressUp() as boolean
-      m.logMethod("onKeyPressUp", m.focusId)
+    return true
+  end function
 
-      if m.focusId = "passwordInput"
-        m.setField("focusId", "usernameInput")
-      else if m.focusId = "loginButton"
-        m.setField("focusId", "passwordInput")
-      end if
-
-      return true
-    end function
-
-  end class
-end namespace
+end class

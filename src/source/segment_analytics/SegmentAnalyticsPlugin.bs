@@ -3,185 +3,184 @@ import "pkg:/source/plugin-support/PluginManager.bs"
 import "./SegmentAnalyticsConnector.brs"
 import "pkg:/source/analytics/BaseAnalyticsPlugin.bs"
 
-namespace SegmentAM
-  class SegmentAnalyticsPlugin extends BaseAnalyticsPlugin
+class SegmentAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
 
-    private writeKey = ""
-    private isDebug = false
+  private writeKey = ""
+  private isDebug = false
 
-    public function new(plugin)
-      super("SegmentAnalyticsPlugin", plugin)
+  public function new(plugin)
+    super("SegmentAnalyticsPlugin", plugin)
 
-      m.segmentTask = createObject("roSGNode", "SegmentAnalyticsTask")
-      m.segmentTask.id = "segmentAnalyticsTask"
+    m.segmentTask = createObject("roSGNode", "SegmentAnalyticsTask")
+    m.segmentTask.id = "segmentAnalyticsTask"
 
-      constants = m.getInstance("constants")
-      m.applicasterDeviceId = constants.applicasterDeviceId
-      m.writeKey = plugin.getStringValue("write_key")
-      m.isDebug = plugin.getBoolValue("is_debug") 
-      m.isIdentifyingOnLogout = plugin.getBoolValue("send_identify_on_logout") 
-      m.library = SegmentAnalyticsConnector(m.segmentTask)
-    end function
+    constants = m.getInstance("constants")
+    m.applicasterDeviceId = constants.applicasterDeviceId
+    m.writeKey = plugin.getStringValue("write_key")
+    m.isDebug = plugin.getBoolValue("is_debug")
+    m.isIdentifyingOnLogout = plugin.getBoolValue("send_identify_on_logout")
+    m.library = SegmentAnalyticsConnector(m.segmentTask)
+  end function
 
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '++ overridden methods
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ overridden methods
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    public override function start()
-      m.logInfo("starting segment analytics plugin")
-      config = {
-        "writeKey": m.writeKey
-        "debug": true
-        "queueSize": 3
-        "retryLimit": 0
-      }
+  public override function start()
+    m.logInfo("starting segment analytics plugin")
+    config = {
+      "writeKey": m.writeKey
+      "debug": true
+      "queueSize": 3
+      "retryLimit": 0
+    }
 
-      m.library.init(config)
+    'bs:disable-next-line
+    m.library.init(config)
 
-    end function
+  end function
 
-    private override function mapPropertyValues(properties)
-      m.substituteValue(m.valuesMap.providerNames, properties, "provider")
-      return properties
-    end function
+  private override function mapPropertyValues(properties)
+    m.substituteValue(m.valuesMap.providerNames, properties, "provider")
+    return properties
+  end function
 
-    public override function _identify(pluginId, traits = {}, options = {}, isFromLogout = false) as boolean
-      m.logInfo("identify", pluginId)
-      if options = invalid
-        options = {}
+  public override function _identify(pluginId, traits = {}, options = {}, isFromLogout = false) as boolean
+    m.logInfo("identify", pluginId)
+    if options = invalid
+      options = {}
+    end if
+
+    if traits = invalid
+      traits = {}
+    end if
+
+    if isFromLogout and not m.isIdentifyingOnLogout
+      m.logInfo("ignoring identify call from logout due to plugin configuration")
+      return true
+    end if
+
+    if m.isEnabled
+
+      if pluginId <> invalid
+        accountInfo = m.getSessionStoreValue(pluginId, "account", true)
+      else
+        accountInfo = invalid
       end if
 
-      if traits = invalid
-        traits = {}
-      end if
+      m.defaultOptions = m.getDefaultOptions()
+      m.defaultProperties = m.getDefaultProperties()
 
-      if isFromLogout and not m.isIdentifyingOnLogout
-        m.logInfo("ignoring identify call from logout due to plugin configuration")
-        return true
-      end if
-
-      if m.isEnabled
-
-        if pluginId <> invalid
-          accountInfo = m.getSessionStoreValue(pluginId, "account", true)
+      if accountInfo <> invalid
+        options.append(m.defaultOptions)
+        if accountInfo.id <> invalid and accountInfo.id.trim() <> ""
+          m.logInfo("identifying analytics with the userId", accountInfo.id, "for plugin:", pluginId)
+          m.library.identify(m.hash(accountInfo.id), traits, options)
         else
-          accountInfo = invalid
-        end if
-
-        m.defaultOptions = m.getDefaultOptions()
-        m.defaultProperties = m.getDefaultProperties()
-
-        if accountInfo <> invalid 
-          options.append(m.defaultOptions)
-          if accountInfo.id <> invalid and accountInfo.id.trim() <> ""
-            m.logInfo("identifying analytics with the userId", accountInfo.id, "for plugin:", pluginId)
-            m.library.identify(m.hash(accountInfo.id), traits, options)
-          else
-            m.logError("identify called; but the id was empty!")
-            m.identifyAsAnonymous()
-          end if
-        else
-          m.logWarn("idenitfy called; but there is no logged in user; identifying as anonymous")
+          m.logError("identify called; but the id was empty!")
           m.identifyAsAnonymous()
         end if
-      end if 
-
-      return true
-    end function
-
-    private function identifyAsAnonymous()
-      m.logInfo("identifying as anonymous user is disabled for segment analytics")
-      return invalid
-      ' m.defaultOptions = m.getDefaultOptions()
-      ' m.defaultProperties = m.getDefaultProperties()
-      ' m.library.identify("anonymous", m.defaultOptions, m.defaultProperties)
-    end function
-
-    public override function _track(eventName, properties = {}, options = {})
-      m.trackEvent(eventName, invalid, properties, options)
-    end function
-
-    public override function _trackEvent(eventName, actionName = invalid, properties = {}, options = {})
-
-      if actionName <> invalid
-        properties.name = eventName
-        properties.action_name = actionName
-      end if
-
-      if m.isEnabled
-        options.append(m.defaultOptions)
-        properties.append(m.defaultProperties)
-
-        m.logInfo("TRACK OPTINS ", options)
-        m.library.track(eventName, properties, options)
-      end if
-
-    end function
-
-
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '++ private impl
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    private function screen(eventName, category, properties = {}, options = {})
-
-      if m.isEnabled
-        options.append(m.defaultOptions)
-        properties.append(m.defaultProperties)
-        m.library.screen(name, category, properties, options)
-      end if
-
-    end function
-
-    private function group(eventName, groupId, traits = {}, options = {})
-
-      if m.isEnabled
-        options.append(m.defaultOptions)
-        properties.append(m.defaultProperties)
-        m.library.group(userId, groupId, traits, options)
-      end if
-
-    end function
-
-    private function getDefaultOptions()
-      options = {}
-      options["anonymousId"] = m.applicasterDeviceId
-      return options
-    end function
-
-    private function getDefaultProperties()
-
-      accountInfo = m.getSessionStoreValue("gigya_auth_plugin_roku", "account", true)
-      properties = {
-        user_email: "anonymous"
-        user_name: "anonymous"
-        applicaster_device_id: m.applicasterDeviceId
-        platform: "roku"
-      }
-
-      if accountInfo <> invalid and accountInfo.id <> invalid
-        properties.user_gigya_id = m.hash(accountInfo.id)
       else
-        properties.user_gigya_id = "anonymous"
+        m.logWarn("idenitfy called; but there is no logged in user; identifying as anonymous")
+        m.identifyAsAnonymous()
       end if
+    end if
 
-      primetimeAccountInfo = m.getSessionStoreValue("AdobeAccessEnabler", "account", true)
-      if primetimeAccountInfo <> invalid 
-        properties.user_adobe_id = m.hash(primetimeAccountInfo.id)
-      else
-        properties.user_adobe_id = "anonymous"
-      end if
+    return true
+  end function
 
-      return properties
-    end function
+  private function identifyAsAnonymous()
+    m.logInfo("identifying as anonymous user is disabled for segment analytics")
+    return invalid
+    ' m.defaultOptions = m.getDefaultOptions()
+    ' m.defaultProperties = m.getDefaultProperties()
+    ' m.library.identify("anonymous", m.defaultOptions, m.defaultProperties)
+  end function
 
-    private function hash(id)
-      byteArray = CreateObject("roByteArray")
-      byteArray.FromAsciiString(id)
+  public override function _track(eventName, properties = {}, options = {})
+    m.trackEvent(eventName, invalid, properties, options)
+  end function
 
-      digest = CreateObject("roEVPDigest")
-      digest.Setup("sha256")
-      return digest.Process(byteArray)
-    end function
-  end class
-end namespace
+  public override function _trackEvent(eventName, actionName = invalid, properties = {}, options = {})
+
+    if actionName <> invalid
+      properties.name = eventName
+      properties.action_name = actionName
+    end if
+
+    if m.isEnabled
+      options.append(m.defaultOptions)
+      properties.append(m.defaultProperties)
+
+      m.logInfo("TRACK OPTINS ", options)
+      m.library.track(eventName, properties, options)
+    end if
+
+  end function
+
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ private impl
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function screen(eventName, category, properties = {}, options = {})
+
+    if m.isEnabled
+      options.append(m.defaultOptions)
+      properties.append(m.defaultProperties)
+      m.library.screen(name, category, properties, options)
+    end if
+
+  end function
+
+  private function group(eventName, groupId, traits = {}, options = {})
+
+    if m.isEnabled
+      options.append(m.defaultOptions)
+      properties.append(m.defaultProperties)
+      m.library.group(userId, groupId, traits, options)
+    end if
+
+  end function
+
+  private function getDefaultOptions()
+    options = {}
+    options["anonymousId"] = m.applicasterDeviceId
+    return options
+  end function
+
+  private function getDefaultProperties()
+
+    accountInfo = m.getSessionStoreValue("gigya_auth_plugin_roku", "account", true)
+    properties = {
+      user_email: "anonymous"
+      user_name: "anonymous"
+      applicaster_device_id: m.applicasterDeviceId
+      platform: "roku"
+    }
+
+    if accountInfo <> invalid and accountInfo.id <> invalid
+      properties.user_gigya_id = m.hash(accountInfo.id)
+    else
+      properties.user_gigya_id = "anonymous"
+    end if
+
+    primetimeAccountInfo = m.getSessionStoreValue("AdobeAccessEnabler", "account", true)
+    if primetimeAccountInfo <> invalid
+      properties.user_adobe_id = m.hash(primetimeAccountInfo.id)
+    else
+      properties.user_adobe_id = "anonymous"
+    end if
+
+    return properties
+  end function
+
+  private function hash(id)
+    byteArray = CreateObject("roByteArray")
+    byteArray.FromAsciiString(id)
+
+    digest = CreateObject("roEVPDigest")
+    digest.Setup("sha256")
+    return digest.Process(byteArray)
+  end function
+end class

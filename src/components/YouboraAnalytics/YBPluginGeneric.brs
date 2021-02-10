@@ -69,7 +69,7 @@ sub _run()
     'Endless loop to listen for events
     while true
 
-        msg = MTU_waitPort(0, m.port)
+        msg = wait(0, m.port)
 
         'Delegate call to the specific plugin.
         'The plugin will have to override this method in order
@@ -109,9 +109,8 @@ sub _run()
 end sub
 
 sub _stop()
-
+    'bs:disable-next-line
     stopMonitoring()
-
 end sub
 
 'This method should be overriden in the specific plugin in order to process

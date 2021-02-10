@@ -1,7 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
 <component
     name='RegcodeLoginScreen'
-    extends='ZUIBScreen'>
+    extends='UIBScreen'
+    vm='RegcodeLoginScreenVM'>
 
   <interface></interface>
 
@@ -9,84 +10,84 @@
     <Timer
         id='pollTimer'
         duration='3'
-        control='{{vm.pollTimerControl}}'
-        fire='{(vm.onPollTimerFire(),isSettingInitialValue=false)}' />
+        control='{{pollTimerControl}}'
+        fire='{(onPollTimerFire(value))}' />
 
     <Group
         id='backgroundGroup'
-        visible='{{vm.isContentGroupVisible}}'>
+        visible='{{isContentGroupVisible}}'>
       <Rectangle
           id='backgroundRect'
           width='1920'
           height='1080'
-          color='{{=ViewUtils_UIBColor("background_color")}}' />
+          color='{{=zapp_viewUtils_UIBColor("background_color")}}' />
 
-      <ZPoster
+      <mv_MPoster
           id='backgroundPoster'
           width='1920'
           height='1080'
-          style='{{=ViewUtils_UIBPoster("background")}}' />
+          style='{{=zapp_viewUtils_UIBPoster("background")}}' />
 
-      <ZPoster
+      <mv_MPoster
           id='logoPoster'
-          style='{{=ViewUtils_UIBPoster("logo")}}' />
+          style='{{=zapp_viewUtils_UIBPoster("logo")}}' />
     </Group>
 
     <Group
         id='contentGroup'
-        visible='{{vm.isContentGroupVisible}}'>
-      <MLabel
+        visible='{{isContentGroupVisible}}'>
+      <mv_MLabel
           id='titleLabel'
-          style='{{=ViewUtils_UIBLabel("title")}}' />
+          style='{{=zapp_viewUtils_UIBLabel("title")}}' />
       <LayoutGroup
           id='labelsGroup'
           layoutDirection='vert'
-          translation='{{=ViewUtils_UIBPosition("text")}}'
-          itemSpacings='{{=ViewUtils_UIBFloatArray("item_spacing")}}'>
+          translation='{{=zapp_viewUtils_UIBPosition("text")}}'
+          itemSpacings='{{=zapp_viewUtils_UIBFloatArray("item_spacing")}}'>
 
-        <MLabel
+        <mv_MLabel
             id='text1Label'
-            style='{{=ViewUtils_UIBLabel("text1")}}' />
+            style='{{=zapp_viewUtils_UIBLabel("text1")}}' />
 
-        <MLabel
+        <mv_MLabel
             id='text2Label'
-            style='{{=ViewUtils_UIBLabel("text2")}}' />
+            style='{{=zapp_viewUtils_UIBLabel("text2")}}' />
 
-        <MLabel
+        <mv_MLabel
             id='text3Label'
-            style='{{=ViewUtils_UIBLabel("text3")}}' />
+            style='{{=zapp_viewUtils_UIBLabel("text3")}}' />
 
-        <MLabel
+        <mv_MLabel
             id='text4Label'
-            style='{{=ViewUtils_UIBLabel("text4")}}' />
+            style='{{=zapp_viewUtils_UIBLabel("text4")}}' />
 
-        <MLabel
+        <mv_MLabel
             id='text5Label'
-            style='{{=ViewUtils_UIBLabel("text5")}}' />
+            style='{{=zapp_viewUtils_UIBLabel("text5")}}' />
 
-        <MLabel
+        <mv_MLabel
             id='text6Label'
-            style='{{=ViewUtils_UIBLabel("text6")}}' />
+            style='{{=zapp_viewUtils_UIBLabel("text6")}}' />
 
-        <MLabel
+        <mv_MLabel
             id='codeLabel'
-            style='{{=ViewUtils_UIBLabel("code","")}}'
-            text='{{vm.codeText}}' />
-        <MLabel
+            style='{{=zapp_viewUtils_UIBLabel("code","")}}'
+            text='{{codeText}}' />
+        <mv_MLabel
             id='supportLabel'
-            style='{{=ViewUtils_UIBLabel("support")}}' />
-        <MLabel
+            style='{{=zapp_viewUtils_UIBLabel("support")}}' />
+        <mv_MLabel
             id='support2Label'
-            style='{{=ViewUtils_UIBLabel("support2")}}' />
+            style='{{=zapp_viewUtils_UIBLabel("support2")}}' />
 
       </LayoutGroup>
 
       <ZActionButton
           id='refreshButton'
-          style='{{=ViewUtils_UIBButton("refresh_button")}}'
-          opacity='{{:vm.refreshButtonOpacity}}'
-          visible='{{vm.isRefreshing, transform=MOM_transform_invertBoolean}}'
-          selected='{(vm.onRefreshButtonSelected,isSettingInitialValue=false)}' />
+          style='{{=zapp_viewUtils_UIBButton("refresh_button")}}'
+          opacity='{{:refreshButtonOpacity}}'
+          visible='{{isRefreshing:transform=mx_transform_invertBoolean}}'
+          selected='{(onRefreshButtonSelected(value))}' />
     </Group>
 
     <LoadingIndicator
@@ -94,7 +95,7 @@
         width='1920'
         height='1080'
         translation='[0,0]'
-        isActive='{{vm.isShowingLoadingIndicator, isSettingInitialValue=true}}'
+        isActive='{{isShowingLoadingIndicator}}'
         backgroundVisible='false'
         text='' />
 

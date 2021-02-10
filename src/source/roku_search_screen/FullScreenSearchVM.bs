@@ -1,0 +1,247 @@
+import "pkg:/source/lib/ViewUtils.bs"
+import "pkg:/source/roku_modules/mc/Utils.brs"
+import "pkg:/source/UIBuilder/view/ComponentVM.bs"
+import "pkg:/source/zapp-controls/CollectionRowUtils.bs"
+
+@strict
+@useSetField
+class FullScreenSearchVM extends zapp.uib.ComponentVM
+
+  public results = invalid
+  public isGridVisible = false
+  public isNoSearchLabelVisible = false
+  public isNotFoundLabelVisible = false
+  public cellStyle = invalid
+
+  public keyboardStyle = {}
+  public gridStyle = {}
+  public inputStyle = {}
+
+  public jumpToItem = 0
+  public searchText = ""
+
+  private searchDelayTask = invalid
+  private minCharacters = 3
+  private searchQueryName = "q"
+  private isShowingContent = false
+  private rowTarget = invalid
+
+  public function new(riversJson)
+    super(riversJson, "FullScreenSearchVM")
+    m.focusId = "keyboard"
+    m.processStyles(riversJson.styles)
+    m.setGridVisible(false)
+
+    m.rowTarget = riversJson.data.target
+
+    if zapp.viewUtils.getUIBBool(riversJson.styles, "override_target_screen", false)
+      m.rowTarget = mc.getPath(riversJson, "data.target_screen")
+      m.logWarn("Using overridden screen name for target!", m.rowTarget)
+    end if
+
+  end function
+
+  function processStyles(styles)
+    m.loadDepth = zapp.viewUtils.getUIBInt(styles, "data_depth", 0)
+    m.gridStyle = m.getGridStyle(styles, m.cellStyle)
+
+    m.keyboardStyle = {
+      translation: zapp.viewUtils.makeUIBPosition(styles, "keyboard", 300, 500)
+      keyColor: zapp.viewUtils.transposeUIBColor(styles.key_color)
+      focusedKeyColor: zapp.viewUtils.transposeUIBColor(styles.focused_key_color)
+      keyboardBitmapUri: zapp.viewUtils.getPosterUri(styles.keyboard_bitmap_uri)
+      focusBitmapUri: zapp.viewUtils.getPosterUri(styles.keyboard_focus_bitmap_uri)
+      lowerCase: zapp.viewUtils.getUIBBool(styles, "keyboard_lower_case", false)
+      showTextEditBox: not zapp.viewUtils.getUIBBool(styles, "use_custom_text_input", true)
+    }
+
+    m.inputStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "custom_text_input", "textInput", invalid, true)
+    m.inputStyle.visible = not m.keyboardStyle.showTextEditBox
+    m.minCharacters = zapp.viewUtils.getUIBInt(styles, "search_min_chars", 3)
+    m.searchQueryName = mc.getPath(styles, "search_query_name", "q")
+  end function
+
+  private function getGridStyle(styles, cellStyle)
+    if cellStyle <> invalid
+      style = zapp.collectionRowUtils.getRowListStyle(styles, cellStyle.normal)
+      style.itemSize = style.rowItemSize
+      style.itemSpacing = zapp.viewUtils.makeUIBSize(styles, "grid_spacing", 44, 20)
+    else
+      style = {}
+    end if
+
+    style.translation = zapp.viewUtils.makeUIBPosition(styles, "grid", 300, 500)
+
+    return style
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ overridden
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public override function load()
+    m.state = "ready"
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ callbacks
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public function onSelectItem(index)
+    m.logInfo("onSelecteItem", index)
+
+    item = m.results.getChild(index)
+
+    if item <> invalid and item.itemType <> "placeholder"
+      m.logInfo("selected item: ", item.id)
+      m.executeContentSelection(m.createSelectionFromContent(item, m.results))
+      m.isShowingContent = true
+    else
+      m.logWarn("selected non-selectable item")
+    end if
+
+  end function
+
+  public function onSearchTextChange(text)
+    m.logInfo("text is now", text, "waiting before searching")
+
+    m.searchText = text
+    m.cancelWaitTimer(m.searchDelayTask)
+    m.cancelTask(m.loadItemTask)
+
+    if (len(m.searchText.trim()) >= m.minCharacters)
+      m.searchDelayTask = m.waitAFrame("onSearchDelayComplete", 0.5)
+    else
+      m.logVerbose("too few chars. ignoring")
+      m.setGridVisible(false)
+      m.isLoading = false
+    end if
+
+  end function
+
+  public function onSearchDelayComplete()
+    m.logMethod("onSearchDelayComple")
+
+    m.logVerbose("search debounce complete, exeucting search with", m.searchText)
+    m.performSearch(m.searchText)
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ search api invocation
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function performSearch(text)
+    m.logMethod("performSearch")
+
+    m.isLoading = true
+    m.setGridVisible(true)
+    entry = createObject("roSGNode", "ZPEntry")
+    entry.itemType = "feed"
+    entry.link = m.getLegacyCompatibleLink(m.riversJson.data)
+    entry.link += "&" + m.searchQueryName + "=" + text.trim().encodeUriComponent()
+    m.logInfo("entry link is ", entry.link)
+    m.toggleLoadingItemTask(true, entry, m.loadDepth)
+
+  end function
+
+  public override function onFeedResult(result)
+    m.logMethod("onFeedResult")
+
+    m.toggleLoadingItemTask(false)
+    m.isLoading = false
+
+    if result.isOk and result.data.itemType <> "problemDetailsResponse" and result.data.getChildCount() > 0
+      results = result.data.getChild(0)
+      m.setContentStyle(results)
+    else
+      results = createObject("roSGNode", "ZPEntry")
+    end if
+
+    mc.setOrAddNodeField(results, "target", m.rowTarget)
+
+    m.results = results
+    m.jumpToItem = 0
+    m.setGridVisible(true)
+  end function
+
+  private function setGridVisible(isGridVisible)
+    m.isGridVisible = isGridVisible and m.results.getChildCount() > 0
+    m.isNotFoundLabelVisible = isGridVisible and m.results.getChildCount() = 0 and not m.isLoading
+    m.isNoSearchLabelVisible = not isGridVisible and not m.isLoading
+
+    if not m.isGridVisible
+      m.results = createObject("roSGnode", "ZPEntry")
+    end if
+
+    if not m.isGridVisible and m.focusId = "grid"
+      m.setFocusId("keyboard")
+    end if
+  end function
+
+  private function setContentStyle(content)
+    m.logMethod("setContentStyle")
+
+    if m.style <> invalid
+      cellStyle = m.style.cell
+      cellStyle.dataMap = m.style.dataMap
+      cellStyle.delete("translation")
+      mc.setOrAddNodeField(content, "_style", cellStyle)
+      mc.setOrAddNodeField(content, "_styleId", m.style.id)
+    end if
+
+  end function
+
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ keyboard
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  function onKeyPressRight() as boolean
+    if m.focusId = "keyboard" and m.isGridVisible
+      m.setFocusId("grid")
+      return true
+    end if
+
+    return false
+  end function
+
+  function onKeyPressLeft() as boolean
+    if m.focusId = "grid"
+      m.setFocusId("keyboard")
+      return true
+    end if
+
+    return false
+  end function
+
+  private function reset()
+    m.jumpToItem = 0
+    m.results = createObject("roSGNode", "ZPEntry")
+    m.setGridVisible(false)
+    m.searchText = ""
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ lifecycle
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public override function onHide()
+    super.onHide()
+
+    m.cancelWaitTimer(m.searchDelayTask)
+    m.cancelTask(m.loadItemTask)
+    m.loadItemTask = invalid
+    m.searchDelayTask = invalid
+  end function
+
+  public override function onShow() as void
+    m.logMethod("onShow")
+
+    if not m.isShowingContent
+      m.reset()
+    end if
+
+    m.isShowingContent = false
+  end function
+
+end class

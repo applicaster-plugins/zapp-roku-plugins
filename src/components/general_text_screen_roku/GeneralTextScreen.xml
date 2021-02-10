@@ -1,59 +1,60 @@
 <?xml version='1.0' encoding='utf-8'?>
 <component
     name='GeneralTextScreen'
-    extends='ZUIBScreen'>
+    extends='UIBScreen'
+    vm='GeneralTextScreenVM'>
 
   <interface></interface>
 
   <children>
     <Rectangle
         id='backgroundRect'
-        color='{{:vm.backgroundColor}}' />
+        color='{{:backgroundColor}}' />
     <Poster
         id='backgroundPoster'
         loadSync='true'
         loadDisplayMode='scaleToFill'
         loadWidth='1920'
         loadHeight='1080'
-        uri='{{:vm.backgroundUrl}}'
+        uri='{{:backgroundUrl}}'
         width='1920'
         height='1080' />
     <Poster
         id='logoPoster'
         loadSync='true'
-        translation='{{:vm.logoPosition}}'
-        loadWidth='{{:vm.logoWidth}}'
-        loadHeight='{{:vm.logoHeight}}'
-        width='{{:vm.logoWidth}}'
-        height='{{:vm.logoHeight}}'
-        uri='{{:vm.logoImageUrl}}' />
+        translation='{{:logoPosition}}'
+        loadWidth='{{:logoWidth}}'
+        loadHeight='{{:logoHeight}}'
+        width='{{:logoWidth}}'
+        height='{{:logoHeight}}'
+        uri='{{:logoImageUrl}}' />
 
     <LayoutGroup
         id='labelsGroup'
         layoutDirection='vert'
-        translation='{{:vm.textPosition}}'
+        translation='{{:textPosition}}'
         itemSpacings='[56, 56, 26]'>
-      <MLabel
+      <mv_MLabel
           id='titleText'
-          style='{{:vm.titleStyle}}'
-          text='{{vm.titleText}}'
-          width='{{vm.textWidth}}'
+          style='{{:titleStyle}}'
+          text='{{titleText}}'
+          width='{{textWidth}}'
           horizAlign='center'
           wrap='true' />
 
-      <MLabel
+      <mv_MLabel
           id='descriptionText'
-          style='{{:vm.descriptionStyle}}'
-          text='{{vm.descriptionText}}'
-          width='{{vm.textWidth}}'
+          style='{{:descriptionStyle}}'
+          text='{{descriptionText}}'
+          width='{{textWidth}}'
           horizAlign='center'
           wrap='true' />
 
-      <MLabel
+      <mv_MLabel
           id='optional1Text'
-          style='{{:vm.optional1Style}}'
-          text='{{vm.optional1Text}}'
-          width='{{vm.textWidth}}'
+          style='{{:optional1Style}}'
+          text='{{optional1Text}}'
+          width='{{textWidth}}'
           horizAlign='center'
           wrap='true' />
 
@@ -61,9 +62,9 @@
 
     <ZActionButton
         id='doneButton'
-        translation='{{:vm.buttonPosition}}'
-        style='{{:vm.buttonStyle}}'
-        selected='{(vm.onButtonSelected,isSettingInitialValue=false)}'
+        translation='{{:buttonPosition}}'
+        style='{{:buttonStyle}}'
+        selected='{(onButtonSelected(value))}'
         width='610' />
 
   </children>

@@ -1,78 +1,77 @@
 import "pkg:/source/plugin-support/PluginManager.bs"
-import "pkg:/source/lib/ZBaseClass.bs"
-import "pkg:/source/maestro/lib/Utils.bs"
-import "pkg:/source/lib/request.bs" 
+import "pkg:/source/lib/BaseClass.bs"
+import "pkg:/source/roku_modules/mc/Utils.brs"
+import "pkg:/source/lib/Request.bs"
+import "pkg:/source/entitlements/EntitlementsManager.bs"
 
-namespace Applicaster
+' /**
+'  * @module EntitlementsItemLoader
+'  * @description retrieves the content url from the entitlements manager
+'  */
+class EntitlementsItemLoader extends zapp.BaseClass
 
-  ' /**
-  '  * @module EntitlementsItemLoader
-  '  * @description retrieves the content url from the entitlements manager
-  '  */
-  class EntitlementsItemLoader extends ZBaseClass
+  public isValid = false
+  private matchingPath = ""
+  private matchingValue = ""
 
-    public isValid = false
-    private matchingPath = ""
-    private matchingValue = ""
+  @injectClass("zapp.PluginManager")
+  private plugins
 
-    public function new()
-      m.super("EntitlementsItemLoader")
-      m.plugins = m.getClassInstance("PluginManager")
+  public function new()
+    super("EntitlementsItemLoader")
 
-      plugin = m.plugins.getPluginById("entitlements_item_loader_prehook")
-      m.isValid = plugin.isValid
+    plugin = m.plugins.getPluginById("entitlements_item_loader_prehook")
+    m.isValid = plugin.isValid
 
-      if plugin.isValid
-        m.matchingPath = plugin.getStringValue("matching_path", "")
-        m.matchingValue = plugin.getStringValue("matching_value", "")
-      else
-        m.logError("There was no plugin config!")
-        m.matchingPath = ""
-        m.matchingValue = ""
-      end if
+    if plugin.isValid
+      m.matchingPath = plugin.getStringValue("matching_path", "")
+      m.matchingValue = plugin.getStringValue("matching_value", "")
+    else
+      m.logError("There was no plugin config!")
+      m.matchingPath = ""
+      m.matchingValue = ""
+    end if
 
-    end function
+  end function
 
-    public function execute()
-      item = MU.getContentField(m.getInstance("currentSelection"), "currentItem")
+  public function execute()
+    item = mc.getPath(m.getInstance("currentSelection"), "currentItem")
 
-      if item = invalid
-        m.logError("no item - entitlements loader reuires currentSelection.currentItem is populated")
-        return "error"
-      end if
+    if item = invalid
+      m.logError("no item - entitlements loader reuires currentSelection.currentItem is populated")
+      return "error"
+    end if
 
-      if not m.isItemMatch(item)
-        m.logError("item does not match")
-        return "success"
-      end if
+    if not m.isItemMatch(item)
+      m.logError("item does not match")
+      return "success"
+    end if
 
-      entitlements = m.getInstance("entitlements")
-      if not entitlements@.isLocked(item)
-        m.logInfo("item is already unlocked")
-        return "success"
-      end if
+    entitlementsNode = m.getInstance("entitlements")
+    if not entitlementsNode@.isLocked(item)
+      m.logInfo("item is already unlocked")
+      return "success"
+    end if
 
-      manager = m.getClassInstance("EntitlementsManager")
+    manager = m.getClassInstance("zapp.entitlements.EntitlementsManager")
 
+    if manager.loadItem(item)
+      return "success"
+    else
+      return "error"
+    end if
+  end function
 
-      if manager.loadItem(item)
-        return "success"
-      else
-        return "error"
-      end if
-    end function
+  function isItemMatch(item)
+    if m.matchingPath = "all"
+      return true
+    end if
 
-    function isItemMatch(item)
-      if m.matchingPath = "all"
-        return true
-      end if
+    value = mc.getPath(item.json, m.matchingPath, invalid)
+    if not mc.isString(value)
+      value = formatJson(value)
+    end if
+    return value = m.matchingValue
+  end function
 
-      value = MU.getContentField(item.json, m.matchingPath, invalid)
-      if not MU.isString(value)
-        value = formatJson(value)
-      end if
-      return value = m.matchingValue
-    end function
-
-  end class
-end namespace
+end class

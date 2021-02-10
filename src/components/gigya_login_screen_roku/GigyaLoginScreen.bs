@@ -1,0 +1,19 @@
+import "pkg:/source/gigya_login_screen_roku/GigyaLoginScreenVM.bs"
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Initialization
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function init()
+  m.top.isConsumingOriginEntry = true
+  m.top.isForcingMenuHidden = true
+
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Overridden
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function createVM()
+  return new GigyaLoginScreenVM(m.top.riversJson)
+end function

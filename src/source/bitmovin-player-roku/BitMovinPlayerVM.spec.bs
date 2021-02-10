@@ -1,0 +1,315 @@
+namespace zapp.tests
+
+  @tags("public", "video", "vm")
+  @suite
+  class BitMovinPlayerVMTests extends tests.BaseTestSuite
+
+    override function beforeEach()
+      super.beforeEach()
+      mioc.setInstance("collectionBookmarks", CreateObject("roSGNode", "Bookmarks"))
+      mioc.setInstance("vodItemBookmarks", CreateObject("roSGNode", "Bookmarks"))
+      mioc.setInstance("plugins", [])
+      m.BitmovinPlayerState = { "PLAYING": "playing", "STALLING": "stalling", "PAUSED": "paused", "FINISHED": "finished", "ERROR": "error", "NONE": "none", "SETUP": "setup", "READY": "ready" }
+
+
+      m.BitmovinFields = { "PLAYER_STATE": "playerState", "ERROR": "error", "WARNING": "warning", "SEEK": "seek", "SEEKED": "seeked", "TIME_SHIFT": "timeShift", "TIME_SHIFTED": "timeShifted", "CURRENT_TIME": "currentTime", "SOURCE_LOADED": "sourceLoaded", "SOURCE_UNLOADED": "sourceUnloaded", "PLAY": "play", "METADATA": "metadata", "AUDIO_CHANGED": "audioChanged", "MUTED": "muted", "UNMUTED": "unmuted", "DOWNLOAD_FINISHED": "downloadFinished" }
+
+      m.selection = createObject("roSGNode", "Selection")
+
+      m.riversJson = {
+        "general": {
+          "license_key": "lk"
+          "override_video_url": "ourl"
+        }
+      }
+
+      m.view = { "id": "#view", "isPlaybackFinished": false, "playbackResult": invalid, "riversJson": m.riversJson }
+      m.player = {
+        "isPlayer": true
+        "BitmovinFunctions": { "UNLOAD": "unload", "LOAD": "load", }
+        "BitmovinFields": m.BitmovinFields
+        "BitmovinPlayerState": m.BitmovinPlayerState
+      }
+
+      m.vm = new BitMovinPlayerVM(m.view)
+    end function
+
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("constructor")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("bad configured plugin")
+    @params({})
+    @params({ "license_key": invalid })
+    @params({ "license_key": "" })
+    @params({ "license_key": "", })
+    @params({ "license_key": "", })
+    @params({ "license_key": "", "overrideVideoUrl": invalid })
+    @params({ "license_key": "", "overrideVideoUrl": "" })
+    @params({ "overrideVideoUrl": "" })
+    @params({ "overrideVideoUrl": "#override" })
+    function _(generalJson)
+      m.view.riversJson = { "general": generalJson }
+      m.vm = new BitMovinPlayerVM(m.view)
+
+      m.assertEqual(m.vm.state, "none")
+      m.assertEqual(m.vm.view, m.view)
+      m.assertEmpty(m.vm.licenseKey)
+      m.assertEmpty(m.vm.overrideVideoUrl)
+      m.assertFalse(m.vm.isValid)
+    end function
+
+    @it("valid plugin")
+    function _()
+      m.view.riversJson = { "general": {
+          "license_key": "#key"
+          "override_video_url": "#override"
+        }
+      }
+
+      m.vm = new BitMovinPlayerVM(m.view)
+
+      m.assertEqual(m.vm.state, "none")
+      m.assertEqual(m.vm.view, m.view)
+      m.assertEqual(m.vm.licenseKey, "#key")
+      m.assertEqual(m.vm.overrideVideoUrl, "#override")
+
+      m.assertTrue(m.vm.isValid)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onSDKLoadStatusChange")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("onLoadSDKStatusChange other states")
+    @params("none")
+    @params("notReady")
+    @params("error")
+    @params("loading")
+    function _(state)
+      m.expectNone(m.view, "createChild")
+
+      m.vm.onSDKLoadStatusChange(state)
+
+      m.assertInvalid(m.vm.player)
+      m.assertInvalid(m.vm.playerFunctions)
+      m.assertInvalid(m.vm.playerFields)
+    end function
+
+    @it("onLoadSDKStatusChange ready")
+    function _()
+
+      m.vm.licenseKey = "#key"
+      m.expectOnce(m.vm.view, "createChild", ["BitmovinPlayerSDK:BitmovinPlayer"], m.player)
+      m.expectOnce(m.vm, "observeNodeField", [m.player, "playerState", m.vm.onPlayerStateChange])
+      m.expectOnce(m.vm, "observeNodeField", [m.player, "error", m.vm.onPlayerVideoError])
+      m.expectOnce(m.vm, "observeNodeField", [m.player, "currentTime", m.vm.onPlayerCurrentTimeChange])
+      ' m.expectOnce(m.vm, "observeNodeField", [m.player, "sourceLoaded", m.vm.onPlayerSourceLoadedChange])
+
+      m.expectOnce(m.player, "callFunc", [m.player.BitmovinFunctions.SETUP, {
+          key: "#key"
+      }])
+      m.expectOnce(m.vm, "setVideoChromeStyle", [])
+
+      m.vm.onSDKLoadStatusChange("ready")
+
+      m.assertEqual(m.vm.state, "ready")
+      m.assertEqual(m.vm.player, m.player)
+      m.assertEqual(m.vm.playerFields, m.player.BitmovinFields)
+      m.assertEqual(m.vm.playerFunctions, m.player.BitmovinFunctions)
+      m.assertEqual(m.vm.playerState, m.player.BitmovinPlayerState)
+      m.assertEqual(m.vm.player.id, "player")
+
+      m.assertTrue(m.vm.isValid)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onPlayerStateChange")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("onPlayerStateChange - other")
+    @params("stalling")
+    @params("paused")
+    @params("playing")
+    @params("none")
+    @params("setup")
+    function _(state)
+      m.vm.playerState = m.BitmovinPlayerState
+      m.vm.state = "playing"
+      m.vm.player = m.player
+      videoNode = { "id": "videoNode", "duration": 999 }
+
+      m.expectOnce(m.vm.player, "getChild", [0], videoNode)
+
+      m.vm.onPlayerStateChange(state)
+
+      m.assertFalse(m.view.isPlaybackFinished)
+      m.assertInvalid(m.view.playbackResult)
+      m.assertEqual(m.vm.state, "playing")
+      m.assertEqual(m.vm.view.duration, 999)
+    end function
+
+    @it("onPlayerStateChange - other - no video node")
+    @params("stalling")
+    @params("paused")
+    @params("playing")
+    @params("none")
+    @params("setup")
+    function _(state)
+      m.vm.playerState = m.BitmovinPlayerState
+      m.vm.state = "playing"
+      m.vm.player = m.player
+      videoNode = invalid
+
+      m.expectOnce(m.vm.player, "getChild", [0], videoNode)
+
+      m.vm.onPlayerStateChange(state)
+
+      m.assertFalse(m.view.isPlaybackFinished)
+      m.assertInvalid(m.view.playbackResult)
+      m.assertEqual(m.vm.state, "playing")
+      m.assertEqual(m.vm.view.duration, 0)
+    end function
+
+    @it("error")
+    function _()
+      m.vm.playerState = m.BitmovinPlayerState
+      m.vm.state = "playing"
+
+      m.vm.onPlayerStateChange("error")
+
+      m.assertTrue(m.view.isPlaybackFinished)
+      m.assertEqual(m.view.playbackResult.state, "error")
+      m.assertEqual(m.view.playbackResult.message, "error during playback")
+      m.assertEqual(m.vm.state, "error")
+    end function
+
+    @it("finished")
+    function _()
+      m.vm.playerState = m.BitmovinPlayerState
+      m.vm.state = "playing"
+
+      m.vm.onPlayerStateChange("finished")
+
+      m.assertTrue(m.view.isPlaybackFinished)
+      m.assertEqual(m.view.playbackResult.state, "finished")
+      m.assertEmpty(m.view.playbackResult.message)
+      m.assertEqual(m.vm.state, "ready")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onPlayerVideoError")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("onPlayerVideoError")
+    @params({ "message": "error1" })
+    @params({ "message": "error2" })
+    @params({ "message": "error3" })
+    function _(error)
+      m.vm.onPlayerVideoError(error)
+      m.assertEqual(m.view.playbackResult.state, "error")
+      m.assertEqual(m.view.playbackResult.message, error.message)
+      m.assertEqual(m.vm.state, "ready")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onPlayerCurrentTimeChange")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("onPlayerCurrentTimeChange")
+    @params(0)
+    @params(100)
+    @params(1000)
+    function _(time)
+      m.vm.onPlayerCurrentTimeChange(time)
+      m.assertEqual(m.view.position, time)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("playItem")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("ready")
+    function _()
+      item = { "id": "a" }
+      playerData = { "id": "playerData" }
+
+      m.vm.state = "ready"
+      m.vm.player = m.player
+      m.expectOnce(m.vm, "getPlayerItem", [item], playerData)
+      m.expectOnce(m.vm, "playBitmovinItem", [playerData])
+
+      m.vm.playItem(item)
+      m.assertInvalid(m.vm.pendingPlayerItem)
+
+    end function
+
+    @it("not ready")
+    function _()
+      item = { "id": "a" }
+      playerData = { "id": "playerData" }
+
+      m.vm.state = "ready"
+      m.vm.player = invalid
+      m.vm.playerFunctions = m.player.BitmovinFunctions
+      m.expectOnce(m.vm, "getPlayerItem", [item], playerData)
+      m.expectNone(m.vm, "playBitmovinItem", [playerData])
+
+      m.vm.playItem(item)
+      m.assertEqual(m.vm.pendingPlayerItem, playerData)
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("playBitmovinItem")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("playBitmovinItem")
+    function _()
+      playerData = { "id": "playerData" }
+      videoNode = { "id": "videoNode" }
+
+      m.vm.state = "ready"
+      m.vm.player = m.player
+      m.vm.playerFunctions = m.player.BitmovinFunctions
+      m.expectOnce(m.player, "getChild", [0], videoNode)
+
+      m.expectOnce(m.vm, "setFocus", [m.player])
+      m.expectOnce(m.vm, "setVideoChromeStyle", [])
+
+
+      m.expectOnce(m.player, "callFunc", [m.player.BitmovinFunctions.LOAD, playerData])
+      m.expectOnce(m.player, "callFunc", [m.player.BitmovinFunctions.PLAY, invalid])
+
+      m.vm.playBitmovinItem(playerData)
+      m.assertEqual(videoNode.control, "play")
+
+      m.assertEqual(m.vm.state, "playing")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("stopItem")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("stopItem")
+    function _()
+      m.vm.state = "playing"
+      m.vm.player = m.player
+      m.vm.playerFunctions = m.player.BitmovinFunctions
+      m.expectOnce(m.vm.player, "callFunc", [m.player.BitmovinFunctions.UNLOAD, invalid])
+
+      m.vm.stopItem()
+
+      m.assertEqual(m.vm.state, "ready")
+      m.assertTrue(m.vm.view.isPlaybackFinished)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("getPlayerData")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    'TBD
+
+  end class
+end namespace

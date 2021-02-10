@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='utf-8'?>
+<component
+    name='ZGigyaLoginScreen'
+    extends='UIBScreen'
+    vm='GigyaLoginScreenVM'>
+
+  <interface>
+  </interface>
+
+  <children>
+    <Rectangle
+        id='backgroundRectangle'
+        width='1920'
+        height='1080'
+        color='{{=zapp_viewUtils_UIBColor("background_color")}}' />
+    <mv_MPoster
+        id='backgroundImage'
+        style='{{=zapp_viewUtils_UIBPoster("poster")}}'
+        loadDisplayMode='scaleToFill'
+        loadWidth='1920'
+        loadHeight='1080'
+        width='1920'
+        height='1080' />
+
+    <!-- account not signed in -->
+    <Group
+        id='conentGroup'
+        visible='{{isContentVisible}}'
+        translation='[0,0]'>
+      <mv_MLabel
+          id='title'
+          style='{{=zapp_viewUtils_UIBLabel("title")}}' />
+      <ZActionButton
+          id='loginButton'
+          style='{{=zapp_viewUtils_UIBButton("login_button")}}'
+          selected='{(onLoginButtonSelected(value))}' />
+      <ZActionButton
+          id='skipButton'
+          style='{{=zapp_viewUtils_UIBButton("skip_button")}}'
+          selected='{(onSkipButtonSelected(value))}' />
+    </Group>
+
+    <LoadingIndicator
+        id='refreshLoadingIndicator'
+        width='1920'
+        height='1080'
+        translation='[0,0]'
+        isActive='{{isRefreshing}}'
+        backgroundVisible='false'
+        text='' />
+
+  </children>
+</component>

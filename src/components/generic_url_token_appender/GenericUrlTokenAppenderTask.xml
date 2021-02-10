@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <component
-    name='ZGenericUrlTokenAppenderTask'
+    name='GenericUrlTokenAppenderTask'
     extends='Task'>
   <interface>
     <!-- executes the request for the currentSelection.currentItem

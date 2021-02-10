@@ -1,0 +1,18 @@
+import "pkg:/source/roku_search_screen/FullScreenSearchVM.bs"
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Initialization
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function Init()
+  m.top.isConsumingOriginEntry = true
+  m.top.isFullScreen = true
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Overridden
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function createVM()
+  return new FullScreenSearchVM(m.top.riversJson)
+end function

@@ -1,0 +1,125 @@
+namespace zapp.tests
+  @tags("public", "vm")
+  @suite
+  class WarningMessageScreenVMTests extends tests.BaseTestSuite
+
+    override function beforeEach()
+      super.beforeEach()
+      localStore = createObject("roSGNode", "ZSessionStore")
+      mioc.setInstance("zp_localStore", localStore)
+
+      riversJson = {
+        "id": "warningScreen"
+        styles: {
+          condition_path: ""
+          condition_value: ""
+        }
+      }
+
+      m.vm = new WarningMessageScreenVM(riversJson)
+      m.analyticsManager = { "id": "analyticsManager" }
+      m.vm.analyticsManager = m.analyticsManager
+
+      m.vm.initialize()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("load")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("loads when the conditions match")
+    @params({ json: { field: "v2" } }, "field", "v2")
+    @params({ json: { field2: "v1" } }, "field2", "v1")
+    function _(entry, path, condition)
+      m.vm.conditionPath = path
+      m.vm.conditionValue = condition
+      m.expectOnce(m.vm, "super4_load")
+      m.expectNone(m.vm, "dismiss")
+      m.vm.originEntry = entry
+
+      m.vm.load()
+
+      m.assertNotEqual(m.vm.state, "success")
+
+    end function
+
+    @it("dismisses when there is no entry")
+    function _()
+      m.expectNone(m.vm, "super4_load")
+      m.expectOnce(m.vm, "dismiss", ["success"])
+
+      m.vm.originEntry = invalid
+
+      m.vm.load()
+
+    end function
+
+    @it("dismisses when the values don't match")
+    @params({ json: { field: "v2" }, }, "json.field", "n2")
+    @params({ json: { field: "v2" }, }, "", "v2")
+    @params({ json: { field: "v2" }, }, " ", "v2")
+    @params({ json: { field: "v2" }, }, "json.field", " ")
+    function _(entry, path, condition)
+      m.vm.conditionPath = path
+      m.vm.conditionValue = condition
+      m.expectNone(m.vm, "super4_load")
+      m.expectOnce(m.vm, "dismiss", ["success"])
+      m.vm.originEntry = entry
+
+      m.vm.load()
+
+    end function
+
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onDoneButtonSelected")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("onDoneButtonSelected")
+    function _()
+      m.expectOnce(m.vm, "dismiss", ["cancel"])
+
+      m.vm.onDoneButtonSelected(true)
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onKeyPressBack")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("onKeyPressBack")
+    function _()
+      m.expectOnce(m.vm, "dismiss", ["cancel"])
+
+      m.vm.onKeyPressBack()
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("showMessage")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+    @it("showMessage")
+    function _()
+      entry = { "id": "entry"
+        title: "#t"
+        json: {
+          description: "#d"
+          extensions: {
+            extra_text: "#e"
+          }
+        }
+      }
+
+      m.vm.showMessage(entry)
+      m.assertFalse(m.vm.isShowingLoadingIndicator)
+      m.assertTrue(m.vm.isContentGroupVisible)
+
+      m.assertEqual(m.vm.titleText, "#t")
+      m.assertEqual(m.vm.descriptionText, "#d")
+      m.assertEqual(m.vm.optional1Text, "#e")
+
+    end function
+  end class
+end namespace

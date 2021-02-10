@@ -1,4 +1,5 @@
 import "pkg:/source/login_screen_roku/LoginScreenVM.bs"
+import "pkg:/source/roku_modules/mx/VMTransformFunctions.brs"
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '++ Initialization
@@ -7,18 +8,14 @@ import "pkg:/source/login_screen_roku/LoginScreenVM.bs"
 function init()
   m.top.isConsumingOriginEntry = true
   m.top.isForcingMenuHidden = true
-  initializeView(m.top.findNode("screenContainer"))
-  initializeView(m.top.findNode("labelsGroup"))
-  initializeView(m.top.findNode("controlsGroup"))
+  mv.initializeView(m.top.findNode("screenContainer"))
+  mv.initializeView(m.top.findNode("labelsGroup"))
+  mv.initializeView(m.top.findNode("controlsGroup"))
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '++ Overridden methods
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-function getControlName()
-  return "LoginScreen"
-end function
 
 function createVM()
   vm = new LoginScreenVM(m.top.riversJson)

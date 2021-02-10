@@ -1,0 +1,209 @@
+namespace zapp.tests
+
+  @tags("public", "auth", "vm", "deprecated")
+  @suite
+  class GigyaLoginScreenVMTests extends tests.BaseTestSuite
+
+    override function beforeEach()
+      super.beforeEach()
+      mioc.setInstances({
+        "user": { "isLoggedIn": false }
+        "locale": "en"
+      })
+
+      riversJson = {
+        "id": "myAccount"
+        "general": { "base_url": "#base_url/" }
+        "styles": { "login_screen": "#lis" }
+        "localizations": {
+          "en": {}
+        }
+      }
+
+      m.vm = new GigyaLoginScreenVM(riversJson)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("constructor")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("testConstructor_tests")
+    function _()
+      m.assertEqual(m.vm.focusId, "loginButton")
+      m.assertTrue(m.vm.isRefreshing)
+      m.assertFalse(m.vm.isContentVisible)
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("load")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("not shown before")
+    function _()
+      m.expectOnce(m.vm, "getLocalStoreValue", ["gigya_login_screen_roku", "isShown"], invalid)
+      m.expectOnce(m.vm, "refreshLogin", [])
+      m.expectOnce(m.vm, "setLocalStoreValue", ["gigya_login_screen_roku", "isShown", "true", true])
+
+      m.vm.load()
+
+    end function
+
+    @it("shown before")
+    function _()
+      m.expectOnce(m.vm, "getLocalStoreValue", ["gigya_login_screen_roku", "isShown"], "true")
+      m.expectNone(m.vm, "refreshLogin", [])
+      m.expectOnce(m.vm, "dismiss", ["success"])
+
+      m.vm.load()
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("refreshLogin")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("refreshLogin")
+    function _()
+      authTask = { "id": "authTask" }
+
+      m.expectOnce(m.vm, "createAuthTask", ["execLoad", "gigya_auth_plugin_roku", m.vm.onRefreshComplete], authTask)
+
+      m.vm.refreshLogin()
+
+      m.assertEqual(m.vm.authTask, authTask)
+
+      m.assertTrue(m.vm.isRefreshing)
+      m.assertFalse(m.vm.isContentVisible)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onRefreshComplete")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("sucess")
+    function _()
+      user = { "id": "user", isLoggedIn: true }
+      analytics = { "id": "analytics" }
+
+      m.expectOnce(m.vm, "getInstance", ["user"], user)
+      m.expectOnce(m.vm, "getInstance", ["analyticsManager"], analytics)
+      m.expectOnce(analytics, "callFunc", ["trackEvent", "Login Succesful", "page_loaded", { "provider": "gigya_login_screen_roku" }])
+      m.expectOnce(m.vm, "dismiss", ["success"])
+
+      m.vm.isContentVisible = false
+      m.vm.isRefreshing = true
+
+      m.vm.onRefreshComplete({})
+
+      m.assertFalse(m.vm.isRefreshing)
+      m.assertTrue(m.vm.isContentVisible)
+
+    end function
+
+
+    @it("failure")
+    function _()
+      user = { "id": "user", isLoggedIn: false }
+      m.vm.isContentVisible = false
+      m.vm.isRefreshing = true
+
+      m.expectOnce(m.vm, "getInstance", ["user"], user)
+      m.expectNone(m.vm, "dismiss")
+      m.vm.onRefreshComplete({})
+
+      m.assertFalse(m.vm.isRefreshing)
+      m.assertTrue(m.vm.isContentVisible)
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("button callbacks")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("- focused on loginButton")
+    function _()
+      m.vm.focusId = "loginButton"
+      m.expectOnce(m.vm, "showLoginScreen")
+
+      m.vm.onLoginButtonSelected(true)
+
+    end function
+
+    @it("- focused on logoutButton")
+    function _()
+      m.vm.focusId = "logoutButton"
+
+      m.expectOnce(m.vm, "dismiss", ["success"])
+      m.vm.onSkipButtonSelected(true)
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onKeyPressBack")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("onKeyPressBack")
+    function _()
+      m.vm.focusId = "loginButton"
+      m.expectOnce(m.vm, "dismiss", ["cancel"])
+
+      m.assertTrue(m.vm.onKeyPressBack())
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("showLoginScreen")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("found")
+    function _()
+      screen = { "id": "screen" }
+
+      m.expectOnce(m.vm, "getScreen", ["#lis"], screen)
+      m.expectOnce(m.vm, "push", [screen])
+      m.expectOnce(m.vm, "setFocus", [screen])
+      m.expectOnce(m.vm, "unobserveNodeField", [screen, "state", m.vm.onLoginScreenStateChange])
+
+      m.vm.showLoginScreen()
+    end function
+
+    @it("not found")
+    function _()
+      m.expectOnce(m.vm, "getScreen", ["#lis"], invalid)
+      m.expectNone(m.vm, "push")
+      m.expectNone(m.vm, "setFocus")
+      m.expectNone(m.vm, "unobserveNodeField")
+
+      m.vm.showLoginScreen()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onLoginStateChanged")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("success")
+    function _()
+      m.vm.state = "none"
+
+      m.vm.onLoginScreenStateChange("success")
+
+      m.assertEqual(m.vm.state, "success")
+
+    end function
+
+    @it("other trackable state")
+    @params("error")
+    @params("cancel")
+    function _(state)
+      m.vm.state = "none"
+      m.expectOnce(m.vm, "setFocusId", ["loginButton"])
+
+      m.vm.onLoginScreenStateChange(state)
+
+      m.assertEqual(m.vm.state, "none")
+
+    end function
+
+  end class
+end namespace

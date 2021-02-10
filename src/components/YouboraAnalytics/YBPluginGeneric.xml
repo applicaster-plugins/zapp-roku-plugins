@@ -2,7 +2,7 @@
 <!-- Copyright 2016 Roku Corp.  All Rights Reserved. -->
 
 <component name="YBPluginGeneric" extends="Task">
-  <script type="text/brightscript" uri="pkg:/source/maestro/lib/ThreadUtils.brs" />
+  
     <interface>
 
         <!-- Video object from where to listen for events -->
@@ -22,9 +22,8 @@
 
     </interface>
 
-    <script type="text/brightscript" uri="pkg:/source/maestro/lib/ThreadUtils.brs" />
+    
     <script type="text/brightscript" uri="Utils.brs"/>  
-    <script type="text/brightscript" uri="YBPluginGeneric.brs"/>
     <script type="text/brightscript" uri="Chrono.brs"/>  
     <script type="text/brightscript" uri="ViewManager.brs"/>
     <script type="text/brightscript" uri="Request.brs"/>

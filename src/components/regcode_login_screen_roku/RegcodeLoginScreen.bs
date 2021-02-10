@@ -1,4 +1,5 @@
 import "pkg:/source/regcode_login_screen_roku/RegcodeLoginScreenVM.bs"
+import "pkg:/source/roku_modules/mx/VMTransformFunctions.brs"
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '++ Initialization
@@ -6,26 +7,20 @@ import "pkg:/source/regcode_login_screen_roku/RegcodeLoginScreenVM.bs"
 
 function init()
   m.top.isConsumingOriginEntry = true
-  M_createNodeVars() 
-
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '++ Overridden methods
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-function getControlName()
-  return "RegcodeLoginScreen"
-end function
-
 function createVM()
   vm = new RegcodeLoginScreenVM(m.top.riversJson)
-  setFocus(m.refreshButton)
+  mv.setFocus(m.refreshButton)
   return vm
 end function
 
 function onGainedFocus(isSelfFocused)
   if isSelfFocused
-    setFocus(m.refreshButton)
+    mv.setFocus(m.refreshButton)
   end if
 end function

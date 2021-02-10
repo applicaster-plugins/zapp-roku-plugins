@@ -1,97 +1,96 @@
-import "pkg:/source/UIBuilder/view/ZUIBScreenVM.bs"
+import "pkg:/source/UIBuilder/view/ScreenVM.bs"
 import "pkg:/source/lib/ViewUtils.bs"
 
-namespace GTSVM
-  class GeneralTextScreenVM extends ZUIBScreenVM
+class GeneralTextScreenVM extends zapp.uib.ScreenVM
 
-    'styles
-    public titleStyle = invalid
-    public descriptionStyle = invalid
-    public optional1Style = invalid
-    public titleText = ""
-    public descriptionText = ""
-    public optional1Text = ""
-    public buttonStyle = invalid
+  'styles
+  public titleStyle = invalid
+  public descriptionStyle = invalid
+  public optional1Style = invalid
+  public titleText = ""
+  public descriptionText = ""
+  public optional1Text = ""
+  public buttonStyle = invalid
 
-    public backgroundColor = "#000000ff"
-    public backgroundUrl = ""
-    public textPosition = [0, 310]
-    public buttonPosition = [655, 688]
-    public logoPosition = [100, 33]
-    public logoWidth = 350
-    public logoHeight = 100
-    public logoImageUrl = ""
+  public backgroundColor = "#000000ff"
+  public backgroundUrl = ""
+  public textPosition = [0, 310]
+  public buttonPosition = [655, 688]
+  public logoPosition = [100, 33]
+  public logoWidth = 350
+  public logoHeight = 100
+  public logoImageUrl = ""
+  public textWidth = 1920
 
-    public function new(riversJson)
-      super(riversJson, "WarningMessageScreenVM")
+  public function new(riversJson)
+    super(riversJson, "WarningMessageScreenVM")
 
-      m.focusId = "usernameInput"
-      m.processStyles(m.riversJson.styles)
+    m.focusId = "usernameInput"
+    m.processStyles(m.riversJson.styles)
 
-    end function
+  end function
 
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '++ Overridden
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Overridden
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    public override function createContent()
-      m.logInfo("createContent is overridden in this screen")
-    end function
+  public override function createContent()
+    m.logInfo("createContent is overridden in this screen")
+  end function
 
-    public override function load() as boolean
-      return true
-    end function
+  public override function load() as boolean
+    return true
+  end function
 
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '++ styles
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ styles
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    function processStyles(styles)
-      m.logInfo("converting rivers json styles into a format our UI controls can consume")
+  function processStyles(styles)
+    m.logInfo("converting rivers json styles into a format our UI controls can consume")
 
-      m.titleStyle = ViewUtils.makeUIBTextStyle(styles, "title")
+    m.titleStyle = zapp.viewUtils.makeUIBTextStyle(styles, "title")
 
-      m.descriptionStyle = ViewUtils.makeUIBTextStyle(styles, "description")
-      m.optional1Style = ViewUtils.makeUIBTextStyle(styles, "optional_text1")
-      m.backgroundColor = ViewUtils.transposeUIBColor(styles.background_color)
-      m.backgroundUrl = styles.background_url
-      m.logoImageUrl = styles.logo_image_url
+    m.descriptionStyle = zapp.viewUtils.makeUIBTextStyle(styles, "description")
+    m.optional1Style = zapp.viewUtils.makeUIBTextStyle(styles, "optional_text1")
+    m.backgroundColor = zapp.viewUtils.transposeUIBColor(styles.background_color)
+    m.backgroundUrl = styles.background_url
+    m.logoImageUrl = styles.logo_image_url
 
-      m.buttonStyle = ViewUtils.makeUIBButtonStyle(styles, "done_button", "custom", styles.done_button_text)
+    m.buttonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "done_button", "custom", styles.done_button_text)
 
-      m.logoImageUrl = styles.logo_url
-      m.logoPosition = ViewUtils.makeUIBPosition(styles, "logo", 100, 33)
-      m.textPosition = ViewUtils.makeUIBPosition(styles, "text", 0, 310)
-      m.textWidth = ViewUtils.getUIBInt(styles, "text_w", 1920)
-      m.buttonPosition = ViewUtils.makeUIBPosition(styles, "button", 100, 33)
-      logoSize = ViewUtils.makeUIBSize(styles, "logo", 350, 100)
-      m.logoWidth = logoSize[0]
-      m.logoHeight = logoSize[1]
+    m.logoImageUrl = styles.logo_url
+    m.logoPosition = zapp.viewUtils.makeUIBPosition(styles, "logo", 100, 33)
+    m.textPosition = zapp.viewUtils.makeUIBPosition(styles, "text", 0, 310)
+    m.textWidth = zapp.viewUtils.getUIBInt(styles, "text_w", 1920)
+    m.buttonPosition = zapp.viewUtils.makeUIBPosition(styles, "button", 100, 33)
+    logoSize = zapp.viewUtils.makeUIBSize(styles, "logo", 350, 100)
+    m.logoWidth = logoSize[0]
+    m.logoHeight = logoSize[1]
 
-    end function
+  end function
 
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '++ callbacks
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ callbacks
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    public function onButtonSelected(value)
-      m.logMethod("onButtonSelected")
-      m.dismiss("cancel")
-    end function
+  public function onButtonSelected(value)
+    m.logMethod("onButtonSelected")
+    m.dismiss("cancel")
+  end function
 
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '++ Key Handling
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Key Handling
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    public function isCapturingAnyKeyPress(key, press)
-      'do not anyone escape this screen!
-      return true
-    end function
+  public function isCapturingAnyKeyPress(key, press)
+    'do not anyone escape this screen!
+    return true
+  end function
 
-    public function onKeyPressBack() as boolean
-      m.dismiss("cancel")
-      return true
-    end function
+  public function onKeyPressBack() as boolean
+    m.dismiss("cancel")
+    return true
+  end function
 
-  end class
-end namespace
+end class

@@ -1,0 +1,15 @@
+import "pkg:/source/roku_modules/log/LogMixin.brs"
+import "pkg:/source/mpx_adobe_prehook_roku/MPXVideoPlaybackPrehook.bs"
+
+
+function init()
+  m.top.functionName = "execRunLoop"
+end function
+
+
+function execRunLoop()
+  m.logMethod("execRunLoop")
+
+  resolver = new MPXVideoPlaybackPrehook()
+  m.top.output = resolver.execute()
+end function

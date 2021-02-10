@@ -1,0 +1,73 @@
+namespace zapp.tests
+
+  @tags("public", "video")
+  @suite
+  class GenericUrlTokenAppenderTests extends tests.BaseTestSuite
+
+    override function beforeEach()
+      super.beforeEach()
+      mioc.setInstance("plugins", [tests.utils.createPluginJson("generic_url_token_appender", { "provider_id": "pid", "token_key": "t" })])
+
+      m.appender = new GenericUrlTokenAppender()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("constructor")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("no plugin")
+    function _()
+      mioc.setInstance("plugins", [])
+
+      m.appender = new GenericUrlTokenAppender()
+
+      m.assertNotInvalid(m.appender.plugins)
+      m.assertTrue(m.appender.isValid)
+    end function
+
+    @it("valid plugin")
+    function _()
+      m.assertTrue(m.appender.isValid)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("execute")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("no item")
+    @params(invalid)
+    @params({ "currentItem": invalid })
+    @params({ "currentItem": { "id": "noUrl" } })
+    @params({ "currentItem": { "id": "emptyUrl", "url": invalid } })
+    @params({ "currentItem": { "id": "emptyUrl", "url": "" } })
+    function _(currentSelection)
+      m.expectOnce(m.appender, "getInstance", ["currentSelection"], currentSelection)
+
+      m.assertEqual(m.appender.execute(), "error")
+
+    end function
+
+    @it("item - success - with token")
+    @params("url1", "p1", "t", "t1", "url1?t=t1")
+    @params("url2", "p2", "t", "t2", "url2?t=t2")
+    @params("url3?withField=true", "p2", "t", "t2", "url3?withField=true&t=t2")
+    @params("url3?withField=true", "p2", "x", "t2", "url3?withField=true&x=t2")
+    function _(url, providerId, tokenKey, token, expected)
+      currentSelection = { "id": "currentSelection" }
+      m.appender.tokenKey = tokenKey
+      m.appender.providerId = providerId
+      item = {
+        id: "item"
+        url: url
+        title: "t"
+      }
+      currentSelection.currentItem = item
+      m.expectOnce(m.appender, "getInstance", ["currentSelection"], currentSelection)
+      m.expectOnce(m.appender, "getSessionStoreValue", [providerId, "token"], token)
+
+      m.assertEqual(m.appender.execute(), "success")
+      m.assertEqual(item.url, expected)
+    end function
+
+  end class
+end namespace

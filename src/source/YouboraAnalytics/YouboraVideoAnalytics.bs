@@ -1,125 +1,121 @@
-import "pkg:/source/lib/ZBaseClass.bs"
+import "pkg:/source/lib/BaseClass.bs"
 import "pkg:/source/video/analytics/BaseVideoAnalyticsPlugin.bs"
 
-namespace YVA
+class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
+  ' Example Config:
+  ' {
+  ' "accountCode" : "nicetest", 'This is the only mandatory param
+  ' "user" : "userid", ' this should be the signed in user id, according to adobe primetime
+  ' "expectAds": "true",
+  ' "content.transactionCode" : "transaction_id",
+  ' "content.metadata" : {
+  ' "firstProperty": "firstValue",
+  '   "secondProperty": "secondValue"
+  '   "year": "2001",
+  '   "genre": "Fantasy",
+  '   "price": "free
+  ' },
+  ' "content.resource" : "http://example.com/batman_movie.m3u8",
+  ' "content.duration" : 4000,
+  ' "content.isLive" : false,
+  ' "content.title" : "Batman",
+  ' "content.rendition" : "4.2Mbps",
+  ' "content.cdn" : "AKAMAI",
 
-  class YouboraVideoAnalytics extends BaseVideoAnalyticsPlugin
-    ' Example Config:
-    ' {
-    ' "accountCode" : "nicetest", 'This is the only mandatory param
-    ' "user" : "userid", ' this should be the signed in user id, according to adobe primetime
-    ' "expectAds": "true",
-    ' "content.transactionCode" : "transaction_id",
-    ' "content.metadata" : {
-    ' "firstProperty": "firstValue",
-    '   "secondProperty": "secondValue"
-    '   "year": "2001",
-    '   "genre": "Fantasy",
-    '   "price": "free
-    ' },
-    ' "content.resource" : "http://example.com/batman_movie.m3u8",
-    ' "content.duration" : 4000,
-    ' "content.isLive" : false,
-    ' "content.title" : "Batman",
-    ' "content.rendition" : "4.2Mbps",
-    ' "content.cdn" : "AKAMAI",
+  ' "network.ip" : "48.151.62.3",
+  ' "network.isp" : "Verizon"
 
-    ' "network.ip" : "48.151.62.3",
-    ' "network.isp" : "Verizon"
+  ' "param1" : "Param 1 Value",
+  ' "param2" : "Param 2 Value",
+  ' "param3" : "Param 3 Value",
+  ' "param4" : "Param 4 Value",
+  ' "param5" : "Param 5 Value",
+  ' "param6" : "Param 6 Value",
+  ' "param7" : "Param 7 Value",
+  ' "param8" : "Param 8 Value",
+  ' "param9" : "Param 9 Value",
+  ' "param10" : "Param 10 Value",
+  ' "param11" : "Param 11 Value",
+  ' "param12" : "Param 12 Value",
+  ' "param13" : "Param 13 Value",
+  ' "param14" : "Param 14 Value",
+  ' "param15" : "Param 15 Value",
+  ' "param16" : "Param 16 Value",
+  ' "param17" : "Param 17 Value",
+  ' "param18" : "Param 18 Value",
+  ' "param19" : "Param 19 Value",
+  ' "param20" : "Param 20 Value",
+  ' "device.code" : "DEVICE_ID"
+  ' }
 
-    ' "param1" : "Param 1 Value",
-    ' "param2" : "Param 2 Value",
-    ' "param3" : "Param 3 Value",
-    ' "param4" : "Param 4 Value",
-    ' "param5" : "Param 5 Value",
-    ' "param6" : "Param 6 Value",
-    ' "param7" : "Param 7 Value",
-    ' "param8" : "Param 8 Value",
-    ' "param9" : "Param 9 Value",
-    ' "param10" : "Param 10 Value",
-    ' "param11" : "Param 11 Value",
-    ' "param12" : "Param 12 Value",
-    ' "param13" : "Param 13 Value",
-    ' "param14" : "Param 14 Value",
-    ' "param15" : "Param 15 Value",
-    ' "param16" : "Param 16 Value",
-    ' "param17" : "Param 17 Value",
-    ' "param18" : "Param 18 Value",
-    ' "param19" : "Param 19 Value",
-    ' "param20" : "Param 20 Value",
-    ' "device.code" : "DEVICE_ID"
-    ' }
+  private youboraTask = invalid
+  private config = {}
+  private taskName = "YBPluginRokuVideo"
 
-    private youboraTask = invalid
-    private config = {}
-    private taskName = "YBPluginRokuVideo"
+  public function new(plugin)
+    super("YouboraVideoAnalytics")
+    m.taskName = plugin.getStringValue("task_name", "YBPluginRokuVideo")
 
-    public override function new(plugin)
+    m.config = {
+      "accountCode": plugin.getStringValue("account_code")
+      "expectAds": plugin.getBoolValue("expect_ads")
+      "enableDebug": plugin.getBoolValue("is_debug")
+    }
+  end function
 
-      super("YouboraVideoAnalytics")
-      m.taskName = plugin.getStringValue("task_name", "YBPluginRokuVideo")
+  public override function videoStart(videoNode, contentNode)
+    super.videoStart(videoNode, contentNode)
 
-      m.config = {
-        "accountCode": plugin.getStringValue("account_code")
-        "expectAds": plugin.getBoolValue("expect_ads")
-        "enableDebug": plugin.getBoolValue("is_debug")
-      }
-    end function
+    m.contentNode = contentNode
+    m.youboraTask = m.getInstance("youboraAnalyticsTask")
 
-    public override function videoStart(videoNode, contentNode)
-      super.videoStart(videoNode, contentNode)
+    if m.youboraTask = invalid
+      m.youboraTask = m.createInstance(m.taskName, videoNode, "youboraAnalyticsTask")
+      m.youboraTask.videoplayer = videoNode
+      m.youboraTask.control = "RUN"
+      m.setInstance("youboraAnalyticsTask", m.youboraTask)
+    end if
 
-      m.contentNode = contentNode
-      m.youboraTask = m.getInstance("youboraAnalyticsTask")
+    videoOptions = {}
+    videoOptions.content = {
+      "title": contentNode.title,
+      "isLive": contentNode.LIVE = true
+    }
+    videoOptions.append(m.config)
+    m.logInfo("Sending payload to Youbora ", videoOptions)
+    m.youboraTask.options = videoOptions
 
-      if m.youboraTask = invalid
-        m.youboraTask = m.createInstance(m.taskName, videoNode, "youboraAnalyticsTask")
-        m.youboraTask.videoplayer = videoNode
-        m.youboraTask.control = "RUN"
-        m.setInstance("youboraAnalyticsTask", m.youboraTask)
-      end if
+    'note if we're using 6.1 or higher, that we should do a "init" event here
+    'current SDK is 6.0.4
+    m.youboraTask.event = { handler: "play" }
+  end function
 
-      videoOptions = {}
-      videoOptions.content = {
-        "title": contentNode.title,
-        "isLive": contentNode.LIVE = true
-      }
-      videoOptions.append(m.config)
-      m.logInfo("Sending payload to Youbora ", videoOptions)
-      m.youboraTask.options = videoOptions
+  public override function videoEnd()
+    m.logMethod("videoEnd")
+    super.videoEnd()
 
-      'note if we're using 6.1 or higher, that we should do a "init" event here
-      'current SDK is 6.0.4
-      m.youboraTask.event = { handler: "play" }
-    end function
+    if m.youboraTask <> invalid
+      m.youboraTask.event = { handler: "stop" }
+      m.youboraTask.taskState = "stop"
+    end if
+  end function
 
-    public override function videoEnd()
-      m.logMethod("videoEnd")
-      super.videoEnd()
+  public override function adBreakStart()
+    super.adBreakStart()
+  end function
 
-      if m.youboraTask <> invalid
-        m.youboraTask.event = { handler: "stop" }
-        m.youboraTask.taskState = "stop"
-      end if
-    end function
+  public override function adBreakEnd()
+    super.adBreakEnd()
+  end function
 
-    public override function adBreakStart()
-      super.adBreakStart()
-    end function
+  public override function adTrackingEvent(eventType, rafCtx)
+    m.logMethod("adTrackingEvent")
+    super.adTrackingEvent(eventType, rafCtx)
 
-    public override function adBreakEnd()
-      super.adBreakEnd()
-    end function
+    if m.youboraTask <> invalid
+      m.youboraTask.adevent = parseJson(formatJson(rafCtx))
+    end if
 
-    public override function adTrackingEvent(eventType, rafCtx)
-      m.logMethod("adTrackingEvent")
-      super.adTrackingEvent(eventType, rafCtx)
+  end function
 
-      if m.youboraTask <> invalid
-        m.youboraTask.adevent = parseJson(formatJson(rafCtx))
-      end if
-
-    end function
-
-  end class
-end namespace
+end class

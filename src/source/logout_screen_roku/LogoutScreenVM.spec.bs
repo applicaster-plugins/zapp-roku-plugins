@@ -1,0 +1,162 @@
+namespace zapp.tests
+
+  @tags("public", "auth", "vm")
+  @suite
+  class LogoutScreenVmTests extends tests.BaseTestSuite
+
+    override function beforeEach()
+      super.beforeEach()
+      mioc.setInstances({
+        "user": { "isLoggedIn": false }
+        "locale": "en"
+      })
+
+      m.riversJson = {
+        "id": "logoutscreen"
+        styles: {
+          text_w: 300
+          text_x: 20
+          text_y: 600
+          button_x: 700
+          button_y: 400
+          title_text: "are you sure"
+          signed_out_text: "you are signed out"
+          logout_button_text: "signed out"
+          signed_out_button_text: "ok"
+        }
+      }
+
+      m.vm = new LogoutScreenVM(m.riversJson)
+      m.vm.initialize()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("constructor")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("constructor")
+    function _()
+      m.assertEqual(m.vm.riversJson, m.riversJson)
+      m.assertEqual(m.vm.textPosition, [20, 600])
+      m.assertEqual(m.vm.textWidth, 300)
+      m.assertEqual(m.vm.buttonPosition, [700, 400])
+      m.assertEqual(m.vm.titleText, "are you sure")
+      m.assertEqual(m.vm.buttonText, "Sign out")
+      m.assertEqual(m.vm.signedOutTitle, "you are signed out")
+      m.assertEqual(m.vm.signedOutButtonText, "ok")
+
+    end function
+
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onLogoutButtonSelected")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("not logged out yet")
+    function _()
+      m.expectOnce(m.vm, "logout", [])
+      m.expectNone(m.vm, "restartApp")
+
+      m.vm.onLogoutButtonSelected(true)
+    end function
+
+    @it("logged out")
+    function _()
+      m.vm.isLoggedOut = true
+
+      m.expectNone(m.vm, "logout")
+      m.expectOnce(m.vm, "restartApp", [])
+
+      m.vm.onLogoutButtonSelected(true)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("logout")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("all providers")
+    function _()
+      authTask = { "id": "authTask" }
+
+      analyticsManager = { "id": "analyticsManager" }
+      m.expectOnce(analyticsManager, "callFunc", ["trackEvent", "Signed Out", "page_loaded", { "provider": "AdobeAccessEnabler" }])
+
+      m.expectOnce(m.vm, "getSessionStoreValue", ["all_zapp_pipes_providers", "default_auth_plugin_id"], "AdobeAccessEnabler")
+
+      m.expectOnce(m.vm, "getInstance", ["analyticsManager"], analyticsManager)
+
+      m.expectOnce(m.vm, "createAuthTask", ["execLogOutAll", invalid, m.vm.onLogoutComplete], authTask)
+
+      m.vm.logout()
+
+      m.assertEqual(m.vm.authTask, authTask)
+
+      m.assertTrue(m.vm.isLoggedOut)
+      m.assertTrue(m.vm.isShowingLoadingIndicator)
+      m.assertFalse(m.vm.isButtonVisible)
+    end function
+
+    @it("specific providers")
+    @params("id1")
+    @params("id2")
+    function _(providerId)
+      authTask = { "id": "authTask" }
+
+      analyticsManager = { "id": "analyticsManager" }
+      m.expectOnce(analyticsManager, "callFunc", ["trackEvent", "Signed Out", "page_loaded", { "provider": providerId }])
+
+      m.expectNone(m.vm, "getSessionStoreValue")
+
+      m.expectOnce(m.vm, "getInstance", ["analyticsManager"], analyticsManager)
+
+      m.expectOnce(m.vm, "createAUthTask", ["execLogOut", providerId, m.vm.onLogoutComplete], authTask)
+      m.vm.providerId = providerid
+
+      m.vm.logout()
+
+      m.assertEqual(m.vm.authTask, authTask)
+
+      m.assertTrue(m.vm.isLoggedOut)
+      m.assertTrue(m.vm.isShowingLoadingIndicator)
+      m.assertFalse(m.vm.isButtonVisible)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onKeyPressBack")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("not signing out")
+    function _()
+
+      m.expectOnce(m.vm, "pop", [])
+      m.vm.onKeyPressBack()
+
+    end function
+
+    @it("signing out")
+    function _()
+      m.vm.isLoggedOut = true
+
+      m.expectNone(m.vm, "pop")
+      m.vm.onKeyPressBack()
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onLogoutCompplete")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+    @it("onLogoutComplete")
+    function _()
+
+      m.vm.onLogoutComplete({ isOK: true })
+
+      m.assertFalse(m.vm.isShowingLoadingIndicator)
+      m.assertTrue(m.vm.isButtonVisible)
+      m.assertEqual(m.vm.buttonText, "ok")
+      m.assertEqual(m.vm.titleText, "you are signed out")
+    end function
+
+  end class
+end namespace

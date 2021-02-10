@@ -1,0 +1,112 @@
+namespace zapp.tests
+
+  @tags("public", "analytics")
+  @suite
+  class SegmentAnalyticsPluginTests extends tests.BaseTestSuite
+
+    override function beforeEach()
+      super.beforeEach()
+      config = {
+        "write_key": "#w"
+      }
+      mioc.setInstance("constants", {
+        "applicasterDeviceId": "#a"
+      })
+
+      m.pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
+
+      m.plugin = new SegmentAnalyticsPlugin(m.pluginData)
+    end function
+
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("constructor")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("constructor")
+    function _()
+      m.assertEqual(m.plugin.id, "segment_analytics_roku")
+      m.assertSubType(m.plugin.segmentTask, "SegmentAnalyticsTask")
+      m.assertEqual(m.plugin.writeKey, "#w")
+      m.assertEqual(m.plugin.applicasterDeviceId, "#a")
+      m.assertNotInvalid(m.plugin.library)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("start")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("start")
+    function _()
+
+      library = { "id": "library" }
+      m.plugin.library = library
+
+      m.expectOnce(library, "init", [{
+        "writeKey": "#w"
+        "debug": true
+        "queueSize": 3
+        "retryLimit": 0
+      }])
+
+      m.plugin.start()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("generateMap")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("some")
+    function _()
+      config = {
+        "write_key": "#w"
+        "provider_key_1": "AdobePrimetime"
+        "provider_value_1": "Adobe"
+        "provider_key_2": "aws_cognito_auth_plugin"
+        "provider_value_2": "Cognito"
+        "provider_key_3": ""
+        "provider_value_3": ""
+      }
+
+      pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
+
+      map = m.plugin.generateMap(pluginData, "provider", 3)
+
+      m.assertEqual(map["AdobePrimetime"], "Adobe")
+      m.assertEqual(map["aws_cognito_auth_plugin"], "Cognito")
+    end function
+
+    @it("none")
+    function _()
+      config = {
+        "write_key": "#w"
+        "provider_key_1": ""
+        "provider_value_1": ""
+
+
+
+        "provider_key_2": ""
+        "provider_value_2": ""
+        "provider_key_3": ""
+        "provider_value_3": ""
+      }
+
+      pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
+
+      m.assertEmpty(m.plugin.generateMap(pluginData, "provider", 3))
+
+    end function
+
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("_identify")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("disabled_on_logout")
+    function _()
+      m.plugin.isIdentifyingOnLogout = false
+      m.assertTrue(m.plugin._identify("pid", invalid, invalid, true))
+    end function
+
+  end class
+end namespace

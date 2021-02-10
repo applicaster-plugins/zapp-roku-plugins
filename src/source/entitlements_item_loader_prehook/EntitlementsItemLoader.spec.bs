@@ -1,0 +1,137 @@
+namespace zapp.tests
+
+  @tags("public", "entitelements")
+  @suite
+  class EntitlementsItemLoaderTests extends tests.BaseTestSuite
+
+    override function beforeEach()
+      super.beforeEach()
+      mioc.setInstance("plugins", [tests.utils.createPluginJson("oc_url_token_loader", {
+          "endpoint": "e/"
+          "domain": "d"
+          "matching_path": "itemType"
+          "matching_value": "video"
+      })])
+
+      m.loader = new EntitlementsItemLoader()
+    end function
+
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("constructor")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("no plugin")
+    function _()
+      mioc.reset()
+      mioc.setInstance("plugins", [])
+      m.loader = new EntitlementsItemLoader()
+
+      m.assertNotInvalid(m.loader.plugins)
+    end function
+
+    function _()
+      m.assertTrue(m.loader.isValid)
+      m.assertEqual(m.loader.endpoint, "e/?domain=d")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("execute")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("no item")
+    @params(invalid)
+    @params({ "currentItem": invalid })
+    function _(currentSelection)
+      m.expectOnce(m.loader, "getInstance", ["currentSelection"], currentSelection)
+      m.expectNone(m.loader, "isItemMatch", false)
+
+      m.assertEqual(m.loader.execute(), "error")
+
+    end function
+
+    @it("no match")
+    function _()
+      currentSelection = { "id": "currentSelection" }
+      item = {
+        id: "item"
+        url: "url"
+        title: "t"
+      }
+      currentSelection.currentItem = item
+
+      m.expectOnce(m.loader, "getInstance", ["currentSelection"], currentSelection)
+      m.expectOnce(m.loader, "isItemMatch", [item], false)
+
+      m.assertEqual(m.loader.execute(), "success")
+
+    end function
+
+    @it("item - is match - invalid")
+    @params(false, "error")
+    @params(false, "error")
+    @params(true, "success")
+    @params(true, "success")
+    function _(response, expectedResult)
+      currentSelection = { "id": "currentSelection" }
+      item = {
+        id: "item"
+        title: "t"
+      }
+      currentSelection.currentItem = item
+      m.expectOnce(m.loader, "getInstance", ["currentSelection"], currentSelection)
+      m.expectOnce(m.loader, "isItemMatch", [item], true)
+
+      entitlementsNode = { "id": "entitlements" }
+      m.expectOnce(m.loader, "getInstance", ["entitlements"], entitlementsNode)
+      m.expectOnce(entitlementsNode, "callFunc", ["isLocked", item], true)
+
+      manager = { "id": "manager" }
+      m.expectOnce(m.loader, "getClassInstance", ["zapp.entitlements.EntitlementsManager"], manager)
+      m.expectOnce(manager, "loadItem", [item], response)
+
+      m.assertEqual(m.loader.execute(), expectedResult)
+    end function
+
+    @it("item - is match - Already unlocked")
+    function _()
+      currentSelection = { "id": "currentSelection" }
+      item = {
+        id: "item"
+        title: "t"
+      }
+      currentSelection.currentItem = item
+      m.expectOnce(m.loader, "getInstance", ["currentSelection"], currentSelection)
+      m.expectOnce(m.loader, "isItemMatch", [item], true)
+
+      entitlementsNode = { "id": "entitlements" }
+      m.expectOnce(m.loader, "getInstance", ["entitlements"], entitlementsNode)
+      m.expectOnce(entitlementsNode, "callFunc", ["isLocked", item], false)
+
+      m.expectNone(m.loader, "getClassInstance")
+
+      m.assertEqual(m.loader.execute(), "success")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("isItemMatch")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("isItemMatch")
+    @params("all", "", {}, true)
+    @params("all", "", { "id": "stuff" }, true)
+    @params("", "", { "id": "stuff" }, false)
+    @params("free", "true", { "id": "stuff" }, false)
+    @params("free", "true", { "id": "stuff", "json": { "free": false } }, false)
+    @params("free", "true", { "id": "stuff", "json": { "free": true } }, true)
+    @params("itemType", "channel", { "id": "stuff", json: { "itemType": "video" } }, false)
+    @params("itemType", "video", { "id": "stuff", json: { "itemType": "video" } }, true)
+    function _(path, value, item, isMatch)
+      m.loader.matchingPath = path
+      m.loader.matchingValue = value
+      m.assertEqual(m.loader.isItemMatch(item), isMatch)
+
+    end function
+
+  end class
+end namespace

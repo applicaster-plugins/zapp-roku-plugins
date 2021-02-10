@@ -1,526 +1,526 @@
-namespace AEF
+import "pkg:/source/roku_modules/log/LogMixin.brs"
 
-  ' See https://docs.google.com/spreadsheets/d/17HhUt-kQpfPFiWYZAUXziYG2zUBUX3-5gY2hjKHEA_Y/edit?ts=58c7f3f4#gid=0
+' See https://docs.google.com/spreadsheets/d/17HhUt-kQpfPFiWYZAUXziYG2zUBUX3-5gY2hjKHEA_Y/edit?ts=58c7f3f4#gid=0
+'
+' - custom events are: category, label, action
+' - menu:open menu = "menu" is category, "open menu" is action
+' - play vod = "play vod" is category AND "play vod" is action
+' - label has all the properties alphabetically as a semicolon-separated array, "trigger=homescreen carousel; …"
 
-  '
-  '
-  '
-  ' - custom events are: category, label, action
-  ' - menu:open menu = "menu" is category, "open menu" is action
-  ' - play vod = "play vod" is category AND "play vod" is action
-  ' - label has all the properties alphabetically as a semicolon-separated array, "trigger=homescreen carousel; …"
+' /**
+'  * @module AnalyticsEventFactory
+'  * @description creates analytics events
+'  */
+class AnalyticsEventFactory
 
+  function new()
+    log.registerLogger("AnalyticsEventFactory", m)
+  end function
   ' /**
-  '  * @module AnalyticsEventFactory
-  '  * @description creates analytics events
+  '  * @member getAnalyticsEvent=
+  '  * @memberof module:AnalytcisEventFactory
+  '  * @instance
+  '  * @function
+  '  * @description creates event for passed in eventName and arguments
+  '  * @param {string} eventName - name of event
+  '  * @returns {assocarray} analyticsEvent
   '  */
-  class AnalyticsEventFactory
+  public function getAnalyticsEvent(eventName, arg1 = invalid, arg2 = invalid, arg3 = invalid, arg4 = invalid)
 
-    ' /**
-    '  * @member getAnalyticsEvent=
-    '  * @memberof module:AnalytcisEventFactory
-    '  * @instance
-    '  * @function
-    '  * @description creates event for passed in eventName and arguments
-    '  * @param {string} eventName - name of event
-    '  * @returns {assocarray} analyticsEvent
-    '  */
-    public function getAnalyticsEvent(eventName, arg1 = invalid, arg2 = invalid, arg3 = invalid, arg4 = invalid)
-      if eventName = "timeFormat"
-        return m.timeFormat(arg1)
-      else if eventName = "playVOD"
-        return m.playVOD(arg1, arg2, arg3)
-      else if eventName = "clickItem"
-        return m.clickItem(arg1, arg2)
-      else if eventName = "clickCategory"
-        return m.clickCategory(arg1, arg2)
-      else if eventName = "launchApp"
-        return m.launchApp()
-      else if eventName = "viewStorefront"
-        return m.viewStorefront(arg1, arg2, arg3)
-      else if eventName = "tapStorefrontButton"
-        return m.tapStorefrontButton(arg1, arg2)
-      else if eventName = "startPurchase"
-        return m.startPurchase(arg1, arg2)
-      else if eventName = "completePurchase"
-        return m.completePurchase(arg1, arg2)
-      else if eventName = "cancelPurchase"
-        return m.cancelPurchase(arg1, arg2)
-      else if eventName = "purchaseError"
-        return m.purchaseError(arg1, arg2, arg3, arg3)
-      else if eventName = "openMenu"
-        return m.openMenu()
-      else if eventName = "openSearch"
-        return m.openSearch()
-      else if eventName = "clickSearchResults"
-        return m.clickSearchResults(arg1, arg2)
-      else if eventName = "selectMenuItem"
-        return m.selectMenuItem(arg1)
-      else if eventName = "pauseVOD"
-        return m.pauseVOD(arg1, arg2)
-      else if eventName = "unpauseVOD"
-        return m.unpauseVOD(arg1, arg2)
-      else if eventName = "startLogin"
-        return m.startLogin(arg1, arg2)
-      else if eventName = "loginSucceeds"
-        return m.loginSucceeds(arg1, arg2)
-      else if eventName = "loginDoesNotSucceed"
-        return m.loginDoesNotSucceed(arg1, arg2, arg3, arg4)
-      else
-        m.logError("unknown analytics event", eventName)
-      end if
+    if eventName = "timeFormat"
+      return m.timeFormat(arg1)
+    else if eventName = "playVOD"
+      return m.playVOD(arg1, arg2, arg3)
+    else if eventName = "clickItem"
+      return m.clickItem(arg1, arg2)
+    else if eventName = "clickCategory"
+      return m.clickCategory(arg1, arg2)
+    else if eventName = "launchApp"
+      return m.launchApp()
+    else if eventName = "viewStorefront"
+      return m.viewStorefront(arg1, arg2, arg3)
+    else if eventName = "tapStorefrontButton"
+      return m.tapStorefrontButton(arg1, arg2)
+    else if eventName = "startPurchase"
+      return m.startPurchase(arg1, arg2)
+    else if eventName = "completePurchase"
+      return m.completePurchase(arg1, arg2)
+    else if eventName = "cancelPurchase"
+      return m.cancelPurchase(arg1, arg2)
+    else if eventName = "purchaseError"
+      return m.purchaseError(arg1, arg2, arg3, arg3)
+    else if eventName = "openMenu"
+      return m.openMenu()
+    else if eventName = "openSearch"
+      return m.openSearch()
+    else if eventName = "clickSearchResults"
+      return m.clickSearchResults(arg1, arg2)
+    else if eventName = "selectMenuItem"
+      return m.selectMenuItem(arg1)
+    else if eventName = "pauseVOD"
+      return m.pauseVOD(arg1, arg2)
+    else if eventName = "unpauseVOD"
+      return m.unpauseVOD(arg1, arg2)
+    else if eventName = "startLogin"
+      return m.startLogin(arg1, arg2)
+    else if eventName = "loginSucceeds"
+      return m.loginSucceeds(arg1, arg2)
+    else if eventName = "loginDoesNotSucceed"
+      return m.loginDoesNotSucceed(arg1, arg2, arg3, arg4)
+    else
+      m.logError("unknown analytics event", eventName)
+    end if
 
-      return invalid
-    end function
+    return invalid
+  end function
 
-    public function propertiesToLabel(properties)
-      if type(properties) <> "roAssociativeArray" then return ""
+  public function propertiesToLabel(properties)
+    if type(properties) <> "roAssociativeArray" then return ""
 
-      label = ""
-      sortedKeys = properties.keys()
-      for i = 0 to sortedKeys.count() - 1
-        ' be careful only to include string values here. Necessary conversions should happen in the public methods
-        value = properties[sortedKeys[i]]
-        if type(value) <> "String" and type(value) <> "roString"
-          if FindMemberFunction(value, "toStr") <> invalid then
-            value = value.toStr()
-          else
-            m.logWarn("Could not convert '", sortedKeys[i], "' to a string; type = ", type(value))
-            value = ""
-          end if
-        end if
-
-        if i > 0
-          label = label + ";"
-        end if
-        label = label + sortedKeys[i] + "=" + value
-      end for
-      return label
-    end function
-
-    public function booleanString(tf)
-      if tf
-        return "True"
-      else
-        return "False"
-      end if
-    end function
-
-    ' Create an item dictionary from an object
-    public function itemDictionary(item)
-      ' Defaults
-      dict = {}
-      dict["Free"] = "False"
-      dict["Item Type"] = "N/A"
-      dict["Item Name"] = "N/A"
-      dict["Item ID"] = "N/A"
-      dict["Parent Category Name"] = "N/A"
-      dict["Parent Category ID"] = "N/A"
-      dict["Show Name"] = "N/A"
-      dict["Show ID"] = "N/A"
-      dict["TLC Name"] = "N/A"
-      dict["TLC ID"] = "N/A"
-      dict["Season Name"] = "N/A"
-      dict["Season ID"] = "N/A"
-      dict["ATOM feed name"] = "N/A"
-
-      if type(item) <> "roAssociativeArray" and type(item) <> "roSGNode" then return dict
-      if item.free <> invalid then dict["Free"] = m.booleanString(item.free)
-      if item.itemType <> invalid
-        if item.itemType = "channel"
-          dict["Item Type"] = "Channel - Applicaster Model"
-        else if item.itemType = "vod"
-          dict["Item Type"] = "VOD - Applicaster Model"
-        else if item.itemType = "atom"
-          dict["Item Type"] = "VOD - ATOM"
+    label = ""
+    sortedKeys = properties.keys()
+    for i = 0 to sortedKeys.count() - 1
+      ' be careful only to include string values here. Necessary conversions should happen in the public methods
+      value = properties[sortedKeys[i]]
+      if type(value) <> "String" and type(value) <> "roString"
+        if FindMemberFunction(value, "toStr") <> invalid then
+          value = value.toStr()
+        else
+          m.logWarn("Could not convert '", sortedKeys[i], "' to a string; type = ", type(value))
+          value = ""
         end if
       end if
-      if item.title <> invalid and item.title <> "" then dict["Item Name"] = item.title
-      if item.id <> invalid and item.id <> "" then dict["Item ID"] = item.id
-      if item.parentCategoryId <> invalid and item.parentCategoryId <> "" then dict["Parent Category ID"] = item.parentCategoryId
-      if item.parentCategoryName <> invalid and item.parentCategoryName <> "" then dict["Parent Category Name"] = item.parentCategoryName
-      if item.showName <> invalid and item.showName <> "" then dict["Show Name"] = item.showName
-      if item.showId <> invalid and item.showId <> "" then dict["Show ID"] = item.showId
-      if item.topLevelCategoryName <> invalid and item.topLevelCategoryName <> "" then dict["TLC Name"] = item.topLevelCategoryName
-      if item.topLevelCategoryId <> invalid and item.topLevelCategoryId <> "" then dict["TLC ID"] = item.topLevelCategoryId
-      if item.seasonId <> invalid and item.seasonId <> "" then dict["Season ID"] = item.seasonId
-      if item.seasonName <> invalid and item.seasonName <> "" then dict["Season Name"] = item.seasonName
-      return dict
-    end function
 
-    public function categoryDictionary(category)
-      ' Defaults
-      dict = {}
-      dict["Category Type"] = "N/A"
-      dict["Category Name"] = "N/A"
-      dict["Category ID"] = "N/A"
-
-      if type(category) <> "roAssociativeArray" and type(category) <> "roSGNode" then return dict
-      if category.id <> invalid and category.id <> "" then dict["Category ID"] = category.id
-      if category.title <> invalid and category.title <> "" then dict["Category Name"] = category.title
-      if category.nature <> invalid and category.nature <> "" then dict["Category Type"] = category.nature
-      return dict
-    end function
-
-    public function voucherDictionary(subscriber, product)
-      ' Defaults
-      dict = {}
-      dict["Subscriber"] = "No"
-      dict["Voucher Name"] = "N/A"
-      dict["Price"] = "N/A"
-      dict["Transaction ID"] = "N/A"
-      dict["Product ID"] = "N/A"
-      dict["Subscription Duration"] = "N/A"
-      dict["Trial Period"] = "N/A"
-      dict["Permitted Countries"] = "N/A"
-      dict["Purchase Entity"] = "N/A"
-      dict["Grace Period"] = "N/A"
-      dict["Voucher Template Type"] = "N/A"
-
-      if subscriber
-        dict["Subscriber"] = "Yes"
+      if i > 0
+        label = label + ";"
       end if
+      label = label + sortedKeys[i] + "=" + value
+    end for
+    return label
+  end function
 
-      if type(product) <> "roAssociativeArray" then return dict
+  public function booleanString(tf)
+    if tf
+      return "True"
+    else
+      return "False"
+    end if
+  end function
 
-      if product.code <> invalid then dict["Product ID"] = product.code
-      if product.voucherType <> invalid then dict["Voucher Template Type"] = product.voucherType
-      ' TODO: Other fields need support from the roku purchases API to be filled out
-      if product.freeTrialType <> invalid and product.freeTrialQuantity <> invalid and product.freeTrialType <> "None"
-        dict["Grace Period"] = product.freeTrialQuantity.toStr() + " " + product.freeTrialType
+  ' Create an item dictionary from an object
+  public function itemDictionary(item)
+    ' Defaults
+    dict = {}
+    dict["Free"] = "False"
+    dict["Item Type"] = "N/A"
+    dict["Item Name"] = "N/A"
+    dict["Item ID"] = "N/A"
+    dict["Parent Category Name"] = "N/A"
+    dict["Parent Category ID"] = "N/A"
+    dict["Show Name"] = "N/A"
+    dict["Show ID"] = "N/A"
+    dict["TLC Name"] = "N/A"
+    dict["TLC ID"] = "N/A"
+    dict["Season Name"] = "N/A"
+    dict["Season ID"] = "N/A"
+    dict["ATOM feed name"] = "N/A"
+
+    if type(item) <> "roAssociativeArray" and type(item) <> "roSGNode" then return dict
+    if item.free <> invalid then dict["Free"] = m.booleanString(item.free)
+    if item.itemType <> invalid
+      if item.itemType = "channel"
+        dict["Item Type"] = "Channel - Applicaster Model"
+      else if item.itemType = "vod"
+        dict["Item Type"] = "VOD - Applicaster Model"
+      else if item.itemType = "atom"
+        dict["Item Type"] = "VOD - ATOM"
       end if
-      if product.cost <> invalid then dict["Price"] = product.cost
-      if product.name <> invalid then dict["Voucher Name"] = product.name
-      return dict
-    end function
+    end if
+    if item.title <> invalid and item.title <> "" then dict["Item Name"] = item.title
+    if item.id <> invalid and item.id <> "" then dict["Item ID"] = item.id
+    if item.parentCategoryId <> invalid and item.parentCategoryId <> "" then dict["Parent Category ID"] = item.parentCategoryId
+    if item.parentCategoryName <> invalid and item.parentCategoryName <> "" then dict["Parent Category Name"] = item.parentCategoryName
+    if item.showName <> invalid and item.showName <> "" then dict["Show Name"] = item.showName
+    if item.showId <> invalid and item.showId <> "" then dict["Show ID"] = item.showId
+    if item.topLevelCategoryName <> invalid and item.topLevelCategoryName <> "" then dict["TLC Name"] = item.topLevelCategoryName
+    if item.topLevelCategoryId <> invalid and item.topLevelCategoryId <> "" then dict["TLC ID"] = item.topLevelCategoryId
+    if item.seasonId <> invalid and item.seasonId <> "" then dict["Season ID"] = item.seasonId
+    if item.seasonName <> invalid and item.seasonName <> "" then dict["Season Name"] = item.seasonName
+    return dict
+  end function
 
-    public function padString(s as string, width as integer, c as string)
-      result = s.trim()
+  public function categoryDictionary(category)
+    ' Defaults
+    dict = {}
+    dict["Category Type"] = "N/A"
+    dict["Category Name"] = "N/A"
+    dict["Category ID"] = "N/A"
 
-      ' don't get stuck in a while loop if pad characters are empty
-      if c = "" return result
+    if type(category) <> "roAssociativeArray" and type(category) <> "roSGNode" then return dict
+    if category.id <> invalid and category.id <> "" then dict["Category ID"] = category.id
+    if category.title <> invalid and category.title <> "" then dict["Category Name"] = category.title
+    if category.nature <> invalid and category.nature <> "" then dict["Category Type"] = category.nature
+    return dict
+  end function
 
-      while result.len() < width
-        difference = width - result.len()
-        result = right(c, difference) + result
-      end while
+  public function voucherDictionary(subscriber, product)
+    ' Defaults
+    dict = {}
+    dict["Subscriber"] = "No"
+    dict["Voucher Name"] = "N/A"
+    dict["Price"] = "N/A"
+    dict["Transaction ID"] = "N/A"
+    dict["Product ID"] = "N/A"
+    dict["Subscription Duration"] = "N/A"
+    dict["Trial Period"] = "N/A"
+    dict["Permitted Countries"] = "N/A"
+    dict["Purchase Entity"] = "N/A"
+    dict["Grace Period"] = "N/A"
+    dict["Voucher Template Type"] = "N/A"
+
+    if subscriber
+      dict["Subscriber"] = "Yes"
+    end if
+
+    if type(product) <> "roAssociativeArray" then return dict
+
+    if product.code <> invalid then dict["Product ID"] = product.code
+    if product.voucherType <> invalid then dict["Voucher Template Type"] = product.voucherType
+    ' TODO: Other fields need support from the roku purchases API to be filled out
+    if product.freeTrialType <> invalid and product.freeTrialQuantity <> invalid and product.freeTrialType <> "None"
+      dict["Grace Period"] = product.freeTrialQuantity.toStr() + " " + product.freeTrialType
+    end if
+    if product.cost <> invalid then dict["Price"] = product.cost
+    if product.name <> invalid then dict["Voucher Name"] = product.name
+    return dict
+  end function
+
+  public function padString(s as string, width as integer, c as string)
+    result = s.trim()
+
+    ' don't get stuck in a while loop if pad characters are empty
+    if c = "" return result
+
+    while result.len() < width
+      difference = width - result.len()
+      result = right(c, difference) + result
+    end while
+    return result
+  end function
+
+  public function timeFormat(length as dynamic) as string
+    if type(length) = "roFloat" or type(length) = "Double" then length = Int(length)
+    if (type(length) = "Integer" or type(length) = "roInteger") then
+      hours = length \ 3600
+      minutes = (length mod 3600) \ 60
+      seconds = length mod 60
+      result = m.padString(stri(hours), 2, "0") + ":" + m.padString(stri(minutes), 2, "0") + ":" + m.padString(stri(seconds), 2, "0")
       return result
-    end function
+    else
+      return ""
+    end if
+  end function
 
-    public function timeFormat(length as dynamic) as string
-      if type(length) = "roFloat" or type(length) = "Double" then length = Int(length)
-      if (type(length) = "Integer" or type(length) = "roInteger") then
-        hours = length \ 3600
-        minutes = (length mod 3600) \ 60
-        seconds = length mod 60
-        result = m.padString(stri(hours), 2, "0") + ":" + m.padString(stri(minutes), 2, "0") + ":" + m.padString(stri(seconds), 2, "0")
-        return result
-      else
-        return ""
+
+  ' VOD Item loads until user exits the video
+  '
+  ' trigger             Where user accessed the video from
+  ' durationPlayed      The duration of the video which the user viewed
+  public function playVOD(trigger, item, durationPlayed)
+    properties = {}
+    properties["Path To"] = trigger
+    properties["Duration"] = "Not Provided"
+    properties["Duration Played"] = m.timeFormat(durationPlayed)
+    properties["Percent Complete"] = 0
+    properties.append(m.itemDictionary(item))
+    if type(item) = "roSGNode" then
+      if item.length > 0
+        properties["Duration"] = m.timeFormat(item.length)
+        properties["Percent Complete"] = Int(durationPlayed / item.length * 100)
       end if
-    end function
+    end if
+    return {
+      category: "Play VOD"
+      action: "Play VOD"
+      label: m.propertiesToLabel(properties)
+    }
+  end function
 
 
-    ' VOD Item loads until user exits the video
-    '
-    ' trigger             Where user accessed the video from
-    ' durationPlayed      The duration of the video which the user viewed
-    public function playVOD(trigger, item, durationPlayed)
-      properties = {}
-      properties["Path To"] = trigger
-      properties["Duration"] = "Not Provided"
-      properties["Duration Played"] = m.timeFormat(durationPlayed)
-      properties["Percent Complete"] = 0
-      properties.append(m.itemDictionary(item))
-      if type(item) = "roSGNode" then
-        if item.length > 0
-          properties["Duration"] = m.timeFormat(item.length)
-          properties["Percent Complete"] = Int(durationPlayed / item.length * 100)
-        end if
-      end if
-      return {
-        category: "Play VOD"
-        action: "Play VOD"
-        label: m.propertiesToLabel(properties)
-      }
-    end function
+  ' User clicks an item
+  '
+  ' trigger              Where the user clicks from.
+  '                      For cells and components, the value should be Analytic Name
+  '                      of the component as configured in the UI Builder for that particular screen.
+  '                      If no analytic name is given to the component, the value should be populated
+  '                      as X - Y - Z, where X is the name of the screen as found in the JSON
+  '                      (i.e. Home, Category), Y is the screen title (What is shown at the nav bar),
+  '                      Z - Component Type
+  public function clickItem(trigger, item)
+    properties = {}
+    properties["Path To"] = trigger
+    properties.append(m.itemDictionary(item))
+    return {
+      category: "Click Item"
+      action: "Click Item"
+      label: m.propertiesToLabel(properties)
+    }
+  end function
 
 
-    ' User clicks an item
-    '
-    ' trigger              Where the user clicks from.
-    '                      For cells and components, the value should be Analytic Name
-    '                      of the component as configured in the UI Builder for that particular screen.
-    '                      If no analytic name is given to the component, the value should be populated
-    '                      as X - Y - Z, where X is the name of the screen as found in the JSON
-    '                      (i.e. Home, Category), Y is the screen title (What is shown at the nav bar),
-    '                      Z - Component Type
-    public function clickItem(trigger, item)
-      properties = {}
-      properties["Path To"] = trigger
-      properties.append(m.itemDictionary(item))
-      return {
-        category: "Click Item"
-        action: "Click Item"
-        label: m.propertiesToLabel(properties)
-      }
-    end function
+  ' User clicks a category
+  '
+  public function clickCategory(trigger, category)
+    properties = {}
+    properties["Path To"] = trigger
+    properties.append(m.categoryDictionary(category))
+    return {
+      category: "Click Category"
+      action: "Click Category"
+      label: m.propertiesToLabel(properties)
+    }
+  end function
 
 
-    ' User clicks a category
-    '
-    public function clickCategory(trigger, category)
-      properties = {}
-      properties["Path To"] = trigger
-      properties.append(m.categoryDictionary(category))
-      return {
-        category: "Click Category"
-        action: "Click Category"
-        label: m.propertiesToLabel(properties)
-      }
-    end function
+  ' Launch App
+  public function launchApp()
+    return {
+      category: "Launch App"
+      action: "Launch App"
+      label: m.propertiesToLabel({})
+    }
+  end function
 
 
-    ' Launch App
-    public function launchApp()
-      return {
-        category: "Launch App"
-        action: "Launch App"
-        label: m.propertiesToLabel({})
-      }
-    end function
+  ' Triggered when one of the actions related to the "Action" property occurs
+  '
+  public function viewStorefront(trigger, item, action)
+    properties = {}
+    properties["Path To"] = trigger
+    properties["Action"] = action
+    properties.append(m.itemDictionary(item))
+    return {
+      category: "View Storefront"
+      action: "View Storefront"
+      label: m.propertiesToLabel(properties)
+    }
+  end function
 
 
-    ' Triggered when one of the actions related to the "Action" property occurs
-    '
-    public function viewStorefront(trigger, item, action)
-      properties = {}
-      properties["Path To"] = trigger
-      properties["Action"] = action
-      properties.append(m.itemDictionary(item))
-      return {
-        category: "View Storefront"
-        action: "View Storefront"
-        label: m.propertiesToLabel(properties)
-      }
-    end function
+  ' Tap Storefront Button
+  '
+  public function tapStorefrontButton(buttonName, item)
+    properties = {}
+    properties["Button Name"] = buttonName
+    properties.append(m.itemDictionary(item))
+    return {
+      category: "Tap Storefront Button"
+      action: "Tap Storefront Button"
+      label: m.propertiesToLabel(properties)
+    }
+  end function
 
 
-    ' Tap Storefront Button
-    '
-    public function tapStorefrontButton(buttonName, item)
-      properties = {}
-      properties["Button Name"] = buttonName
-      properties.append(m.itemDictionary(item))
-      return {
-        category: "Tap Storefront Button"
-        action: "Tap Storefront Button"
-        label: m.propertiesToLabel(properties)
-      }
-    end function
+  ' Triggered when the store purchase process initiates with iTunes/Google Play
+  '
+  public function startPurchase(subscriber, voucher)
+    properties = {}
+    properties["Purchase Entity"] = "App"
+    properties.append(m.voucherDictionary(subscriber, voucher))
+    return {
+      category: "Start Purchase"
+      action: "Start Purchase"
+      label: m.propertiesToLabel(properties)
+    }
+  end function
 
 
-    ' Triggered when the store purchase process initiates with iTunes/Google Play
-    '
-    public function startPurchase(subscriber, voucher)
-      properties = {}
-      properties["Purchase Entity"] = "App"
-      properties.append(m.voucherDictionary(subscriber, voucher))
-      return {
-        category: "Start Purchase"
-        action: "Start Purchase"
-        label: m.propertiesToLabel(properties)
-      }
-    end function
+  ' Triggered when the stores return that the purchase was completed successfully
+  '
+  public function completePurchase(subscriber, voucher)
+    properties = {}
+    properties["Purchase Entity"] = "App"
+    properties.append(m.voucherDictionary(subscriber, voucher))
+    return {
+      category: "Complete Purchase"
+      action: "Complete Purchase"
+      label: m.propertiesToLabel(properties)
+    }
+  end function
 
 
-    ' Triggered when the stores return that the purchase was completed successfully
-    '
-    public function completePurchase(subscriber, voucher)
-      properties = {}
-      properties["Purchase Entity"] = "App"
-      properties.append(m.voucherDictionary(subscriber, voucher))
-      return {
-        category: "Complete Purchase"
-        action: "Complete Purchase"
-        label: m.propertiesToLabel(properties)
-      }
-    end function
+  ' Triggered when user actively cancels the purchase process
+  '
+  public function cancelPurchase(subscriber, voucher)
+    properties = {}
+    properties["Purchase Entity"] = "App"
+    properties.append(m.voucherDictionary(subscriber, voucher))
+    return {
+      category: "Cancel Purchase"
+      action: "Cancel Purchase"
+      label: m.propertiesToLabel(properties)
+    }
+  end function
 
 
-    ' Triggered when user actively cancels the purchase process
-    '
-    public function cancelPurchase(subscriber, voucher)
-      properties = {}
-      properties["Purchase Entity"] = "App"
-      properties.append(m.voucherDictionary(subscriber, voucher))
-      return {
-        category: "Cancel Purchase"
-        action: "Cancel Purchase"
-        label: m.propertiesToLabel(properties)
-      }
-    end function
+  ' Triggered when error received while trying to purchase an item or subscriptions
+  '
+  public function purchaseError(errorCodeID, errorMessage, subscriber, voucher)
+    properties = {}
+    properties["Error Code ID"] = errorCodeID
+    properties["Error Message"] = errorMessage
+    properties["Purchase Entity"] = "App"
+    properties.append(m.voucherDictionary(subscriber, voucher))
+    return {
+      category: "Receive Error in Purchase Process"
+      action: "Receive Error in Purchase Process"
+      label: m.propertiesToLabel(properties)
+    }
+  end function
 
 
-    ' Triggered when error received while trying to purchase an item or subscriptions
-    '
-    public function purchaseError(errorCodeID, errorMessage, subscriber, voucher)
-      properties = {}
-      properties["Error Code ID"] = errorCodeID
-      properties["Error Message"] = errorMessage
-      properties["Purchase Entity"] = "App"
-      properties.append(m.voucherDictionary(subscriber, voucher))
-      return {
-        category: "Receive Error in Purchase Process"
-        action: "Receive Error in Purchase Process"
-        label: m.propertiesToLabel(properties)
-      }
-    end function
+  ' When user taps on the menu button
+  public function openMenu()
+    return {
+      category: "Menu"
+      action: "Open Menu"
+      label: m.propertiesToLabel({})
+    }
+  end function
 
 
-    ' When user taps on the menu button
-    public function openMenu()
-      return {
-        category: "Menu"
-        action: "Open Menu"
-        label: m.propertiesToLabel({})
-      }
-    end function
+  ' Measures tapping on the Search text field in the Side Menu.
+  public function openSearch()
+    return {
+      category: "Menu"
+      action: "Open Search"
+      label: m.propertiesToLabel({})
+    }
+  end function
 
 
-    ' Measures tapping on the Search text field in the Side Menu.
-    public function openSearch()
-      return {
-        category: "Menu"
-        action: "Open Search"
-        label: m.propertiesToLabel({})
-      }
-    end function
+  ' Measures tapping on a search result.
+  '
+  ' searchedString         What the user input into search
+  ' showName               The name of the show
+  public function clickSearchResults(searchedString, showName)
+    properties = {}
+    properties["Searched string"] = searchedString
+    properties["Show Name"] = showName
+    return {
+      category: "Menu"
+      action: "Click Search Results"
+      label: m.propertiesToLabel(properties)
+    }
+  end function
+
+  ' When user clicks on item from the menu such that a new screen loads
+  '
+  ' selectedMenuItem      The name of the menu item selected
+  public function selectMenuItem(selectedMenuItem)
+    properties = {}
+    properties["Selected Menu Item"] = selectedMenuItem
+    return {
+      category: "Menu"
+      action: "Select Menu Item"
+      label: m.propertiesToLabel(properties)
+    }
+  end function
 
 
-    ' Measures tapping on a search result.
-    '
-    ' searchedString         What the user input into search
-    ' showName               The name of the show
-    public function clickSearchResults(searchedString, showName)
-      properties = {}
-      properties["Searched string"] = searchedString
-      properties["Show Name"] = showName
-      return {
-        category: "Menu"
-        action: "Click Search Results"
-        label: m.propertiesToLabel(properties)
-      }
-    end function
-
-    ' When user clicks on item from the menu such that a new screen loads
-    '
-    ' selectedMenuItem      The name of the menu item selected
-    public function selectMenuItem(selectedMenuItem)
-      properties = {}
-      properties["Selected Menu Item"] = selectedMenuItem
-      return {
-        category: "Menu"
-        action: "Select Menu Item"
-        label: m.propertiesToLabel(properties)
-      }
-    end function
+  ' When user clicks pause on a video item
+  '
+  ' itemDictionary
+  ' pauseTimecode          Timecode of the item when the video is paused
+  public function pauseVOD(item, position)
+    properties = {}
+    properties["Video Duration"] = m.timeFormat(0)
+    properties["Pause Timecode"] = m.timeFormat(position)
+    properties.append(m.itemDictionary(item))
+    if type(item) = "roSGNode" then
+      properties["Video Duration"] = m.timeFormat(item.length)
+    end if
+    return {
+      category: "Pause VOD"
+      action: "Pause VOD"
+      label: m.propertiesToLabel(properties)
+    }
+  end function
 
 
-    ' When user clicks pause on a video item
-    '
-    ' itemDictionary
-    ' pauseTimecode          Timecode of the item when the video is paused
-    public function pauseVOD(item, position)
-      properties = {}
-      properties["Video Duration"] = m.timeFormat(0)
-      properties["Pause Timecode"] = m.timeFormat(position)
-      properties.append(m.itemDictionary(item))
-      if type(item) = "roSGNode" then
-        properties["Video Duration"] = m.timeFormat(item.length)
-      end if
-      return {
-        category: "Pause VOD"
-        action: "Pause VOD"
-        label: m.propertiesToLabel(properties)
-      }
-    end function
+  ' When user clicks play on a paused video item
+  '
+  ' itemDictionary
+  ' unpauseTimecode        Timecode of the item when the video is unpaused
+  public function unpauseVOD(item, position)
+    properties = {}
+    properties["Video Duration"] = m.timeFormat(0)
+    properties["Unpause Timecode"] = m.timeFormat(position)
+    properties.append(m.itemDictionary(item))
+    if type(item) = "roSGNode" then
+      properties["Video Duration"] = m.timeFormat(item.length)
+    end if
+    return {
+      category: "Unpause VOD"
+      action: "Unpause VOD"
+      label: m.propertiesToLabel(properties)
+    }
+  end function
 
 
-    ' When user clicks play on a paused video item
-    '
-    ' itemDictionary
-    ' unpauseTimecode        Timecode of the item when the video is unpaused
-    public function unpauseVOD(item, position)
-      properties = {}
-      properties["Video Duration"] = m.timeFormat(0)
-      properties["Unpause Timecode"] = m.timeFormat(position)
-      properties.append(m.itemDictionary(item))
-      if type(item) = "roSGNode" then
-        properties["Video Duration"] = m.timeFormat(item.length)
-      end if
-      return {
-        category: "Unpause VOD"
-        action: "Unpause VOD"
-        label: m.propertiesToLabel(properties)
-      }
-    end function
+  ' User initializes login process
+  '
+  ' trigger            What entity type triggers the login
+  ' loginName          The value in the name field of the CMS where this is set up (admin --> policies)
+  public function startLogin(trigger, loginName)
+    properties = {}
+    properties["Path To"] = trigger
+    properties["Login Name"] = loginName
+    properties["Required Fields"] = "Username|Password"
+    properties["Optional Fields"] = ""
+    return {
+      category: "Start Login"
+      action: "Start Login"
+      label: m.propertiesToLabel(properties)
+    }
+  end function
 
+  ' Login process returns a success
+  '
+  ' trigger            What entity type triggers the login
+  ' loginName          The value in the name field of the CMS where this is set up (admin --> policies)
+  public function loginSucceeds(trigger, loginName)
+    properties = {}
+    properties["Path To"] = trigger
+    properties["Login Name"] = loginName
+    properties["Required Fields"] = "User Name|Password"
+    properties["Optional Fields"] = ""
+    return {
+      category: "Login Succeeds"
+      action: "Login Succeeds"
+      label: m.propertiesToLabel(properties)
+    }
+  end function
 
-    ' User initializes login process
-    '
-    ' trigger            What entity type triggers the login
-    ' loginName          The value in the name field of the CMS where this is set up (admin --> policies)
-    public function startLogin(trigger, loginName)
-      properties = {}
-      properties["Path To"] = trigger
-      properties["Login Name"] = loginName
-      properties["Required Fields"] = "Username|Password"
-      properties["Optional Fields"] = ""
-      return {
-        category: "Start Login"
-        action: "Start Login"
-        label: m.propertiesToLabel(properties)
-      }
-    end function
+  ' Login process is started but ends without a success
+  '
+  ' trigger            What entity type triggers the login
+  ' loginName          The value in the name field of the CMS where this is set up (admin --> policies)
+  ' reason             What caused the Login not to succeed
+  ' errorMessage       If Reason = "Error Returned", populate with the value of the error message
+  public function loginDoesNotSucceed(trigger, loginName, reason, errorMessage)
+    properties = {}
+    properties["Path To"] = trigger
+    properties["Login Name"] = loginName
+    properties["Required Fields"] = "User Name|Password"
+    properties["Optional Fields"] = ""
+    properties["Reason"] = reason
+    properties["Error Message"] = errorMessage
+    return {
+      category: "Login Does Not Succeed"
+      action: "Login Does Not Succeed"
+      label: m.propertiesToLabel(properties)
+    }
+  end function
 
-    ' Login process returns a success
-    '
-    ' trigger            What entity type triggers the login
-    ' loginName          The value in the name field of the CMS where this is set up (admin --> policies)
-    public function loginSucceeds(trigger, loginName)
-      properties = {}
-      properties["Path To"] = trigger
-      properties["Login Name"] = loginName
-      properties["Required Fields"] = "User Name|Password"
-      properties["Optional Fields"] = ""
-      return {
-        category: "Login Succeeds"
-        action: "Login Succeeds"
-        label: m.propertiesToLabel(properties)
-      }
-    end function
-
-    ' Login process is started but ends without a success
-    '
-    ' trigger            What entity type triggers the login
-    ' loginName          The value in the name field of the CMS where this is set up (admin --> policies)
-    ' reason             What caused the Login not to succeed
-    ' errorMessage       If Reason = "Error Returned", populate with the value of the error message
-    public function loginDoesNotSucceed(trigger, loginName, reason, errorMessage)
-      properties = {}
-      properties["Path To"] = trigger
-      properties["Login Name"] = loginName
-      properties["Required Fields"] = "User Name|Password"
-      properties["Optional Fields"] = ""
-      properties["Reason"] = reason
-      properties["Error Message"] = errorMessage
-      return {
-        category: "Login Does Not Succeed"
-        action: "Login Does Not Succeed"
-        label: m.propertiesToLabel(properties)
-      }
-    end function
-
-  end class
-end namespace
+end class

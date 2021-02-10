@@ -1,0 +1,107 @@
+namespace zapp.tests
+
+  @tags("public", "video")
+  @suite
+  class MPXVideoPlaybackPrehookTests extends tests.BaseTestSuite
+
+    override function beforeEach()
+      super.beforeEach()
+      mioc.setInstance("plugins", [tests.utils.createPluginJson("mpx_video_playback_prehook_roku", {
+          "matching_path": "itemType"
+          "matching_value": "video"
+      })])
+
+      m.plugin = new MPXVideoPlaybackPrehook()
+    end function
+
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("constructor")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("no plugin")
+    function _()
+      mioc.setInstance("plugins", [])
+      m.plugin = new MPXVideoPlaybackPrehook()
+
+      m.assertNotInvalid(m.plugin.plugins)
+    end function
+
+    function _()
+      m.assertTrue(m.plugin.isValid)
+      m.assertEqual(m.plugin.endpoint, "e/?domain=d")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("execute")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("no item")
+    @params(invalid)
+    @params({ "currentItem": invalid })
+    function _(currentSelection)
+      m.expectOnce(m.plugin, "getInstance", ["currentSelection"], currentSelection)
+      m.expectNone(m.plugin, "isItemMatch")
+      m.expectNone(m.plugin, "loadMPXUrl")
+
+      m.assertEqual(m.plugin.execute(), "error")
+
+    end function
+
+    @it("no match")
+    function _()
+      currentSelection = { "id": "currentSelection" }
+      item = {
+        id: "item"
+        url: "url"
+        title: "t"
+      }
+      currentSelection.currentItem = item
+
+      m.expectOnce(m.plugin, "getInstance", ["currentSelection"], currentSelection)
+      m.expectOnce(m.plugin, "isItemMatch", [item], false)
+      m.expectNone(m.plugin, "loadMPXUrl")
+
+      m.assertEqual(m.plugin.execute(), "success")
+
+    end function
+
+    @it("is match")
+    @params(false, "error")
+    @params(true, "success")
+    function _(response, expectedResult)
+      currentSelection = { "id": "currentSelection" }
+      item = {
+        id: "item"
+        title: "t"
+      }
+      currentSelection.currentItem = item
+      m.expectOnce(m.plugin, "getInstance", ["currentSelection"], currentSelection)
+      m.expectOnce(m.plugin, "isItemMatch", [item], true)
+      m.expectOnce(m.plugin, "loadMPXURL", [item], response)
+
+      m.assertEqual(m.plugin.execute(), expectedResult)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("isItemMatch")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("isItemMatch")
+    @params("all", "", {}, true)
+    @params("all", "", { "id": "stuff" }, true)
+    @params("", "", { "id": "stuff" }, false)
+    @params("free", "true", { "id": "stuff" }, false)
+    @params("free", "true", { "id": "stuff", "json": { "free": false } }, false)
+    @params("free", "true", { "id": "stuff", "json": { "free": true } }, true)
+    @params("itemType", "channel", { "id": "stuff", "json": {"itemType": "video"} }, false)
+    @params("itemType", "video", { "id": "stuff", "json":{"itemType": "video"} }, true)
+    function _(path, value, item, isMatch)
+      m.plugin.matchingPath = path
+      m.plugin.matchingValue = value
+      m.assertEqual(m.plugin.isItemMatch(item), isMatch)
+
+    end function
+
+  end class
+end namespace

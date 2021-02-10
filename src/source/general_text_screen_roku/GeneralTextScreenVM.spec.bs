@@ -1,0 +1,47 @@
+namespace zapp.tests
+
+  @tags("public")
+  @suite
+  class GeneralTextScreenVMTests extends tests.BaseTestSuite
+
+    override function beforeEach()
+      super.beforeEach()
+      localStore = createObject("roSGNode", "ZSessionStore")
+      mioc.setInstance("zp_localStore", localStore)
+
+      riversJson = {
+        "id": "generalTextScreen"
+        styles: {
+        }
+      }
+
+      m.vm = new GeneralTextScreenVM(riversJson)
+      m.vm.initialize()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onDoneButtonSelected")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("onButtonSelected")
+    function _()
+      m.expectOnce(m.vm, "dismiss", ["cancel"])
+
+      m.vm.onButtonSelected(true)
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onKeyPressBack")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("onKeyPressBack")
+    function _()
+      m.expectOnce(m.vm, "dismiss", ["cancel"])
+
+      m.vm.onKeyPressBack()
+
+    end function
+
+  end class
+end namespace

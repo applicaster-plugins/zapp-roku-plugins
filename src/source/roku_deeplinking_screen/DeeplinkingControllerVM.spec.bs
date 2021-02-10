@@ -1,0 +1,465 @@
+namespace zapp.tests
+  @tags("public", "vm", "deeplinking")
+  @suite
+  class DeeplinkingControllerVMTests extends tests.BaseTestSuite
+
+    override function beforeEach()
+      super.beforeEach()
+      mioc.setInstances({
+        "user": { "isLoggedIn": false }
+        "locale": "en"
+      })
+
+      m.riversJson = {
+        styles: {
+          detail_screen: "detailScreen"
+          season_screen: "seasonScreen"
+          series_screen: "seriesScreen"
+          episode_screen: "episodeScreen"
+        }
+      }
+
+      m.vm = new DeeplinkingControllerVM(m.riversJson)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("constructor")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("testConstructor_tests")
+    function _()
+      m.assertEqual(m.vm.screenIdsByName, {
+        "season": "seriesScreen"
+        "episode": "episodeScreen"
+        "detail": "detailScreen"
+        "series": "seriesScreen"
+      })
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("togglePrehookController")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("set controller - none set")
+    function _()
+      controller = { "id": "controller" }
+      m.vm.currentScreen = { "id": "currentScreen" }
+
+      m.expectOnce(m.vm, "unobserveNodeField", [m.vm.currentScreen, "state", m.vm.onPrehookControllerStateChange])
+      m.expectOnce(m.vm, "observeNodeField", [controller, "state", m.vm.onPrehookControllerStateChange, "value", true])
+
+      m.vm.togglePrehookController(true, controller)
+
+      m.assertEqual(m.vm.currentScreen, controller)
+
+    end function
+
+    @it("replace controller")
+    function _()
+      controller = { "id": "controller" }
+
+      m.vm.currentScreen = { "id": "controller" }
+
+      m.expectOnce(m.vm, "unobserveNodeField", [controller, "state", m.vm.onPrehookControllerStateChange])
+
+      m.expectOnce(m.vm, "observeNodeField", [controller, "state", m.vm.onPrehookControllerStateChange, "value", true])
+
+      m.vm.togglePrehookController(true, controller)
+
+      m.assertEqual(m.vm.currentScreen, controller)
+
+    end function
+
+
+    @it("unset, with screen")
+    function _()
+      controller = { "id": "controller" }
+      m.vm.currentScreen = controller
+      m.expectOnce(m.vm, "unobserveNodeField", [controller, "state", m.vm.onPrehookControllerStateChange])
+
+      m.vm.togglePrehookController(false)
+
+      m.assertInvalid(m.vm.currentScreen)
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onPrehookControllerStateChange")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("success")
+    function _()
+      screen = { "id": "screen" }
+      m.vm.currentScreen = screen
+
+      args = { "id": "args" }
+      m.expectOnce(m.vm, "getInstance", ["deeplinkingArgs"], args)
+      m.expectOnce(m.vm, "toggleDeeplinkingTask", [true, args])
+      m.expectNone(m.vm, "dismissDeeplinkingController")
+
+      m.vm.onPrehookControllerStateChange("success")
+
+      m.assertInvalid(m.vm.currentScreen)
+
+    end function
+
+    @it("other states")
+    @params("error")
+    @params("cancel")
+    function _(state)
+      screen = { "id": "screen" }
+      m.vm.currentScreen = screen
+
+      m.expectNone(m.vm, "applyDeeplinking")
+      m.expectOnce(m.vm, "dismissDeeplinkingController", [])
+
+      m.vm.onPrehookControllerStateChange(state)
+
+      m.assertInvalid(m.vm.currentScreen)
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("dismissDeeplinkingController")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("dismissDeeplinkingController")
+    @params(true, false, true, false)
+    @params(true, true, true, false)
+    @params(false, false, true, false)
+    @params(false, true, false, true)
+    function _(isLiveDeeplink, isShowingPrehooks, isExitDeeplinking, isExitApp)
+      m.vm.isLiveDeeplink = isLiveDeeplink
+      m.vm.isShowingPrehooks = isShowingPrehooks
+
+      m.expectOnceOrNone(m.vm, "exitFromDeeplinking", isExitDeeplinking, [])
+      m.expectOnceOrNone(m.vm, "exitApp", isExitApp, [])
+
+      m.vm.dismissDeeplinkingController()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("getPrehookController")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it(" none")
+    @params({ "id" : "screen" })
+    @params({ "id" : "screen", "hooks": { "preload_plugins": invalid } })
+    @params({ "hooks": { "preload_plugins": [] } })
+    function _(riversJson)
+      m.vm.riversJson = riversJson
+      m.assertInvalid(m.vm.getPrehookController())
+    end function
+
+    @it("hooks")
+    @params({ "id" : "s1", "hooks": { "preload_plugins": [{ "id": 1 }] } })
+    @params({ "id" : "s2", "hooks": { "preload_plugins": [{ "id": 1 }] } })
+    @params({ "id" : "s3", "hooks": { "preload_plugins": [{ "id": 1 }, { "id": 2 }] } })
+    @params({ "id" : "s4", "hooks": { "preload_plugins": [{ "id": 1 }, { "id": 2 }] } })
+    function _(riversJson)
+
+
+      m.vm.riversJson = riversJson
+      hooks = mc.getPath(riversJson, "hooks.preload_plugins")
+      mockScreen = { "id": "screen" }
+
+      m.expectOnce(m.vm, "createInstance", ["ScreenHookController", invalid, "prehooksController"], mockScreen)
+
+      currentScreen = m.vm.getPrehookController()
+
+      m.assertEqual(currentScreen, mockScreen)
+      m.assertArrayCount(currentScreen.hooks, hooks.count())
+      m.assertArrayContainsSubset(currentScreen.hooks, hooks)
+      m.assertInvalid(currentScreen.targetScreen)
+      m.assertFalse(currentScreen.isManagingScreensOnCompletion)
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onShow")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("onShow_no_prehook")
+    @params(false, false, false)
+    @params(true, false, true)
+    @params(true, true, false)
+    function _(isDeeplinkingApplied, isShowingParentScreen, isExitCalled)
+      m.vm.isShowingParentScreen = isShowingParentScreen
+      m.vm.isDeeplinkingApplied = isDeeplinkingApplied
+      m.expectOnceOrNone(m.vm, "exitFromDeeplinking", isExitCalled, [])
+      m.vm.onShow()
+    end function
+
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("applyDeeplinking")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("dismisses early if selection is invalid")
+    function _()
+      deeplinkingData = {
+        "id": "deeplinkingData"
+        "itemType": "series"
+        "isShowingParentScreen": false
+      }
+
+      m.expectOnce(m.vm, "getDeeplinkingSelectionWithData", [deeplinkingData], invalid)
+      m.expectNone(m.vm, "getParentScreen")
+      m.expectNone(m.vm, "playSelection")
+      m.expectNone(m.vm, "signalAppLaunchComplete")
+      m.expectOnce(m.vm, "dismissDeeplinkingController", [])
+
+      m.vm.applyDeepLinking(deeplinkingData)
+
+    end function
+
+    @it("displays both video and parent screens if configured")
+    @params(true)
+    @params(false)
+    function _(isLaunchDeeplink)
+      parentEntry = { "id": "parentEntry" }
+      parentScreen = { "id": "parentScreen" }
+
+      entry = { "id": "entry" }
+      deeplinkingData = {
+        "id": "deeplinkingData"
+        "parentEntry": parentEntry
+        "entry": entry
+        "itemType": "series"
+      }
+      selection = { "id": "selection", "action": "play" }
+      m.vm.isLiveDeeplink = not isLaunchDeeplink
+      m.expectOnce(m.vm, "getDeeplinkingSelectionWithData", [deeplinkingData], selection)
+      m.expectOnce(m.vm, "getParentScreen", ["series", parentEntry], parentScreen)
+      m.expectOnce(m.vm, "playSelection", [selection])
+      m.expectOnce(m.vm, "setInstance", ["currentSelection", selection])
+      m.expectOnceOrNone(m.vm, "signalAppLaunchComplete", isLaunchDeeplink, [])
+      m.expectOnce(m.vm, "toggleNavMenuFocus", [false])
+      m.expectOnce(m.vm, "observeNodeField", [parentScreen, "state", m.vm.onContentStateCHange])
+
+      m.vm.applyDeepLinking(deeplinkingData)
+
+      m.assertEqual(m.vm.currentScreen, parentScreen)
+      m.assertTrue(m.vm.isShowingParentScreen)
+
+    end function
+
+    @it("plays only video if not configured to show screen")
+    @params(true)
+    @params(false)
+    function _(isLaunchDeeplink)
+      parentEntry = { "id": "parentEntry" }
+      entry = { "id": "entry" }
+      deeplinkingData = {
+        "id": "deeplinkingData"
+        "parentEntry": parentEntry
+        "entry": entry
+        "itemType": "series"
+        "isShowingParentScreen": false
+      }
+      selection = { "id": "selection", "action": "play" }
+      m.vm.isLiveDeeplink = not isLaunchDeeplink
+      m.expectOnce(m.vm, "getDeeplinkingSelectionWithData", [deeplinkingData], selection)
+      m.expectOnce(m.vm, "getParentScreen", ["series", parentEntry], invalid)
+      m.expectOnce(m.vm, "setInstance", ["currentSelection", selection])
+      m.expectOnce(m.vm, "playSelection", [selection])
+      m.expectOnceOrNone(m.vm, "signalAppLaunchComplete", isLaunchDeeplink, [])
+
+      m.vm.applyDeepLinking(deeplinkingData)
+      m.assertFalse(m.vm.isShowingParentScreen)
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("getDeeplinkingSelectionWithData")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("sets properties for non-episode types")
+    @params("channel")
+    @params("vod")
+    @params("collection")
+    function _(itemType)
+      collection = tests.utils.createCollection(3)
+      deeplinkingData = createObject("roSGNode", "DeeplinkingData")
+      deeplinkingData.action = "play"
+      deeplinkingData.itemType = itemType
+      deeplinkingData.entry = collection
+      deeplinkingData.contentId = collection.getchild(1).id
+      deeplinkingData.isValid = true
+
+      selection = m.vm.getDeeplinkingSelectionWithData(deeplinkingData)
+
+      m.assertEqual(selection.action, "play")
+      m.assertEqual(selection.currentItem.id, deeplinkingData.entry.id)
+      m.assertEqual(selection.collection.id, deeplinkingData.entry.id)
+    end function
+
+    @it("valid season or series with found episode")
+    @params("series")
+    @params("season")
+    function _(itemType)
+      collection = tests.utils.createCollection(3)
+      collection.id = "expectedId"
+      deeplinkingData = createObject("roSGNode", "DeeplinkingData")
+      deeplinkingData.action = "play"
+      deeplinkingData.itemType = itemType
+      deeplinkingData.entry = collection
+      deeplinkingData.isValid = true
+
+      selection = m.vm.getDeeplinkingSelectionWithData(deeplinkingData)
+
+      m.assertEqual(selection.action, "play")
+      m.assertEqual(selection.currentItem.id, "expectedId")
+      m.assertEqual(selection.collection.id, "expectedId")
+    end function
+
+    @it("sets properties series and season types, invalid episode")
+    @params("series")
+    @params("season")
+    function _(itemType)
+      collection = tests.utils.createCollection(3)
+      deeplinkingData = createObject("roSGNode", "DeeplinkingData")
+      deeplinkingData.action = "play"
+      deeplinkingData.itemType = itemType
+      deeplinkingData.entry = collection
+      deeplinkingData.contentId = "notFound"
+      deeplinkingData.isValid = true
+
+      selection = m.vm.getDeeplinkingSelectionWithData(deeplinkingData)
+
+      m.assertEqual(selection.action, "play")
+      m.assertEqual(selection.currentItem.id, deeplinkingData.entry.id)
+      m.assertEqual(selection.collection.id, deeplinkingData.entry.id)
+    end function
+
+    @it("sets properties series and season types, valid episode")
+    @params("series")
+    @params("season")
+    function _(itemType)
+      collection = tests.utils.createCollection(3)
+      deeplinkingData = createObject("roSGNode", "DeeplinkingData")
+      deeplinkingData.action = "play"
+      deeplinkingData.itemType = itemType
+      deeplinkingData.entry = collection.getchild(1)
+      deeplinkingData.contentId = deeplinkingData.entry.id
+      deeplinkingData.isValid = true
+
+      selection = m.vm.getDeeplinkingSelectionWithData(deeplinkingData)
+
+      m.assertEqual(selection.action, "play")
+      m.assertEqual(selection.currentItem.id, deeplinkingData.entry.id)
+      m.assertEqual(selection.collection.id, deeplinkingData.entry.id)
+    end function
+
+    @it("does not set when deeplinkingData is not valid")
+    @params("channel")
+    @params("vod")
+    @params("collection")
+    @params("season")
+    @params("series")
+    function _(itemType)
+      collection = tests.utils.createCollection(3)
+      deeplinkingData = createObject("roSGNode", "DeeplinkingData")
+      deeplinkingData.action = "play"
+      deeplinkingData.itemType = itemType
+      deeplinkingData.entry = collection.getchild(0)
+      deeplinkingData.contentId = deeplinkingData.entry.id
+      deeplinkingData.isValid = false
+
+      selection = m.vm.getDeeplinkingSelectionWithData(deeplinkingData)
+
+      m.assertInvalid(selection)
+    end function
+
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("toggleDeeplinkingTask")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("inactive no task")
+    @params(true)
+    @params(false)
+    function _(navMenuFocusable)
+      m.vm.isNAvMenuFocusable = navMenuFocusable
+
+      m.expectOnce(m.vm, "unobserveNodeField")
+      m.expectNone(m.vm, "createInstance")
+      m.expectNone(m.vm, "observeNodeField")
+
+      m.vm.toggleDeeplinkingTask(false)
+
+      m.assertFalse(m.vm.isLoadingIndicatorVisible)
+    end function
+
+    @it("inactive with task")
+    @params(true)
+    @params(false)
+    function _(navMenuFocusable)
+      m.vm.isNavMenuFocusable = navMenuFocusable
+      m.vm.deeplinkingTask = { "id": "task" }
+
+      m.expectOnce(m.vm, "unobserveNodeField", [m.vm.deeplinkingTask, "deeplinkingData", m.vm.onDeeplinkingTaskResult])
+      m.expectNone(m.vm, "createInstance")
+      m.expectNone(m.vm, "observeNodeField")
+
+      m.vm.toggleDeeplinkingTask(false)
+
+      m.assertInvalid(m.vm.deeplinkingTask)
+
+      m.assertFalse(m.vm.isLoadingIndicatorVisible)
+
+    end function
+
+
+    @it("active -no task")
+    function _()
+      deeplinkingTask = { "id": "task" }
+      args = { "id": "args" }
+
+      m.expectOnce(m.vm, "createInstance", ["DeeplinkingTask", invalid, "deeplinkingTask"], deeplinkingTask)
+      m.expectOnce(m.vm, "observeNodeField", [deeplinkingTask, "deeplinkingData", m.vm.onDeeplinkingTaskResult, "value", true])
+
+      m.vm.toggleDeeplinkingTask(true, args)
+
+      m.assertEqual(deeplinkingTask.args, args)
+      m.assertEqual(deeplinkingTask.control, "run")
+
+      m.assertTrue(m.vm.isLoadingIndicatorVisible)
+    end function
+
+    @it("active - with task")
+    function _()
+      m.vm.deeplinkingTask = { "id": "old_task" }
+      deeplinkingTask = { "id": "task" }
+      args = { "id": "args" }
+
+      m.expectOnce(m.vm, "unobserveNodeField", [m.vm.deeplinkingTask, "deeplinkingData", m.vm.onDeeplinkingTaskResult])
+
+      m.expectOnce(m.vm, "createInstance", ["DeeplinkingTask", invalid, "deeplinkingTask"], deeplinkingTask)
+      m.expectOnce(m.vm, "observeNodeField", [deeplinkingTask, "deeplinkingData", m.vm.onDeeplinkingTaskResult, "value", true])
+
+      m.vm.toggleDeeplinkingTask(true, args)
+
+      m.assertEqual(deeplinkingTask.args, args)
+      m.assertEqual(deeplinkingTask.control, "run")
+      m.assertTrue(m.vm.isLoadingIndicatorVisible)
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onDeeplinkingTaskResult")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("data isValid")
+    function _()
+      data = createObject("roSGNode", "DeeplinkingData")
+      data.isValid = true
+      data.id = "dld"
+
+      m.expectOnce(m.vm, "applyDeeplinking", [data])
+
+      m.vm.onDeeplinkingTaskResult(data)
+    end function
+
+  end class
+end namespace
