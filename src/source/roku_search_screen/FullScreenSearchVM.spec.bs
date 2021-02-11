@@ -1,5 +1,4 @@
 namespace zapp.tests
-
   @tags("public", "vm")
   @suite
   class FullScreenSearchVMTests extends tests.BaseTestSuite
@@ -83,18 +82,18 @@ namespace zapp.tests
 
     @it("onHide")
     function _()
-      loadItemTask = { "id": "loadItemTask" }
+      loadDataTask = { "id": "loadDataTask" }
       searchDelayTask = { "id": "searchDelayTask" }
       m.vm.searchDelayTask = searchDelayTask
-      m.vm.loadItemTask = loadItemTask
+      m.vm.loadDataTask = loadDataTask
 
       m.expectOnce(m.vm, "cancelWaitTimer", [searchDelayTask])
-      m.expectOnce(m.vm, "cancelTask", [loadItemTask])
+      m.expectOnce(m.vm, "cancelTask", [loadDataTask])
 
       m.vm.onHide()
 
       m.assertInvalid(m.vm.searchDelayTask)
-      m.assertInvalid(m.vm.loadItemTask)
+      m.assertInvalid(m.vm.loadDataTask)
 
     end function
 
@@ -198,22 +197,15 @@ namespace zapp.tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("performSearch")
-    @params("q1", "s1", 0, "#myLink&q1=s1")
-    @params("q2", "s2", 1, "#myLink&q2=s2")
-    @params("q3", "s3  ", 1, "#myLink&q3=s3")
-    @params("q4", "   s4  ", 1, "#myLink&q4=s4")
-    function _(searchQuery, text, loadDepth, expectedLink)
-      m.vm.searchQueryName = searchQuery
+    @params("s1", 0, { "search": "s1" })
+    @params("s2", 1, { "search": "s2" })
+    @params("s3  ", 1, { "search": "s3" })
+    @params("   s4  ", 2, { "search": "s4" })
+    function _(text, loadDepth, expected)
       m.vm.searchText = text
       m.vm.loadDepth = loadDepth
 
-      entryMatcher = { "matcher": function(entry)
-          return entry.link = m.expectedLink
-        end function
-        "expectedLink": expectedLink
-      }
-
-      m.expectOnce(m.vm, "toggleLoadingItemTask", [true, entryMatcher, loadDepth])
+      m.expectOnce(m.vm, "toggleLoadingDataTask", [true, expected, loadDepth])
       m.expectOnce(m.vm, "setGridVisible", [true])
 
       m.vm.performSearch(text)
@@ -232,16 +224,16 @@ namespace zapp.tests
     @params("one2")
     @params("one2three")
     function _(text)
-      loadItemTask = { "id": "loadItemTask" }
+      loadDataTask = { "id": "loadDataTask" }
       searchDelayTask = { "id": "searchDelayTask" }
       m.vm.searchDelayTask = searchDelayTask
-      m.vm.loadItemTask = loadItemTask
+      m.vm.loadDataTask = loadDataTask
       m.vm.minCharacters = 3
       newDelayTask = { "id": "newDelayTask" }
 
       m.expectOnce(m.vm, "cancelWaitTimer", [searchDelayTask])
-      m.expectOnce(m.vm, "cancelTask", [loadItemTask])
-      m.expectOnce(m.vm, "waitAFrame", ["onSearchDelayComplete", 0.5], newDelayTask)
+      m.expectOnce(m.vm, "cancelTask", [loadDataTask])
+      m.expectOnce(m.vm, "waitAFrame", [m.vm.onSearchDelayComplete, 0.5], newDelayTask)
 
       m.vm.onSearchTextChange(text)
 
@@ -255,15 +247,15 @@ namespace zapp.tests
     @params(" aa ")
     @params("aa  ")
     function _(text)
-      loadItemTask = { "id": "loadItemTask" }
+      loadDataTask = { "id": "loadDataTask" }
       searchDelayTask = { "id": "searchDelayTask" }
       m.vm.searchDelayTask = searchDelayTask
-      m.vm.loadItemTask = loadItemTask
+      m.vm.loadDataTask = loadDataTask
 
       newDelayTask = { "id": "newDelayTask" }
 
       m.expectOnce(m.vm, "cancelWaitTimer", [searchDelayTask])
-      m.expectOnce(m.vm, "cancelTask", [loadItemTask])
+      m.expectOnce(m.vm, "cancelTask", [loadDataTask])
       m.expectNone(m.vm, "waitAFrame")
 
       m.vm.onSearchTextChange(text)

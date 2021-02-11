@@ -51,8 +51,8 @@ class WarningMessageScreenVM extends zapp.uib.ScreenVM
   public override function load() as boolean
     isShowingWarning = false
 
-    if m.originEntry <> invalid and mc.isString(m.conditionPath) and mc.isString(m.conditionValue)
-      value = mc.getPath(m.originEntry.json, m.conditionPath, invalid)
+    if m.screenState.originEntry <> invalid and mc.isString(m.conditionPath) and mc.isString(m.conditionValue)
+      value = mc.getPath(m.screenState.originEntry.json, m.conditionPath, invalid)
 
       if mc.isString(value) and lcase(value) = lcase(m.conditionValue)
         m.logInfo("this content has a value that matches the locking condition")
@@ -82,7 +82,7 @@ class WarningMessageScreenVM extends zapp.uib.ScreenVM
     'now load the child with the entry that's going to display the message
     warningEntry = invalid
 
-    if result.isOk and result.data.itemType <> "problemDetailsResponse" and result.data.getChildCount() > m.warningEntryIndex
+    if result.isOk and result.data.getChildCount() > m.warningEntryIndex
       m.warningEntryIndex = -1
 
       if m.warningEntryIndex = -1
@@ -92,7 +92,7 @@ class WarningMessageScreenVM extends zapp.uib.ScreenVM
       end if
       if warningEntry <> invalid
         m.logInfo("loading required entry to display mesage", warningEntry.id)
-        m.executeLoadItemTask(warningEntry.id, warningEntry, m.onLoadedChildEntry, 0)
+        m.executeloadDataTask(warningEntry.id, m.onLoadedChildEntry, invalid, 0)
       end if
     end if
 
@@ -106,7 +106,7 @@ class WarningMessageScreenVM extends zapp.uib.ScreenVM
 
     messageEntry = invalid
 
-    if result.isOk and result.data.itemType <> "problemDetailsResponse"
+    if result.isOk
       messageEntry = mc.getChildAtDepth(result.data, m.warningEntryDepth)
     end if
 

@@ -107,10 +107,10 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
 
     m.searchText = text
     m.cancelWaitTimer(m.searchDelayTask)
-    m.cancelTask(m.loadItemTask)
+    m.cancelTask(m.loadDataTask)
 
     if (len(m.searchText.trim()) >= m.minCharacters)
-      m.searchDelayTask = m.waitAFrame("onSearchDelayComplete", 0.5)
+      m.searchDelayTask = m.waitAFrame(m.onSearchDelayComplete, 0.5)
     else
       m.logVerbose("too few chars. ignoring")
       m.setGridVisible(false)
@@ -135,22 +135,17 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
 
     m.isLoading = true
     m.setGridVisible(true)
-    entry = createObject("roSGNode", "ZPEntry")
-    entry.itemType = "feed"
-    entry.link = m.getLegacyCompatibleLink(m.riversJson.data)
-    entry.link += "&" + m.searchQueryName + "=" + text.trim().encodeUriComponent()
-    m.logInfo("entry link is ", entry.link)
-    m.toggleLoadingItemTask(true, entry, m.loadDepth)
+    m.toggleLoadingDataTask(true, { "search": text.trim().encodeUriComponent() }, m.loadDepth)
 
   end function
 
   public override function onFeedResult(result)
     m.logMethod("onFeedResult")
 
-    m.toggleLoadingItemTask(false)
+    m.toggleLoadingDataTask(false)
     m.isLoading = false
 
-    if result.isOk and result.data.itemType <> "problemDetailsResponse" and result.data.getChildCount() > 0
+    if result.isOk and result.data.getChildCount() > 0
       results = result.data.getChild(0)
       m.setContentStyle(results)
     else
@@ -229,8 +224,8 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     super.onHide()
 
     m.cancelWaitTimer(m.searchDelayTask)
-    m.cancelTask(m.loadItemTask)
-    m.loadItemTask = invalid
+    m.cancelTask(m.loadDataTask)
+    m.loadDataTask = invalid
     m.searchDelayTask = invalid
   end function
 

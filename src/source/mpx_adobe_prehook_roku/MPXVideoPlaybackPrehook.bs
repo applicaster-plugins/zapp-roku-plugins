@@ -85,6 +85,7 @@ class MPXVideoPlaybackPrehook extends zapp.BaseClass
       "formats": "M3U,MPEG4"
     }
 
+    'FIXME
     url = item.link + "?" + m.uri.encodeParams(params)
     result = m.getXMLSync(url)
     m.logInfo("got result", result)

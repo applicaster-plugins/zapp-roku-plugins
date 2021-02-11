@@ -10,7 +10,7 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
   private isShowingParentScreen = false
   private isDeeplinkingApplied = false
   private deeplinkingTask = invalid
-  
+
   public screenIdsByName = {}
 
   public function new(riversJson)
@@ -184,8 +184,7 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
       screenId = m.screenIdsByName[itemType]
 
       if screenId <> invalid and screenId.trim() <> ""
-        screen = m.getScreen(screenId)
-        screen.originEntry = entry
+        screen = m.getScreen(screenId, {originEntry: entry})
       end if
     end if
 

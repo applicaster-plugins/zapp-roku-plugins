@@ -1,20 +1,11 @@
 import "pkg:/source/warning_message_screen_roku/WarningMessageScreenVM.bs"
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'++ Initialization
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-function init()
-  m.top.isConsumingOriginEntry = true
-end function
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '++ Overridden methods
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 function createVM()
   vm = new WarningMessageScreenVM(m.top.riversJson)
-  vm.originEntry = m.top.originEntry
   mv.setFocus(m.doneButton)
   return vm
 end function
