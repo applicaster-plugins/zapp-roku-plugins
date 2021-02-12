@@ -54,7 +54,7 @@ class WarningMessageScreenVM extends zapp.uib.ScreenVM
     if m.screenState.originEntry <> invalid and mc.isString(m.conditionPath) and mc.isString(m.conditionValue)
       value = mc.getPath(m.screenState.originEntry.json, m.conditionPath, invalid)
 
-      if mc.isString(value) and lcase(value) = lcase(m.conditionValue)
+      if lcase(`${value}`) = lcase(m.conditionValue)
         m.logInfo("this content has a value that matches the locking condition")
         isShowingWarning = true
 
