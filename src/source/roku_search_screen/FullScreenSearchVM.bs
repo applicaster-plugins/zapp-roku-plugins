@@ -135,7 +135,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
 
     m.isLoading = true
     m.setGridVisible(true)
-    m.toggleLoadingDataTask(true, { "search": text.trim().encodeUriComponent() }, m.loadDepth)
+    m.toggleLoadingDataTask(true, { "query": text.trim().encodeUriComponent() }, m.loadDepth)
 
   end function
 
@@ -146,7 +146,6 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     m.isLoading = false
 
     if result.isOk and result.data.getChildCount() > 0
-      results = result.data.getChild(0)
       m.setContentStyle(results)
     else
       results = createObject("roSGNode", "ZPEntry")

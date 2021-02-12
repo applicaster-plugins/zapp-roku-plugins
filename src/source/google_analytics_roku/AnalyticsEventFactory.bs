@@ -1,4 +1,5 @@
 import "pkg:/source/roku_modules/log/LogMixin.brs"
+import "pkg:/source/roku_modules/mc/Utils.brs"
 
 ' See https://docs.google.com/spreadsheets/d/17HhUt-kQpfPFiWYZAUXziYG2zUBUX3-5gY2hjKHEA_Y/edit?ts=58c7f3f4#gid=0
 '
@@ -126,7 +127,7 @@ class AnalyticsEventFactory
     dict["ATOM feed name"] = "N/A"
 
     if type(item) <> "roAssociativeArray" and type(item) <> "roSGNode" then return dict
-    if item.free <> invalid then dict["Free"] = m.booleanString(item.free)
+    if mc.getPath(contentItem, "json.extensions.free", false) then dict["Free"] = m.booleanString(item.free)
     if item.itemType <> invalid
       if item.itemType = "channel"
         dict["Item Type"] = "Channel - Applicaster Model"

@@ -197,10 +197,10 @@ namespace zapp.tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("performSearch")
-    @params("s1", 0, { "search": "s1" })
-    @params("s2", 1, { "search": "s2" })
-    @params("s3  ", 1, { "search": "s3" })
-    @params("   s4  ", 2, { "search": "s4" })
+    @params("s1", 0, { "query": "s1" })
+    @params("s2", 1, { "query": "s2" })
+    @params("s3  ", 1, { "query": "s3" })
+    @params("   s4  ", 2, { "query": "s4" })
     function _(text, loadDepth, expected)
       m.vm.searchText = text
       m.vm.loadDepth = loadDepth
