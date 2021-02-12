@@ -1,11 +1,9 @@
 import "pkg:/source/lib/ViewUtils.bs"
 import "pkg:/source/roku_modules/mc/Utils.brs"
-import "pkg:/source/UIBuilder/view/ComponentVM.bs"
+import "pkg:/source/UIBuilder/view/ScreenVM.bs"
 import "pkg:/source/zapp-controls/CollectionRowUtils.bs"
 
-@strict
-@useSetField
-class FullScreenSearchVM extends zapp.uib.ComponentVM
+class FullScreenSearchVM extends zapp.uib.ScreenVM
 
   public results = invalid
   public isGridVisible = false
@@ -144,8 +142,8 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
 
     m.toggleLoadingDataTask(false)
     m.isLoading = false
-
-    if result.isOk and result.data.getChildCount() > 0
+    results = result.data
+    if result.isOk and results <> invalid
       m.setContentStyle(results)
     else
       results = createObject("roSGNode", "ZPEntry")
@@ -181,6 +179,8 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
       cellStyle.delete("translation")
       mc.setOrAddNodeField(content, "_style", cellStyle)
       mc.setOrAddNodeField(content, "_styleId", m.style.id)
+    else
+      m.logError("Cannot set content: there is no cell style set")
     end if
 
   end function
@@ -208,7 +208,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     return false
   end function
 
-  private function reset()
+  override function reset()
     m.jumpToItem = 0
     m.results = createObject("roSGNode", "ZPEntry")
     m.setGridVisible(false)
