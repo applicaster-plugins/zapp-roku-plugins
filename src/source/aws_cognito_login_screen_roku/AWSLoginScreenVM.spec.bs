@@ -391,6 +391,7 @@ namespace zapp.tests
       }])
 
       m.rootBeforeEach = TAAWSLSVMT.beforeEach
+      'bs:disable-next-line
       m.rootBeforeEach()
     end function
 
