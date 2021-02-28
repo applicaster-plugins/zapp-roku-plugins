@@ -11,11 +11,20 @@ namespace Applicaster.Authentication
     public codeText = ""
     public isShowingLoadingIndicator = true
     public pollTimerControl = "stop"
+    public pollTimerDuration = 3
+
+    public text1 = ""
+    public text2 = ""
+    public text3 = ""
+    public text4 = ""
+    public text5 = ""
+    public text6 = ""
 
     private authTask = invalid
-    private analyticsManager = invalid 
+    private analyticsManager = invalid
     private providerId = invalid
     private refreshButtonOpacity = 1
+    private urlTextKey = invalid
 
     public function new(riversJson)
       super(riversJson, "RegcodeLoginScreenVM")
@@ -34,6 +43,22 @@ namespace Applicaster.Authentication
       if not MU.getContentField(riversJson, "styles.use_refresh_button", true)
         m.refreshButtonOpacity = 0
       end if
+      m.processStyles(riversJson.styles)
+    end function
+
+    function processStyles(styles)
+      for i = 1 to 6
+        key = "text" + i.toStr().trim()
+        text = localizations[key]
+        if text = invalid or text = ""
+          text = styles[key]
+        end if
+        if text = "{{url}}"
+          m.urlTextKey = key
+          text = ""
+        end if
+        m.setField(key, text)
+      end for
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -72,7 +97,7 @@ namespace Applicaster.Authentication
 
       entitlements = m.getInstance("entitlements")
       return entitlements@.isLocked(MU.getContentField(currentSelection, "currentItem"))
-    end function 
+    end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     '++ refresh
@@ -142,6 +167,14 @@ namespace Applicaster.Authentication
       if result <> invalid and result.regcode <> invalid
         m.logInfo("received code", result.regcode)
         m.setField("codeText", result.regcode)
+        if result.pollInterval <> invalid
+          m.setField("pollTimerDuration", result.pollInterval)
+        end if
+
+        if result.url <> invalid and m.urlTextKey <> invalid
+          m.setField(m.urlTextKey, result.url)
+        end if
+
         m.togglePollTimer(true)
       else
         m.logWarn("received illegal code")
