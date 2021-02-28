@@ -1,0 +1,130 @@
+import "pkg:/source/authorization/BaseAuthPlugin.bs"
+import "pkg:/source/lib/request.bs"
+import "pkg:/source/lib/uri.bs"
+import "pkg:/source/authorization/JWTUtil.bs"
+
+namespace applicaster
+  class ZappOauthPlugin extends BaseAuthPlugin
+
+    private request = invalid
+    private uri = invalid
+    private clientId = ""
+    private deviceEndpoint = ""
+    private tokenEndpoint = ""
+    private grantType = ""
+    private pollingInterval = -1
+
+    public function new(plugin)
+      super("AdobePrimetime", plugin)
+      m.isTokenUsableWithDSP = true
+      m.request = m.getClassInstance("RequestModule")
+      m.uri = m.getClassInstance("UriModule")
+
+      m.clientId = plugin.getStringValue("clientId", "")
+      m.deviceEndpoint = plugin.getStringValue("deviceEndpoint", "")
+      m.tokenEndpoint = plugin.getStringValue("tokenEndpoint", "")
+      m.grantType = plugin.getStringValue("grantType", "urn:ietf:params:oauth:grant-type:device_code")
+
+      m.pollingInterval = plugin.getIntValue("pollingInterval", -1)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '++ overridden
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    public override function _getAccountInfo()
+      userId = MU.getContentField(m.authData, "user.userId", "not known yet")
+
+      return {
+        id: userId
+        email: "anonymous@anon.com"
+        username: "anonymous"
+      }
+    end function
+
+    public override function _verify()
+
+      'TODO
+      if not m.isAuthDataExpired()
+        'HOW DO WE DO THIS?
+      end if
+
+      return m.createErrorResult("Invalid token for verification")
+    end function
+
+    public override function _regcode()
+      m.logMethod("regCode_")
+      params = {
+        client_id: m.clientId
+      }
+
+      result = m.request.post(m.deviceEndpoint, params, headers)
+
+      m.logInfo("result is ", result)
+
+      if result <> invalid and result.user_code <> invalid and result.user_code <> ""
+        if m.pollingInterval = -1
+          interval = result.interval
+        else
+          interval = m.pollingInterval
+        end if
+
+        m.setSessionStoreValue("zapp_oauth_plugin", "deviceResponse", result, true)
+        result = m.createRegCodeResult(result.user_code)
+        result.url = result.verification_uri
+        result.pollInterval = interval
+        return result
+      end if
+
+      m.logError("Error retrieving regcode")
+      return m.createRegCodeResult(invalid, -1, "Unknown error")
+    end function
+
+    public override function _poll()
+      m.logMethod("poll_")
+      deviceResponse = m.getSessionStoreValue("zapp_oauth_plugin", "deviceRespose", true)
+
+      if deviceResponse = invalid or deviceResponse.device_code = invalid
+        return m.createErrorResult("device_code was not valid")
+      end if
+
+      params = {
+        client_id: m.clientId
+        grant_type: m.grantType
+        device_code: deviceResponse.device_code
+      }
+
+      result = m.request.getJsonSync(m.tokenEndpoint, headers)
+
+      m.logInfo("result is:", result)
+
+      if result <> invalid and result.userId <> invalid and result.userId <> ""
+        return m.createAuthData("valid", result.access_token, result.access_token, result.access_token, result, result.expires_in)
+      else
+        m.logInfo("invalid userId ignoring")
+      end if
+
+      result = m.createErrorResult("Unknown error")
+
+      if m.request.lastResponseCode <> invalid
+        if m.request.lastResponseCode = 400
+          'these states are expected while polling.
+          result.state = "none"
+        end if
+      end if
+
+      return result
+    end function
+
+    public override function _logOut()
+      'TODO - how does this work?
+
+      url = m.baseUrl + requestPath + "?" + m.uri.encodeParams(params)
+      m.request.delete(url, invalid, headers)
+
+      return m.createAuthData()
+    end function
+
+  end class
+
+end namespace
