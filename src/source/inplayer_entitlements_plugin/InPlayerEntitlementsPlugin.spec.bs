@@ -623,9 +623,9 @@ namespace zapp.tests
     function make_live_purchase(code = "73228_17870")
       channelStore = new zapp.RokuChannelStoreModule(false)
       rcs = channelStore.getChannelStore()
-      m.logInfo("MAKING ROKU PURCHASE", code)
+      m.log.info("MAKING ROKU PURCHASE", code)
       result = channelStore.doRokuPurchase(invalid, code, 1)
-      m.logInfo("purhcased", result)
+      m.log.info("purhcased", result)
       return result
     end function
 
@@ -633,7 +633,7 @@ namespace zapp.tests
       channelStore = new zapp.RokuChannelStoreModule(false)
       rcs = channelStore.getChannelStore()
       result = channelStore.getRokuCatalog(rcs)
-      m.logInfo("products", result)
+      m.log.info("products", result)
       return result
     end function
 
@@ -642,7 +642,7 @@ namespace zapp.tests
       products = InplayerEntitlements.tests.getProducts()
       m.plugin.getAvailableProducts(products, [])
 
-      m.logInfo("products", m.plugin.availableProducts.availableProducts)
+      m.log.info("products", m.plugin.availableProducts.availableProducts)
     end function
 
     @it("loadItem")
@@ -654,7 +654,7 @@ namespace zapp.tests
       }
 
       m.plugin.loadItem(item)
-      m.logInfo("item", item.url)
+      m.log.info("item", item.url)
 
     end function
 
@@ -662,7 +662,7 @@ namespace zapp.tests
     function _()
       products = InplayerEntitlements.tests.getProducts()
       result = m.plugin.getPurchasedItemIds(products)
-      m.logInfo("item ids", result)
+      m.log.info("item ids", result)
 
     end function
 

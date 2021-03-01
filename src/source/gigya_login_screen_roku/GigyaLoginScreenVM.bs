@@ -19,10 +19,10 @@ class GigyaLoginScreenVM extends zapp.uib.ScreenVM
   public override function load() as boolean
     isShown = m.getLocalStoreValue("gigya_login_screen_roku", "isShown")
     if isShown <> invalid
-      m.logInfo("this screen has been shown before; dismissing")
+      m.log.info("this screen has been shown before; dismissing")
       m.dismiss("success")
     else
-      m.logInfo("this screen has not been shown before")
+      m.log.info("this screen has not been shown before")
       m.setLocalStoreValue("gigya_login_screen_roku", "isShown", "true", true)
       m.refreshLogin()
     end if
@@ -37,7 +37,7 @@ class GigyaLoginScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   private function refreshLogin()
-    m.logInfo("calling authTask to refresh login")
+    m.log.info("calling authTask to refresh login")
 
     m.authTask = m.createAuthTask("execLoad", "gigya_auth_plugin_roku", m.onRefreshComplete)
 
@@ -46,7 +46,7 @@ class GigyaLoginScreenVM extends zapp.uib.ScreenVM
   end function
 
   private function onRefreshComplete(result)
-    m.logMethod("onRefreshComplete", result)
+    m.log.method("onRefreshComplete", result)
     m.isLoading = false
 
     if m.getInstance("user").isLoggedIn
@@ -64,23 +64,23 @@ class GigyaLoginScreenVM extends zapp.uib.ScreenVM
     screen = m.getScreen(m.riversJson.styles.login_screen)
 
     if screen <> invalid
-      m.logInfo("found login screen, displaying now")
+      m.log.info("found login screen, displaying now")
       m.push(screen)
       m.setFocus(screen)
       m.observeNodeField(screen, "state", m.onLoginScreenStateChange)
 
     else
-      m.logError("could not get the screen for", m.riversJson.styles.login_screen)
+      m.log.error("could not get the screen for", m.riversJson.styles.login_screen)
     end if
   end function
 
   public function onLoginScreenStateChange(state)
 
     if state = "success" or state = "cancel" or state = "error"
-      m.logInfo("screenHook screen requested to finished with state: ", state)
+      m.log.info("screenHook screen requested to finished with state: ", state)
 
       if state = "success"
-        m.logInfo("login completed!")
+        m.log.info("login completed!")
         m.state = "success"
       else
         m.setFocusId("loginButton")
@@ -94,12 +94,12 @@ class GigyaLoginScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public function onLoginButtonSelected(value)
-    m.logMethod("onLoginButtonSelected")
+    m.log.method("onLoginButtonSelected")
     m.showLoginScreen()
   end function
 
   public function onSkipButtonSelected(value)
-    m.logMethod("onSkipButtonSelected")
+    m.log.method("onSkipButtonSelected")
     m.dismiss("success")
   end function
 
@@ -108,7 +108,7 @@ class GigyaLoginScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public function onKeyPressBack()
-    m.logMethod("onKeyPressBack")
+    m.log.method("onKeyPressBack")
     m.dismiss("cancel")
     return true
   end function

@@ -82,7 +82,7 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
       "isLive": contentNode.LIVE = true
     }
     videoOptions.append(m.config)
-    m.logInfo("Sending payload to Youbora ", videoOptions)
+    m.log.info("Sending payload to Youbora ", videoOptions)
     m.youboraTask.options = videoOptions
 
     'note if we're using 6.1 or higher, that we should do a "init" event here
@@ -91,7 +91,7 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
   end function
 
   public override function videoEnd()
-    m.logMethod("videoEnd")
+    m.log.method("videoEnd")
     super.videoEnd()
 
     if m.youboraTask <> invalid
@@ -109,7 +109,7 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
   end function
 
   public override function adTrackingEvent(eventType, rafCtx)
-    m.logMethod("adTrackingEvent")
+    m.log.method("adTrackingEvent")
     super.adTrackingEvent(eventType, rafCtx)
 
     if m.youboraTask <> invalid

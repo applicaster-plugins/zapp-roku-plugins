@@ -45,7 +45,7 @@ class WarningMessageScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public override function createContent()
-    m.logInfo("createContent is overridden in this screen")
+    m.log.info("createContent is overridden in this screen")
   end function
 
   public override function load() as boolean
@@ -55,14 +55,14 @@ class WarningMessageScreenVM extends zapp.uib.ScreenVM
       value = mc.getPath(m.screenState.originEntry.json, m.conditionPath, invalid)
 
       if lcase(`${value}`) = lcase(m.conditionValue)
-        m.logInfo("this content has a value that matches the locking condition")
+        m.log.info("this content has a value that matches the locking condition")
         isShowingWarning = true
 
         if m.warningType = "entry"
-          m.logInfo("loading entry to display")
+          m.log.info("loading entry to display")
           super.load()
         else
-          m.logInfo("showig static message")
+          m.log.info("showig static message")
           m.showGenericErrorMessage()
         end if
       end if
@@ -70,7 +70,7 @@ class WarningMessageScreenVM extends zapp.uib.ScreenVM
     end if
 
     if not isShowingWarning
-      m.logInfo("this content does NOT match the locking condition continuing with flow")
+      m.log.info("this content does NOT match the locking condition continuing with flow")
       m.dismiss("success")
     end if
 
@@ -78,7 +78,7 @@ class WarningMessageScreenVM extends zapp.uib.ScreenVM
   end function
 
   public override function onFeedResult(result)
-    m.logMethod("onFeedResult")
+    m.log.method("onFeedResult")
     'now load the child with the entry that's going to display the message
     warningEntry = invalid
 
@@ -91,7 +91,7 @@ class WarningMessageScreenVM extends zapp.uib.ScreenVM
         warningEntry = result.data.getChild(m.warningEntryIndex)
       end if
       if warningEntry <> invalid
-        m.logInfo("loading required entry to display mesage", warningEntry.id)
+        m.log.info("loading required entry to display mesage", warningEntry.id)
         m.executeloadDataTask(warningEntry.id, m.onLoadedChildEntry, invalid, 0)
       end if
     end if
@@ -102,7 +102,7 @@ class WarningMessageScreenVM extends zapp.uib.ScreenVM
   end function
 
   private function onLoadedChildEntry(result)
-    m.logMethod("onLoadedChildEntry", result)
+    m.log.method("onLoadedChildEntry", result)
 
     messageEntry = invalid
 
@@ -144,7 +144,7 @@ class WarningMessageScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   function processStyles(styles)
-    m.logInfo("converting rivers json styles into a format our UI controls can consume")
+    m.log.info("converting rivers json styles into a format our UI controls can consume")
 
     m.titleStyle = zapp.viewUtils.makeUIBTextStyle(styles, "title")
 
@@ -176,7 +176,7 @@ class WarningMessageScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public function onDoneButtonSelected(value)
-    m.logMethod("onDoneButtonSelected")
+    m.log.method("onDoneButtonSelected")
     m.dismiss("cancel")
   end function
 

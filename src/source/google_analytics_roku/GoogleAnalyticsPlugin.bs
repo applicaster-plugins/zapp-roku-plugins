@@ -36,12 +36,12 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
   end function
 
   public override function _identify(pluginId, traits = {}, options = {}, isFromLogout = false) as boolean
-    m.logInfo("identify", pluginId)
+    m.log.info("identify", pluginId)
 
     if m.isEnabled
 
       if m.isTrakingUserIdEnabled <> true
-        m.logInfo("traking user is not allowed skip isIdentified")
+        m.log.info("traking user is not allowed skip isIdentified")
         return true
       end if
 
@@ -51,19 +51,19 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
         accountInfo = invalid
       end if
 
-      m.logInfo("identify accountInfo", accountInfo)
+      m.log.info("identify accountInfo", accountInfo)
 
       if accountInfo <> invalid
         if accountInfo.id <> invalid and accountInfo.id.trim() <> ""
-          m.logInfo("identifying analytics with the userId", accountInfo.id, "for plugin:", pluginId)
-          m.logInfo("recrating GoogleAnalyticsTask with the userId", accountInfo.id, "for plugin:", pluginId)
+          m.log.info("identifying analytics with the userId", accountInfo.id, "for plugin:", pluginId)
+          m.log.info("recrating GoogleAnalyticsTask with the userId", accountInfo.id, "for plugin:", pluginId)
           m.setGoogleTaskUserId(accountInfo.id)
         else
-          m.logError("identify called; but there id was empty!")
+          m.log.error("identify called; but there id was empty!")
           m.identifyAsAnonymous()
         end if
       else
-        m.logWarn("idenitfy called; but there is no logged in user; goint to unidentify, to get anonymous analytics")
+        m.log.warn("idenitfy called; but there is no logged in user; goint to unidentify, to get anonymous analytics")
         m.identifyAsAnonymous()
       end if
     end if
@@ -72,7 +72,7 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
   end function
 
   private function identifyAsAnonymous()
-    m.logInfo("identifying as anonymous user")
+    m.log.info("identifying as anonymous user")
     m.setGoogleTaskUserId(invalid)
   end function
 

@@ -1,6 +1,7 @@
 import "pkg:/source/UIBuilder/view/ScreenVM.bs"
 import "pkg:/source/lib/ViewUtils.bs"
 import "pkg:/source/mixin/KeyboardDialogMixin.bs"
+import "pkg:/source/roku_modules/maestro/core/Utils.brs"
 
 class RegisterScreenVM extends zapp.uib.ScreenVM
   'styles
@@ -55,7 +56,7 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public override function createContent()
-    m.logInfo("createContent is overridden in this screen")
+    m.log.info("createContent is overridden in this screen")
   end function
 
   public override function load() as boolean
@@ -103,7 +104,7 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
   end function
 
   public function onRegisterButtonSelected(value)
-    m.logMethod("onRegisterButtonSelected")
+    m.log.method("onRegisterButtonSelected")
 
     if not m.isLoading and m.isCredsValid
       m.register()
@@ -111,7 +112,7 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
       m.errorText = "Please enter your email address and password"
       m.isErrorShowing = true
     else
-      m.logWarn("ignoring register button, while loading")
+      m.log.warn("ignoring register button, while loading")
     end if
   end function
 
@@ -120,17 +121,17 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   private function onUsernameKeyboardDialogDismissal(text)
-    m.logMethod("onKeyboardDialogDismissal")
+    m.log.method("onKeyboardDialogDismissal")
     zapp.keyboardDialogMixin.setTextFromKeyboard(m, "username", text)
   end function
 
   private function onNameKeyboardDialogDismissal(text)
-    m.logMethod("onNameKeyboardDialogDismissal")
+    m.log.method("onNameKeyboardDialogDismissal")
     zapp.keyboardDialogMixin.setTextFromKeyboard(m, "humanName", text)
   end function
 
   private function onPasswordKeyboardDialogDismissal(text)
-    m.logMethod("onPasswordKeyboardDialogDismissal")
+    m.log.method("onPasswordKeyboardDialogDismissal")
     zapp.keyboardDialogMixin.setTextFromKeyboard(m, "password", text, true)
   end function
 
@@ -145,7 +146,7 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
   end function
 
   public function register()
-    m.logInfo("registering")
+    m.log.info("registering")
 
     if m.isCredsValid
       creds = m.createInstance("AuthenticationCredentials")
@@ -165,10 +166,10 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
   end function
 
   public function onRegisterComplete(result)
-    m.logMethod("onRegisterComplete", result)
+    m.log.method("onRegisterComplete", result)
 
     if result <> invalid and result.state = "valid"
-      m.logInfo("Register successful")
+      m.log.info("Register successful")
       m.dismiss("success")
     else
       m.state = "ready"
@@ -199,7 +200,7 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
 
   public function isCapturingAnyKeyPress(key, press)
     'do not anyone escape this screen!
-    if press and key = "back" and not MU.getContentField(m.riversJson, "general.isflowBlocker", true)
+    if press and key = "back" and not mc.getPath(m.riversJson, "general.isflowBlocker", true)
       return false
     else
       return true
@@ -207,7 +208,7 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
   end function
 
   public function onKeyPressBack() as boolean
-    m.logMethod("onKeyPressBack", m.focusId)
+    m.log.method("onKeyPressBack", m.focusId)
 
     m.dismiss("cancel")
     return true
@@ -216,7 +217,7 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
   public function onKeyPressRight() as boolean
 
     if m.focusId = "loginButton" and m.riversJson.styles.debug_skip_on_right = true
-      m.logWarn("skipping debug flag is on")
+      m.log.warn("skipping debug flag is on")
       m.onRegisterComplete(true)
     end if
 
@@ -224,7 +225,7 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
   end function
 
   public function onKeyPressDown() as boolean
-    m.logMethod("onKeyPressDown", m.focusId)
+    m.log.method("onKeyPressDown", m.focusId)
 
     m.setFocusId(mc.collections.getItemAtOffset(m.focusIds, m.focusId, 1))
 
@@ -232,7 +233,7 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
   end function
 
   public function onKeyPressOptions() as boolean
-    m.logMethod("onKeyPressOptions", m.focusId)
+    m.log.method("onKeyPressOptions", m.focusId)
     m.debugAccountId++
     if m.debugAccountId > m.maxDebugAccounts
       m.debugAccountId = 1
@@ -246,7 +247,7 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
   end function
 
   public override function onKeyPressUp() as boolean
-    m.logMethod("onKeyPressUp", m.focusId)
+    m.log.method("onKeyPressUp", m.focusId)
 
     m.setFocusId(mc.collections.getItemAtOffset(m.focusIds, m.focusId, -1))
 

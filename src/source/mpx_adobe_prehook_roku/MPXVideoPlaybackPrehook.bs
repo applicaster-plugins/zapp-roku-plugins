@@ -1,6 +1,6 @@
 import "pkg:/source/plugin-support/PluginManager.bs"
 import "pkg:/source/lib/BaseClass.bs"
-import "pkg:/source/roku_modules/mc/Utils.brs"
+import "pkg:/source/roku_modules/maestro/core/Utils.brs"
 import "pkg:/source/lib/Request.bs"
 import "pkg:/source/lib/URI.bs"
 
@@ -33,7 +33,7 @@ class MPXVideoPlaybackPrehook extends zapp.BaseClass
       m.matchingPath = plugin.getStringValue("matching_path", "")
       m.matchingValue = plugin.getStringValue("matching_value", "")
     else
-      m.logError("There was no plugin config!")
+      m.log.error("There was no plugin config!")
       m.matchingPath = ""
       m.matchingValue = ""
     end if
@@ -43,12 +43,12 @@ class MPXVideoPlaybackPrehook extends zapp.BaseClass
     item = mc.getPath(m.getInstance("currentSelection"), "currentItem")
 
     if item = invalid
-      m.logError("no item - this plugin requires currentSelection.currentItem is populated")
+      m.log.error("no item - this plugin requires currentSelection.currentItem is populated")
       return "error"
     end if
 
     if not m.isItemMatch(item)
-      m.logError("item does not match")
+      m.log.error("item does not match")
       return "success"
     end if
 
@@ -75,7 +75,7 @@ class MPXVideoPlaybackPrehook extends zapp.BaseClass
     shortMediaToken = m.getSessionStoreValue("tve", "short-token")
 
     if shortMediaToken = invalid
-      m.logError("there was no short media token for this item.")
+      m.log.error("there was no short media token for this item.")
       return false
     end if
 
@@ -88,7 +88,7 @@ class MPXVideoPlaybackPrehook extends zapp.BaseClass
     'FIXME
     url = item.link + "?" + m.uri.encodeParams(params)
     result = m.getXMLSync(url)
-    m.logInfo("got result", result)
+    m.log.info("got result", result)
     'what a monstrosity - this will be so much better when we have try/catch
     if result <> invalid and result.body <> invalid and result.body.seq <> invalid
       if result.body.seq.switch <> invalid and result.body.seq.switch.count() > 0 and result.body.seq.switch[0] <> invalid and result.body.seq.switch[0].video <> invalid
@@ -102,7 +102,7 @@ class MPXVideoPlaybackPrehook extends zapp.BaseClass
       end if
     end if
 
-    m.logError("MPX result did not yield any playable streams")
+    m.log.error("MPX result did not yield any playable streams")
     return false
   end function
 
@@ -116,7 +116,7 @@ class MPXVideoPlaybackPrehook extends zapp.BaseClass
       end if
     end if
 
-    m.logError("result could not be parsed")
+    m.log.error("result could not be parsed")
     return invalid
   end function
 

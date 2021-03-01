@@ -27,7 +27,7 @@ class SegmentAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public override function start()
-    m.logInfo("starting segment analytics plugin")
+    m.log.info("starting segment analytics plugin")
     config = {
       "writeKey": m.writeKey
       "debug": true
@@ -46,7 +46,7 @@ class SegmentAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
   end function
 
   public override function _identify(pluginId, traits = {}, options = {}, isFromLogout = false) as boolean
-    m.logInfo("identify", pluginId)
+    m.log.info("identify", pluginId)
     if options = invalid
       options = {}
     end if
@@ -56,7 +56,7 @@ class SegmentAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
     end if
 
     if isFromLogout and not m.isIdentifyingOnLogout
-      m.logInfo("ignoring identify call from logout due to plugin configuration")
+      m.log.info("ignoring identify call from logout due to plugin configuration")
       return true
     end if
 
@@ -74,14 +74,14 @@ class SegmentAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
       if accountInfo <> invalid
         options.append(m.defaultOptions)
         if accountInfo.id <> invalid and accountInfo.id.trim() <> ""
-          m.logInfo("identifying analytics with the userId", accountInfo.id, "for plugin:", pluginId)
+          m.log.info("identifying analytics with the userId", accountInfo.id, "for plugin:", pluginId)
           m.library.identify(m.hash(accountInfo.id), traits, options)
         else
-          m.logError("identify called; but the id was empty!")
+          m.log.error("identify called; but the id was empty!")
           m.identifyAsAnonymous()
         end if
       else
-        m.logWarn("idenitfy called; but there is no logged in user; identifying as anonymous")
+        m.log.warn("idenitfy called; but there is no logged in user; identifying as anonymous")
         m.identifyAsAnonymous()
       end if
     end if
@@ -90,7 +90,7 @@ class SegmentAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
   end function
 
   private function identifyAsAnonymous()
-    m.logInfo("identifying as anonymous user is disabled for segment analytics")
+    m.log.info("identifying as anonymous user is disabled for segment analytics")
     return invalid
     ' m.defaultOptions = m.getDefaultOptions()
     ' m.defaultProperties = m.getDefaultProperties()
@@ -112,7 +112,7 @@ class SegmentAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
       options.append(m.defaultOptions)
       properties.append(m.defaultProperties)
 
-      m.logInfo("TRACK OPTINS ", options)
+      m.log.info("TRACK OPTINS ", options)
       m.library.track(eventName, properties, options)
     end if
 

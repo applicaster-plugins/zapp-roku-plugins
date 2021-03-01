@@ -34,7 +34,7 @@ class LogoutScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public override function createContent()
-    m.logInfo("createContent is overridden in this screen")
+    m.log.info("createContent is overridden in this screen")
   end function
 
   public override function load() as boolean
@@ -46,7 +46,7 @@ class LogoutScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   function processStyles(styles)
-    m.logInfo("converting rivers json styles into a format our UI controls can consume")
+    m.log.info("converting rivers json styles into a format our UI controls can consume")
 
     m.titleStyle = zapp.viewUtils.makeUIBTextStyle(styles, "title")
     m.titleText = m.titleStyle.text
@@ -67,7 +67,7 @@ class LogoutScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public function onLogoutButtonSelected(value)
-    m.logMethod("onLogoutButtonSelected")
+    m.log.method("onLogoutButtonSelected")
     if m.isLoggedOut
       m.restartApp()
     else
@@ -76,7 +76,7 @@ class LogoutScreenVM extends zapp.uib.ScreenVM
   end function
 
   function logout()
-    m.logMethod("logout")
+    m.log.method("logout")
 
     if m.providerId = invalid
       defaultId = m.getSessionStoreValue("all_zapp_pipes_providers", "default_auth_plugin_id")
@@ -88,10 +88,10 @@ class LogoutScreenVM extends zapp.uib.ScreenVM
     analyticsManager@.trackEvent("Signed Out", "page_loaded", { "provider": defaultId })
 
     if m.providerId = invalid or m.providerId.trim() = ""
-      m.logInfo("logging out all providers")
+      m.log.info("logging out all providers")
       m.authTask = m.createAuthTask("execLogOutAll", invalid, m.onLogoutComplete)
     else
-      m.logInfo("logging out with specific provider", m.providerId)
+      m.log.info("logging out with specific provider", m.providerId)
       m.authTask = m.createAuthTask("execLogOut", m.providerId, m.onLogoutComplete)
     end if
 
@@ -101,7 +101,7 @@ class LogoutScreenVM extends zapp.uib.ScreenVM
   end function
 
   function onLogoutComplete(result)
-    m.logMethod("onLogoutComplete")
+    m.log.method("onLogoutComplete")
     m.isShowingLoadingIndicator = false
     m.isButtonVisible = true
     m.buttonText = m.signedOutButtonText
@@ -122,7 +122,7 @@ class LogoutScreenVM extends zapp.uib.ScreenVM
     if not m.isLoggedOut
       m.pop()
     else
-      m.logInfo("cannot go back when logout is in process")
+      m.log.info("cannot go back when logout is in process")
     end if
 
     return true

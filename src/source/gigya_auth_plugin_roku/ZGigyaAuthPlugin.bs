@@ -30,7 +30,7 @@ class ZGigyaAuthPlugin extends zapp.Auth.BaseAuthPlugin
   end function
 
   public override function _verify()
-    m.logMethod("_verify")
+    m.log.method("_verify")
 
     if not m.isAuthDataExpired()
       return m.authData
@@ -40,7 +40,7 @@ class ZGigyaAuthPlugin extends zapp.Auth.BaseAuthPlugin
   end function
 
   public override function _regcode()
-    m.logMethod("_regcode")
+    m.log.method("_regcode")
 
     constants = m.getInstance("constants")
     url = m.baseUrl + "CreateDevice"
@@ -50,12 +50,12 @@ class ZGigyaAuthPlugin extends zapp.Auth.BaseAuthPlugin
     response = m.request.post(url, params, headers)
 
     if response <> invalid and response.devicePinCode <> invalid
-      m.logInfo("succesfully got code", response.devicePinCode)
+      m.log.info("succesfully got code", response.devicePinCode)
       'store in session store; so we can use it in the get call later
       m.setSessionStoreValue("gigya_auth_plugin_roku", "regcode", response.devicePinCode)
       return m.createRegCodeResult(response.devicePinCode)
     else
-      m.logError("received illegal regcode", response)
+      m.log.error("received illegal regcode", response)
       m.setSessionStoreValue("gigya_auth_plugin_roku", "regcode", invalid)
       return m.createRegCodeResult(invalid, -1, "could not retrieve regcode")
     end if
@@ -63,7 +63,7 @@ class ZGigyaAuthPlugin extends zapp.Auth.BaseAuthPlugin
   end function
 
   public override function _poll()
-    m.logMethod("_poll")
+    m.log.method("_poll")
     pinCode = m.getSessionStoreValue(m.id, "regcode")
     url = m.baseUrl + "GetDeviceByPin/" + pinCode
     response = m.request.getJsonSync(url)
@@ -95,7 +95,7 @@ class ZGigyaAuthPlugin extends zapp.Auth.BaseAuthPlugin
   end function
 
   public override function _logOut()
-    m.logMethod("_logOut")
+    m.log.method("_logOut")
 
     url = m.baseUrl + "Logout"
 
@@ -105,7 +105,7 @@ class ZGigyaAuthPlugin extends zapp.Auth.BaseAuthPlugin
       request = m.request.post(url, params)
 
       if request.response = invalid or request.response.code = invalid or request.response.code <> 204
-        m.logError("error logging out")
+        m.log.error("error logging out")
       end if
     end if
     return m.createAuthData()

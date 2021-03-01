@@ -1,5 +1,5 @@
 import "pkg:/source/regcode_login_screen_roku/RegcodeLoginScreenVM.bs"
-import "pkg:/source/roku_modules/mx/VMTransformFunctions.brs"
+import "pkg:/source/roku_modules/maestro/mx/VMTransformFunctions.brs"
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '++ Overridden methods

@@ -52,11 +52,11 @@ class AWSLoginScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public override function createContent()
-    m.logInfo("createContent is overridden in this screen")
+    m.log.info("createContent is overridden in this screen")
   end function
 
   public override function load() as boolean
-    m.logInfo("load - refreshing login")
+    m.log.info("load - refreshing login")
     m.refreshLogin()
     return true
   end function
@@ -66,7 +66,7 @@ class AWSLoginScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   function processStyles(styles)
-    m.logInfo("converting rivers json styles into a format our UI controls can consume")
+    m.log.info("converting rivers json styles into a format our UI controls can consume")
 
     m.titleStyle = zapp.viewUtils.makeUIBTextStyle(styles, "title")
     m.descriptionStyle = zapp.viewUtils.makeUIBTextStyle(styles, "description")
@@ -102,7 +102,7 @@ class AWSLoginScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public function onLoginButtonSelected(value)
-    m.logMethod("onLoginButtonSelected")
+    m.log.method("onLoginButtonSelected")
 
     if not m.isLoading and m.isCredsValid
       m.processLogin()
@@ -110,7 +110,7 @@ class AWSLoginScreenVM extends zapp.uib.ScreenVM
       m.errorText = "Please enter your email address and password"
       m.isErrorShowing = true
     else
-      m.logWarn("ignoring loging button, while loading")
+      m.log.warn("ignoring loging button, while loading")
     end if
   end function
 
@@ -127,7 +127,7 @@ class AWSLoginScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   private function onUsernameKeyboardDialogDismissal(text)
-    m.logMethod("onKeyboardDialogDismissal")
+    m.log.method("onKeyboardDialogDismissal")
 
     if text.trim() = ""
       m.usernameText = m.usernamePlaceholderText
@@ -147,7 +147,7 @@ class AWSLoginScreenVM extends zapp.uib.ScreenVM
   end function
 
   private function onPasswordKeyboardDialogDismissal(text)
-    m.logMethod("onPasswordKeyboardDialogDismissal")
+    m.log.method("onPasswordKeyboardDialogDismissal")
 
     if text.trim() = ""
       m.passwordText = m.passwordPlaceholderText
@@ -168,7 +168,7 @@ class AWSLoginScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   private function refreshLogin()
-    m.logInfo("calling authTask to refresh login")
+    m.log.info("calling authTask to refresh login")
 
     m.authTask = m.createAuthTask("execLoad", "aws_cognito_auth_plugin", m.onRefreshComplete)
 
@@ -177,7 +177,7 @@ class AWSLoginScreenVM extends zapp.uib.ScreenVM
   end function
 
   private function onRefreshComplete(result)
-    m.logMethod("onRefreshComplete", result)
+    m.log.method("onRefreshComplete", result)
     m.isLoading = false
 
     if m.getInstance("user").isLoggedIn
@@ -200,7 +200,7 @@ class AWSLoginScreenVM extends zapp.uib.ScreenVM
   end function
 
   public function processLogin()
-    m.logInfo("logging in")
+    m.log.info("logging in")
 
     if m.isCredsValid
       creds = m.createInstance("AuthenticationCredentials")
@@ -218,10 +218,10 @@ class AWSLoginScreenVM extends zapp.uib.ScreenVM
   end function
 
   public function onLoginComplete(result)
-    m.logMethod("onLoginComplete", result)
+    m.log.method("onLoginComplete", result)
 
     if result <> invalid and result.state = "valid"
-      m.logInfo("logged in succesfull")
+      m.log.info("logged in succesfull")
       m.signalAppLaunchDialog(true)
       m.dismiss("success")
     else
@@ -262,7 +262,7 @@ class AWSLoginScreenVM extends zapp.uib.ScreenVM
 
   public function onKeyPressBack() as boolean
     isDismissable = m.getTopField("isDismissable")
-    m.logMethod("onKeyPressBack", m.focusId, isDismissable)
+    m.log.method("onKeyPressBack", m.focusId, isDismissable)
 
     if m.focusId = "usernameInput"
       if isDismissable = true
@@ -281,7 +281,7 @@ class AWSLoginScreenVM extends zapp.uib.ScreenVM
   public function onKeyPressRight() as boolean
 
     if m.focusId = "loginButton" and m.riversJson.styles.debug_skip_on_right = true
-      m.logWarn("skipping debug flag is on")
+      m.log.warn("skipping debug flag is on")
       m.onLoginComplete(true)
     end if
 
@@ -289,7 +289,7 @@ class AWSLoginScreenVM extends zapp.uib.ScreenVM
   end function
 
   public function onKeyPressDown() as boolean
-    m.logMethod("onKeyPressDown", m.focusId)
+    m.log.method("onKeyPressDown", m.focusId)
 
     if m.focusId = "usernameInput"
       m.focusId = "passwordInput"
@@ -301,7 +301,7 @@ class AWSLoginScreenVM extends zapp.uib.ScreenVM
   end function
 
   public function onKeyPressOptions() as boolean
-    m.logMethod("onKeyPressOptions", m.focusId)
+    m.log.method("onKeyPressOptions", m.focusId)
 
     m.onUsernameKeyboardDialogDismissal(m.riversJson.styles.debug_username)
     m.onPasswordKeyboardDialogDismissal(m.riversJson.styles.debug_password)
@@ -310,7 +310,7 @@ class AWSLoginScreenVM extends zapp.uib.ScreenVM
   end function
 
   public override function onKeyPressUp() as boolean
-    m.logMethod("onKeyPressUp", m.focusId)
+    m.log.method("onKeyPressUp", m.focusId)
 
     if m.focusId = "passwordInput"
       m.focusId = "usernameInput"

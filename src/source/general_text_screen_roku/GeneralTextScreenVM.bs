@@ -35,7 +35,7 @@ class GeneralTextScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public override function createContent()
-    m.logInfo("createContent is overridden in this screen")
+    m.log.info("createContent is overridden in this screen")
   end function
 
   public override function load() as boolean
@@ -47,7 +47,7 @@ class GeneralTextScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   function processStyles(styles)
-    m.logInfo("converting rivers json styles into a format our UI controls can consume")
+    m.log.info("converting rivers json styles into a format our UI controls can consume")
 
     m.titleStyle = zapp.viewUtils.makeUIBTextStyle(styles, "title")
 
@@ -75,7 +75,7 @@ class GeneralTextScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public function onButtonSelected(value)
-    m.logMethod("onButtonSelected")
+    m.log.method("onButtonSelected")
     m.dismiss("cancel")
   end function
 

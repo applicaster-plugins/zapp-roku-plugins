@@ -8,8 +8,8 @@ end function
 
 
 function execRunLoop()
-  log.registerLogger("EntitlementsItemLoaderTask")
-  m.logMethod("execRunLoop")
+  m.log = new log.Logger("EntitlementsItemLoaderTask")
+  m.log.method("execRunLoop")
 
   resolver = new EntitlementsItemLoader()
   m.top.output = resolver.execute()

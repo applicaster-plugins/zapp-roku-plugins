@@ -1,6 +1,6 @@
 import "pkg:/source/plugin-support/PluginManager.bs"
 import "pkg:/source/lib/BaseClass.bs"
-import "pkg:/source/roku_modules/mc/Utils.brs"
+import "pkg:/source/roku_modules/maestro/core/Utils.brs"
 
 ' /**
 '  * @module GenericUrlTokenAppender
@@ -23,7 +23,7 @@ class GenericUrlTokenAppender extends zapp.BaseClass
       m.providerId = plugin.getStringValue("provider_id", "all_zapp_pipes_providers")
       m.tokenKey = lcase(plugin.getStringValue("token_key", "token"))
     else
-      m.logError("There was no plugin config!")
+      m.log.error("There was no plugin config!")
     end if
 
     m.isValid = m.providerId <> "" and m.tokenKey <> ""
@@ -35,7 +35,7 @@ class GenericUrlTokenAppender extends zapp.BaseClass
 
     url = mc.getPath(currentSelection, "currentItem.url", "")
     if url.trim() = ""
-      m.logError("there is no current item, or no url set")
+      m.log.error("there is no current item, or no url set")
       return "error"
     end if
 

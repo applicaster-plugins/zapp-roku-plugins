@@ -29,7 +29,7 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
 
     if m.providerId = invalid
       m.isValid = false
-      m.logError("No auth provider found. Make sure you have specified at least one auth provider")
+      m.log.error("No auth provider found. Make sure you have specified at least one auth provider")
     end if
 
     if not mc.getPath(riversJson, "styles.use_refresh_button", true)
@@ -42,25 +42,25 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public override function createContent()
-    m.logInfo("createContent is overridden in this screen")
+    m.log.info("createContent is overridden in this screen")
   end function
 
   public override function load() as boolean
     currentSelection = m.getInstance("currentSelection")
 
     if m.isDisplayedInPrehook
-      m.logInfo("displaying in prehook")
+      m.log.info("displaying in prehook")
 
       if m.shouldDisplayWithContent(currentSelection)
-        m.logInfo("Selected content is locked need to login")
+        m.log.info("Selected content is locked need to login")
         m.analyticsManager@.trackEvent("Waiting Page", "page_loaded", { "Provider": m.providerId })
         m.refreshLogin()
       else
-        m.logInfo("This content is not locked, no need to display")
+        m.log.info("This content is not locked, no need to display")
         m.dismiss("success")
       end if
     else
-      m.logInfo("not displaying in prehook")
+      m.log.info("not displaying in prehook")
       m.analyticsManager@.trackEvent("Waiting Page", "page_loaded", { "Provider": m.providerId })
       m.isContentGroupVisible = true
       m.loadCode()
@@ -80,7 +80,7 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   private function refreshLogin()
-    m.logInfo("calling authTask to refresh login")
+    m.log.info("calling authTask to refresh login")
 
     m.authTask = m.createAuthTask("execLoad", m.providerId, m.onRefreshLoginComplete)
 
@@ -89,7 +89,7 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
 
 
   private function onRefreshLoginComplete(result)
-    m.logMethod("onRefreshLoginComplete", result)
+    m.log.method("onRefreshLoginComplete", result)
     m.isShowingLoadingIndicator = false
 
     if m.getInstance("user").isLoggedIn
@@ -108,12 +108,12 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public function onRefreshButtonSelected(value)
-    m.logMethod("onRefreshButtonSelected")
+    m.log.method("onRefreshButtonSelected")
     m.loadCode()
   end function
 
   public function onPollTimerFire(value)
-    m.logMethod("onPollTimerFire")
+    m.log.method("onPollTimerFire")
 
     m.cancelTask(m.authTask)
     m.authTask = m.createAuthTask("execPoll", m.providerId, m.onPollComplete)
@@ -124,7 +124,7 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   private function loadCode()
-    m.logMethod("loadCode")
+    m.log.method("loadCode")
 
     m.togglePollTimer(false)
     m.cancelTask(m.authTask)
@@ -136,16 +136,16 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
   end function
 
   private function onLoadCodeComplete(result)
-    m.logMethod("onLoadCodeComplete")
+    m.log.method("onLoadCodeComplete")
     m.isShowingLoadingIndicator = false
     m.isRefreshing = false
 
     if result <> invalid and result.regcode <> invalid
-      m.logInfo("received code", result.regcode)
+      m.log.info("received code", result.regcode)
       m.codeText = result.regcode
       m.togglePollTimer(true)
     else
-      m.logWarn("received illegal code")
+      m.log.warn("received illegal code")
       m.codeText = ""
     end if
 
@@ -160,7 +160,7 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
   end function
 
   private function onPollComplete(result)
-    m.logMethod("onPollComplete")
+    m.log.method("onPollComplete")
 
     if result <> invalid and result.state = "valid"
       m.analyticsManager@.trackEvent("Signed In", "page_loaded", { "provider": m.providerId })
