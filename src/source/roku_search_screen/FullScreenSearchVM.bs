@@ -1,5 +1,5 @@
 import "pkg:/source/lib/ViewUtils.bs"
-import "pkg:/source/roku_modules/mc/Utils.brs"
+import "pkg:/source/roku_modules/maestro/core/Utils.brs"
 import "pkg:/source/UIBuilder/view/ComponentVM.bs"
 import "pkg:/source/zapp-controls/CollectionRowUtils.bs"
 
@@ -36,7 +36,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
 
     if zapp.viewUtils.getUIBBool(riversJson.styles, "override_target_screen", false)
       m.rowTarget = mc.getPath(riversJson, "data.target_screen")
-      m.logWarn("Using overridden screen name for target!", m.rowTarget)
+      m.log.warn("Using overridden screen name for target!", m.rowTarget)
     end if
 
   end function
@@ -88,22 +88,22 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public function onSelectItem(index)
-    m.logInfo("onSelecteItem", index)
+    m.log.info("onSelecteItem", index)
 
     item = m.results.getChild(index)
 
     if item <> invalid and item.itemType <> "placeholder"
-      m.logInfo("selected item: ", item.id)
+      m.log.info("selected item: ", item.id)
       m.executeContentSelection(m.createSelectionFromContent(item, m.results))
       m.isShowingContent = true
     else
-      m.logWarn("selected non-selectable item")
+      m.log.warn("selected non-selectable item")
     end if
 
   end function
 
   public function onSearchTextChange(text)
-    m.logInfo("text is now", text, "waiting before searching")
+    m.log.info("text is now", text, "waiting before searching")
 
     m.searchText = text
     m.cancelWaitTimer(m.searchDelayTask)
@@ -112,7 +112,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     if (len(m.searchText.trim()) >= m.minCharacters)
       m.searchDelayTask = m.waitAFrame("onSearchDelayComplete", 0.5)
     else
-      m.logVerbose("too few chars. ignoring")
+      m.log.verbose("too few chars. ignoring")
       m.setGridVisible(false)
       m.isLoading = false
     end if
@@ -120,9 +120,9 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
   end function
 
   public function onSearchDelayComplete()
-    m.logMethod("onSearchDelayComple")
+    m.log.method("onSearchDelayComple")
 
-    m.logVerbose("search debounce complete, exeucting search with", m.searchText)
+    m.log.verbose("search debounce complete, exeucting search with", m.searchText)
     m.performSearch(m.searchText)
   end function
 
@@ -131,7 +131,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   private function performSearch(text)
-    m.logMethod("performSearch")
+    m.log.method("performSearch")
 
     m.isLoading = true
     m.setGridVisible(true)
@@ -139,13 +139,13 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     entry.itemType = "feed"
     entry.link = m.getLegacyCompatibleLink(m.riversJson.data)
     entry.link += "&" + m.searchQueryName + "=" + text.trim().encodeUriComponent()
-    m.logInfo("entry link is ", entry.link)
+    m.log.info("entry link is ", entry.link)
     m.toggleLoadingItemTask(true, entry, m.loadDepth)
 
   end function
 
   public override function onFeedResult(result)
-    m.logMethod("onFeedResult")
+    m.log.method("onFeedResult")
 
     m.toggleLoadingItemTask(false)
     m.isLoading = false
@@ -179,7 +179,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
   end function
 
   private function setContentStyle(content)
-    m.logMethod("setContentStyle")
+    m.log.method("setContentStyle")
 
     if m.style <> invalid
       cellStyle = m.style.cell
@@ -235,7 +235,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
   end function
 
   public override function onShow() as void
-    m.logMethod("onShow")
+    m.log.method("onShow")
 
     if not m.isShowingContent
       m.reset()

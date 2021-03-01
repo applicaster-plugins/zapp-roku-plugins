@@ -10,7 +10,7 @@ end function
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 function createVM()
-  m.logInfo("m.top.riversJson", m.top.riversJson)
+  m.log.info("m.top.riversJson", m.top.riversJson)
   vm = new DeeplinkingControllerVM(m.top.riversJson)
   mx.initializeBindings()
   mv.initializeView(m.top.findNode("screenContainer"))
@@ -18,7 +18,7 @@ function createVM()
 end function
 
 function getDefaultRiversJson()
-  m.logInfo("getDefaultRiversJson")
+  m.log.info("getDefaultRiversJson")
 
   return {
     "id": "deeplinkingcontroller"

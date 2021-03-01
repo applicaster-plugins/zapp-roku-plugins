@@ -14,7 +14,7 @@ import "pkg:/source/roku_modules/log/LogMixin.brs"
 class AnalyticsEventFactory
 
   function new()
-    log.registerLogger("AnalyticsEventFactory", m)
+    m.log = new log.Logger("AnalyticsEventFactory", m)
   end function
   ' /**
   '  * @member getAnalyticsEvent=
@@ -68,7 +68,7 @@ class AnalyticsEventFactory
     else if eventName = "loginDoesNotSucceed"
       return m.loginDoesNotSucceed(arg1, arg2, arg3, arg4)
     else
-      m.logError("unknown analytics event", eventName)
+      m.log.error("unknown analytics event", eventName)
     end if
 
     return invalid
@@ -86,7 +86,7 @@ class AnalyticsEventFactory
         if FindMemberFunction(value, "toStr") <> invalid then
           value = value.toStr()
         else
-          m.logWarn("Could not convert '", sortedKeys[i], "' to a string; type = ", type(value))
+          m.log.warn("Could not convert '", sortedKeys[i], "' to a string; type = ", type(value))
           value = ""
         end if
       end if

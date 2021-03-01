@@ -11,6 +11,7 @@ class SegmentVideoAnalyticsPlugin extends zapp.video.BaseVideoAnalyticsPlugin
   private deviceInfo
   private videoHeight
   private videoResolution
+  private countryISOMapping
 
   public function new(pluginJson)
     super("SegmentVideoAnalyticsPlugin")
@@ -400,7 +401,7 @@ class SegmentVideoAnalyticsPlugin extends zapp.video.BaseVideoAnalyticsPlugin
   private function getAudioLanguage()
     tracks = m.videoNode.availableAudioTracks
     for each track in tracks
-      ' m.logInfo("track.Language", track.Language, " currentTrack ", m.videoNode.currentAudioTrack, " LANG ", track.Language)
+      ' m.log.info("track.Language", track.Language, " currentTrack ", m.videoNode.currentAudioTrack, " LANG ", track.Language)
       if track.Track = m.videoNode.currentAudioTrack
         return m.countryISOMapping[track.Language]
       end if
@@ -412,7 +413,7 @@ class SegmentVideoAnalyticsPlugin extends zapp.video.BaseVideoAnalyticsPlugin
   private function getSubtitleLanguage()
     tracks = m.videoNode.availableSubtitleTracks
     for each track in tracks
-      ' m.logInfo("track.TrackName", track.TrackName, " currentTrack ", m.videoNode.currentSubtitleTrack, " LANG ", track.Language)
+      ' m.log.info("track.TrackName", track.TrackName, " currentTrack ", m.videoNode.currentSubtitleTrack, " LANG ", track.Language)
       if track.TrackName = m.videoNode.currentSubtitleTrack
         return m.countryISOMapping[track.Language]
       end if

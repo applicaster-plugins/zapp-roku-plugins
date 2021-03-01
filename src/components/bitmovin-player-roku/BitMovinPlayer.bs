@@ -5,7 +5,7 @@ function init()
 end function
 
 function onControlChange()
-  m.logInfo("onControlChange", m.top.control)
+  m.log.info("onControlChange", m.top.control)
 
   if m.top.control = "play"
     m.vm.player.callFunc(m.vm.playerFunctions.PLAY, invalid)
@@ -14,12 +14,12 @@ function onControlChange()
 end function
 
 function initialize(args)
-  m.logInfo("initialize")
+  m.log.info("initialize")
   createVM()
 end function
 
 function createVM()
-  m.logMethod("createVM")
+  m.log.method("createVM")
 
   m.vm = new BitMovinPlayerVM(m.top)
   m.vm.initialize()

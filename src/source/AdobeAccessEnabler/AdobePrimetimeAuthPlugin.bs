@@ -60,7 +60,7 @@ class AdobePrimetimeAuthPlugin extends zapp.Auth.BaseAuthPlugin
   end function
 
   public override function _regcode()
-    m.logMethod("regCode_")
+    m.log.method("regCode_")
     ' <REGGIE_FQDN>/reggie/v1/{requestorId}/regcode
     requestPath = "/reggie/v1/" + m.requestorID + "/regcode"
     params = "deviceId=" + m.deviceId
@@ -69,22 +69,22 @@ class AdobePrimetimeAuthPlugin extends zapp.Auth.BaseAuthPlugin
       "Authorization": m.signRequest("POST", requestPath)
     }
     url = m.baseUrl + requestPath
-    m.logInfo("url ", url, "headers", headers, "params", params)
+    m.log.info("url ", url, "headers", headers, "params", params)
 
     result = m.request.post(url, params, headers)
 
-    m.logInfo("result is ", result)
+    m.log.info("result is ", result)
 
     if result <> invalid and result.code <> invalid and result.code <> ""
       return m.createRegCodeResult(result.code)
     end if
 
-    m.logError("Error retrieving regcode")
+    m.log.error("Error retrieving regcode")
     return m.createRegCodeResult(invalid, -1, "Unknown error")
   end function
 
   public override function _poll()
-    m.logMethod("poll_")
+    m.log.method("poll_")
     ' <SP_FQDN>/api/v1/tokens/authn
     requestPath = "/api/v1/tokens/authn"
     headers = {
@@ -99,14 +99,14 @@ class AdobePrimetimeAuthPlugin extends zapp.Auth.BaseAuthPlugin
     url = m.baseUrl + requestPath + "?" + m.uri.encodeParams(params)
     result = m.request.getJsonSync(url, headers)
 
-    m.logInfo("result is:", result)
+    m.log.info("result is:", result)
     if result <> invalid and result.userId <> invalid and result.userId <> ""
       'store it, in case we need the user info, later
       m.pollResult = result
-      m.logInfo("valid userId getting authorization: ", result.userId)
+      m.log.info("valid userId getting authorization: ", result.userId)
       return m.getAuthorization()
     else
-      m.logInfo("invalid userId ignoring")
+      m.log.info("invalid userId ignoring")
     end if
 
     result = m.createErrorResult("Unknown error")
@@ -154,7 +154,7 @@ class AdobePrimetimeAuthPlugin extends zapp.Auth.BaseAuthPlugin
   '
   '
   private function getAuthorization()
-    m.logMethod("getAuthorization")
+    m.log.method("getAuthorization")
     ' <SP_FQDN>/api/v1/authorize
     requestPath = "/api/v1/authorize"
     headers = {
@@ -169,10 +169,10 @@ class AdobePrimetimeAuthPlugin extends zapp.Auth.BaseAuthPlugin
 
     url = m.baseUrl + requestPath + "?" + m.uri.encodeParams(params)
 
-    m.logInfo("url is ", url)
+    m.log.info("url is ", url)
 
     result = m.request.getJsonSync(url, headers)
-    m.logInfo("result: ", result)
+    m.log.info("result: ", result)
 
     if result <> invalid and result.expires <> invalid and result.expires <> ""
       'TODO - not sure which of these is the token
@@ -220,7 +220,7 @@ class AdobePrimetimeAuthPlugin extends zapp.Auth.BaseAuthPlugin
     privateKey = CreateObject("roByteArray")
     privateKey.fromAsciiString(m.secret)
     if digest.setup("sha1", privateKey) <> 0
-      m.logError("signRequest: failed to set up HMAC digest")
+      m.log.error("signRequest: failed to set up HMAC digest")
       return invalid
     end if
     signature = digest.process(byteArray)

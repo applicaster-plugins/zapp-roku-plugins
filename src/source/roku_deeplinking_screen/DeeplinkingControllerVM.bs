@@ -10,7 +10,7 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
   private isShowingParentScreen = false
   private isDeeplinkingApplied = false
   private deeplinkingTask = invalid
-  
+
   public screenIdsByName = {}
 
   public function new(riversJson)
@@ -39,7 +39,7 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
     prehookController = m.getPrehookController()
 
     if prehookController <> invalid
-      m.logInfo("this deeplinking screen has a prehookController")
+      m.log.info("this deeplinking screen has a prehookController")
       m.togglePrehookController(true, prehookController)
     else
       args = m.getInstance("deeplinkingArgs")
@@ -56,7 +56,7 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   private function togglePrehookController(isActive, controller = invalid)
-    m.logMethod("togglePrehookController", isActive)
+    m.log.method("togglePrehookController", isActive)
     m.isLoadingIndicatorVisible = false
 
     m.unobserveNodeField(m.currentScreen, "state", m.onPrehookControllerStateChange)
@@ -72,12 +72,12 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
   end function
 
   private function onPrehookControllerStateChange(state)
-    m.logInfo("prehook state changed", state)
+    m.log.info("prehook state changed", state)
     m.currentScreen = invalid
 
     if state = "success"
 
-      m.logInfo("prehook succesfully finished - playing item")
+      m.log.info("prehook succesfully finished - playing item")
       args = m.getInstance("deeplinkingArgs")
       m.toggleDeeplinkingTask(true, args)
 
@@ -87,11 +87,11 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
   end function
 
   private function getPrehookController()
-    m.logInfo("getPrehookController")
+    m.log.info("getPrehookController")
     prehooks = mc.getPath(m.riversJson, "hooks.preload_plugins")
 
     if prehooks <> invalid and prehooks.count() > 0
-      m.logInfo("this deeplink controller has prehooks")
+      m.log.info("this deeplink controller has prehooks")
       prehookScreen = m.createInstance("ScreenHookController", invalid, "prehooksController")
       prehookScreen.hooks = prehooks
       prehookScreen.targetScreen = invalid
@@ -108,14 +108,14 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public function toggleDeeplinkingTask(isActive, args = invalid)
-    m.logMethod("toggleDeeplinkingTask", isActive, args)
+    m.log.method("toggleDeeplinkingTask", isActive, args)
     m.toggleLoadingIndicator(isActive)
 
     m.unobserveNodeField(m.deeplinkingTask, "deeplinkingData", m.onDeeplinkingTaskResult)
     m.deeplinkingTask = invalid
 
     if isActive
-      m.logInfo("starting deeplinking task")
+      m.log.info("starting deeplinking task")
       m.deeplinkingTask = m.createInstance("DeeplinkingTask", invalid, "deeplinkingTask")
       m.observeNodeField(m.deeplinkingTask, "deeplinkingData", m.onDeeplinkingTaskResult, "value", true)
 
@@ -125,14 +125,14 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
   end function
 
   public function onDeeplinkingTaskResult(deeplinkingData)
-    m.logMethod("onDeeplinkingTaskResult deeplinkingData", deeplinkingData)
+    m.log.method("onDeeplinkingTaskResult deeplinkingData", deeplinkingData)
 
     m.toggleDeeplinkingTask(false)
 
     if deeplinkingData.isValid
       m.applyDeeplinking(deeplinkingData)
     else
-      m.logError("deeplinking task did not yield valid deep linking info")
+      m.log.error("deeplinking task did not yield valid deep linking info")
       m.dismissDeeplinkingController()
     end if
 
@@ -143,17 +143,17 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   function applyDeeplinking(deeplinkingData) as void
-    m.logMethod("applyDeeplinking - app is configured for deeplinking. Navigating to the appropriate view")
+    m.log.method("applyDeeplinking - app is configured for deeplinking. Navigating to the appropriate view")
 
     deeplinkingSelection = m.getDeeplinkingSelectionWithData(deeplinkingData)
 
     if deeplinkingSelection = invalid
-      m.logError("Deep linking data could not be configured.")
+      m.log.error("Deep linking data could not be configured.")
       m.dismissDeeplinkingController()
       return
     end if
 
-    m.logInfo("Applying deep link for entry with link ", deeplinkingData.entryLink)
+    m.log.info("Applying deep link for entry with link ", deeplinkingData.entryLink)
 
     parentScreen = m.getParentScreen(deeplinkingData.itemType, deeplinkingData.parentEntry)
 
@@ -203,19 +203,19 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
     m.toggleLoadingIndicator(true)
 
     if m.isLiveDeeplink or not m.isShowingPrehooks
-      m.logInfo("going to go back, if possible")
+      m.log.info("going to go back, if possible")
       m.exitFromDeeplinking()
     else
-      m.logInfo("cannot go back, coz this is an app launch deeplink, with a prehook - it can't be cancelled")
+      m.log.info("cannot go back, coz this is an app launch deeplink, with a prehook - it can't be cancelled")
       m.exitApp()
     end if
   end function
 
   private function getDeeplinkingSelectionWithData(deeplinkingData)
-    m.logMethod("getDeeplinkingSelectionWithData")
+    m.log.method("getDeeplinkingSelectionWithData")
 
     if deeplinkingData = invalid or deeplinkingData.isValid <> true or deeplinkingData.itemType = invalid or deeplinkingData.entry = invalid
-      m.logInfo("received invalid deeplinkingData")
+      m.log.info("received invalid deeplinkingData")
       return invalid
     end if
 
@@ -247,7 +247,7 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   function onKeyPressBack() as boolean
-    m.logMethod("onKeyPressBack")
+    m.log.method("onKeyPressBack")
 
     m.togglePrehookController(false)
     m.dismissDeeplinkingController()
@@ -256,7 +256,7 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
   end function
 
   private function onContentStateChange(state)
-    m.logInfo("DEEP LINK PARENT SCREEN STATE", state)
+    m.log.info("DEEP LINK PARENT SCREEN STATE", state)
     m.toggleLoadingIndicator(state = "loading")
   end function
 
@@ -265,10 +265,10 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public override function onShow()
-    m.logInfo("onShow - isShowingParentScreen", m.isShowingParentScreen)
+    m.log.info("onShow - isShowingParentScreen", m.isShowingParentScreen)
 
     if m.isDeeplinkingApplied and not m.isShowingParentScreen
-      m.logInfo("the screen has appeared again, probably from a video player; but has no parent screen, exiting from deeplinking")
+      m.log.info("the screen has appeared again, probably from a video player; but has no parent screen, exiting from deeplinking")
       m.exitFromDeeplinking()
     end if
   end function

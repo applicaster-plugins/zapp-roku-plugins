@@ -33,7 +33,7 @@ class InPlayerAuthPlugin extends zapp.Auth.BaseAuthPlugin
   end function
 
   public override function _verify()
-    m.logMethod("_verify")
+    m.log.method("_verify")
 
     result = invalid
 
@@ -44,24 +44,24 @@ class InPlayerAuthPlugin extends zapp.Auth.BaseAuthPlugin
         "refresh_token": m.authData.refreshToken
       }
 
-      m.logInfo("using args", params)
+      m.log.info("using args", params)
       result = m.executeAPIRequest("FORMPOST", "accounts/authenticate", params)
 
       if result <> invalid and result.access_token <> invalid
-        m.logInfo("verify successful")
+        m.log.info("verify successful")
 
         return m.createAuthData("valid", result.access_token, result.access_token, result.refresh_token, result, result.expires, 200, "", result.account)
       end if
     else
-      m.logWarn("Plugin has no valid auth data; could not complete verify")
+      m.log.warn("Plugin has no valid auth data; could not complete verify")
     end if
 
-    m.logError("verify failed")
+    m.log.error("verify failed")
     return m.createErrorFromResult(result)
   end function
 
   public override function _register(credentials)
-    m.logMethod("_register")
+    m.log.method("_register")
 
     params = {
       "grant_type": "password"
@@ -74,20 +74,20 @@ class InPlayerAuthPlugin extends zapp.Auth.BaseAuthPlugin
       "password_confirmation": credentials.passwordConfirmation
     }
 
-    m.logInfo("using args", params)
+    m.log.info("using args", params)
     result = m.executeAPIRequest("FORMPOST", "accounts", params)
 
     if result <> invalid and result.access_token <> invalid
-      m.logInfo("register successful")
+      m.log.info("register successful")
       return m.createAuthData("valid", result.access_token, result.access_token, result.refresh_token, result, result.expires, 200, "", result.account)
     end if
 
-    m.logError("registration failed")
+    m.log.error("registration failed")
     return m.createErrorFromResult(result)
   end function
 
   public override function _login(credentials)
-    m.logMethod("_login")
+    m.log.method("_login")
 
     params = {
       "grant_type": "password"
@@ -95,22 +95,22 @@ class InPlayerAuthPlugin extends zapp.Auth.BaseAuthPlugin
       "username": credentials.username
       "password": credentials.password
     }
-    m.logInfo("using args", params)
+    m.log.info("using args", params)
     result = m.executeAPIRequest("FORMPOST", "accounts/authenticate", params)
 
     if result <> invalid and result.access_token <> invalid
-      m.logInfo("login successful")
+      m.log.info("login successful")
       return m.createAuthData("valid", result.access_token, result.access_token, result.refresh_token, result, result.expires, 200, "", result.account)
     end if
 
-    m.logError("login failed")
+    m.log.error("login failed")
     return m.createErrorFromResult(result)
   end function
 
   public override function _logOut()
     m.loadAuthDataFromRegistry()
     if m.authData = invalid
-      m.logError("cannot log out - not logged in!")
+      m.log.error("cannot log out - not logged in!")
       return m.createErrorResult("cannot log out: not logged in")
     end if
 
@@ -143,7 +143,7 @@ class InPlayerAuthPlugin extends zapp.Auth.BaseAuthPlugin
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   private function createErrorFromResult(result)
-    m.logMethod("trying to get error from", result)
+    m.log.method("trying to get error from", result)
     if result = invalid
       result = {}
     end if

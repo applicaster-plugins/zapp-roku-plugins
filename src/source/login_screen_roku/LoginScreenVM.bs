@@ -56,18 +56,18 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public override function createContent()
-    m.logInfo("createContent is overridden in this screen")
+    m.log.info("createContent is overridden in this screen")
   end function
 
   public override function load() as boolean
     if not m.isLoginRequired()
-      m.logInfo("no need to show in this case")
+      m.log.info("no need to show in this case")
       m.dismiss("success")
     else if m.getInstance("user").isLoggedIn
-      m.logInfo("user is logged in, no need to show")
+      m.log.info("user is logged in, no need to show")
       m.dismiss("success")
     else
-      m.logInfo("user not logged in - attemping refreshing")
+      m.log.info("user not logged in - attemping refreshing")
       m.refreshLogin()
     end if
     return true
@@ -107,7 +107,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public function onLoginButtonSelected(value)
-    m.logMethod("onLoginButtonSelected")
+    m.log.method("onLoginButtonSelected")
 
     if not m.isLoading and m.isCredsValid
       m.processLogin()
@@ -115,7 +115,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
       m.errorText = "Please enter your email address and password"
       m.isErrorShowing = true
     else
-      m.logWarn("ignoring loging button, while loading")
+      m.log.warn("ignoring loging button, while loading")
     end if
   end function
 
@@ -143,7 +143,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   function toggleSubScreen(screen)
-    m.logMethod("toggleSubScreen")
+    m.log.method("toggleSubScreen")
 
     if m.focusId <> "screenContainer"
       m.preScreenFocusId = m.focusId
@@ -167,7 +167,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   end function
 
   private function onSubScreenStateChange(state)
-    m.logMethod("current screen state change", state, "m.isShowingRegisterScreen", m.isShowingRegisterScreen)
+    m.log.method("current screen state change", state, "m.isShowingRegisterScreen", m.isShowingRegisterScreen)
 
     if m.isShowingRegisterScreen and state = "success"
       m.signalAppLaunchDialog(true)
@@ -183,12 +183,12 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   private function onUsernameKeyboardDialogDismissal(text)
-    m.logMethod("onKeyboardDialogDismissal")
+    m.log.method("onKeyboardDialogDismissal")
     zapp.keyboardDialogMixin.setTextFromKeyboard(m, "username", text)
   end function
 
   private function onPasswordKeyboardDialogDismissal(text)
-    m.logMethod("onPasswordKeyboardDialogDismissal")
+    m.log.method("onPasswordKeyboardDialogDismissal")
     zapp.keyboardDialogMixin.setTextFromKeyboard(m, "password", text, true)
   end function
 
@@ -197,7 +197,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   private function refreshLogin()
-    m.logInfo("calling authTask to refresh login")
+    m.log.info("calling authTask to refresh login")
 
     m.authTask = m.createAuthTask("execLoad", m.providerId, m.onRefreshComplete)
 
@@ -207,7 +207,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   end function
 
   private function onRefreshComplete(result)
-    m.logMethod("onRefreshComplete", result)
+    m.log.method("onRefreshComplete", result)
     m.isLoading = false
     m.isMainGroupVisible = true
 
@@ -231,7 +231,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   end function
 
   public function processLogin()
-    m.logInfo("logging in")
+    m.log.info("logging in")
 
     if m.isCredsValid
       creds = m.createInstance("AuthenticationCredentials")
@@ -249,10 +249,10 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   end function
 
   public function onLoginComplete(result)
-    m.logMethod("onLoginComplete", result)
+    m.log.method("onLoginComplete", result)
 
     if result <> invalid and result.state = "valid"
-      m.logInfo("logged in succesfull")
+      m.log.info("logged in succesfull")
       m.signalAppLaunchDialog(true)
       m.dismiss("success")
 
@@ -294,7 +294,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   end function
 
   public function onKeyPressBack() as boolean
-    m.logMethod("onKeyPressBack", m.focusId)
+    m.log.method("onKeyPressBack", m.focusId)
     if m.isSubScreenVisible
       'this should be caught by the subscreen
       return true
@@ -307,7 +307,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   public function onKeyPressRight() as boolean
 
     if m.focusId = "loginButton" and m.riversJson.styles.debug_skip_on_right = true
-      m.logWarn("skipping debug flag is on")
+      m.log.warn("skipping debug flag is on")
       m.onLoginComplete(true)
     end if
 
@@ -315,7 +315,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   end function
 
   public function onKeyPressDown() as boolean
-    m.logMethod("onKeyPressDown", m.focusId)
+    m.log.method("onKeyPressDown", m.focusId)
     if not m.isSubScreenVisible
       m.setFocusId(mc.collections.getItemAtOffset(m.focusIds, m.focusId, 1))
     end if
@@ -323,7 +323,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   end function
 
   public override function onKeyPressUp() as boolean
-    m.logMethod("onKeyPressUp", m.focusId)
+    m.log.method("onKeyPressUp", m.focusId)
     if not m.isSubScreenVisible
       m.setFocusId(mc.collections.getItemAtOffset(m.focusIds, m.focusId, -1))
     end if
@@ -331,7 +331,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   end function
 
   public function onKeyPressOptions() as boolean
-    m.logMethod("onKeyPressOptions", m.focusId)
+    m.log.method("onKeyPressOptions", m.focusId)
     m.debugAccountId++
     if m.debugAccountId > m.maxDebugAccounts
       m.debugAccountId = 1

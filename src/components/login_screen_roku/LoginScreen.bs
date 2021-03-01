@@ -1,5 +1,5 @@
 import "pkg:/source/login_screen_roku/LoginScreenVM.bs"
-import "pkg:/source/roku_modules/mx/VMTransformFunctions.brs"
+import "pkg:/source/roku_modules/maestro/mx/VMTransformFunctions.brs"
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '++ Initialization

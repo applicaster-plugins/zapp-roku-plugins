@@ -8,7 +8,7 @@ end function
 
 
 function execRunLoop()
-  m.logMethod("execRunLoop")
+  m.log.method("execRunLoop")
 
   resolver = new MPXVideoPlaybackPrehook()
   m.top.output = resolver.execute()

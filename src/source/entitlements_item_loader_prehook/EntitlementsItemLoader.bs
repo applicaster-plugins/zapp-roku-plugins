@@ -1,6 +1,6 @@
 import "pkg:/source/plugin-support/PluginManager.bs"
 import "pkg:/source/lib/BaseClass.bs"
-import "pkg:/source/roku_modules/mc/Utils.brs"
+import "pkg:/source/roku_modules/maestro/core/Utils.brs"
 import "pkg:/source/lib/Request.bs"
 import "pkg:/source/entitlements/EntitlementsManager.bs"
 
@@ -27,7 +27,7 @@ class EntitlementsItemLoader extends zapp.BaseClass
       m.matchingPath = plugin.getStringValue("matching_path", "")
       m.matchingValue = plugin.getStringValue("matching_value", "")
     else
-      m.logError("There was no plugin config!")
+      m.log.error("There was no plugin config!")
       m.matchingPath = ""
       m.matchingValue = ""
     end if
@@ -38,18 +38,18 @@ class EntitlementsItemLoader extends zapp.BaseClass
     item = mc.getPath(m.getInstance("currentSelection"), "currentItem")
 
     if item = invalid
-      m.logError("no item - entitlements loader reuires currentSelection.currentItem is populated")
+      m.log.error("no item - entitlements loader reuires currentSelection.currentItem is populated")
       return "error"
     end if
 
     if not m.isItemMatch(item)
-      m.logError("item does not match")
+      m.log.error("item does not match")
       return "success"
     end if
 
     entitlementsNode = m.getInstance("entitlements")
     if not entitlementsNode@.isLocked(item)
-      m.logInfo("item is already unlocked")
+      m.log.info("item is already unlocked")
       return "success"
     end if
 

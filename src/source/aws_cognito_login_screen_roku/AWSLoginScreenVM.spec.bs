@@ -389,9 +389,6 @@ namespace zapp.tests
           "app_client_id": "SOME_CLIENT_ID"
         }
       }])
-
-      m.rootBeforeEach = TAAWSLSVMT.beforeEach
-      m.rootBeforeEach()
     end function
 
     @afterEach

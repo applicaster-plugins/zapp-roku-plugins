@@ -1,6 +1,6 @@
 import "pkg:/source/plugin-support/PluginManager.bs"
 import "pkg:/source/lib/BaseClass.bs"
-import "pkg:/source/roku_modules/mc/Utils.brs"
+import "pkg:/source/roku_modules/maestro/core/Utils.brs"
 import "pkg:/source/lib/Request.bs"
 import "pkg:/source/lib/URI.bs"
 
@@ -51,7 +51,7 @@ class TVETokenLoaderPrehook extends zapp.BaseClass
         deviceId: constants.applicasterDeviceId
       }
     else
-      m.logError("there was no plugin found for AdobeAccessEnabler. It is required that you use AdobeAccessEnabler auth (tve) for this plugin to work")
+      m.log.error("there was no plugin found for AdobeAccessEnabler. It is required that you use AdobeAccessEnabler auth (tve) for this plugin to work")
       return invalid
     end if
   end function
@@ -63,19 +63,19 @@ class TVETokenLoaderPrehook extends zapp.BaseClass
 
   public function execute()
     if not m.isValid
-      m.logError("plugin configuration is not valid. Is Adobe Primetime auth plugin present and configured?")
+      m.log.error("plugin configuration is not valid. Is Adobe Primetime auth plugin present and configured?")
       return "error"
     end if
 
     item = mc.getPath(m.getInstance("currentSelection"), "currentItem")
 
     if item = invalid
-      m.logError("no item - tve token loader prehook requires currentSelection.currentItem is populated")
+      m.log.error("no item - tve token loader prehook requires currentSelection.currentItem is populated")
       return "error"
     end if
 
     if not m.isItemMatch(item)
-      m.logError("item does not match")
+      m.log.error("item does not match")
       return "success"
     end if
 
@@ -109,14 +109,14 @@ class TVETokenLoaderPrehook extends zapp.BaseClass
         isError = not m.loadShortToken(item) or isError
       end if
     else
-      m.logInfo("there is no token for AdobeAccessEnabler - not logged in")
+      m.log.info("there is no token for AdobeAccessEnabler - not logged in")
     end if
 
     return not isError
   end function
 
   private function loadShortToken(item)
-    m.logMethod("loadShortToken")
+    m.log.method("loadShortToken")
 
     requestPath = "/api/v1/tokens/media"
 
@@ -133,16 +133,16 @@ class TVETokenLoaderPrehook extends zapp.BaseClass
 
     url = m.tveConfig.baseUrl + requestPath + "?" + m.uri.encodeParams(params)
     result = m.request.getJsonSync(url, headers)
-    m.logInfo("result is:", result)
+    m.log.info("result is:", result)
     shortToken = invalid
 
     if result <> invalid and result.serializedToken <> invalid
       shortToken = m.decodeBase64(result.serializedToken)
     else
-      m.logError("invalid result")
+      m.log.error("invalid result")
     end if
 
-    m.logInfo("setting short-token to", shortToken)
+    m.log.info("setting short-token to", shortToken)
     m.setSessionStoreValue("tve", "short-token", shortToken)
 
     return shortToken <> invalid
@@ -180,7 +180,7 @@ class TVETokenLoaderPrehook extends zapp.BaseClass
     privateKey = CreateObject("roByteArray")
     privateKey.fromAsciiString(m.tveConfig.secret)
     if digest.setup("sha1", privateKey) <> 0
-      m.logError("signRequest: failed to set up HMAC digest")
+      m.log.error("signRequest: failed to set up HMAC digest")
       return invalid
     end if
     signature = digest.process(byteArray)

@@ -51,11 +51,11 @@ class BitMovinPlayerVM extends zapp.BaseZappVM
   end function
 
   private function onSDKLoadStatusChange(status)
-    m.logInfo("sdk status is now", status)
+    m.log.info("sdk status is now", status)
 
     if status = "ready"
       m.state = "ready"
-      m.logInfo("creating player")
+      m.log.info("creating player")
       m.player = m.view.createChild("BitmovinPlayerSDK:BitmovinPlayer")
       m.player.id = "player"
 
@@ -73,7 +73,7 @@ class BitMovinPlayerVM extends zapp.BaseZappVM
         key: m.licenseKey
       })
       if m.pendingPlayerItem <> invalid
-        m.logInfo("there was an item pending to play, playing it now")
+        m.log.info("there was an item pending to play, playing it now")
         m.playBitmovinItem(m.pendingPlayerItem)
         m.pendingPlayerItem = invalid
       end if
@@ -92,7 +92,7 @@ class BitMovinPlayerVM extends zapp.BaseZappVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public function playItem(item, playMode = "default")
-    m.logMethod("playItem ", item.id)
+    m.log.method("playItem ", item.id)
 
     m.currentItem = item
     m.playMode = playMode
@@ -100,19 +100,19 @@ class BitMovinPlayerVM extends zapp.BaseZappVM
     playerItem.options = {
       "startOffset": m.currentItem.PlayStart
     }
-    m.logInfo("playing with player item", formatJson(playerItem))
+    m.log.info("playing with player item", formatJson(playerItem))
 
     if m.player <> invalid
       m.pendingPlayerItem = invalid
       m.playBitmovinItem(playerItem)
     else
-      m.logWarn("player is not ready yet; settig this item as pending")
+      m.log.warn("player is not ready yet; settig this item as pending")
       m.pendingPlayerItem = playerItem
     end if
   end function
 
   function playBitmovinItem(playerItem)
-    m.logMethod("playBitmovinItem")
+    m.log.method("playBitmovinItem")
 
     m.state = "playing"
     m.player.callFunc(m.playerFunctions.LOAD, playerItem)
@@ -139,7 +139,7 @@ class BitMovinPlayerVM extends zapp.BaseZappVM
   end function
 
   public function stopItem()
-    m.logMethod("stopItem")
+    m.log.method("stopItem")
     if m.player <> invalid
       m.player.callFunc(m.playerFunctions.UNLOAD, invalid)
     end if
@@ -154,7 +154,7 @@ class BitMovinPlayerVM extends zapp.BaseZappVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   private function onPlayerStateChange(state) as void
-    m.logInfo("player state change", state)
+    m.log.info("player state change", state)
 
     if state = m.playerState.FINISHED
       m.view.playbackResult = m.makeResult("finished", "")
@@ -177,7 +177,7 @@ class BitMovinPlayerVM extends zapp.BaseZappVM
   end function
 
   private function onPlayerVideoError(error)
-    m.logMethod("onPlayVideoError", error)
+    m.log.method("onPlayVideoError", error)
     m.view.playbackResult = m.makeResult("error", error.message)
     m.state = "ready"
   end function
