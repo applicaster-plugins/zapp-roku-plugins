@@ -54,7 +54,7 @@
             labelXOffset='9'
             text='{{usernameText}}'
             buttonType='{{usernameButtonType}}'
-            selected='{(onUsernameButtonSelected(value))}'
+            selected='{(onUsernameButtonSelected())}'
             width='610' />
 
         <ZActionButton
