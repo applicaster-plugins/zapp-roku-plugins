@@ -13,7 +13,7 @@
         width='1920'
         height='1080'
         color='{{=zapp_viewUtils_UIBColor("background_color")}}' />
-    <mv_MPoster
+    <mv_Poster
         id='backgroundImage'
         style='{{=zapp_viewUtils_UIBPoster("poster")}}'
         loadDisplayMode='scaleToFill'
@@ -27,7 +27,7 @@
         id='conentGroup'
         visible='{{isContentVisible}}'
         translation='[0,0]'>
-      <mv_MLabel
+      <mv_Label
           id='title'
           style='{{=zapp_viewUtils_UIBLabel("title")}}' />
       <ZActionButton
