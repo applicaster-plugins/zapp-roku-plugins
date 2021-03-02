@@ -8,11 +8,11 @@
   </interface>
 
   <children>
-    <mv_MLabel
+    <mv_Label
         id='noSearchLabel'
         visible='{{isNoSearchLabelVisible}}'
         style='{{=zapp_viewUtils_UIBLabel("no_items")}}' />
-    <mv_MLabel
+    <mv_Label
         id='notFoundLabel'
         visible='{{isNotFoundLabelVisible}}'
         style='{{=zapp_viewUtils_UIBLabel("not_found")}}' />
@@ -23,13 +23,13 @@
         labelXOffset='9'
         text='{{searchText}}' />
 
-    <mv_MMiniKeyboard
+    <mv_MiniKeyboard
         id='keyboard'
         style='{{:keyboardStyle}}'
         newText='{{searchText}}'
         text='{(onSearchTextChange(value))}' />
 
-    <mv_MMarkupGrid
+    <mv_MarkupGrid
         id='grid'
         content='{{results}}'
         visible='{{isGridVisible}}'

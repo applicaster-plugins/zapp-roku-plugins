@@ -8,9 +8,9 @@ import "pkg:/source/roku_modules/maestro/mx/VMTransformFunctions.brs"
 function init()
   m.top.isConsumingOriginEntry = true
   m.top.isForcingMenuHidden = true
-  mv.initializeView(m.top.findNode("labelsGroup"))
-  mv.initializeView(m.top.findNode("controlsGroup"))
-  mv.initializeView(m.top.findNode("doneGroup"))
+  initializeView(m.top.findNode("labelsGroup"))
+  initializeView(m.top.findNode("controlsGroup"))
+  initializeView(m.top.findNode("doneGroup"))
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
