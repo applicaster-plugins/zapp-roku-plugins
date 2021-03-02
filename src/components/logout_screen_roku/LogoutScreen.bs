@@ -14,6 +14,6 @@ end function
 
 function createVM()
   vm = new LogoutScreenVM(m.top.riversJson)
-  mv.setFocus(m.logoutButton)
+ mv.setFocus(m.logoutButton)
   return vm
 end function

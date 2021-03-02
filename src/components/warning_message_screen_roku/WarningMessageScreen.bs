@@ -15,12 +15,12 @@ end function
 function createVM()
   vm = new WarningMessageScreenVM(m.top.riversJson)
   vm.originEntry = m.top.originEntry
-  mv.setFocus(m.doneButton)
+ mv.setFocus(m.doneButton)
   return vm
 end function
 
 function onGainedFocus(isSelfFocused)
   if isSelfFocused
-    mv.setFocus(m.doneButton)
+   mv.setFocus(m.doneButton)
   end if
 end function

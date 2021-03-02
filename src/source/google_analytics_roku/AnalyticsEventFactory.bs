@@ -14,7 +14,7 @@ import "pkg:/source/roku_modules/log/LogMixin.brs"
 class AnalyticsEventFactory
 
   function new()
-    m.log = new log.Logger("AnalyticsEventFactory", m)
+    m.log = new log.Logger("AnalyticsEventFactory")
   end function
   ' /**
   '  * @member getAnalyticsEvent=
