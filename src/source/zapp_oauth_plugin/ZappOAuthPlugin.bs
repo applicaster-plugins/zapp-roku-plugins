@@ -1,0 +1,175 @@
+import "pkg:/source/authorization/BaseAuthPlugin.bs"
+import "pkg:/source/lib/Request.bs"
+import "pkg:/source/lib/URI.bs"
+import "pkg:/source/lib/APIUtils.bs"
+
+class ZappOauthPlugin extends zapp.auth.BaseAuthPlugin
+
+  @injectClass("zapp.Request")
+  private request
+
+  @injectClass("zapp.URI")
+  private uri
+
+  private clientId = ""
+  private deviceEndpoint = ""
+  private tokenEndpoint = ""
+  private refreshEndpoint = ""
+  private logoutEndpoint = ""
+  private grantType = ""
+  private pollingInterval = -1
+  private executeApiRequest = zapp.APIUtils.executeApiRequest
+
+  public function new(plugin)
+    super("AdobePrimetime", plugin)
+    m.isTokenUsableWithDSP = true
+
+    m.clientId = plugin.getStringValue("clientId", "")
+    m.deviceEndpoint = plugin.getStringValue("deviceEndpoint", "")
+    m.tokenEndpoint = plugin.getStringValue("tokenEndpoint", "")
+    m.refreshEndpoint = plugin.getStringValue("refreshEndpoint", "")
+    m.logoutEndpoint = plugin.getStringValue("logoutEndpoint", "")
+    m.grantType = plugin.getStringValue("grantType", "urn:ietf:params:oauth:grant-type:device_code")
+
+    m.pollingInterval = plugin.getIntValue("pollingInterval", -1)
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ overridden
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public override function _getAccountInfo()
+    userId = mc.getPath(m.authData, "user.userId", "not known yet")
+
+    return {
+      id: userId
+      email: "anonymous@anon.com"
+      username: "anonymous"
+    }
+  end function
+
+  public override function _verify()
+    if m.isAuthDataExpired()
+      'this is just a guess right now - nothing confirmed
+      if m.authData <> invalid and m.authData.refreshToken <> invalid
+        if m.refreshEndpoint <> ""
+          params = {
+            client_id: m.clientId
+            refresh_token: m.authData.refreshToken
+            grant_type: "refresh"
+          }
+          result = m.executeAPIRequest("FORMPOST", invalid, params, true, invalid, m.refreshEndpoint)
+
+          if result <> invalid and result.access_token <> invalid and result.access_token <> ""
+            accessToken = mc.getPath(result, "access_token", "")
+            refreshToken = mc.getPath(result, "refresh_token", accessToken)
+            idToken = mc.getPath(result, "id_token", accessToken)
+
+            'make sure to keep the device code for later
+            result.device_code = deviceResponse.device_code
+            return m.createAuthData("valid", idToken, accessToken, refreshToken, result, result.expires_in)
+          else
+            return m.createErrorResult("token could not be refreshed with service")
+          end if
+        else
+          return m.createErrorResult("no token to refresh")
+        end if
+        m.log.warn("no verify endpoint specified")
+      end if
+    else
+      m.log.info("token is not yet expired")
+    end if
+
+    'we still have a valid login, or we had no means to verify
+    return m.createAuthData("valid", m.authData.idToken, m.authData.accessToken, m.authData.refreshToken, m.authData, m.authData.expiresIn)
+  end function
+
+  public override function _regcode()
+    m.log.method("regCode_")
+    params = {
+      client_id: m.clientId
+    }
+
+    result = m.executeAPIRequest("FORMPOST", invalid, params, true, invalid, m.deviceEndpoint)
+
+    m.log.info("result is ", result)
+
+    if result <> invalid and result.user_code <> invalid and result.user_code <> ""
+      if m.pollingInterval = -1
+        interval = result.interval
+      else
+        interval = m.pollingInterval
+      end if
+
+      m.setSessionStoreValue("zapp_oauth_plugin", "deviceResponse", result, true)
+      res = m.createRegCodeResult(result.user_code)
+      res.url = result.verification_uri
+      res.pollInterval = interval
+      return res
+    end if
+
+    m.log.error("Error retrieving regcode")
+    return m.createRegCodeResult(invalid, -1, "Unknown error")
+  end function
+
+  public override function _poll()
+    m.log.method("poll_")
+    deviceResponse = m.getSessionStoreValue("zapp_oauth_plugin", "deviceResponse", true)
+
+    if deviceResponse = invalid or deviceResponse.device_code = invalid
+      return m.createErrorResult("device_code was not valid")
+    end if
+
+    params = {
+      client_id: m.clientId
+      grant_type: m.grantType
+      device_code: deviceResponse.device_code
+    }
+
+    result = m.executeAPIRequest("FORMPOST", invalid, params, true, invalid, m.tokenEndpoint)
+
+    m.log.info("result is:", result)
+
+    if result <> invalid and result.access_token <> invalid and result.access_token <> ""
+      accessToken = mc.getPath(result, "access_token", "")
+      refreshToken = mc.getPath(result, "refresh_token", accessToken)
+      idToken = mc.getPath(result, "id_token", accessToken)
+
+      'make sure to keep the device code for later
+      result.device_code = deviceResponse.device_code
+      return m.createAuthData("valid", idToken, accessToken, refreshToken, result, result.expires_in)
+    else
+      m.log.info("invalid userId ignoring")
+    end if
+
+    result = m.createErrorResult("Unknown error")
+
+    if m.request.lastResponseCode <> invalid
+      if m.request.lastResponseCode = 400
+        'these states are expected while polling.
+        result.state = "none"
+      end if
+    end if
+
+    return result
+  end function
+
+  public override function _logOut()
+    m.log.warn("not yet implemented")
+    'more or less the right impl; need to get final details from Ran.
+    if m.authData <> invalid and m.authData.refreshToken <> invalid
+      if m.logoutEndpoint <> ""
+        params = {
+          client_id: m.clientId
+          device_code: m.authData.device_code
+        }
+        result = m.executeAPIRequest("FORMPOST", invalid, params, true, invalid, m.logoutEndpoint)
+      else
+        m.log.warn("no logout endpoint specified")
+      end if
+    end if
+
+    return m.createAuthData()
+  end function
+
+end class
