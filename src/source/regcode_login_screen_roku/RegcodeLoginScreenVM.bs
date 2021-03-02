@@ -13,6 +13,7 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
   public isRefreshing = false
   public refreshButtonOpacity = 1
   public pollTimerDuration = 5
+  private isDebugOverrideSet = false
 
   public text1 = ""
   public text2 = ""
@@ -53,6 +54,7 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
       text = m.localizations[key]
       m.setField(key, "")
     end for
+    m.isDebugOverrideSet = mc.getPath(styles, "force_authentication_on_all", "off") = "on"
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -88,9 +90,13 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
   end function
 
   private function shouldDisplayWithContent(currentSelection)
-
-    entitlementsNode = m.getInstance("entitlements")
-    return entitlementsNode@.isLocked(mc.getPath(currentSelection, "currentItem"))
+    if m.isDebugOverrideSet
+      m.log.warn("debug override for showing is set!!")
+      return true
+    else
+      entitlementsNode = m.getInstance("entitlements")
+      return entitlementsNode@.isLocked(mc.getPath(currentSelection, "currentItem"))
+    end if
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
