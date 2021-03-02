@@ -22,13 +22,13 @@
           height='1080'
           color='{{=zapp_viewUtils_UIBColor("background_color")}}' />
 
-      <mv_MPoster
+      <mv_Poster
           id='backgroundPoster'
           width='1920'
           height='1080'
           style='{{=zapp_viewUtils_UIBPoster("background")}}' />
 
-      <mv_MPoster
+      <mv_Poster
           id='logoPoster'
           style='{{=zapp_viewUtils_UIBPoster("logo")}}' />
     </Group>
@@ -36,7 +36,7 @@
     <Group
         id='contentGroup'
         visible='{{isContentGroupVisible}}'>
-      <mv_MLabel
+      <mv_Label
           id='titleLabel'
           style='{{=zapp_viewUtils_UIBLabel("title")}}' />
       <LayoutGroup
@@ -45,38 +45,44 @@
           translation='{{=zapp_viewUtils_UIBPosition("text")}}'
           itemSpacings='{{=zapp_viewUtils_UIBFloatArray("item_spacing")}}'>
 
-        <mv_MLabel
+        <mv_Label
             id='text1Label'
-            style='{{=zapp_viewUtils_UIBLabel("text1")}}' />
+            style='{{=zapp_viewUtils_UIBLabel("text1")}}'
+            text='{{text1}}' />
 
-        <mv_MLabel
+        <mv_Label
             id='text2Label'
-            style='{{=zapp_viewUtils_UIBLabel("text2")}}' />
+            style='{{=zapp_viewUtils_UIBLabel("text2")}}'
+            text='{{text2}}' />
 
-        <mv_MLabel
+        <mv_Label
             id='text3Label'
-            style='{{=zapp_viewUtils_UIBLabel("text3")}}' />
+            style='{{=zapp_viewUtils_UIBLabel("text3")}}'
+            text='{{text3}}' />
 
-        <mv_MLabel
+        <mv_Label
             id='text4Label'
-            style='{{=zapp_viewUtils_UIBLabel("text4")}}' />
+            style='{{=zapp_viewUtils_UIBLabel("text4")}}'
+            text='{{text4}}' />
 
-        <mv_MLabel
+        <mv_Label
             id='text5Label'
-            style='{{=zapp_viewUtils_UIBLabel("text5")}}' />
+            style='{{=zapp_viewUtils_UIBLabel("text5")}}'
+            text='{{text5}}' />
 
-        <mv_MLabel
+        <mv_Label
             id='text6Label'
-            style='{{=zapp_viewUtils_UIBLabel("text6")}}' />
+            style='{{=zapp_viewUtils_UIBLabel("text6")}}'
+            text='{{text6}}' />
 
-        <mv_MLabel
+        <mv_Label
             id='codeLabel'
             style='{{=zapp_viewUtils_UIBLabel("code","")}}'
             text='{{codeText}}' />
-        <mv_MLabel
+        <mv_Label
             id='supportLabel'
             style='{{=zapp_viewUtils_UIBLabel("support")}}' />
-        <mv_MLabel
+        <mv_Label
             id='support2Label'
             style='{{=zapp_viewUtils_UIBLabel("support2")}}' />
 
