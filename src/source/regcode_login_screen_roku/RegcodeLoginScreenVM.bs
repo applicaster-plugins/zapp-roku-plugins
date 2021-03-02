@@ -12,6 +12,7 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
   public pollTimerControl = "stop"
   public isRefreshing = false
   public refreshButtonOpacity = 1
+  public pollTimerDuration = 5
 
   public text1 = ""
   public text2 = ""
@@ -23,8 +24,6 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
   private authTask = invalid
   private providerId = invalid
   private isValid = false
-  private urlTextKey = invalid
-  private pollTimerDuration = 3
 
 
   @inject("analyticsManager")
@@ -52,14 +51,7 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
     for i = 1 to 6
       key = "text" + i.toStr().trim()
       text = m.localizations[key]
-      if text = invalid or text = ""
-        text = styles[key + "_text"]
-      end if
-      if text = "{{url}}"
-        m.urlTextKey = key
-        text = ""
-      end if
-      m.setField(key, text)
+      m.setField(key, "")
     end for
   end function
 
@@ -98,6 +90,7 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
   private function shouldDisplayWithContent(currentSelection)
 
     entitlementsNode = m.getInstance("entitlements")
+    return true
     return entitlementsNode@.isLocked(mc.getPath(currentSelection, "currentItem"))
   end function
 
@@ -169,13 +162,20 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
     if result <> invalid and result.regcode <> invalid
       m.log.info("received code", result.regcode)
       m.codeText = result.regcode
+
+      for i = 1 to 6
+        key = "text" + i.toStr().trim()
+        text = m.localizations[key]
+        if text = "{{url}}"
+          text = mc.getPath(result, "url", "")
+        end if
+        m.setField(key, text)
+      end for
+
       if result.pollInterval <> invalid
         m.pollTimerDuration = result.pollInterval
       end if
 
-      if result.url <> invalid and m.urlTextKey <> invalid
-        m.setField(m.urlTextKey, result.url)
-      end if
 
       m.togglePollTimer(true)
     else
@@ -222,18 +222,17 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public function isCapturingAnyKeyPress(key, press)
-    'do not anyone escape this screen!
-    return true
+    'don't let us escape if we're in a prehook
+    return m.getTopField("isDisplayedInPrehook")
   end function
 
   public function onKeyPressBack() as boolean
     m.dismiss("cancel")
-
     return true
   end function
 
   public override function onKeyPressUp() as boolean
-    return true
+    return m.getTopField("isDisplayedInPrehook")
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

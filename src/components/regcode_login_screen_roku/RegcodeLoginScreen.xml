@@ -9,7 +9,7 @@
   <children>
     <Timer
         id='pollTimer'
-        duration='3'
+        duration='{{pollTimerDuration}}'
         control='{{pollTimerControl}}'
         fire='{(onPollTimerFire(value))}' />
 
@@ -47,32 +47,32 @@
 
         <mv_Label
             id='text1Label'
-            style='{{=zapp_viewUtils_UIBLabel("text1")}}'
+            style='{{=zapp_viewUtils_UIBLabel("text1", "", invalid)}}'
             text='{{text1}}' />
 
         <mv_Label
             id='text2Label'
-            style='{{=zapp_viewUtils_UIBLabel("text2")}}'
+            style='{{=zapp_viewUtils_UIBLabel("text2", "", invalid)}}'
             text='{{text2}}' />
 
         <mv_Label
             id='text3Label'
-            style='{{=zapp_viewUtils_UIBLabel("text3")}}'
+            style='{{=zapp_viewUtils_UIBLabel("text3", "", invalid)}}'
             text='{{text3}}' />
 
         <mv_Label
             id='text4Label'
-            style='{{=zapp_viewUtils_UIBLabel("text4")}}'
+            style='{{=zapp_viewUtils_UIBLabel("text4", "", invalid)}}'
             text='{{text4}}' />
 
         <mv_Label
             id='text5Label'
-            style='{{=zapp_viewUtils_UIBLabel("text5")}}'
+            style='{{=zapp_viewUtils_UIBLabel("text5", "", invalid)}}'
             text='{{text5}}' />
 
         <mv_Label
             id='text6Label'
-            style='{{=zapp_viewUtils_UIBLabel("text6")}}'
+            style='{{=zapp_viewUtils_UIBLabel("text6", "", invalid)}}'
             text='{{text6}}' />
 
         <mv_Label
