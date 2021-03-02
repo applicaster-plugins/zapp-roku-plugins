@@ -51,9 +51,9 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
   function processStyles(styles)
     for i = 1 to 6
       key = "text" + i.toStr().trim()
-      text = localizations[key]
+      text = m.localizations[key]
       if text = invalid or text = ""
-        text = styles[key]
+        text = styles[key + "_text"]
       end if
       if text = "{{url}}"
         m.urlTextKey = key
