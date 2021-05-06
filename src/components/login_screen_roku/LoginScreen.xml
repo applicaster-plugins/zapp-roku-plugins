@@ -17,7 +17,7 @@
         style='{{=zapp_viewUtils_UIBBackgroundPoster("background")}}' />
     <mv_Poster
         id='logoPoster'
-        uri='{{=zapp_viewUtils_getPosterUri(m.top.riversJson.styles.logo_image_url)}}' />
+        style='{{=zapp_viewUtils_UIBPoster("logo")}}' />
     <Group
         id='loginGroup'
         visible='{{isMainGroupVisible}}'>
