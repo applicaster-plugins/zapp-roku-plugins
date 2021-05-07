@@ -24,7 +24,7 @@ class LogoutScreenVM extends zapp.uib.ScreenVM
   public function new(riversJson)
     super(riversJson, "LogoutScreenVM")
 
-    m.focusId = "button"
+    m.focusId = "logoutButton"
     m.processStyles(m.riversJson.styles)
 
   end function
@@ -106,6 +106,7 @@ class LogoutScreenVM extends zapp.uib.ScreenVM
     m.isButtonVisible = true
     m.buttonText = m.signedOutButtonText
     m.titleText = m.signedOutTitle
+    m.setFocus(m.getMField("top"))
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

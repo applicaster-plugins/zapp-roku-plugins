@@ -179,6 +179,7 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
       end if
       m.isErrorShowing = true
       m.isRegisterButtonEnabled = true
+      m.setFocus(m.getMField("top"))
     end if
 
     m.isLoading = false
