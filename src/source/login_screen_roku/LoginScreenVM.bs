@@ -114,6 +114,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
     else if not m.isCredsValid
       m.errorText = "Please enter your email address and password"
       m.isErrorShowing = true
+      m.setFocus(m.getMField("top"))
     else
       m.log.warn("ignoring loging button, while loading")
     end if
@@ -239,7 +240,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
       creds.password = m.password
       m.authTask = m.createAuthTask("execLogIn", m.providerId, m.onLoginComplete, creds)
 
-      m.isLoginButtonEnabled = false
+      ' m.isLoginButtonEnabled = false
 
       m.isLoading = true
       m.errorText = ""
@@ -265,6 +266,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
       end if
       m.isErrorShowing = true
       m.isLoginButtonEnabled = true
+      m.setFocus(m.getMField("top"))
     end if
 
     m.isLoading = false
@@ -342,5 +344,13 @@ class LoginScreenVM extends zapp.uib.ScreenVM
 
     return true
   end function
+
+  ' override function onGainedFocus(isSelfFocused)
+  '   m.log.info("onGainedFocus")
+  '   super.onGainedFocus(isSelfFocused)
+  '   if isSelfFocused
+  '     m.setFocusId(m.preScreenFocusId)
+  '   end if
+  ' end function
 
 end class

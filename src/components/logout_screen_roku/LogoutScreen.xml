@@ -41,7 +41,6 @@
 
       <ZActionButton
           id='logoutButton'
-          translation='['
           visible='{{:isButtonVisible}}'
           style='{{:buttonStyle}}'
           text='{{buttonText}}'
