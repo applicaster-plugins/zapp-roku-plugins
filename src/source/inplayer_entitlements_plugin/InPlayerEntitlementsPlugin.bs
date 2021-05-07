@@ -108,7 +108,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
         usedProducts[rokuProduct.code] = true
         products.push(rokuProduct)
       else
-        m.log.warn("ignoring fee", fee.id, fee.description, "which can not be mapped to a roku purchase, on item", item)
+        m.log.warn("ignoring fee", fee.id, fee.description, "which can not be mapped to a roku purchase, on item", m.currentItem)
       end if
     end for
 
