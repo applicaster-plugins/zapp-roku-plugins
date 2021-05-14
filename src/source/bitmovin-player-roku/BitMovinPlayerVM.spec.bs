@@ -4,7 +4,7 @@ namespace zapp.tests
   @suite
   class BitMovinPlayerVMTests extends tests.BaseTestSuite
 
-    override function beforeEach()
+   protected override function beforeEach()
       super.beforeEach()
       mioc.setInstance("collectionBookmarks", CreateObject("roSGNode", "Bookmarks"))
       mioc.setInstance("vodItemBookmarks", CreateObject("roSGNode", "Bookmarks"))

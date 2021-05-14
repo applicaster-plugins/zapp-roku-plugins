@@ -4,7 +4,7 @@ namespace zapp.tests
   @suite
   class YouboraVideoAnalyticsTests extends tests.BaseTestSuite
 
-    override function beforeEach()
+   protected override function beforeEach()
       super.beforeEach()
       m.config = {
         "account_code": "#ac"

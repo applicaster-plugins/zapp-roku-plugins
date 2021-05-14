@@ -2,7 +2,7 @@ namespace zapp.tests
   @tags("public", "auth", "vm")
   @suite
   class AWSLoginScreenVMTests extends tests.BaseTestSuite
-    override function beforeEach()
+   protected override function beforeEach()
       super.beforeEach()
       mioc.setInstances(
       { "user": { "isLoggedIn": false }

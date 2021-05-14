@@ -4,7 +4,7 @@ namespace zapp.tests
   @suite
   class TVETokenLoaderPrehookTests extends tests.BaseTestSuite
 
-    override function beforeEach()
+   protected override function beforeEach()
       super.beforeEach()
       m.pluginJson = tests.utils.createPluginJson("tve_token_loader_prehook_roku", {
         "endpoint": "e/"
