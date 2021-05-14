@@ -225,7 +225,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
   '++ lifecycle
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  public override function onHide()
+  protected override function onHide()
     super.onHide()
 
     m.cancelWaitTimer(m.searchDelayTask)
@@ -234,7 +234,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     m.searchDelayTask = invalid
   end function
 
-  public override function onShow() as void
+  protected override function onShow() as void
     m.log.method("onShow")
 
     if not m.isShowingContent

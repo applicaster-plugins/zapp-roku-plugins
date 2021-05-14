@@ -194,7 +194,7 @@ class BitMovinPlayerVM extends zapp.BaseZappVM
     return { "state": state, "message": message }
   end function
 
-  public override function destroy()
+  override function destroy()
     'video player is never destroyed
   end function
 

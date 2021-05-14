@@ -3,7 +3,7 @@ namespace zapp.tests
   @suite
   class AnalyticsEventFactoryTests extends tests.BaseTestSuite
 
-    override function setup()
+    protected override function setup()
       super.setup()
       m.analytics = new AnalyticsEventFactory()
       m.testItem = CreateObject("roSGNode", "GridContent")

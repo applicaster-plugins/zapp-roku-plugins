@@ -264,7 +264,7 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
   '++ Lifecycle methods
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  public override function onShow()
+  protected override function onShow()
     m.log.info("onShow - isShowingParentScreen", m.isShowingParentScreen)
 
     if m.isDeeplinkingApplied and not m.isShowingParentScreen

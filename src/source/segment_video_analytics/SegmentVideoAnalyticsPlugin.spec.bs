@@ -4,7 +4,7 @@ namespace zapp.tests
   @suite
   class SegmenetVideoAnalyticsPluginTests extends tests.BaseTestSuite
 
-    override function beforeEach()
+   protected override function beforeEach()
       super.beforeEach()
       m.constants = {
         "deviceInfo": { "videoMode": "1080p" }
