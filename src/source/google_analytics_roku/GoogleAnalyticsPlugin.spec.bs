@@ -71,8 +71,6 @@ namespace zapp.tests
     @params("allow-tracking-user-id-for-app-family-aaaa", "aaaac", false)
     function _(userIdString, versionId, result)
 
-      versionPrefix = "allow-tracking-user-id-for-app-family-"
-
       fResult = m.plugin.checkIfTrackingUserIdAllowed(userIdString, versionId)
 
       m.assertEqual(result, fResult)

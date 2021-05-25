@@ -303,7 +303,6 @@ namespace zapp.tests
       m.expectOnce(m.plugin.request, "getJsonSync", [url, expectedHeaders], response)
 
       result = { "id": "result" }
-      token = formatJson(response)
       m.expectNone(m.plugin, "createAuthData")
       m.expectOnce(m.plugin, "createErrorResult", ["Unknown error"], result)
 
