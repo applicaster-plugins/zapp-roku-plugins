@@ -243,7 +243,7 @@ class AWSLoginScreenVM extends zapp.uib.ScreenVM
   '++ launch support
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  override function sendLaunchBecaon()
+  override function sendLaunchBeacon()
     'we handle this manually
   end function
 
@@ -269,15 +269,14 @@ class AWSLoginScreenVM extends zapp.uib.ScreenVM
         m.dismiss("cancel")
         return true
       else
-        m.exitApp(invlaid, true)
+        m.exitApp(invalid, true)
         return true
       end if
     else
       return m.onKeyPressUp()
     end if
-
-    return false
   end function
+
   public function onKeyPressRight() as boolean
 
     if m.focusId = "loginButton" and m.riversJson.styles.debug_skip_on_right = true

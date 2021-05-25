@@ -260,8 +260,6 @@ namespace zapp.tests
       m.vm.searchDelayTask = searchDelayTask
       m.vm.loadItemTask = loadItemTask
 
-      newDelayTask = { "id": "newDelayTask" }
-
       m.expectOnce(m.vm, "cancelWaitTimer", [searchDelayTask])
       m.expectOnce(m.vm, "cancelTask", [loadItemTask])
       m.expectNone(m.vm, "waitAFrame")

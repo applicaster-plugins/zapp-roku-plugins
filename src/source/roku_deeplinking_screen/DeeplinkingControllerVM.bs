@@ -221,7 +221,6 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
 
     selection = CreateObject("roSGNode", "Selection")
 
-    deeplinkType = deeplinkingData.itemType
     content = deeplinkingData.entry.clone(true)
     if content.url = invalid or content.url.trim() = ""
       content.url = content.link

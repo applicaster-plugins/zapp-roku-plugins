@@ -128,7 +128,7 @@ class SegmentAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
     if m.isEnabled
       options.append(m.defaultOptions)
       properties.append(m.defaultProperties)
-      m.library.screen(name, category, properties, options)
+      m.library.screen(eventName, category, properties, options)
     end if
 
   end function
@@ -137,8 +137,7 @@ class SegmentAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
 
     if m.isEnabled
       options.append(m.defaultOptions)
-      properties.append(m.defaultProperties)
-      m.library.group(userId, groupId, traits, options)
+      m.library.group(eventName, groupId, traits, options)
     end if
 
   end function

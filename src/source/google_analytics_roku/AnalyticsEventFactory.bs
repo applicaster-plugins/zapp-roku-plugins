@@ -210,7 +210,7 @@ class AnalyticsEventFactory
 
   public function timeFormat(length as dynamic) as string
     if type(length) = "roFloat" or type(length) = "Double" then length = Int(length)
-    if (type(length) = "Integer" or type(length) = "roInteger") then
+    if type(length) = "Integer" or type(length) = "roInteger"
       hours = length \ 3600
       minutes = (length mod 3600) \ 60
       seconds = length mod 60

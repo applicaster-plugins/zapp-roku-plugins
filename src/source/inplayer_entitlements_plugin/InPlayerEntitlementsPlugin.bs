@@ -208,8 +208,6 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
   '  */
   private function sendPurchasesToInPlayer(purchases)
     m.log.method("postPurchasesImpl")
-    failureCount = 0
-
     if m.token = invalid
       m.log.error("not authenticated with inplayer when sending purchases")
       return []

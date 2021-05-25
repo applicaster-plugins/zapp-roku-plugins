@@ -121,7 +121,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   end function
 
   public function onUsernameButtonSelected(value)
-    m.showKeyboardDialog("Enter your username", m.username, "onUsernameKeyboardDialogDismissal")
+    m.showKeyboardDialog("Enter your username", m.username, "onUsernameKeyboardDialogDismissal", false, true)
   end function
 
   public function onPasswordButtonSelected(value)
@@ -277,7 +277,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   '++ launch support
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  override function sendLaunchBecaon()
+  override function sendLaunchBeacon()
     'we handle this manually
   end function
 
