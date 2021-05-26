@@ -66,7 +66,7 @@ class ZappOauthPlugin extends zapp.auth.BaseAuthPlugin
             idToken = mc.getPath(result, "id_token", accessToken)
 
             'make sure to keep the device code for later
-            result.device_code = deviceResponse.device_code
+            result.device_code = result.device_code
             return m.createAuthData("valid", idToken, accessToken, refreshToken, result, result.expires_in)
           else
             return m.createErrorResult("token could not be refreshed with service")
@@ -74,7 +74,6 @@ class ZappOauthPlugin extends zapp.auth.BaseAuthPlugin
         else
           return m.createErrorResult("no token to refresh")
         end if
-        m.log.warn("no verify endpoint specified")
       end if
     else
       m.log.info("token is not yet expired")
@@ -163,7 +162,7 @@ class ZappOauthPlugin extends zapp.auth.BaseAuthPlugin
           client_id: m.clientId
           device_code: m.authData.device_code
         }
-        result = m.executeAPIRequest("FORMPOST", invalid, params, true, invalid, m.logoutEndpoint)
+        m.executeAPIRequest("FORMPOST", invalid, params, true, invalid, m.logoutEndpoint)
       else
         m.log.warn("no logout endpoint specified")
       end if

@@ -3,15 +3,13 @@ namespace zapp.tests
   @suite
   class AnalyticsEventFactoryTests extends tests.BaseTestSuite
 
-    override function setup()
+    protected override function setup()
       super.setup()
       m.analytics = new AnalyticsEventFactory()
       m.testItem = CreateObject("roSGNode", "GridContent")
       m.testItem.id = "12345"
       m.testItem.title = "Test Item"
       m.testItem.length = 120
-      m.testItem.addField("free", "boolean", false)
-      m.testItem.free = true
       m.testItem.itemType = "vod"
 
       m.testCategory = CreateObject("roSGNode", "ContentNode")
@@ -166,7 +164,7 @@ namespace zapp.tests
 
       m.assertEqual(event.category, "Play VOD")
       m.assertEqual(event.action, "Play VOD")
-      m.assertEqual(event.label, "ATOM feed name=N/A;Duration=00:02:00;Duration Played=00:01:15;Free=True;Item ID=12345;Item Name=Test Item;Item Type=VOD - Applicaster Model;Parent Category ID=N/A;Parent Category Name=N/A;Path To=Test Case;Percent Complete=62;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A")
+      m.assertEqual(event.label, "ATOM feed name=N/A;Duration=00:02:00;Duration Played=00:01:15;Free=False;Item ID=12345;Item Name=Test Item;Item Type=VOD - Applicaster Model;Parent Category ID=N/A;Parent Category Name=N/A;Path To=Test Case;Percent Complete=62;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A")
 
     end function
 
@@ -190,7 +188,7 @@ namespace zapp.tests
 
       m.assertEqual(event.category, "Click Item")
       m.assertEqual(event.action, "Click Item")
-      m.assertEqual(event.label, "ATOM feed name=N/A;Free=True;Item ID=12345;Item Name=Test Item;Item Type=VOD - Applicaster Model;Parent Category ID=N/A;Parent Category Name=N/A;Path To=Test Case;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A")
+      m.assertEqual(event.label, "ATOM feed name=N/A;Free=False;Item ID=12345;Item Name=Test Item;Item Type=VOD - Applicaster Model;Parent Category ID=N/A;Parent Category Name=N/A;Path To=Test Case;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A")
 
     end function
 
@@ -252,7 +250,7 @@ namespace zapp.tests
 
       m.assertEqual(event.category, "View Storefront")
       m.assertEqual(event.action, "View Storefront")
-      m.assertEqual(event.label, "Action=Authorization;ATOM feed name=N/A;Free=True;Item ID=12345;Item Name=Test Item;Item Type=VOD - Applicaster Model;Parent Category ID=N/A;Parent Category Name=N/A;Path To=Test Case;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A")
+      m.assertEqual(event.label, "Action=Authorization;ATOM feed name=N/A;Free=False;Item ID=12345;Item Name=Test Item;Item Type=VOD - Applicaster Model;Parent Category ID=N/A;Parent Category Name=N/A;Path To=Test Case;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A")
 
     end function
 
@@ -276,7 +274,7 @@ namespace zapp.tests
 
       m.assertEqual(event.category, "Tap Storefront Button")
       m.assertEqual(event.action, "Tap Storefront Button")
-      m.assertEqual(event.label, "ATOM feed name=N/A;Button Name=Purchase Button;Free=True;Item ID=12345;Item Name=Test Item;Item Type=VOD - Applicaster Model;Parent Category ID=N/A;Parent Category Name=N/A;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A")
+      m.assertEqual(event.label, "ATOM feed name=N/A;Button Name=Purchase Button;Free=False;Item ID=12345;Item Name=Test Item;Item Type=VOD - Applicaster Model;Parent Category ID=N/A;Parent Category Name=N/A;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A")
 
     end function
 
@@ -452,7 +450,7 @@ namespace zapp.tests
 
       m.assertEqual(event.category, "Pause VOD")
       m.assertEqual(event.action, "Pause VOD")
-      m.assertEqual(event.label, "ATOM feed name=N/A;Free=True;Item ID=12345;Item Name=Test Item;Item Type=VOD - Applicaster Model;Parent Category ID=N/A;Parent Category Name=N/A;Pause Timecode=00:02:05;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A;Video Duration=00:02:00")
+      m.assertEqual(event.label, "ATOM feed name=N/A;Free=False;Item ID=12345;Item Name=Test Item;Item Type=VOD - Applicaster Model;Parent Category ID=N/A;Parent Category Name=N/A;Pause Timecode=00:02:05;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A;Video Duration=00:02:00")
 
     end function
 
@@ -476,7 +474,7 @@ namespace zapp.tests
 
       m.assertEqual(event.category, "Unpause VOD")
       m.assertEqual(event.action, "Unpause VOD")
-      m.assertEqual(event.label, "ATOM feed name=N/A;Free=True;Item ID=12345;Item Name=Test Item;Item Type=VOD - Applicaster Model;Parent Category ID=N/A;Parent Category Name=N/A;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A;Unpause Timecode=00:02:05;Video Duration=00:02:00")
+      m.assertEqual(event.label, "ATOM feed name=N/A;Free=False;Item ID=12345;Item Name=Test Item;Item Type=VOD - Applicaster Model;Parent Category ID=N/A;Parent Category Name=N/A;Season ID=N/A;Season Name=N/A;Show ID=N/A;Show Name=N/A;TLC ID=N/A;TLC Name=N/A;Unpause Timecode=00:02:05;Video Duration=00:02:00")
 
     end function
 

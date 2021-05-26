@@ -3,7 +3,7 @@ namespace zapp.tests
   @suite
   class FullScreenSearchVMTests extends tests.BaseTestSuite
 
-    override function beforeEach()
+    protected override function beforeEach()
       super.beforeEach()
       mioc.setInstances({
         "user": { "isLoggedIn": false }
@@ -87,8 +87,10 @@ namespace zapp.tests
       m.vm.searchDelayTask = searchDelayTask
       m.vm.loadDataTask = loadDataTask
 
-      m.expectOnce(m.vm, "cancelWaitTimer", [searchDelayTask])
       m.expectOnce(m.vm, "cancelTask", [loadDataTask])
+      m.expectOnce(m.vm, "cancelTask") 'it calls super, which in turn cancels some things
+      m.expectOnce(m.vm, "cancelWaitTimer")
+      m.expectOnce(m.vm, "cancelWaitTimer", [searchDelayTask])
 
       m.vm.onHide()
 
@@ -251,8 +253,6 @@ namespace zapp.tests
       searchDelayTask = { "id": "searchDelayTask" }
       m.vm.searchDelayTask = searchDelayTask
       m.vm.loadDataTask = loadDataTask
-
-      newDelayTask = { "id": "newDelayTask" }
 
       m.expectOnce(m.vm, "cancelWaitTimer", [searchDelayTask])
       m.expectOnce(m.vm, "cancelTask", [loadDataTask])

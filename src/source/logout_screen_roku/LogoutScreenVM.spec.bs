@@ -1,10 +1,9 @@
 namespace zapp.tests
-
   @tags("public", "auth", "vm")
   @suite
   class LogoutScreenVmTests extends tests.BaseTestSuite
 
-    override function beforeEach()
+    protected override function beforeEach()
       super.beforeEach()
       mioc.setInstances({
         "user": { "isLoggedIn": false }
@@ -110,7 +109,7 @@ namespace zapp.tests
       m.expectOnce(m.vm, "getInstance", ["analyticsManager"], analyticsManager)
 
       m.expectOnce(m.vm, "createAUthTask", ["execLogOut", providerId, m.vm.onLogoutComplete], authTask)
-      m.vm.providerId = providerid
+      m.vm.providerId = providerId
 
       m.vm.logout()
 
@@ -143,12 +142,14 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("onLogoutCompplete")
+    @describe("onLogoutComplete")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
     @it("onLogoutComplete")
     function _()
+
+      m.expectOnce(m.vm, "setFocus")
 
       m.vm.onLogoutComplete({ isOK: true })
 

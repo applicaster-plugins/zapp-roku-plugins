@@ -3,7 +3,7 @@ namespace zapp.tests
   @suite
   class RegcodeLoginScreenVMTests extends tests.BaseTestSuite
 
-    override function beforeEach()
+   protected override function beforeEach()
       super.beforeEach()
 
       riversJson = {
@@ -57,7 +57,6 @@ namespace zapp.tests
 
     @it("not displayedInPrehook")
     function _()
-      currentSelection = { "id": "currentSelection" }
       m.vm.providerId = "pid"
       m.vm.isDisplayedInPrehook = false
 

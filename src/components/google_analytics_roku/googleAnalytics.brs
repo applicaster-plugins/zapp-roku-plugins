@@ -208,7 +208,7 @@ function gamobileException(description as string) as void
   end if
 
   hit_params = {
-    t: "exception" 
+    t: "exception"
     exd: Box(description).Escape() ' Exception description.
     exf: "0" ' Exception is fatal? (we can't capture fatals in brightscript)
   }
@@ -230,7 +230,7 @@ function gamobileSendHit(hit_params as object) as void
 
   url = m.gamobile.url
 
-  ' first set immutables  
+  ' first set immutables
   full_params = "v=" + m.gamobile.version ' Measurement Protocol Version
 
   ' next set session and hit params.  hit params can override session params
@@ -261,8 +261,9 @@ function gamobileSendHit(hit_params as object) as void
     m.gamobile.asyncReqById[requestId] = request
 
     if m.gamobile.debug
-      ? "[GA] sendHit POSTed (" + requestId + ")";postStr
-      ? "[GA] pending req";getGaPendingRequestsMap()
+      ? "[GA] sendHit POSTed (" + requestId + "): ";postStr
+      ? "[GA] pending req: ";getGaPendingRequestsMap()
+      ? "[GA] didSend: ";didSend
     end if
   end for
 

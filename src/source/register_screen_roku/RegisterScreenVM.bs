@@ -92,7 +92,7 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public function onUsernameButtonSelected(value)
-    m.showKeyboardDialog("Enter your username", m.username, "onUsernameKeyboardDialogDismissal")
+    m.showKeyboardDialog("Enter your username", m.username, "onUsernameKeyboardDialogDismissal", false, true)
   end function
 
   public function onNameButtonSelected(value)
@@ -180,6 +180,7 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
       end if
       m.isErrorShowing = true
       m.isRegisterButtonEnabled = true
+      m.setFocus(m.getMField("top"))
     end if
 
     m.isLoading = false

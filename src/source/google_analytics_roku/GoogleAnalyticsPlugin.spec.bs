@@ -4,7 +4,7 @@ namespace zapp.tests
   @suite
   class GoogleAnalyticsPluginTests extends tests.BaseTestSuite
 
-    override function beforeEach()
+   protected override function beforeEach()
       super.beforeEach()
       config = {
         "tracking_id": "#t"
@@ -70,8 +70,6 @@ namespace zapp.tests
     @params("allow-tracking-user-id-for-app-familya-aaaa", "aaaa", false)
     @params("allow-tracking-user-id-for-app-family-aaaa", "aaaac", false)
     function _(userIdString, versionId, result)
-
-      versionPrefix = "allow-tracking-user-id-for-app-family-"
 
       fResult = m.plugin.checkIfTrackingUserIdAllowed(userIdString, versionId)
 

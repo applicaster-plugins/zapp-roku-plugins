@@ -4,7 +4,7 @@ namespace zapp.tests
   @suite
   class GigyaLoginScreenVMTests extends tests.BaseTestSuite
 
-    override function beforeEach()
+   protected override function beforeEach()
       super.beforeEach()
       mioc.setInstances({
         "user": { "isLoggedIn": false }
@@ -163,7 +163,6 @@ namespace zapp.tests
       m.expectOnce(m.vm, "getScreen", ["#lis"], screen)
       m.expectOnce(m.vm, "push", [screen])
       m.expectOnce(m.vm, "setFocus", [screen])
-      m.expectOnce(m.vm, "unobserveNodeField", [screen, "state", m.vm.onLoginScreenStateChange])
 
       m.vm.showLoginScreen()
     end function

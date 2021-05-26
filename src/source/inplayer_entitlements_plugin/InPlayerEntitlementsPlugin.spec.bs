@@ -6,7 +6,7 @@ namespace zapp.tests
     private authenticationData
     private availableProducts
 
-    override function beforeEach()
+   protected override function beforeEach()
       super.beforeEach()
       mioc.setInstance("constants", { id: "constants" })
       mioc.setInstance("plugins", [])
@@ -101,7 +101,7 @@ namespace zapp.tests
     @params([{ "code": "f1" }], invalid, [])
     @params([{ "code": "f1" }], [], [])
     @params([{ "code": "f1" }], [{ external_id: "f1" }], ["f1"])
-    function _(rokuPurchases, externalFees, expectedIds) as void
+    function _(rokuPurchases, externalFees, expectedIds)
       receipt1 = { "id": "f1" }
       response = { "id": "response", "collection": [receipt1] }
       fee1 = { "id": "fee1", external_fees: externalFees }
@@ -120,7 +120,7 @@ namespace zapp.tests
     @params(invalid, { code: "f2" }, invalid, ["f2"])
     @params(invalid, { code: "f2" }, { code: "f3" }, ["f2", "f3"])
     @params({ code: "f1" }, { code: "f2" }, { code: "f3" }, ["f1", "f2", "f3"])
-    function _(rr1, rr2, rr3, expectedIds) as void
+    function _(rr1, rr2, rr3, expectedIds)
       rokuPurchases = [{ "code": "f1" }, { "code": "f2" }, { "code": "f3" }]
       receipt1 = { "id": "f1" }
       receipt2 = { "id": "f2" }
@@ -151,7 +151,7 @@ namespace zapp.tests
     @it("post Purchases-no failures")
     @params([], true)
     @params([{ "error": "here" }], false)
-    function _(response, expectedResult) as void
+    function _(response, expectedResult)
       rokuPurchases = {}
       m.expectOnce(m.plugin, "sendPurchasesToInPlayer", [rokuPurchases], response)
 
@@ -613,19 +613,18 @@ namespace zapp.tests
       m.plugin.token = "CHANGE ME"
     end function
 
-    @it("integration_makePurhcase")
+    @it("integration_makePurchase")
     function _()
 
-      purchases = InplayerEntitlements.tests.make_live_purchase()
+      purchases = m.make_live_purchase()
       m.plugin.sendPurchasesToInPlayer(purchases)
     end function
 
     function make_live_purchase(code = "73228_17870")
       channelStore = new zapp.RokuChannelStoreModule(false)
-      rcs = channelStore.getChannelStore()
       m.log.info("MAKING ROKU PURCHASE", code)
       result = channelStore.doRokuPurchase(invalid, code, 1)
-      m.log.info("purhcased", result)
+      m.log.info("purchased", result)
       return result
     end function
 
@@ -639,7 +638,7 @@ namespace zapp.tests
 
     @it("getAvailableProducts")
     function _()
-      products = InplayerEntitlements.tests.getProducts()
+      products = m.getProducts()
       m.plugin.getAvailableProducts(products, [])
 
       m.log.info("products", m.plugin.availableProducts.availableProducts)
@@ -660,7 +659,7 @@ namespace zapp.tests
 
     @it("getPurchasedItemIds")
     function _()
-      products = InplayerEntitlements.tests.getProducts()
+      products = m.getProducts()
       result = m.plugin.getPurchasedItemIds(products)
       m.log.info("item ids", result)
 

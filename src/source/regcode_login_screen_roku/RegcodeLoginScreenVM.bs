@@ -52,7 +52,7 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
     for i = 1 to 6
       key = "text" + i.toStr().trim()
       text = m.localizations[key]
-      m.setField(key, "")
+      m.setField(key, text)
     end for
     m.isDebugOverrideSet = mc.getPath(styles, "force_authentication_on_all", "off") = "on"
   end function
@@ -217,7 +217,7 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-  override function sendLaunchBecaon()
+  override function sendLaunchBeacon()
     'we handle this manually
   end function
 

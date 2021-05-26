@@ -2,9 +2,9 @@ namespace zapp.tests
 
   @tags("public", "video", "analytics")
   @suite
-  class SegmenetVideoAnalyticsPluginTests extends tests.BaseTestSuite
+  class SegmentVideoAnalyticsPluginPluginTests extends tests.BaseTestSuite
 
-    override function beforeEach()
+    protected override function beforeEach()
       super.beforeEach()
       m.constants = {
         "deviceInfo": { "videoMode": "1080p" }
@@ -16,7 +16,8 @@ namespace zapp.tests
         "analyticsManager": m.analyticsManager
       })
 
-      m.plugin = new SegmentVideoAnalyticsPlugin(json)
+      pluginJson = {}
+      m.plugin = new SegmentVideoAnalyticsPlugin(pluginJson)
     end function
 
 

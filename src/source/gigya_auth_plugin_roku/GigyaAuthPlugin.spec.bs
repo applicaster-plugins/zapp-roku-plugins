@@ -3,7 +3,7 @@ namespace zapp.tests
   @suite
   class GigyaAuthPluginTests extends tests.BaseTestSuite
 
-    override function beforeEach()
+   protected override function beforeEach()
       super.beforeEach()
       m.riversJson = {
         "id": "myAccount"

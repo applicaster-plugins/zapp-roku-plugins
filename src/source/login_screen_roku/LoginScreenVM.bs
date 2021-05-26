@@ -106,7 +106,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   '++ callbacks
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  public function onLoginButtonSelected(value)
+  public function onLoginButtonSelected()
     m.log.method("onLoginButtonSelected")
 
     if not m.isLoading and m.isCredsValid
@@ -114,26 +114,27 @@ class LoginScreenVM extends zapp.uib.ScreenVM
     else if not m.isCredsValid
       m.errorText = "Please enter your email address and password"
       m.isErrorShowing = true
+      m.setFocus(m.getMField("top"))
     else
       m.log.warn("ignoring loging button, while loading")
     end if
   end function
 
-  public function onUsernameButtonSelected(value)
-    m.showKeyboardDialog("Enter your username", m.username, "onUsernameKeyboardDialogDismissal")
+  public function onUsernameButtonSelected()
+    m.showKeyboardDialog("Enter your username", m.username, "onUsernameKeyboardDialogDismissal", false, true)
   end function
 
-  public function onPasswordButtonSelected(value)
+  public function onPasswordButtonSelected()
     m.showKeyboardDialog("Enter your password", m.password, "onPasswordKeyboardDialogDismissal", true)
   end function
 
-  public function onRegisterButtonSelected(value)
+  public function onRegisterButtonSelected()
     m.isShowingRegisterScreen = true
     screen = m.getScreen(m.riversJson.styles.register_screen)
     m.toggleSubScreen(screen)
   end function
 
-  public function onForgotPasswordButtonSelected(value)
+  public function onForgotPasswordButtonSelected()
     screen = m.getScreen(m.riversJson.styles.forgot_password_screen)
     m.toggleSubScreen(screen)
   end function
@@ -239,7 +240,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
       creds.password = m.password
       m.authTask = m.createAuthTask("execLogIn", m.providerId, m.onLoginComplete, creds)
 
-      m.isLoginButtonEnabled = false
+      ' m.isLoginButtonEnabled = false
 
       m.isLoading = true
       m.errorText = ""
@@ -265,6 +266,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
       end if
       m.isErrorShowing = true
       m.isLoginButtonEnabled = true
+      m.setFocus(m.getMField("top"))
     end if
 
     m.isLoading = false
@@ -275,7 +277,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   '++ launch support
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  override function sendLaunchBecaon()
+  override function sendLaunchBeacon()
     'we handle this manually
   end function
 
@@ -342,5 +344,13 @@ class LoginScreenVM extends zapp.uib.ScreenVM
 
     return true
   end function
+
+  ' override function onGainedFocus(isSelfFocused)
+  '   m.log.info("onGainedFocus")
+  '   super.onGainedFocus(isSelfFocused)
+  '   if isSelfFocused
+  '     m.setFocusId(m.preScreenFocusId)
+  '   end if
+  ' end function
 
 end class
