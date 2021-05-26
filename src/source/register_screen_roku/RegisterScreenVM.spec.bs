@@ -138,7 +138,7 @@ namespace zapp.tests
     @params("george@foo.bar", "george@foo.bar", "textInput")
     function _(text, expectedText, expectedButtonStyle)
 
-      m.expectOnce(m.vm, "checkCredsValid")
+      m.expectOnce(m.vm, "checkCredsValid", [])
 
       m.vm.usernamePlaceholderText = "placeholder"
 
@@ -159,7 +159,7 @@ namespace zapp.tests
     function _(text, expectedText, expectedButtonStyle, expectedPassword)
 
       m.vm.passwordPlaceholderText = "placeholder"
-      m.expectOnce(m.vm, "checkCredsValid")
+      m.expectOnce(m.vm, "checkCredsValid", [])
 
       m.vm.onPasswordKeyboardDialogDismissal(text)
 

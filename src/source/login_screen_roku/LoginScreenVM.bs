@@ -106,7 +106,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   '++ callbacks
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  public function onLoginButtonSelected(value)
+  public function onLoginButtonSelected()
     m.log.method("onLoginButtonSelected")
 
     if not m.isLoading and m.isCredsValid
@@ -120,21 +120,21 @@ class LoginScreenVM extends zapp.uib.ScreenVM
     end if
   end function
 
-  public function onUsernameButtonSelected(value)
+  public function onUsernameButtonSelected()
     m.showKeyboardDialog("Enter your username", m.username, "onUsernameKeyboardDialogDismissal", false, true)
   end function
 
-  public function onPasswordButtonSelected(value)
+  public function onPasswordButtonSelected()
     m.showKeyboardDialog("Enter your password", m.password, "onPasswordKeyboardDialogDismissal", true)
   end function
 
-  public function onRegisterButtonSelected(value)
+  public function onRegisterButtonSelected()
     m.isShowingRegisterScreen = true
     screen = m.getScreen(m.riversJson.styles.register_screen)
     m.toggleSubScreen(screen)
   end function
 
-  public function onForgotPasswordButtonSelected(value)
+  public function onForgotPasswordButtonSelected()
     screen = m.getScreen(m.riversJson.styles.forgot_password_screen)
     m.toggleSubScreen(screen)
   end function

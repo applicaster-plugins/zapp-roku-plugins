@@ -366,7 +366,7 @@ namespace zapp.tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @beforeEach
-    function integratin_process_login_beforeEach()
+    function integration_process_login_beforeEach()
       m.beforeEach()
       mioc.setInstance("constants", { "simulateInAppPurchases": true })
       mioc.setInstance("entitlements", CreateObject("roSGNode", "SimpleEntitlements"))
@@ -390,9 +390,6 @@ namespace zapp.tests
         }
       }])
 
-      m.rootBeforeEach = TAAWSLSVMT.beforeEach
-      'bs:disable-next-line
-      m.rootBeforeEach()
     end function
 
     @afterEach

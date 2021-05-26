@@ -129,7 +129,7 @@ class AnalyticsEventFactory
     dict["ATOM feed name"] = "N/A"
 
     if type(item) <> "roAssociativeArray" and type(item) <> "roSGNode" then return dict
-    if mc.getPath(contentItem, "json.extensions.free", false) then dict["Free"] = m.booleanString(item.free)
+    if mc.getPath(item, "json.extensions.free", false) then dict["Free"] = m.booleanString(item.free)
     if item.itemType <> invalid
       if item.itemType = "channel"
         dict["Item Type"] = "Channel - Applicaster Model"

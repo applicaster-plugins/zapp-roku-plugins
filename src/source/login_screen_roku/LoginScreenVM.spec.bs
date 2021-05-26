@@ -134,7 +134,7 @@ namespace zapp.tests
 
       m.expectOnce(m.vm, "processLogin")
 
-      m.vm.onLoginButtonSelected(true)
+      m.vm.onLoginButtonSelected()
     end function
 
     @it("in progress")
@@ -143,7 +143,7 @@ namespace zapp.tests
       m.expectNone(m.vm, "processLogin")
       m.expectOnce(m.vm, "setFocus")
 
-      m.vm.onLoginButtonSelected(true)
+      m.vm.onLoginButtonSelected()
     end function
 
     @it("invalid creds")
@@ -153,7 +153,7 @@ namespace zapp.tests
       m.expectOnce(m.vm, "setFocus")
       m.expectNone(m.vm, "processLogin")
 
-      m.vm.onLoginButtonSelected(true)
+      m.vm.onLoginButtonSelected()
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -168,7 +168,7 @@ namespace zapp.tests
 
       m.expectOnce(m.vm, "showKeyboardDialog", ["Enter your username", expectedText, "onUsernameKeyboardDialogDismissal", false, true])
 
-      m.vm.onUsernameButtonSelected(true)
+      m.vm.onUsernameButtonSelected()
 
     end function
 
@@ -184,7 +184,7 @@ namespace zapp.tests
 
       m.expectOnce(m.vm, "showKeyboardDialog", ["Enter your password", expectedText, "onPasswordKeyboardDialogDismissal", true])
 
-      m.vm.onPasswordButtonSelected(true)
+      m.vm.onPasswordButtonSelected()
 
     end function
 
@@ -197,8 +197,6 @@ namespace zapp.tests
     @params("   ", "placeholder", "textInputPlaceholder")
     @params("george@foo.bar", "george@foo.bar", "textInput")
     function _(text, expectedText, expectedButtonStyle)
-
-      m.expectOnce(m.vm, "checkCredsValid")
 
       m.vm.usernamePlaceholderText = "placeholder"
 
@@ -217,9 +215,7 @@ namespace zapp.tests
     @params("   ", "placeholder", "textInputPlaceholder", "")
     @params("12345678", "********", "textInput", "12345678")
     function _(text, expectedText, expectedButtonStyle, expectedPassword)
-
       m.vm.passwordPlaceholderText = "placeholder"
-      m.expectOnce(m.vm, "checkCredsValid")
 
       m.vm.onPasswordKeyboardDialogDismissal(text)
 

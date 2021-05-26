@@ -63,21 +63,21 @@
             style='{{:inputStyle}}'
             labelXOffset='9'
             buttonType='{{passwordButtonType}}'
-            selected='{(onPasswordButtonSelected(value))}'
+            selected='{(onPasswordButtonSelected())}'
             width='610' />
 
         <ZActionButton
             id='loginButton'
             style='{{:loginButtonStyle}}'
             visible='{{isLoading:transform=mx_transform_invertBoolean}}'
-            selected='{(onLoginButtonSelected(value))}'
+            selected='{(onLoginButtonSelected())}'
             width='610' />
 
         <ZActionButton
             id='registerButton'
             style='{{:registerButtonStyle}}'
             visible='{{isLoading:transform=mx_transform_invertBoolean}}'
-            selected='{(onRegisterButtonSelected(value))}'
+            selected='{(onRegisterButtonSelected())}'
             width='610' />
 
         <ZActionButton
@@ -85,7 +85,7 @@
             style='{{:forgotPasswordButtonStyle}}'
             enabled='{{isLoginButtonEnabled}}'
             visible='{{isLoading:transform=mx_transform_invertBoolean}}'
-            selected='{(onForgotPasswordButtonSelected(value))}'
+            selected='{(onForgotPasswordButtonSelected())}'
             width='610' />
       </mv_LayoutGroup>
 
