@@ -48,7 +48,6 @@ class LoginScreenVM extends zapp.uib.ScreenVM
     m.focusId = "usernameInput"
     m.processStyles(m.riversJson.styles)
     m.providerId = m.getAuthProviderId()
-
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

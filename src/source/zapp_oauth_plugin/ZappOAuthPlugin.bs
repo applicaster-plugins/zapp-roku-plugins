@@ -21,7 +21,7 @@ class ZappOauthPlugin extends zapp.auth.BaseAuthPlugin
   private executeApiRequest = zapp.APIUtils.executeApiRequest
 
   public function new(plugin)
-    super("AdobePrimetime", plugin)
+    super("ZappOauthPlugin", plugin)
     m.isTokenUsableWithDSP = true
 
     m.clientId = plugin.getStringValue("clientId", "")
@@ -32,6 +32,7 @@ class ZappOauthPlugin extends zapp.auth.BaseAuthPlugin
     m.grantType = plugin.getStringValue("grantType", "urn:ietf:params:oauth:grant-type:device_code")
 
     m.pollingInterval = plugin.getIntValue("pollingInterval", -1)
+    m.providerId = 999
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -49,32 +50,34 @@ class ZappOauthPlugin extends zapp.auth.BaseAuthPlugin
   end function
 
   public override function _verify()
-    if m.isAuthDataExpired()
+    if not m.isAuthDataExpired()
+      'the refresh service is not working yet!
+      return m.authData
       'this is just a guess right now - nothing confirmed
-      if m.authData <> invalid and m.authData.refreshToken <> invalid
-        if m.refreshEndpoint <> ""
-          params = {
-            client_id: m.clientId
-            refresh_token: m.authData.refreshToken
-            grant_type: "refresh"
-          }
-          result = m.executeAPIRequest("FORMPOST", invalid, params, true, invalid, m.refreshEndpoint)
+      ' if m.authData <> invalid and m.authData.refreshToken <> invalid
+      '   if m.refreshEndpoint <> ""
+      '     params = {
+      '       client_id: m.clientId
+      '       refresh_token: m.authData.refreshToken
+      '       grant_type: "refresh"
+      '     }
+      '     result = m.executeAPIRequest("FORMPOST", invalid, params, true, invalid, m.refreshEndpoint)
 
-          if result <> invalid and result.access_token <> invalid and result.access_token <> ""
-            accessToken = mc.getPath(result, "access_token", "")
-            refreshToken = mc.getPath(result, "refresh_token", accessToken)
-            idToken = mc.getPath(result, "id_token", accessToken)
+      '     if result <> invalid and result.access_token <> invalid and result.access_token <> ""
+      '       accessToken = mc.getPath(result, "access_token", "")
+      '       refreshToken = mc.getPath(result, "refresh_token", accessToken)
+      '       idToken = mc.getPath(result, "id_token", accessToken)
 
-            'make sure to keep the device code for later
-            result.device_code = result.device_code
-            return m.createAuthData("valid", idToken, accessToken, refreshToken, result, result.expires_in)
-          else
-            return m.createErrorResult("token could not be refreshed with service")
-          end if
-        else
-          return m.createErrorResult("no token to refresh")
-        end if
-      end if
+      '       'make sure to keep the device code for later
+      '       result.device_code = result.device_code
+      '       return m.createAuthData("valid", idToken, accessToken, refreshToken, result, result.expires_in)
+      '     else
+      '       return m.createErrorResult("token could not be refreshed with service")
+      '     end if
+      '   else
+      '     return m.createErrorResult("no token to refresh")
+      '   end if
+      ' end if
     else
       m.log.info("token is not yet expired")
     end if
