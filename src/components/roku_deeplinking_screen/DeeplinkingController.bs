@@ -12,7 +12,6 @@ end function
 function createVM()
   m.log.info("m.top.riversJson", m.top.riversJson)
   vm = new DeeplinkingControllerVM(m.top.riversJson)
-  mx.initializeBindings()
   initializeView(m.top.findNode("screenContainer"))
   return vm
 end function
