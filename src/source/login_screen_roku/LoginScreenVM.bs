@@ -37,11 +37,13 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   private debugAccountId = 0
 
   private authTask
+  private channelStore
 
   'mixin keyboard
   private showKeyboardDialog = zapp.keyboardDialogMixin.showKeyboardDialog
   private _onKeyboardDialogButtonSelected = zapp.keyboardDialogMixin.onKeyboardDialogButtonSelected
   private _closeKeyboardDialog = zapp.keyboardDialogMixin.closeKeyboardDialog
+  private setTextFromKeyboard = zapp.keyboardDialogMixin.setTextFromKeyboard
 
   public function new(riversJson)
     super(riversJson, "LoginScreenVM")
@@ -121,7 +123,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   end function
 
   public function onUsernameButtonSelected(value)
-    m.showKeyboardDialog("Enter your username", m.username, "onUsernameKeyboardDialogDismissal", false, true)
+    m.showKeyboardDialog("Enter your username", m.username, "onUsernameKeyboardDialogDismissal")
   end function
 
   public function onPasswordButtonSelected(value)
@@ -185,12 +187,13 @@ class LoginScreenVM extends zapp.uib.ScreenVM
 
   private function onUsernameKeyboardDialogDismissal(text)
     m.log.method("onKeyboardDialogDismissal")
-    zapp.keyboardDialogMixin.setTextFromKeyboard(m, "username", text)
+    m.setTextFromKeyboard("username", text)
+
   end function
 
   private function onPasswordKeyboardDialogDismissal(text)
     m.log.method("onPasswordKeyboardDialogDismissal")
-    zapp.keyboardDialogMixin.setTextFromKeyboard(m, "password", text, true)
+    m.setTextFromKeyboard("password", text, true)
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -253,7 +256,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
     m.log.method("onLoginComplete", result)
 
     if result <> invalid and result.state = "valid"
-      m.log.info("logged in succesfull")
+      m.log.info("logged in successful")
       m.signalAppLaunchDialog(true)
       m.dismiss("success")
 
@@ -282,6 +285,34 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   end function
 
 
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ private
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  function autoPopulateUserInfo()
+    m.log.method("autoPopulateUserInfo")
+
+    m.channelStore = m.createSGNode("ChannelStore", invalid, "channelStore", {
+      requestedUserData: "email"
+    })
+    m.observeNodeField(m.channelStore, "userData", m.onGetUserData, "value", true)
+    m.channelStore.command = "getUserData"
+  end function
+
+  function onGetUserData(data)
+    m.log.method("onGetUserData")
+
+    if data <> invalid
+      m.setTextFromKeyboard("username", mc.getPath(data, "email", ""))
+      m.focusId = "passwordInput"
+    end if
+
+    if m.channelStore.getParent() <> invalid
+      m.channelStore.getParent().removeChild(m.channelStore.getParent())
+    end if
+    m.channelStore = invalid
+  end function
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ Key Handling
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -352,5 +383,15 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   '     m.setFocusId(m.preScreenFocusId)
   '   end if
   ' end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ lifecycle
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  protected override function onFirstShow()
+    super.onFirstShow()
+    m.autoPopulateUserInfo()
+  end function
+
 
 end class
