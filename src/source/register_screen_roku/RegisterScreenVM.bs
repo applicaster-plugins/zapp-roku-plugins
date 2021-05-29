@@ -36,12 +36,13 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
   private debugAccountId = 0
 
   private authTask
+  private channelStore
 
   'mixin keyboard
   private showKeyboardDialog = zapp.keyboardDialogMixin.showKeyboardDialog
   private _onKeyboardDialogButtonSelected = zapp.keyboardDialogMixin.onKeyboardDialogButtonSelected
   private _closeKeyboardDialog = zapp.keyboardDialogMixin.closeKeyboardDialog
-
+  private setTextFromKeyboard = zapp.keyboardDialogMixin.setTextFromKeyboard
   public function new(riversJson)
     super(riversJson, "RegisterScreenVM")
 
@@ -122,17 +123,17 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
 
   private function onUsernameKeyboardDialogDismissal(text)
     m.log.method("onKeyboardDialogDismissal")
-    zapp.keyboardDialogMixin.setTextFromKeyboard(m, "username", text)
+    m.setTextFromKeyboard("username", text)
   end function
 
   private function onNameKeyboardDialogDismissal(text)
     m.log.method("onNameKeyboardDialogDismissal")
-    zapp.keyboardDialogMixin.setTextFromKeyboard(m, "humanName", text)
+    m.setTextFromKeyboard("humanName", text)
   end function
 
   private function onPasswordKeyboardDialogDismissal(text)
     m.log.method("onPasswordKeyboardDialogDismissal")
-    zapp.keyboardDialogMixin.setTextFromKeyboard(m, "password", text, true)
+    m.setTextFromKeyboard("password", text, true)
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -191,9 +192,33 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
   '++ private
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  'FIXME! hoist this into the base ViewModel in SDK 3.2
-  'it is duplicated form RegcodeLoginScreenVM
+  function autoPopulateUserInfo()
+    m.log.method("autoPopulateUserInfo")
 
+    m.channelStore = m.createSGNode("ChannelStore", invalid, "channelStore", {
+      requestedUserData: "email,firstname,lastname"
+    })
+    m.observeNodeField(m.channelStore, "userData", m.onGetUserData, "value", true)
+    m.channelStore.command = "getUserData"
+  end function
+
+  function onGetUserData(data)
+    m.log.method("onGetUserData")
+
+    if data <> invalid
+      m.setTextFromKeyboard("username", mc.getPath(data, "email", ""))
+      firstName = mc.getPath(data, "firstname", "")
+      lastName = mc.getPath(data, "lastname", "")
+      sep = firstName <> "" and lastName <> "" ? " " : ""
+      m.setTextFromKeyboard("humanName", firstName + sep + lastName)
+      m.focusId = "passwordInput"
+    end if
+
+    if m.channelStore.getParent() <> invalid
+      m.channelStore.getParent().removeChild(m.channelStore.getParent())
+    end if
+    m.channelStore = invalid
+  end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ Key Handling
@@ -254,5 +279,15 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
 
     return true
   end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ lifecycle
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  protected override function onFirstShow()
+    super.onFirstShow()
+    m.autoPopulateUserInfo()
+  end function
+
 
 end class

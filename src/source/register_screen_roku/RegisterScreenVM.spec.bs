@@ -132,40 +132,33 @@ namespace zapp.tests
     @describe("onUsernameKeyboardDialogDismissal")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @it("onUsernameKeyboardDialogDismissal")
-    @params("", "placeholder", "textInputPlaceholder")
-    @params("   ", "placeholder", "textInputPlaceholder")
-    @params("george@foo.bar", "george@foo.bar", "textInput")
-    function _(text, expectedText, expectedButtonStyle)
+    @it("uses keyboard helper to set text")
+    function _()
+      m.expectOnce(m.vm, "setTextFromKeyboard", ["username", "george@foo.bar"])
 
       m.expectOnce(m.vm, "checkCredsValid", [])
 
-      m.vm.usernamePlaceholderText = "placeholder"
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onNameKeyboardDialogDismissal")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-      m.vm.onUsernameKeyboardDialogDismissal(text)
+    @it("uses keyboard helper to set text")
+    function _()
+      m.expectOnce(m.vm, "setTextFromKeyboard", ["humanName", "name"])
 
-      m.assertEqual(m.vm.usernameText, expectedText)
-      m.assertEqual(m.vm.usernameButtonType, expectedButtonStyle)
+      m.vm.onNameKeyboardDialogDismissal("name")
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("onPasswordKeyboardDialogDismissal")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @it("onPasswordKeyboardDialogDismissal")
-    @params("", "placeholder", "textInputPlaceholder", "")
-    @params("   ", "placeholder", "textInputPlaceholder", "")
-    @params("12345678", "********", "textInput", "12345678")
-    function _(text, expectedText, expectedButtonStyle, expectedPassword)
+    @it("uses keyboard helper to set text")
+    function _()
 
-      m.vm.passwordPlaceholderText = "placeholder"
-      m.expectOnce(m.vm, "checkCredsValid", [])
+      m.expectOnce(m.vm, "setTextFromKeyboard", ["password", "p", true])
 
-      m.vm.onPasswordKeyboardDialogDismissal(text)
-
-      m.assertEqual(m.vm.passwordText, expectedText)
-      m.assertEqual(m.vm.password, expectedPassword)
-      m.assertEqual(m.vm.passwordButtonType, expectedButtonStyle)
+      m.vm.onPasswordKeyboardDialogDismissal("p")
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -393,5 +386,69 @@ namespace zapp.tests
 
     end function
 
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("autoPopulateUserInfo")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("creates channel store and requests data")
+    function _()
+      channelStore = { "id": "channelStore" }
+      m.expectOnce(m.vm, "createSGNode", ["ChannelStore", invalid, "channelStore", {
+          requestedUserData: "email,firstname,lastname"
+      }], channelStore)
+
+      m.expectOnce(m.vm, "observeNodeField", [channelStore, "userData", m.vm.onGetUserData, "value", true])
+
+      m.vm.autoPopulateUserInfo()
+    end function
+
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onGetUserData")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("populates text fields if set")
+    @params("", "", "", "")
+    @params("e", "f", "", "f")
+    @params("e", "", "s", "s")
+    @params("e", "f", "s", "f s")
+    function _(email, name, lastname, expectedFullname)
+      m.vm.channelStore = {
+        id: "channelStore"
+      }
+      m.expectOnce(m.vm, "setTextFromKeyboard", ["username", email])
+      m.expectOnce(m.vm, "setTextFromKeyboard", ["humanName", expectedFullname])
+
+      parent = { "id": "parent" }
+      m.expect(m.vm.channelStore, "getParent", 3, [], parent)
+      m.expectOnce(parent, "removeChild")
+
+      data = {
+        email: email
+        firstname: name
+        lastname: lastname
+      }
+
+      m.vm.onGetUserData(data)
+
+      m.assertEqual(m.vm.focusId, "passwordInput")
+
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onFirstShow")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("autopopulates the register fields")
+    function _()
+      'from super
+      m.stub(m.vm, "sendLaunchBeacon")
+      m.stub(m.vm, "load")
+
+      m.expectOnce(m.vm, "autoPopulateUserInfo", [])
+
+      m.vm.onFirstShow()
+    end function
   end class
 end namespace
