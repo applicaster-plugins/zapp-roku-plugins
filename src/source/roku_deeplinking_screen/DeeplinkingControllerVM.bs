@@ -155,6 +155,8 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
 
     m.log.info("Applying deep link for entry with link ", deeplinkingData.entryLink)
 
+    mioc.setInstance("deeplinkingSelection", deeplinkingSelection)
+
     parentScreen = m.getParentScreen(deeplinkingData.itemType, deeplinkingData.parentEntry)
 
     if parentScreen <> invalid and deeplinkingData.itemType <> "channel"
@@ -169,7 +171,7 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
 
     if deeplinkingSelection.action = "play"
       m.setInstance("currentSelection", deeplinkingSelection)
-      m.playSelection(deeplinkingSelection)
+      m.playSelection(deeplinkingSelection, true)
     end if
 
     if not m.isLiveDeeplink
@@ -214,25 +216,34 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
   private function getDeeplinkingSelectionWithData(deeplinkingData)
     m.log.method("getDeeplinkingSelectionWithData")
 
-    if deeplinkingData = invalid or deeplinkingData.isValid <> true or deeplinkingData.itemType = invalid or deeplinkingData.entry = invalid
-      m.log.info("received invalid deeplinkingData")
+    if deeplinkingData = invalid or deeplinkingData.isValid <> true
+      m.log.error("received invalid deeplinkingData")
       return invalid
     end if
 
     selection = CreateObject("roSGNode", "Selection")
 
-    content = deeplinkingData.entry.clone(true)
-    if content.url = invalid or content.url.trim() = ""
-      content.url = content.link
-    end if
-    selection.action = deeplinkingData.action
-    selection.currentItem = content
-    selection.initialItem = content
-    collection = createObject("roSGNode", "ZPEntry")
-    collection.appendChild(deeplinkingData.entry)
-    collection.id = deeplinkingData.entry.id
-    selection.collection = collection
+    content = invalid
 
+    if deeplinkingData.entry <> invalid
+      content = deeplinkingData.entry.clone(true)
+    else if deeplinkingData.parentEntry <> invalid
+      content = deeplinkingData.parentEntry.clone(true)
+    end if
+
+    if content <> invalid
+      if content.url = invalid or content.url.trim() = ""
+        content.url = content.link
+      end if
+      selection.currentItem = content
+      selection.initialItem = content
+
+      selection.action = deeplinkingData.action
+      collection = createObject("roSGNode", "ZPEntry")
+      collection.appendChild(content)
+      collection.id = content.id
+      selection.collection = collection
+    end if
     return selection
   end function
 
