@@ -369,7 +369,8 @@ class LoginScreenVM extends zapp.uib.ScreenVM
     if m.debugAccountId > m.maxDebugAccounts
       m.debugAccountId = 1
     end if
-    username = m.riversJson.styles.debug_username.replace("@", str(m.debugAccountId).trim() + "@")
+    ' username = m.riversJson.styles.debug_username.replace("@", str(m.debugAccountId).trim() + "@")
+    username = m.riversJson.styles.debug_username
     m.onUsernameKeyboardDialogDismissal(username)
     m.onPasswordKeyboardDialogDismissal(m.riversJson.styles.debug_password)
 

@@ -31,7 +31,12 @@ function _applyStyle(styles, localizations, assets)
 end function
 
 function playItem(item, playMode = "default")
+  progressBarColor = zapp.viewUtils.transposeUIBColor(m.top.riversJson.styles.theme_color)
+
+  m.videoControls.progressBarColor = progressBarColor
+
   m.vm.playItem(item)
+  m.videoControls.trickPlayView@.configureWithItem(item)
 end function
 
 function stopItem(args = invalid)
