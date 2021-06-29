@@ -171,6 +171,7 @@ class AdobePrimetimeAuthPlugin extends zapp.Auth.BaseAuthPlugin
 
     m.log.info("url is ", url)
 
+    m.request = new zapp.Request()
     result = m.request.getJsonSync(url, headers)
     m.log.info("result: ", result)
 
