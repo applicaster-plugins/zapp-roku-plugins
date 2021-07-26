@@ -55,6 +55,7 @@ class SegmentAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
       traits = {}
     end if
 
+
     if isFromLogout and not m.isIdentifyingOnLogout
       m.log.info("ignoring identify call from logout due to plugin configuration")
       return true
@@ -74,14 +75,19 @@ class SegmentAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
       if accountInfo <> invalid
         options.append(m.defaultOptions)
         if accountInfo.id <> invalid and accountInfo.id.trim() <> ""
+          traits.userId = accountInfo.id
+          traits.name = accountInfo.username
+          traits.device_pin_code = accountInfo.regCode
           m.log.info("identifying analytics with the userId", accountInfo.id, "for plugin:", pluginId)
+          m.log.info("using traits", formatJson(traits))
+          'hard coded for now
           m.library.identify(m.hash(accountInfo.id), traits, options)
         else
           m.log.error("identify called; but the id was empty!")
           m.identifyAsAnonymous()
         end if
       else
-        m.log.warn("idenitfy called; but there is no logged in user; identifying as anonymous")
+        m.log.warn("identify called; but there is no logged in user; identifying as anonymous")
         m.identifyAsAnonymous()
       end if
     end if
@@ -175,11 +181,14 @@ class SegmentAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
   end function
 
   private function hash(id)
-    byteArray = CreateObject("roByteArray")
-    byteArray.FromAsciiString(id)
+    'disabled
+    return id
 
-    digest = CreateObject("roEVPDigest")
-    digest.Setup("sha256")
-    return digest.Process(byteArray)
+    ' byteArray = CreateObject("roByteArray")
+    ' byteArray.FromAsciiString(id)
+
+    ' digest = CreateObject("roEVPDigest")
+    ' digest.Setup("sha256")
+    ' return digest.Process(byteArray)
   end function
 end class
