@@ -44,6 +44,7 @@ class AdobePrimetimeAuthPlugin extends zapp.Auth.BaseAuthPlugin
       id: userId
       email: "anonymous@anon.com"
       username: "anonymous"
+      regCode: mc.getPath(m.authData, "rawAuthData.regcode")
     }
   end function
 
@@ -76,10 +77,12 @@ class AdobePrimetimeAuthPlugin extends zapp.Auth.BaseAuthPlugin
     m.log.info("result is ", result)
 
     if result <> invalid and result.code <> invalid and result.code <> ""
+      m.setSessionStoreValue(m.id, "regcode", result.code)
       return m.createRegCodeResult(result.code)
     end if
 
     m.log.error("Error retrieving regcode")
+    m.setSessionStoreValue(m.id, "regcode", invalid)
     return m.createRegCodeResult(invalid, -1, "Unknown error")
   end function
 
@@ -195,6 +198,7 @@ class AdobePrimetimeAuthPlugin extends zapp.Auth.BaseAuthPlugin
         user = m.authData.user
       end if
 
+      result.regCode = m.getSessionStoreValue(m.id, "regcode")
       return m.createAuthData("valid", token, token, token, result, secondsTillExpire, errorCode, "", user)
     end if
 
