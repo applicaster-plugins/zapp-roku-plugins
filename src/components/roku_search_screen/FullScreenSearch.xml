@@ -27,7 +27,6 @@
         id='keyboard'
         style='{{:keyboardStyle}}'
         text='{[searchText|onSearchTextChange(value)]}' />
-    <!-- newText='{{searchText}}' -->
 
     <mv_MarkupGrid
         id='grid'
