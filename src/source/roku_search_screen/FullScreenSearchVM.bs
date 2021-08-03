@@ -109,7 +109,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     m.cancelTask(m.loadItemTask)
 
     if len(m.searchText.trim()) >= m.minCharacters
-      m.searchDelayTask = m.waitAFrame("onSearchDelayComplete", 0.5)
+      m.searchDelayTask = m.waitAFrame(m.onSearchDelayComplete, 0.5)
     else
       m.log.verbose("too few chars. ignoring")
       m.setGridVisible(false)

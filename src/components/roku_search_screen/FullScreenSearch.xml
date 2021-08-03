@@ -26,8 +26,7 @@
     <mv_MiniKeyboard
         id='keyboard'
         style='{{:keyboardStyle}}'
-        newText='{{searchText}}'
-        text='{(onSearchTextChange(value))}' />
+        text='{[searchText|onSearchTextChange(value)]}' />
 
     <mv_MarkupGrid
         id='grid'
