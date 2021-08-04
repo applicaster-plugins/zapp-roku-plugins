@@ -21,7 +21,6 @@ class ZGigyaAuthPlugin extends zapp.Auth.BaseAuthPlugin
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public override function _getAccountInfo()
-    'FIXME - verify these values
     return {
       id: m.authData.rawAuthData.uid
       email: "anonymous@anon.com"

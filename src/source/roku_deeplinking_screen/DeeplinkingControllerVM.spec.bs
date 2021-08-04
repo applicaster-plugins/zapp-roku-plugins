@@ -1,9 +1,10 @@
 namespace zapp.tests
-  @tags("public", "vm", "deeplinking")
+  @ignore("deeplinking is not supported on sdk 5 yet")
+  @tags("public", "vm", "deeplinking", "fixme")
   @suite
   class DeeplinkingControllerVMTests extends tests.BaseTestSuite
 
-   protected override function beforeEach()
+    protected override function beforeEach()
       super.beforeEach()
       mioc.setInstances({
         "user": { "isLoggedIn": false }
