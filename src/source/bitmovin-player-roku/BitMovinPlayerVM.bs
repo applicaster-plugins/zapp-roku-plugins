@@ -5,6 +5,7 @@ import "pkg:/source/lib/ViewUtils.bs"
 class BitMovinPlayerVM extends zapp.BaseZappVM
 
   private view = invalid
+  private videoNode as mc.types.node
   private themeColor = "#ffffff"
   private player = invalid
   private currentItem = invalid
@@ -13,11 +14,12 @@ class BitMovinPlayerVM extends zapp.BaseZappVM
   private isValid = false
   private pendingPlayerItem = invalid
   private playMode = "default"
-
   private bitmovinPlayerSDK
   private playerFunctions
   private playerFields
   private playerState
+  private videoControls as mc.types.node
+  private isVideoControlsCreated = false
 
   public function new(view)
     super("BitMovinPlayerVM")
@@ -81,10 +83,11 @@ class BitMovinPlayerVM extends zapp.BaseZappVM
   end function
 
   private function setVideoChromeStyle()
-    videoNode = m.player.getChild(0)
-    videoNode.retrievingBar.filledBarBlendColor = m.themeColor
-    videoNode.bufferingBar.filledBarBlendColor = m.themeColor
-    videoNode.trickPlayBar.filledBarBlendColor = m.themeColor
+    m.videoNode.retrievingBar.filledBarBlendColor = m.themeColor
+    m.videoNode.bufferingBar.filledBarBlendColor = m.themeColor
+    m.videoNode.trickPlayBar.filledBarBlendColor = m.themeColor
+
+    'TODO set video controls color
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -117,12 +120,22 @@ class BitMovinPlayerVM extends zapp.BaseZappVM
     m.state = "playing"
     m.player.callFunc(m.playerFunctions.LOAD, playerItem)
     m.player.callFunc(m.playerFunctions.PLAY, invalid)
-    videoNode = m.player.getChild(0)
-    videoNode.control = "play"
+    m.videoNode = m.player.getChild(0)
+    m.videoNode.control = "play"
     if m.playMode = "default"
       m.setFocus(m.player)
     end if
     m.setVideoChromeStyle()
+    m.createVideoControls()
+    m.videoControls.trickPlayView@.configureWithItem(m.videoNode)
+  end function
+
+  private function createVideoControls()
+    if not m.isVideoControlsCreated
+      'bs:disable-next-line
+      m.videoControls = createControls(m.videoNode)
+      m.isVideoControlsCreated = true
+    end if
   end function
 
   public function getPlayerItem(item)
