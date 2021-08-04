@@ -1,10 +1,9 @@
 namespace zapp.tests
-
   @tags("public", "video", "vm")
   @suite
   class BitMovinPlayerVMTests extends tests.BaseTestSuite
 
-   protected override function beforeEach()
+    protected override function beforeEach()
       super.beforeEach()
       mioc.setInstance("collectionBookmarks", CreateObject("roSGNode", "Bookmarks"))
       mioc.setInstance("vodItemBookmarks", CreateObject("roSGNode", "Bookmarks"))
@@ -270,9 +269,17 @@ namespace zapp.tests
       playerData = { "id": "playerData" }
       videoNode = { "id": "videoNode" }
 
+      m.vm.playMode = "default"
       m.vm.state = "ready"
       m.vm.player = m.player
       m.vm.playerFunctions = m.player.BitmovinFunctions
+
+      trickPlayView = { "id" : "trickPlayView" }
+
+      m.vm.videoControls = {
+        trickPlayView: trickPlayView
+      }
+
       m.expectOnce(m.player, "getChild", [0], videoNode)
 
       m.expectOnce(m.vm, "setFocus", [m.player])
@@ -282,7 +289,12 @@ namespace zapp.tests
       m.expectOnce(m.player, "callFunc", [m.player.BitmovinFunctions.LOAD, playerData])
       m.expectOnce(m.player, "callFunc", [m.player.BitmovinFunctions.PLAY, invalid])
 
+      m.expectOnce(m.vm, "createVideoControls", [])
+
+      m.expectOnce(trickPlayView, "callFunc", ["configureWithItem", videoNode])
+
       m.vm.playBitmovinItem(playerData)
+
       m.assertEqual(videoNode.control, "play")
 
       m.assertEqual(m.vm.state, "playing")
@@ -304,12 +316,6 @@ namespace zapp.tests
       m.assertEqual(m.vm.state, "ready")
       m.assertTrue(m.vm.view.isPlaybackFinished)
     end function
-
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("getPlayerData")
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    'TBD
 
   end class
 end namespace

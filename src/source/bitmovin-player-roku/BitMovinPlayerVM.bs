@@ -14,11 +14,11 @@ class BitMovinPlayerVM extends zapp.BaseZappVM
   private isValid = false
   private pendingPlayerItem = invalid
   private playMode = "default"
-  private videoControls as mc.types.node
   private bitmovinPlayerSDK
   private playerFunctions
   private playerFields
   private playerState
+  private videoControls as mc.types.node
   private isVideoControlsCreated = false
 
   public function new(view)
@@ -109,7 +109,7 @@ class BitMovinPlayerVM extends zapp.BaseZappVM
       m.pendingPlayerItem = invalid
       m.playBitmovinItem(playerItem)
     else
-      m.log.warn("player is not ready yet; settig this item as pending")
+      m.log.warn("player is not ready yet; setting this item as pending")
       m.pendingPlayerItem = playerItem
     end if
   end function
@@ -120,11 +120,11 @@ class BitMovinPlayerVM extends zapp.BaseZappVM
     m.state = "playing"
     m.player.callFunc(m.playerFunctions.LOAD, playerItem)
     m.player.callFunc(m.playerFunctions.PLAY, invalid)
+    m.videoNode = m.player.getChild(0)
     m.videoNode.control = "play"
     if m.playMode = "default"
       m.setFocus(m.player)
     end if
-    m.videoNode = m.player.getChild(0)
     m.setVideoChromeStyle()
     m.createVideoControls()
     m.videoControls.trickPlayView@.configureWithItem(m.videoNode)
