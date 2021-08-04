@@ -14,9 +14,6 @@ class AdobePrimetimeAuthPlugin extends zapp.Auth.BaseAuthPlugin
   @inject("constants", "applicasterDeviceId")
   private deviceId
 
-  @injectClass("zapp.Request")
-  private request
-
   @injectClass("zapp.JWTUtil")
   private JWTUtil
 
@@ -72,7 +69,8 @@ class AdobePrimetimeAuthPlugin extends zapp.Auth.BaseAuthPlugin
     url = m.baseUrl + requestPath
     m.log.info("url ", url, "headers", headers, "params", params)
 
-    result = m.request.post(url, params, headers)
+    request = m.getRequestUtil()
+    result = request.post(url, params, headers)
 
     m.log.info("result is ", result)
 
@@ -100,7 +98,9 @@ class AdobePrimetimeAuthPlugin extends zapp.Auth.BaseAuthPlugin
     }
 
     url = m.baseUrl + requestPath + "?" + m.uri.encodeParams(params)
-    result = m.request.getJsonSync(url, headers)
+
+    request = m.getRequestUtil()
+    result = request.getJsonSync(url, headers)
 
     m.log.info("result is:", result)
     if result <> invalid and result.userId <> invalid and result.userId <> ""
@@ -114,10 +114,10 @@ class AdobePrimetimeAuthPlugin extends zapp.Auth.BaseAuthPlugin
 
     result = m.createErrorResult("Unknown error")
 
-    if m.request.lastResponseCode <> invalid
-      if m.request.lastResponseCode = 404
+    if request.lastResponseCode <> invalid
+      if request.lastResponseCode = 404
         result.state = "none"
-      else if m.request.lastResponseCode = 410
+      else if request.lastResponseCode = 410
         ' 410 is expected if the authn token (i.e. reg code) has expired.  We take
         ' a strategic approach not to introduce a new auth state and raise it to
         ' the UI.  If it truly is expired, the 2nd screen will show that error
@@ -141,8 +141,10 @@ class AdobePrimetimeAuthPlugin extends zapp.Auth.BaseAuthPlugin
       "deviceId": m.deviceId
     }
 
+    request = m.getRequestUtil()
+
     url = m.baseUrl + requestPath + "?" + m.uri.encodeParams(params)
-    m.request.delete(url, invalid, headers)
+    request.delete(url, invalid, headers)
 
     return m.createAuthData()
   end function
@@ -174,17 +176,16 @@ class AdobePrimetimeAuthPlugin extends zapp.Auth.BaseAuthPlugin
 
     m.log.info("url is ", url)
 
-    'workaround for a bug where reusing the request get's the wrong respons
-    m.request = new zapp.Request()
-    result = m.request.getJsonSync(url, headers)
+    request = m.getRequestUtil()
+    result = request.getJsonSync(url, headers)
     m.log.info("result: ", result)
 
     if result <> invalid and result.expires <> invalid and result.expires <> ""
       'TODO - not sure which of these is the token
       token = formatJson(result)
 
-      if m.request.lastResponseCode <> invalid
-        errorCode = m.request.lastResponseCode
+      if request.lastResponseCode <> invalid
+        errorCode = request.lastResponseCode
       else
         errorCode = 0
       end if
@@ -203,6 +204,11 @@ class AdobePrimetimeAuthPlugin extends zapp.Auth.BaseAuthPlugin
     end if
 
     return m.createErrorResult("Unknown error")
+  end function
+
+  'workaround for a bug where reusing the request get's the wrong response
+  private function getRequestUtil()
+    return new zapp.Request()
   end function
 
   private function signRequest(method, path, nonce = invalid, timestamp = 0)

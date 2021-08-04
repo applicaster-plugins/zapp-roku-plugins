@@ -136,7 +136,8 @@ namespace zapp.tests
     function _()
       m.expectOnce(m.vm, "setTextFromKeyboard", ["username", "george@foo.bar"])
 
-      m.expectOnce(m.vm, "checkCredsValid", [])
+      m.vm.onUsernameKeyboardDialogDismissal("george@foo.bar")
+    end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("onNameKeyboardDialogDismissal")
@@ -291,7 +292,7 @@ namespace zapp.tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @beforeEach
-    function integratin_beforeEach()
+    function integration_beforeEach()
       m.beforeEach()
       m.user = createObject("roSGNode", "user")
       mioc.setInstance("constants", { "simulateInAppPurchases": true })
