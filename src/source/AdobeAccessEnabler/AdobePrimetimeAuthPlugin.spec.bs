@@ -1,10 +1,9 @@
 namespace zapp.tests
-
   @tags("public", "auth")
   @suite
   class AdobePrimetimeAuthpluginTests extends tests.BaseTestSuite
 
-   protected override function beforeEach()
+    protected override function beforeEach()
       super.beforeEach()
       pluginConfiguration = {
         "identifier": "AdobeAccessEnabler",
@@ -31,7 +30,6 @@ namespace zapp.tests
 
     @it("testConstructor_tests")
     function _()
-      m.assertEqual(m.plugin.request.__className, "zapp.Request")
       m.assertEqual(m.plugin.JWTUtil.__className, "zapp.JWTUtil")
       m.assertEqual(m.plugin.uri.__className, "zapp.URI")
       m.assertEqual(m.plugin.requestorID, "rqd")
@@ -52,11 +50,15 @@ namespace zapp.tests
         "user": {
           userId: "id"
         }
+        rawAuthData: {
+          regcode: "regcode"
+        }
       }
       m.assertEqual(m.plugin._getAccountInfo(), {
         id: "id"
         email: "anonymous@anon.com"
         username: "anonymous"
+        regCode: "regcode"
       })
 
     end function
@@ -95,6 +97,11 @@ namespace zapp.tests
 
     @it("valid")
     function _()
+
+      requestUtil = { "id": "requestUtil" }
+      m.expectOnce(m.plugin, "getRequestUtil", [], requestUtil)
+
+
       response = {
         "id": "0c0166e1-9596-4826-a6a4-85a19692d2f4"
         "code": "c"
@@ -106,10 +113,12 @@ namespace zapp.tests
       }
 
       url = "#url/reggie/v1/rqd/regcode"
-      m.expectOnce(m.plugin.request, "post", [url, "deviceId=did", expectedHeaders], response)
+      m.expectOnce(requestUtil, "post", [url, "deviceId=did", expectedHeaders], response)
 
       result = { "id": "result" }
       m.expectOnce(m.plugin, "createRegCodeResult", ["c"], result)
+
+      m.expectOnce(m.plugin, "setSessionStoreValue", [m.plugin.id, "regcode", "c"])
 
       m.assertEqual(m.plugin._regcode(), result)
     end function
@@ -126,11 +135,16 @@ namespace zapp.tests
         "Authorization": "aut"
       }
 
+      requestUtil = { "id": "requestUtil" }
+      m.expectOnce(m.plugin, "getRequestUtil", [], requestUtil)
+
+
       url = "#url/reggie/v1/rqd/regcode"
-      m.expectOnce(m.plugin.request, "post", [url, "deviceId=did", expectedHeaders], response)
+      m.expectOnce(requestUtil, "post", [url, "deviceId=did", expectedHeaders], response)
 
       result = { "id": "result" }
       m.expectOnce(m.plugin, "createRegCodeResult", [invalid, -1, "Unknown error"], result)
+      m.expectOnce(m.plugin, "setSessionStoreValue", [m.plugin.id, "regcode", invalid])
 
       m.assertEqual(m.plugin._regcode(), result)
 
@@ -150,7 +164,11 @@ namespace zapp.tests
 
       url = "#url/api/v1/tokens/authn?deviceId=did&requestor=rqd"
       response = { "id": "result", "userId": "uid" }
-      m.expectOnce(m.plugin.request, "getJsonSync", [url, expectedHeaders], response)
+
+      requestUtil = { "id": "requestUtil" }
+      m.expectOnce(m.plugin, "getRequestUtil", [], requestUtil)
+
+      m.expectOnce(requestUtil, "getJsonSync", [url, expectedHeaders], response)
 
       result = { "id": "result" }
       m.expectOnce(m.plugin, "getAuthorization", [], result)
@@ -170,10 +188,15 @@ namespace zapp.tests
         "Accept": "application/json"
         "Authorization": "aut"
       }
-      m.plugin.request.lastResponseCode = responseCode
+      requestUtil = {
+        "id": "requestUtil"
+        lastResponseCode: responseCode
+      }
+      m.expectOnce(m.plugin, "getRequestUtil", [], requestUtil)
+
 
       url = "#url/api/v1/tokens/authn?deviceId=did&requestor=rqd"
-      m.expectOnce(m.plugin.request, "getJsonSync", [url, expectedHeaders], response)
+      m.expectOnce(requestUtil, "getJsonSync", [url, expectedHeaders], response)
 
       result = { "id": "result", "state": "error" }
       m.expectOnce(m.plugin, "createErrorResult", ["Unknown error"], result)
@@ -195,8 +218,12 @@ namespace zapp.tests
         "Accept": "application/json"
         "Authorization": "aut"
       }
+
+      requestUtil = { "id": "requestUtil" }
+      m.expectOnce(m.plugin, "getRequestUtil", [], requestUtil)
+
       url = "#url/api/v1/logout?deviceId=did"
-      m.expectOnce(m.plugin.request, "delete", [url, invalid, expectedHeaders])
+      m.expectOnce(requestUtil, "delete", [url, invalid, expectedHeaders])
 
       result = { "id": "result" }
       m.expectOnce(m.plugin, "createAuthData", [], result)
@@ -205,7 +232,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("singRequest")
+    @describe("signRequest")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("signRequest")
@@ -262,7 +289,6 @@ namespace zapp.tests
     @params(404, 404)
     @params(503, 503)
     function _(lastResponseCode, expectedCode)
-      m.plugin.request.lastResponseCode = lastResponseCode
 
       m.expectOnce(m.plugin, "signRequest", ["GET", "/api/v1/authorize"], "aut")
       expectedHeaders = {
@@ -271,14 +297,21 @@ namespace zapp.tests
       }
       url = "#url/api/v1/authorize?deviceId=did&requestor=rqd&resource=rqd"
 
+      requestUtil = { "id": "requestUtil"
+        lastResponseCode: lastResponseCode
+      }
+      m.expectOnce(m.plugin, "getRequestUtil", [], requestUtil)
+
       response = {
         "expires": "1589402085000"
       }
-      m.expectOnce(m.plugin.request, "getJsonSync", [url, expectedHeaders], response)
+      m.expectOnce(requestUtil, "getJsonSync", [url, expectedHeaders], response)
       m.expectOnce(m.plugin.date, "getSecondsUntil", [mc.strToLong("1589402085000") / 1000], 9999)
       m.plugin.pollResult = { "id": "pollResult" }
 
-      result = { "id": "result" }
+      result = {
+        "id": "result"
+      }
       token = formatJson(response)
       m.expectOnce(m.plugin, "createAuthData", ["valid", token, token, token, response, 9999, expectedCode, "", m.plugin.pollResult], result)
 
@@ -293,6 +326,10 @@ namespace zapp.tests
     @params({ "expires": invalid })
     @params({ "expires": "" })
     function _(response)
+
+      requestUtil = { "id": "requestUtil" }
+      m.expectOnce(m.plugin, "getRequestUtil", [], requestUtil)
+
       m.expectOnce(m.plugin, "signRequest", ["GET", "/api/v1/authorize"], "aut")
       expectedHeaders = {
         "Accept": "application/json"
@@ -300,7 +337,7 @@ namespace zapp.tests
       }
       url = "#url/api/v1/authorize?deviceId=did&requestor=rqd&resource=rqd"
 
-      m.expectOnce(m.plugin.request, "getJsonSync", [url, expectedHeaders], response)
+      m.expectOnce(requestUtil, "getJsonSync", [url, expectedHeaders], response)
 
       result = { "id": "result" }
       m.expectNone(m.plugin, "createAuthData")

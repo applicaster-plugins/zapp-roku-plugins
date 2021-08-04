@@ -3,7 +3,7 @@ namespace zapp.tests
   @suite
   class GigyaAuthPluginTests extends tests.BaseTestSuite
 
-   protected override function beforeEach()
+    protected override function beforeEach()
       super.beforeEach()
       m.riversJson = {
         "id": "myAccount"
@@ -54,12 +54,14 @@ namespace zapp.tests
         "rawAuthData": {
           "uid": "id"
           "firstName": "george"
+          "regcode": "regcode"
         }
       }
       m.assertEqual(m.plugin._getAccountInfo(), {
         "id": "id"
         "email": "anonymous@anon.com"
         "username": "george"
+        "regCode": "regcode"
       })
     end function
 

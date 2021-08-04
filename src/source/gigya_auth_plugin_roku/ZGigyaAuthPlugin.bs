@@ -21,11 +21,11 @@ class ZGigyaAuthPlugin extends zapp.Auth.BaseAuthPlugin
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public override function _getAccountInfo()
-    'FIXME - verify these values
     return {
       id: m.authData.rawAuthData.uid
       email: "anonymous@anon.com"
       username: m.authData.rawAuthData.firstName
+      regCode: mc.getPath(m.authData, "rawAuthData.regcode")
     }
   end function
 
@@ -52,11 +52,11 @@ class ZGigyaAuthPlugin extends zapp.Auth.BaseAuthPlugin
     if response <> invalid and response.devicePinCode <> invalid
       m.log.info("succesfully got code", response.devicePinCode)
       'store in session store; so we can use it in the get call later
-      m.setSessionStoreValue("gigya_auth_plugin_roku", "regcode", response.devicePinCode)
+      m.setSessionStoreValue(m.id, "regcode", response.devicePinCode)
       return m.createRegCodeResult(response.devicePinCode)
     else
       m.log.error("received illegal regcode", response)
-      m.setSessionStoreValue("gigya_auth_plugin_roku", "regcode", invalid)
+      m.setSessionStoreValue(m.id, "regcode", invalid)
       return m.createRegCodeResult(invalid, -1, "could not retrieve regcode")
     end if
 
@@ -72,6 +72,7 @@ class ZGigyaAuthPlugin extends zapp.Auth.BaseAuthPlugin
 
       if response.access_token <> invalid
         token = response.access_token
+        response.regCode = pinCode
         expiresIn = 99999 ' TODO where do we get this from?
         'TODO - double check these values
         'Especially result and if we need to manipulate parsed.expires

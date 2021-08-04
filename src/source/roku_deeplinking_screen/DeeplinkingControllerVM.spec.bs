@@ -1,9 +1,10 @@
 namespace zapp.tests
-  @tags("public", "vm", "deeplinking")
+  @ignore("deeplinking is not supported on sdk 5 yet")
+  @tags("public", "vm", "deeplinking", "fixme")
   @suite
   class DeeplinkingControllerVMTests extends tests.BaseTestSuite
 
-   protected override function beforeEach()
+    protected override function beforeEach()
       super.beforeEach()
       mioc.setInstances({
         "user": { "isLoggedIn": false }
@@ -231,11 +232,11 @@ namespace zapp.tests
       m.vm.isLiveDeeplink = not isLaunchDeeplink
       m.expectOnce(m.vm, "getDeeplinkingSelectionWithData", [deeplinkingData], selection)
       m.expectOnce(m.vm, "getParentScreen", ["series", parentEntry], parentScreen)
-      m.expectOnce(m.vm, "playSelection", [selection])
+      m.expectOnce(m.vm, "playSelection", [selection, true])
       m.expectOnce(m.vm, "setInstance", ["currentSelection", selection])
       m.expectOnceOrNone(m.vm, "signalAppLaunchComplete", isLaunchDeeplink, [])
       m.expectOnce(m.vm, "toggleNavMenuFocus", [false])
-      m.expectOnce(m.vm, "observeNodeField", [parentScreen, "state", m.vm.onContentStateCHange])
+      m.expectOnce(m.vm, "observeNodeField", [parentScreen, "state", m.vm.onContentStateChange])
 
       m.vm.applyDeepLinking(deeplinkingData)
 
@@ -262,7 +263,7 @@ namespace zapp.tests
       m.expectOnce(m.vm, "getDeeplinkingSelectionWithData", [deeplinkingData], selection)
       m.expectOnce(m.vm, "getParentScreen", ["series", parentEntry], invalid)
       m.expectOnce(m.vm, "setInstance", ["currentSelection", selection])
-      m.expectOnce(m.vm, "playSelection", [selection])
+      m.expectOnce(m.vm, "playSelection", [selection, true])
       m.expectOnceOrNone(m.vm, "signalAppLaunchComplete", isLaunchDeeplink, [])
 
       m.vm.applyDeepLinking(deeplinkingData)
