@@ -18,8 +18,7 @@ class BitMovinPlayerVM extends zapp.BaseZappVM
   private playerFunctions
   private playerFields
   private playerState
-  private videoControls as mc.types.node
-  private isVideoControlsCreated = false
+  private sdkPath
 
   public function new(view)
     super("BitMovinPlayerVM")
@@ -27,6 +26,7 @@ class BitMovinPlayerVM extends zapp.BaseZappVM
 
     m.licenseKey = mc.getPath(view.riversJson, "general.license_key", "")
     m.overrideVideoUrl = mc.getPath(view.riversJson, "general.override_video_url", "")
+    m.sdkPath =  mc.getPath(view.riversJson, "general.sdk_url", "https://cdn.bitmovin.com/player/roku/1.22.0/bitmovinplayer.zip")
     themeColor = mc.getPath(view.riversJson, "styles.theme_color")
 
     if themeColor = invalid
@@ -38,7 +38,8 @@ class BitMovinPlayerVM extends zapp.BaseZappVM
     m.isValid = m.licenseKey <> ""
   end function
 
-  private function _initialize()
+  override function initialize()
+    super.initialize()
     m.createPlayer()
   end function
 
@@ -46,7 +47,7 @@ class BitMovinPlayerVM extends zapp.BaseZappVM
     m.state = "creatingPlayer"
     m.bitmovinPlayerSDK = m.view.createChild("ComponentLibrary")
     m.bitmovinPlayerSDK.id = "BitmovinPlayerSDK"
-    m.bitmovinPlayerSDK.uri = "https://cdn.bitmovin.com/player/roku/1.22.0/bitmovinplayer.zip"
+    m.bitmovinPlayerSDK.uri = m.sdkPath
     ' Adding the ComponentLibrary node to the scene will start the download of the library
     m.view.appendChild(m.bitmovinPlayerSDK)
     m.observeNodeField(m.bitmovinPlayerSDK, "loadStatus", m.onSDKLoadStatusChange)
@@ -64,6 +65,7 @@ class BitMovinPlayerVM extends zapp.BaseZappVM
       m.playerFunctions = m.player.BitmovinFunctions
       m.playerFields = m.player.BitmovinFields
       m.playerState = m.player.BitmovinPlayerState
+      m.videoNode = m.player.getChild(0)
       m.setVideoChromeStyle()
       m.observeNodeField(m.player, m.playerFields.PLAYER_STATE, m.onPlayerStateChange)
       m.observeNodeField(m.player, m.playerFields.ERROR, m.onPlayerVideoError)
@@ -126,16 +128,6 @@ class BitMovinPlayerVM extends zapp.BaseZappVM
       m.setFocus(m.player)
     end if
     m.setVideoChromeStyle()
-    m.createVideoControls()
-    m.videoControls.trickPlayView@.configureWithItem(m.videoNode)
-  end function
-
-  private function createVideoControls()
-    if not m.isVideoControlsCreated
-      'bs:disable-next-line
-      m.videoControls = createControls(m.videoNode)
-      m.isVideoControlsCreated = true
-    end if
   end function
 
   public function getPlayerItem(item)
@@ -178,7 +170,7 @@ class BitMovinPlayerVM extends zapp.BaseZappVM
       m.view.isPlaybackFinished = true
       m.state = "error"
     else
-      'ignore this state ; but check if we'v got a duration yet
+      'ignore this state ; but check if we've got a duration yet
       videoNode = m.player.getChild(0)
 
       if videoNode <> invalid

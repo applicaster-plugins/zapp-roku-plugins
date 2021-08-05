@@ -276,10 +276,6 @@ namespace zapp.tests
 
       trickPlayView = { "id" : "trickPlayView" }
 
-      m.vm.videoControls = {
-        trickPlayView: trickPlayView
-      }
-
       m.expectOnce(m.player, "getChild", [0], videoNode)
 
       m.expectOnce(m.vm, "setFocus", [m.player])
@@ -288,8 +284,6 @@ namespace zapp.tests
 
       m.expectOnce(m.player, "callFunc", [m.player.BitmovinFunctions.LOAD, playerData])
       m.expectOnce(m.player, "callFunc", [m.player.BitmovinFunctions.PLAY, invalid])
-
-      m.expectOnce(m.vm, "createVideoControls", [])
 
       m.expectOnce(trickPlayView, "callFunc", ["configureWithItem", videoNode])
 
