@@ -42,7 +42,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
 
   function processStyles(styles)
     m.loadDepth = zapp.viewUtils.getUIBInt(styles, "data_depth", 0)
-    m.gridStyle = m.getGridStyle(styles, m.cellStyle)
+    m.gridStyle = m.getGridStyle(styles, m.style)
 
     m.keyboardStyle = {
       translation: zapp.viewUtils.makeUIBPosition(styles, "keyboard", 300, 500)
@@ -62,7 +62,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
 
   private function getGridStyle(styles, cellStyle)
     if cellStyle <> invalid
-      style = zapp.collectionRowUtils.getRowListStyle(styles, cellStyle.normal)
+      style = zapp.collectionRowUtils.getRowListStyle(styles, mc.getPath(cellStyle, "cell.normal", {}))
       style.itemSize = style.rowItemSize
       style.itemSpacing = zapp.viewUtils.makeUIBSize(styles, "grid_spacing", 44, 20)
     else
@@ -119,7 +119,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
   end function
 
   public function onSearchDelayComplete()
-    m.log.method("onSearchDelayComple")
+    m.log.method("onSearchDelayComplet")
 
     m.log.verbose("search debounce complete, exeucting search with", m.searchText)
     m.performSearch(m.searchText)
