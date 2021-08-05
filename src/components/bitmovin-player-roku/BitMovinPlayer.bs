@@ -40,6 +40,8 @@ end function
 
 function onGainedFocus(isSelfFocused)
   if isSelfFocused
-    m.vm.player.setFocus(true)
+    if m.vm.player <> invalid
+      m.vm.player.setFocus(true)
+    end if
   end if
 end function
