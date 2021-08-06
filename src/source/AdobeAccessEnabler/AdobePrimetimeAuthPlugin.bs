@@ -1,7 +1,7 @@
 '@Ignore - this suite of tests has to be updated for the new AuthManager pattern
-import "pkg:/source/authorization/BaseAuthPlugin.bs" 
-import "pkg:/source/lib/request.bs" 
-import "pkg:/source/lib/uri.bs" 
+import "pkg:/source/authorization/BaseAuthPlugin.bs"
+import "pkg:/source/lib/request.bs"
+import "pkg:/source/lib/uri.bs"
 import "pkg:/source/authorization/JWTUtil.bs"
 
 namespace APAM
@@ -18,7 +18,7 @@ private baseUrl = ""
 private deviceId = ""
 
 public function new(plugin)
-  super("AdobePrimetime", plugin) 
+  super("AdobePrimetime", plugin)
   m.isTokenUsableWithDSP = true
   m.request = m.getClassInstance("RequestModule")
   m.JWTUtil = m.getClassInstance("JWTUtilModule")
@@ -28,7 +28,7 @@ public function new(plugin)
   m.secret = plugin.getStringValue("secret", "")
   m.publicKey = plugin.getStringValue("publicKey", "")
   m.baseUrl = plugin.getStringValue("base_url", "https://api.auth.adobe.com")
-  
+
   constants = m.getInstance("constants")
   m.deviceId = constants.applicasterDeviceId
 end function
@@ -39,7 +39,7 @@ end function
 
 public override function _getAccountInfo()
   userId = MU.getContentField(m.authData, "user.userId", "not known yet")
-  
+
   return {
     id: userId
     email: "anonymous@anon.com"
@@ -51,11 +51,11 @@ end function
 public override function _verify()
   ' We don't need the token for the AuthZ calls, but we
   ' do a simple local verification just to make sure AuthN completed
-  
+
   if not m.isAuthDataExpired()
     return m.getAuthorization()
   end if
-  
+
   return m.createErrorResult("Invalid token for verification")
 end function
 
@@ -72,13 +72,13 @@ public override function _regcode()
   m.logInfo("url ", url, "headers", headers, "params", params)
 
   result = m.request.post(url, params, headers)
-  
+
   m.logInfo("result is ", result)
-  
-  if result <> invalid and result.code <> invalid and result.code <> "" 
+
+  if result <> invalid and result.code <> invalid and result.code <> ""
     return m.createRegCodeResult(result.code)
   end if
-  
+
   m.logError("Error retrieving regcode")
   return m.createRegCodeResult(invalid, - 1, "Unknown error")
 end function
@@ -95,10 +95,10 @@ public override function _poll()
     "requestor": m.requestorID
     "deviceId": m.deviceId
   }
-  
+
   url = m.baseUrl + requestPath + "?" + m.uri.encodeParams(params)
   result = m.request.getJsonSync(url, headers)
-  
+
   m.logInfo("result is:", result)
   if result <> invalid and result.userId <> invalid and result.userId <> ""
     'store it, in case we need the user info, later
@@ -108,9 +108,9 @@ public override function _poll()
   else
     m.logInfo("invalid userId ignoring")
   end if
-  
+
   result = m.createErrorResult("Unknown error")
-  
+
   if m.request.lastResponseCode <> invalid
     if m.request.lastResponseCode = 404
       result.state = "none"
@@ -122,14 +122,14 @@ public override function _poll()
       result.state = "none"
     end if
   end if
-  
+
   return result
 end function
 
 public override function _logOut()
   ' <SP_FQDN>/api/v1/logout
   requestPath = "/api/v1/logout"
-  
+
   headers = {
     "Accept": "application/json"
     "Authorization": m.signRequest("DELETE", requestPath)
@@ -137,10 +137,10 @@ public override function _logOut()
   params = {
     "deviceId": m.deviceId
   }
-  
+
   url = m.baseUrl + requestPath + "?" + m.uri.encodeParams(params)
   m.request.delete(url, invalid, headers)
-  
+
   return m.createAuthData()
 end function
 
@@ -166,27 +166,42 @@ private function getAuthorization()
     "deviceId": m.deviceId
     "resource": m.getResourceText()
   }
-  
+
   url = m.baseUrl + requestPath + "?" + m.uri.encodeParams(params)
-  
+
+  ? ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+  ? ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+  ? ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+  ? ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+  ? ">> GET URL" ; url
+  ? ">> HEADERS" ; formatJson(headers)
+  ? ">> PARAMS" ; formatJson(params)
+
   m.logInfo("url is ", url)
-  
+
   result = m.request.getJsonSync(url, headers)
   m.logInfo("result: ", result)
-  
+  ? ">> result "; result
+  ? ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+  ? ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+  ? ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+  ? ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+  ? ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+
+  stop
   if result <> invalid and result.expires <> invalid and result.expires <> ""
     'TODO - not sure which of these is the token
     token = formatJson(result)
-    
+
     if m.request.lastResponseCode <> invalid
       errorCode = m.request.lastResponseCode
     else
       errorCode = 0
     end if
-    
+
     expireTime = MU.strToLong(result.expires) / 1000
     secondsTillExpire = m.date.getSecondsUntil(expireTime)
-    
+
     if m.pollResult <> invalid
       user = m.pollResult
     else
@@ -195,7 +210,7 @@ private function getAuthorization()
 
     return m.createAuthData("valid", token, token, token, result, secondsTillExpire, errorCode, "", user)
   end if
-  
+
   return m.createErrorResult("Unknown error")
 end function
 
@@ -241,7 +256,7 @@ private function getResourceText()
     template = template.replace("{ASSET_ID}", content.id)
     template = template.replace("{ASSET_NAME}", content.title)
     return template
-  else 
+  else
     return m.requestorID
   end if
 end function
