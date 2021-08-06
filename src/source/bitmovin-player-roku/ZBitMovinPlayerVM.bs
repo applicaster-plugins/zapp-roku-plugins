@@ -11,6 +11,7 @@ private player = invalid
 private currentItem = invalid
 private licenseKey = ""
 private overrideVideoUrl = ""
+private sdkPath = ""
 private isValid = false
 private state = "none"
 private pendingPlayerItem = invalid
@@ -19,17 +20,19 @@ private playMode = "default"
 public function new(view)
   super("ZBitMovinPlayerVM")
   m.view = view
-  
+
   m.licenseKey = MU.getContentField(view.riversJson, "general.license_key", "")
   m.overrideVideoUrl = MU.getContentField(view.riversJson, "general.override_video_url", "")
+  m.sdkPath =  MU.getContentField(view.riversJson, "general.sdk_url", "https://cdn.bitmovin.com/player/roku/1.22.0/bitmovinplayer.zip")
+
   themeColor = MU.getContentField(view.riversJson, "styles.theme_color")
-  
+
   if themeColor = invalid
     m.themeColor = "#ffffff"
   else
     m.themeColor = ViewUtils.transposeUIBColor(themeColor)
   end if
-  
+
   m.isValid = m.licenseKey <> ""
 end function
 
@@ -41,7 +44,7 @@ private function createPlayer()
   m.state = "creatingPlayer"
   m.bitmovinPlayerSDK = m.view.createChild("ComponentLibrary")
   m.bitmovinPlayerSDK.id = "BitmovinPlayerSDK"
-  m.bitmovinPlayerSDK.uri = "https://cdn.bitmovin.com/player/roku/1.22.0/bitmovinplayer.zip"
+  m.bitmovinPlayerSDK.uri = m.sdkPath
   ' Adding the ComponentLibrary node to the scene will start the download of the library
   m.view.appendChild(m.bitmovinPlayerSDK)
   m.bindNodeField(m.bitmovinPlayerSDK, "loadStatus", "onSDKLoadStatusChange", MOM_createBindingProperties())
@@ -49,17 +52,17 @@ end function
 
 private function onSDKLoadStatusChange(status)
   m.logInfo("sdk status is now", status)
-  
+
   if status = "ready"
     m.state = "ready"
     m.logInfo("creating player")
     m.player = m.view.createChild("BitmovinPlayerSDK:BitmovinPlayer")
     m.player.id = "player"
-    
+
     m.playerFunctions = m.player.BitmovinFunctions
     m.playerFields = m.player.BitmovinFields
     m.playerState = m.player.BitmovinPlayerState
-    m.setVideoChromeStyle() 
+    m.setVideoChromeStyle()
     bindingProperties = MOM.createBindingProperties(false)
     m.bindNodeField(m.player, m.playerFields.PLAYER_STATE, "onPlayerStateChange", bindingProperties)
     m.bindNodeField(m.player, m.playerFields.ERROR, "onPlayerVideoError", bindingProperties)
@@ -91,7 +94,7 @@ end function
 
 public function playItem(item, playMode = "default")
   m.logMethod("playItem ", item.id)
-  
+
   m.currentItem = item
   m.playMode = playMode
   playerItem = m.getPlayerItem(m.currentItem)
@@ -99,7 +102,7 @@ public function playItem(item, playMode = "default")
     "startOffset": m.currentItem.PlayStart
   }
   m.logInfo("playing with player item", formatJson(playerItem))
-  
+
   if m.player <> invalid
     m.pendingPlayerItem = invalid
     m.playBitmovinItem(playerItem)
@@ -111,7 +114,7 @@ end function
 
 function playBitmovinItem(playerItem)
   m.logMethod("playBitmovinItem")
-  
+
   m.state = "playing"
   m.player.callFunc(m.playerFunctions.LOAD, playerItem)
   m.player.callFunc(m.playerFunctions.PLAY, invalid)
@@ -124,10 +127,10 @@ function playBitmovinItem(playerItem)
 end function
 
 public function getPlayerItem(item)
-  
+
   if item.playbackData <> invalid
     return item.playbackData
-    
+
   else
     return {
       hls: item.url
@@ -153,7 +156,7 @@ end function
 
 private function onPlayerStateChange(state) as void
   m.logInfo("player state change", state)
-  
+
   if state = m.playerState.FINISHED
     m.view.playbackResult = m.makeResult("finished", "")
     m.view.isPlaybackFinished = true
@@ -162,10 +165,10 @@ private function onPlayerStateChange(state) as void
     m.view.playbackResult = m.makeResult("error", "error during playback")
     m.view.isPlaybackFinished = true
     m.state = "error"
-  else 
+  else
     'ignore this state ; but check if we'v got a duration yet
     videoNode = m.player.getChild(0)
-    
+
     if videoNode <> invalid
       m.view.duration = videoNode.duration
     else
