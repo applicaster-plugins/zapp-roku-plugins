@@ -169,26 +169,11 @@ private function getAuthorization()
 
   url = m.baseUrl + requestPath + "?" + m.uri.encodeParams(params)
 
-  ? ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-  ? ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-  ? ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-  ? ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-  ? ">> GET URL" ; url
-  ? ">> HEADERS" ; formatJson(headers)
-  ? ">> PARAMS" ; formatJson(params)
-
   m.logInfo("url is ", url)
 
   result = m.request.getJsonSync(url, headers)
   m.logInfo("result: ", result)
-  ? ">> result "; result
-  ? ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-  ? ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-  ? ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-  ? ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-  ? ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
-  stop
   if result <> invalid and result.expires <> invalid and result.expires <> ""
     'TODO - not sure which of these is the token
     token = formatJson(result)
