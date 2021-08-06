@@ -148,7 +148,6 @@ end function
     end if
 
     if m.channelStore.getParent() <> invalid
-      ? "CCC"
       m.channelStore.getParent().removeChild(m.channelStore.getParent())
     end if
     m.channelStore = invalid
@@ -165,10 +164,10 @@ private function onUsernameKeyboardDialogDismissal(text)
     m.setField("usernameText", m.usernamePlaceholderText)
     m.setField("usernameButtonType", "textInputPlaceholder")
     m.username = ""
-    m.setField("usernameText", m.usernamePlaceholderText)
+    m.setField("usernameText", lcase(m.usernamePlaceholderText))
   else
-    m.setField("usernameText", text)
-    m.username = text
+    m.setField("usernameText", lcase(text))
+    m.username = lcase(text)
     m.setField("usernameButtonType", "textInput")
   end if
 
