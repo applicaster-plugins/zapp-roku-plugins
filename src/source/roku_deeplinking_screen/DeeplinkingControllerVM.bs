@@ -232,7 +232,8 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
     end if
 
     if content <> invalid
-      if content.url = invalid or content.url.trim() = ""
+      if content.url = invalid or content.url.trim() = "" and not content.link.instr("pipes:") = 0 and not content.link.instr("zapp-pipes:") = 0
+        deeplinkingData.entry.url = ""
         content.url = content.link
       end if
       selection.currentItem = content
