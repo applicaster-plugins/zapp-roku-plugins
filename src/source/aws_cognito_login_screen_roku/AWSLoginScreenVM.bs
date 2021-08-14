@@ -115,7 +115,7 @@ class AWSLoginScreenVM extends zapp.uib.ScreenVM
   end function
 
   public function onUsernameButtonSelected(value)
-    m.showKeyboardDialog("Enter your username", m.username, "onUsernameKeyboardDialogDismissal")
+    m.showKeyboardDialog("Enter your username", m.username, "onUsernameKeyboardDialogDismissal", false, "login")
   end function
 
   public function onPasswordButtonSelected(value)

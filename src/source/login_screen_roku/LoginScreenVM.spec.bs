@@ -166,7 +166,7 @@ namespace zapp.tests
     function _(text, expectedText)
       m.vm.username = text
 
-      m.expectOnce(m.vm, "showKeyboardDialog", ["Enter your username", expectedText, "onUsernameKeyboardDialogDismissal"])
+      m.expectOnce(m.vm, "showKeyboardDialog", ["Enter your username", expectedText, "onUsernameKeyboardDialogDismissal", false, "login"])
 
       m.vm.onUsernameButtonSelected(true)
 
