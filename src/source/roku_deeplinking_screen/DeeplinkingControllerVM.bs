@@ -4,12 +4,15 @@ import "pkg:/source/lib/ViewUtils.bs"
 class DeeplinkingControllerVM extends zapp.uib.ScreenVM
 
   public isLoadingIndicatorVisible = false
+  public isHidingContent = true
   public currentScreen = invalid
   private isLiveDeeplink = false
   private isShowingPrehooks = false
   private isShowingParentScreen = false
   private isDeeplinkingApplied = false
   private deeplinkingTask = invalid
+  private deeplinkingData = invalid
+  private willExitOnShow = false
 
   public screenIdsByName = {}
 
@@ -36,15 +39,26 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
   end function
 
   public override function load() as boolean
-    prehookController = m.getPrehookController()
-
-    if prehookController <> invalid
-      m.log.info("this deeplinking screen has a prehookController")
-      m.togglePrehookController(true, prehookController)
+    m.log.info("deeplink.load")
+    if m.isDeeplinkingApplied
+      if not m.isShowingParentScreen
+        m.log.info("the screen has appeared again, probably from a video player; but has no parent screen, exiting from deeplinking")
+      else
+        m.log.info("deeplinking screen is loaded - not loading again")
+      end if
+      return false
     else
+      ' prehookController = m.getPrehookController()
+
+      ' if prehookController <> invalid
+      ' m.log.info("this deeplinking screen has a prehookController")
+      ' m.togglePrehookController(true, prehookController)
+      ' else
+      m.log.info("toggling deeplink task")
       args = m.getInstance("deeplinkingArgs")
       m.isLiveDeeplink = args.isLiveDeeplink = true
       m.toggleDeeplinkingTask(true, args)
+      ' end if
     end if
 
     return true
@@ -77,7 +91,7 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
 
     if state = "success"
 
-      m.log.info("prehook succesfully finished - playing item")
+      m.log.info("prehook successfully finished - playing item")
       args = m.getInstance("deeplinkingArgs")
       m.toggleDeeplinkingTask(true, args)
 
@@ -86,22 +100,22 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
     end if
   end function
 
-  private function getPrehookController()
-    m.log.info("getPrehookController")
-    prehooks = mc.getPath(m.riversJson, "hooks.preload_plugins")
+  ' private function getPrehookController()
+  '   m.log.info("getPrehookController")
+  '   prehooks = mc.getPath(m.riversJson, "hooks.preload_plugins")
 
-    if prehooks <> invalid and prehooks.count() > 0
-      m.log.info("this deeplink controller has prehooks")
-      prehookScreen = m.createInstance("ScreenHookController", invalid, "prehooksController")
-      prehookScreen.hooks = prehooks
-      prehookScreen.targetScreen = invalid
-      prehookScreen.isManagingScreensOnCompletion = false
-      return prehookScreen
-    else
-      return invalid
-    end if
+  '   if prehooks <> invalid and prehooks.count() > 0
+  '     m.log.info("this deeplink controller has prehooks")
+  '     prehookScreen = m.createInstance("ScreenHookController", invalid, "prehooksController")
+  '     prehookScreen.hooks = prehooks
+  '     prehookScreen.targetScreen = invalid
+  '     prehookScreen.isManagingScreensOnCompletion = false
+  '     return prehookScreen
+  '   else
+  '     return invalid
+  '   end if
 
-  end function
+  ' end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ Deeplinking data retrieval
@@ -144,7 +158,7 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
 
   function applyDeeplinking(deeplinkingData) as void
     m.log.method("applyDeeplinking - app is configured for deeplinking. Navigating to the appropriate view")
-
+    m.deeplinkingData = deeplinkingData
     deeplinkingSelection = m.getDeeplinkingSelectionWithData(deeplinkingData)
 
     if deeplinkingSelection = invalid
@@ -153,46 +167,94 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
       return
     end if
 
-    m.log.info("Applying deep link for entry with link ", deeplinkingData.entryLink)
+    m.log.info("Applying deep link for entry with entry ", mc.dv(deeplinkingData.entry), mc.dv(deeplinkingData.parentEntry))
 
-    parentScreen = m.getParentScreen(deeplinkingData.itemType, deeplinkingData.parentEntry)
+    m.setInstance("deeplinkingSelection", deeplinkingSelection)
 
-    if parentScreen <> invalid and deeplinkingData.itemType <> "channel"
-      m.isShowingParentScreen = true
-      m.currentScreen = parentScreen
-      m.toggleNavMenuFocus(false)
-      m.onContentStateChange(parentScreen.state)
-      m.observeNodeField(parentScreen, "state", m.onContentStateChange)
-    end if
+    if deeplinkingData.parentEntry <> invalid
+      screen = zapp.uib.mixin.getMappedScreen(deeplinkingData.parentEntry,
+      { "originEntry": deeplinkingData.parentEntry, "selection": deeplinkingSelection })
 
-    m.isDeeplinkingApplied = true
+      if screen <> invalid and deeplinkingData.itemType <> "channel"
+        m.isShowingParentScreen = m.deeplinkingData.isShowingParentScreen
+        m.currentScreen = screen
+        m.observeNodeField(screen, "state", m.onScreenStateChange)
+        m.toggleNavMenuFocus(false)
+        m.onContentStateChange(screen.state)
+        m.observeNodeField(screen, "state", m.onContentStateChange)
 
-    if deeplinkingSelection.action = "play"
-      m.setInstance("currentSelection", deeplinkingSelection)
-      m.playSelection(deeplinkingSelection)
-    end if
-
-    if not m.isLiveDeeplink
-      m.signalAppLaunchComplete()
-    end if
-  end function
-
-  private function getParentScreen(itemType, entry)
-    screen = invalid
-
-    if entry <> invalid
-      screenId = m.screenIdsByName[itemType]
-
-      if screenId <> invalid and screenId.trim() <> ""
-        screen = m.getScreen(screenId, {originEntry: entry})
+        m.isDeeplinkingApplied = true
+        m.signalAppLaunchComplete()
+        if not m.isShowingParentScreen
+          m.log.info("not actually showing parent screen - moving fuax focus")
+          m.focusId = "logPoster"
+        end if
       end if
+    else
+      m.log.error("could not do deeplinking - exiting")
+      m.exitFromDeeplinking()
     end if
-
-    return screen
   end function
+
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ private impl
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  'brute force child finding, which will look in all known components content, to see if the child we want is there
+  private function findEntryInVisualNode(node as mc.types.node, id as string) as mc.types.node
+    for each child in node.getChildren(-1, 0)
+      subType = child.subType()
+      if subType = "mv_MarkupGrid" or subType = "mv_RowList"
+        entry = m.findEntryInContent(child, id)
+        if entry <> invalid
+          return entry
+        end if
+      else
+        entry = m.findEntryInVisualNode(child, id)
+        if entry <> invalid
+          return entry
+        end if
+      end if
+    end for
+    return invalid
+  end function
+
+  private function findEntryInContent(node as mc.types.node, id as string) as mc.types.node
+    entry = invalid
+    for each child in node.getChildren(-1, 0)
+      if child.subType = "ZPEntry" and child.id = id
+        return child
+      else
+        entry = m.findEntryInContent(child, id)
+        if entry <> invalid
+          return entry
+        end if
+      end if
+    end for
+    return invalid
+  end function
+
+  private function onScreenStateChange(state as string)
+    if state = "error"
+      m.unobserveNodeField(m.currentScreen, "state", m.onScreenStateChange)
+      m.log.info("screen entered error state, exiting")
+      m.exitFromDeeplinking()
+    else if state = "ready"
+      if m.isShowingParentScreen
+        m.isHidingContent = false
+      end if
+      if m.deeplinkingData.entryId <> invalid
+        m.findAndShowChild()
+      end if
+    end if
+  end function
+
+  private function findAndShowChild()
+    childEntry = m.findEntryInContent(m.currentScreen, m.deeplinkingData.entryId)
+    if childEntry <> invalid
+
+    end if
+  end function
 
   private function toggleLoadingIndicator(isActive)
     m.isLoadingIndicatorVisible = isActive
@@ -213,32 +275,45 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
   private function getDeeplinkingSelectionWithData(deeplinkingData)
     m.log.method("getDeeplinkingSelectionWithData")
 
-    if deeplinkingData = invalid or deeplinkingData.isValid <> true or deeplinkingData.itemType = invalid or deeplinkingData.entry = invalid
-      m.log.info("received invalid deeplinkingData")
+    if deeplinkingData = invalid or deeplinkingData.isValid <> true
+      m.log.error("received invalid deeplinkingData")
       return invalid
     end if
 
     selection = CreateObject("roSGNode", "Selection")
 
-    content = deeplinkingData.entry.clone(true)
-    if content.url = invalid or content.url.trim() = ""
-      content.url = content.link
-    end if
-    selection.action = deeplinkingData.action
-    selection.currentItem = content
-    selection.initialItem = content
-    collection = createObject("roSGNode", "ZPEntry")
-    collection.appendChild(deeplinkingData.entry)
-    collection.id = deeplinkingData.entry.id
-    selection.collection = collection
+    content = invalid
 
+    if deeplinkingData.entry <> invalid
+      content = deeplinkingData.entry.clone(true)
+    else if deeplinkingData.parentEntry <> invalid
+      content = deeplinkingData.parentEntry.clone(true)
+    end if
+
+    if content <> invalid
+      selection.currentItem = content
+      selection.initialItem = content
+
+      if deeplinkingData.itemType = "series"
+        selection.action = "deeplinkSeries"
+      else if deeplinkingData.action = "play"
+        selection.action = "deeplinkPlay"
+      else
+        selection.action = "deeplinkDisplay"
+      end if
+
+      collection = createObject("roSGNode", "ZPEntry")
+      collection.appendChild(content)
+      collection.id = content.id
+      selection.collection = collection
+    end if
     return selection
   end function
 
   function exitFromDeeplinking()
+    m.setInstance("deeplinkingSelection", invalid)
     zapp.appService.exitFromDeeplinking()
   end function
-
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ Key handling
@@ -263,8 +338,8 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   protected override function onShow()
+    super.onShow()
     m.log.info("onShow - isShowingParentScreen", m.isShowingParentScreen)
-
     if m.isDeeplinkingApplied and not m.isShowingParentScreen
       m.log.info("the screen has appeared again, probably from a video player; but has no parent screen, exiting from deeplinking")
       m.exitFromDeeplinking()

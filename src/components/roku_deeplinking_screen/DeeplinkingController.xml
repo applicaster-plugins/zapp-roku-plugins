@@ -8,13 +8,18 @@
     </interface>
 
   <children>
+    <mv_DynamicContainer
+        id='screenContainer'
+        setNextView='{{currentScreen}}' />
     <Rectangle
         id='backgroundRect'
+        visible='{{isHidingContent}}'
         width='1920'
         height='1080'
         color='{{=zapp_viewUtils_UIBColor("background_color")}}' />
     <Poster
         id='backgroundPoster'
+        visible='{{isHidingContent}}'
         loadSync='true'
         loadDisplayMode='scaleToFill'
         loadWidth='1920'
@@ -24,11 +29,9 @@
         height='1080' />
     <mv_Poster
         id='logoPoster'
+        visible='{{isHidingContent}}'
         style='{{=zapp_viewUtils_UIBPoster("logo")}}' />
 
-    <mv_DynamicContainer
-        id='screenContainer'
-        setNextView='{{currentScreen}}' />
     <LoadingIndicator
         id='loadingIndicator'
         width='1920'
