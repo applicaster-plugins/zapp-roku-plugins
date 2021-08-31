@@ -3,6 +3,12 @@ namespace zapp.tests
   @suite
   class GigyaAuthPluginTests extends tests.BaseTestSuite
 
+    private riversJson
+    private plugin
+    private request
+    private expectedHeaders
+    private analyticsManager
+
     protected override function beforeEach()
       super.beforeEach()
       m.riversJson = {

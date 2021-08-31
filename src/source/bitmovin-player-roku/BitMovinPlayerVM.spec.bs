@@ -1,9 +1,15 @@
 namespace zapp.tests
-  @only
-  @nocatch
   @tags("public", "video", "vm")
   @suite
   class BitMovinPlayerVMTests extends tests.BaseTestSuite
+
+    private BitmovinPlayerState
+    private BitmovinFields
+    private selection
+    private riversJson
+    private view
+    private player
+    private vm
 
     protected override function beforeEach()
       super.beforeEach()
@@ -266,7 +272,6 @@ namespace zapp.tests
     @describe("playBitmovinItem")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @Only
     @it("playBitmovinItem")
     function _()
       playerData = { "id": "playerData" }
@@ -277,8 +282,6 @@ namespace zapp.tests
       m.vm.player = m.player
       m.vm.playerFunctions = m.player.BitmovinFunctions
 
-      trickPlayView = { "id" : "trickPlayView" }
-
       m.expectOnce(m.player, "getChild", [0], videoNode)
 
       m.expectOnce(m.vm, "setFocus", [m.player])
@@ -287,8 +290,6 @@ namespace zapp.tests
 
       m.expectOnce(m.player, "callFunc", [m.player.BitmovinFunctions.LOAD, playerData])
       m.expectOnce(m.player, "callFunc", [m.player.BitmovinFunctions.PLAY, invalid])
-
-      m.expectOnce(trickPlayView, "callFunc", ["configureWithItem", videoNode])
 
       m.vm.playBitmovinItem(playerData)
 
@@ -301,7 +302,6 @@ namespace zapp.tests
     @describe("stopItem")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @only
     @it("stopItem")
     function _()
       m.vm.state = "playing"

@@ -3,8 +3,9 @@ namespace zapp.tests
   @tags("public", "video")
   @suite
   class MPXVideoPlaybackPrehookTests extends tests.BaseTestSuite
+    private plugin
 
-   protected override function beforeEach()
+    protected override function beforeEach()
       super.beforeEach()
       mioc.setInstance("plugins", [tests.utils.createPluginJson("mpx_video_playback_prehook_roku", {
           "matching_path": "itemType"
@@ -94,8 +95,8 @@ namespace zapp.tests
     @params("free", "true", { "id": "stuff" }, false)
     @params("free", "true", { "id": "stuff", "json": { "free": false } }, false)
     @params("free", "true", { "id": "stuff", "json": { "free": true } }, true)
-    @params("itemType", "channel", { "id": "stuff", "json": {"itemType": "video"} }, false)
-    @params("itemType", "video", { "id": "stuff", "json":{"itemType": "video"} }, true)
+    @params("itemType", "channel", { "id": "stuff", "json": { "itemType": "video" } }, false)
+    @params("itemType", "video", { "id": "stuff", "json": { "itemType": "video" } }, true)
     function _(path, value, item, isMatch)
       m.plugin.matchingPath = path
       m.plugin.matchingValue = value

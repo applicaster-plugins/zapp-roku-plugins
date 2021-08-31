@@ -4,6 +4,8 @@ namespace zapp.tests
   @suite
   class GigyaLoginScreenVMTests extends tests.BaseTestSuite
 
+  private vm
+
    protected override function beforeEach()
       super.beforeEach()
       mioc.setInstances({

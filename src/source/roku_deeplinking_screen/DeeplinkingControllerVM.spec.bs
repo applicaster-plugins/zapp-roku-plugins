@@ -4,6 +4,9 @@ namespace zapp.tests
   @suite
   class DeeplinkingControllerVMTests extends tests.BaseTestSuite
 
+    private riversJson
+    private vm
+
     protected override function beforeEach()
       super.beforeEach()
       mioc.setInstances({

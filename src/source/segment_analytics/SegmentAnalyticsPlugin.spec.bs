@@ -4,7 +4,10 @@ namespace zapp.tests
   @suite
   class SegmentAnalyticsPluginTests extends tests.BaseTestSuite
 
-   protected override function beforeEach()
+    private plugin
+    private pluginData
+
+    protected override function beforeEach()
       super.beforeEach()
       config = {
         "write_key": "#w"

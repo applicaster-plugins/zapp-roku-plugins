@@ -4,6 +4,11 @@ namespace zapp.tests
   @suite
   class SegmentVideoAnalyticsPluginPluginTests extends tests.BaseTestSuite
 
+    private constants
+    private analyticsManager
+    private plugin
+    private eventName
+
     protected override function beforeEach()
       super.beforeEach()
       m.constants = {

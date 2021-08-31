@@ -3,8 +3,10 @@ namespace zapp.tests
   @tags("public", "vm")
   @suite
   class WarningMessageScreenVMTests extends tests.BaseTestSuite
+    private analyticsManager
+    private vm
 
-   protected override function beforeEach()
+    protected override function beforeEach()
       super.beforeEach()
       localStore = createObject("roSGNode", "ZSessionStore")
       mioc.setInstance("zp_localStore", localStore)

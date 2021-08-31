@@ -2,6 +2,10 @@ namespace zapp.tests
   @tags("public", "auth", "vm")
   @suite
   class RegisterScreenVMTests extends tests.BaseTestSuite
+    private riversJson
+    private vm
+    private user
+
     protected override function beforeEach()
       super.beforeEach()
       m.riversJson = {

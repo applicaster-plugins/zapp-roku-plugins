@@ -3,8 +3,11 @@ namespace zapp.tests
   @tags("public", "analytics", "video")
   @suite
   class YouboraVideoAnalyticsTests extends tests.BaseTestSuite
+    private config
+    private plugin
+    private pluginData
 
-   protected override function beforeEach()
+    protected override function beforeEach()
       super.beforeEach()
       m.config = {
         "account_code": "#ac"

@@ -3,13 +3,14 @@ import "pkg:/source/lib/Request.bs"
 import "pkg:/source/lib/URI.bs"
 import "pkg:/source/authorization/JWTUtil.bs"
 
-class AdobePrimetimeAuthPlugin extends zapp.Auth.BaseAuthPlugin
+class AdobePrimetimeAuthPlugin extends zapp.auth.BaseAuthPlugin
 
   private resourceID = ""
   private requestorID = ""
   private secret = ""
   private publicKey = ""
   private baseUrl = ""
+  private pollResult as mc.types.assocarray
 
   @inject("constants", "applicasterDeviceId")
   private deviceId

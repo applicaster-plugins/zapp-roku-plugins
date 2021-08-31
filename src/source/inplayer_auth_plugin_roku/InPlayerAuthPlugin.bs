@@ -4,9 +4,10 @@ import "pkg:/source/lib/URI.bs"
 import "pkg:/source/lib/APIUtils.bs"
 import "pkg:/source/authorization/BaseAuthPlugin.bs"
 
-class InPlayerAuthPlugin extends zapp.Auth.BaseAuthPlugin
+class InPlayerAuthPlugin extends zapp.auth.BaseAuthPlugin
 
   public apiUrl = "" ' note this is used by APIMixin
+  private clientId as string
 
   'mixin api methods
   private createResult = zapp.APIUtils.createResult

@@ -3,6 +3,8 @@ namespace zapp.tests
   @suite
   class AdobePrimetimeAuthpluginTests extends tests.BaseTestSuite
 
+    private plugin
+
     protected override function beforeEach()
       super.beforeEach()
       pluginConfiguration = {

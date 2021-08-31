@@ -4,6 +4,8 @@ namespace zapp.tests
   @suite
   class EntitlementsItemLoaderTests extends tests.BaseTestSuite
 
+  private loader
+
    protected override function beforeEach()
       super.beforeEach()
       mioc.setInstance("plugins", [tests.utils.createPluginJson("oc_url_token_loader", {

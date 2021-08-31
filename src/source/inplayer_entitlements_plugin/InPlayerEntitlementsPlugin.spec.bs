@@ -5,8 +5,10 @@ namespace zapp.tests
 
     private authenticationData
     private availableProducts
+    private plugin
+    private item
 
-   protected override function beforeEach()
+    protected override function beforeEach()
       super.beforeEach()
       mioc.setInstance("constants", { id: "constants" })
       mioc.setInstance("plugins", [])

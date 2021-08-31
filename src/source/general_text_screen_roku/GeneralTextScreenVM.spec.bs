@@ -3,8 +3,9 @@ namespace zapp.tests
   @tags("public")
   @suite
   class GeneralTextScreenVMTests extends tests.BaseTestSuite
+    private vm
 
-   protected override function beforeEach()
+    protected override function beforeEach()
       super.beforeEach()
       localStore = createObject("roSGNode", "ZSessionStore")
       mioc.setInstance("zp_localStore", localStore)

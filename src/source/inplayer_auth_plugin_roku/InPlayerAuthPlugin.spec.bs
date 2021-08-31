@@ -4,7 +4,12 @@ namespace zapp.tests
   @suite
   class InPlayerAuthPluginTests extends tests.BaseTestSuite
 
-   protected override function beforeEach()
+    private riversJson
+    private expectedHeaders
+    private validResponse
+    private plugin
+
+    protected override function beforeEach()
       super.beforeEach()
       m.riversJson = {
         "id": "myAccount"

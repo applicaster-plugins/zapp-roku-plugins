@@ -4,7 +4,9 @@ namespace zapp.tests
   @suite
   class GenericUrlTokenAppenderTests extends tests.BaseTestSuite
 
-   protected override function beforeEach()
+    private appender
+
+    protected override function beforeEach()
       super.beforeEach()
       mioc.setInstance("plugins", [tests.utils.createPluginJson("generic_url_token_appender", { "provider_id": "pid", "token_key": "t" })])
 
