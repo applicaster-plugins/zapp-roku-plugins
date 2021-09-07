@@ -260,7 +260,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
     end if
 
     if item.inPlayerId <> invalid
-      return item.inPlayerIgt
+      return item.inPlayerId
     end if
 
     m.log.info("extensions", item.json.extensions)
