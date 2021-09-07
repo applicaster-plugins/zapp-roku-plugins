@@ -1,6 +1,4 @@
 namespace zapp.tests
-  @only
-  @nocatch
   @tags("public", "video", "vm")
   @suite
   class BitMovinPlayerVMTests extends tests.BaseTestSuite
@@ -266,7 +264,6 @@ namespace zapp.tests
     @describe("playBitmovinItem")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @Only
     @it("playBitmovinItem")
     function _()
       playerData = { "id": "playerData" }
@@ -288,8 +285,6 @@ namespace zapp.tests
       m.expectOnce(m.player, "callFunc", [m.player.BitmovinFunctions.LOAD, playerData])
       m.expectOnce(m.player, "callFunc", [m.player.BitmovinFunctions.PLAY, invalid])
 
-      m.expectOnce(trickPlayView, "callFunc", ["configureWithItem", videoNode])
-
       m.vm.playBitmovinItem(playerData)
 
       m.assertEqual(videoNode.control, "play")
@@ -301,7 +296,6 @@ namespace zapp.tests
     @describe("stopItem")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @only
     @it("stopItem")
     function _()
       m.vm.state = "playing"
