@@ -21,6 +21,9 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   public isMainGroupVisible = false
   public currentScreen = invalid
 
+  public isForgotPasswordButtonVisible = false
+  public isRegisterButtonVisible = false
+
   public usernameText = ""
   public username = ""
   public passwordText = ""
@@ -32,7 +35,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   private providerId = invalid
   private isShowingRegisterScreen = false
   private preScreenFocusId = "registerButton"
-  private focusIds = ["usernameInput", "passwordInput", "loginButton", "registerButton", "forgotPasswordButton"]
+  private focusIds = ["usernameInput", "passwordInput", "loginButton"]
   private maxDebugAccounts = 1
   private debugAccountId = 0
 
@@ -101,6 +104,15 @@ class LoginScreenVM extends zapp.uib.ScreenVM
     m.registerButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "register_button", "custom", styles.register_button_text)
     m.forgotPasswordButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "forgot_password_button", "custom", styles.forgot_password_button_text)
     m.maxDebugAccounts = zapp.viewUtils.getUIBInt(styles, "debug_max_accounts")
+    m.isForgotPasswordButtonVisible = mc.getPath(styles, "use_forgot_password", false)
+    if m.isForgotPasswordButtonVisible
+      m.focusIds.push("forgotPasswordButton")
+    end if
+
+    m.isRegisterButtonVisible = mc.getPath(styles, "use_register", false)
+    if m.isRegisterButtonVisible
+      m.focusIds.push("registerButton")
+    end if
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

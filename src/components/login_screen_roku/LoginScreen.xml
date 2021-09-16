@@ -76,15 +76,16 @@
         <ZActionButton
             id='registerButton'
             style='{{:registerButtonStyle}}'
-            visible='{{isLoading:transform=mx_transform_invertBoolean}}'
+            enabled='{{isLoginButtonEnabled}}'
+            visible='{{isRegisterButtonVisible}}'
             selected='{(onRegisterButtonSelected())}'
             width='610' />
-
-        <ZActionButton
+            
+            <ZActionButton
             id='forgotPasswordButton'
             style='{{:forgotPasswordButtonStyle}}'
             enabled='{{isLoginButtonEnabled}}'
-            visible='{{isLoading:transform=mx_transform_invertBoolean}}'
+            visible='{{isForgotPasswordButtonVisible}}'
             selected='{(onForgotPasswordButtonSelected())}'
             width='610' />
       </mv_LayoutGroup>
