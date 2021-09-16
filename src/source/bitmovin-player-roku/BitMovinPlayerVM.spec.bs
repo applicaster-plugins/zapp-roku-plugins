@@ -117,6 +117,9 @@ namespace zapp.tests
       m.expectOnce(m.player, "callFunc", [m.player.BitmovinFunctions.SETUP, {
           key: "#key"
       }])
+      videoNode = { "id" : "videoNode" }
+      m.expectOnce(m.player, "getChild", [0], videoNode)
+
       m.expectOnce(m.vm, "setVideoChromeStyle", [])
 
       m.vm.onSDKLoadStatusChange("ready")
