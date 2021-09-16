@@ -123,7 +123,15 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
 
   private function onUsernameKeyboardDialogDismissal(text)
     m.log.method("onKeyboardDialogDismissal")
-    m.setTextFromKeyboard("username", text)
+    if text.trim() = ""
+      m.username = ""
+      m.usernameText = m.usernamePlaceholderText
+      m.usernameButtonType =  "textInputPlaceholder"
+    else
+      m.usernameText = text
+      m.username = text
+      m.usernameButtonType =  "textInput"
+    end if
   end function
 
   private function onNameKeyboardDialogDismissal(text)
