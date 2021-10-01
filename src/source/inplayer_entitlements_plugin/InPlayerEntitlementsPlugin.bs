@@ -317,15 +317,25 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
   end function
 
   function getRokuItemForFee(fee, rokuItems)
-    if fee <> invalid and fee.external_fees <> invalid
+    m.log.info("looking for roku product that maches fee", fee.id)
+    m.log.info("==========================================")
+    if rokuItems.count() = 0
+      m.log.error("there are no available roku products")
+      return invalid
+    end if
+    if fee <> invalid and fee.external_fees <> invalid and fee.external_fees.count() > 0
       for each externalFee in fee.external_fees
         for each rokuItem in rokuItems
+          m.log.info("checking if externalFee id", externalFee.external_id, "matches roku code", rokuItem.code)
           if externalFee.external_id = rokuItem.code
             return rokuItem
           end if
         end for
       end for
+    else
+      m.log.error("fee", fee.id, "has no external_ids configured - it cannot be used")
     end if
+    m.log.info("==========================================")
 
     return invalid
   end function
@@ -333,7 +343,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
   private function getExternalIdsFromItem(item, isOnlyGettingFirst = false)
     ids = []
 
-    if item.external_fees <> invalid
+    if item.external_fees <> invalid and item.external_fees.count() > 0
       for each externalFee in item.external_fees
         externalId = mc.getPath(externalFee, "external_id")
 
@@ -345,8 +355,9 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
         else
           m.log.error("error finding external ids for item", item)
         end if
-
       end for
+    else
+      m.log.error("this fee has no external_ids configured")
     end if
 
     return ids
