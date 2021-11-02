@@ -2,6 +2,7 @@ import "pkg:/source/plugin-support/BasePlugin.bs"
 import "pkg:/source/plugin-support/PluginManager.bs"
 import "./SegmentAnalyticsConnector.brs"
 import "pkg:/source/analytics/BaseAnalyticsPlugin.bs"
+import "pkg:/source/segment_video_analytics/SegmentVideoAnalyticsPlugin.bs"
 
 class SegmentAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
 
@@ -131,6 +132,10 @@ class SegmentAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
 
   end function
 
+  public override function _trackVideoEvent(event as zapp.video.VideoAnalyticsEvent)
+    m.log.info("tracking video event ", event)
+    m._trackEvent(event.id, event.name, event.properties)
+  end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ private impl

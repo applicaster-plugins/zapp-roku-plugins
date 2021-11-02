@@ -115,7 +115,18 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
     if m.youboraTask <> invalid
       m.youboraTask.adevent = parseJson(formatJson(rafCtx))
     end if
+  end function
+
+  public override function onVideoAnalyticsEvent(event as zapp.video.VideoAnalyticsEvent)
+    'TODO - not sure if this is right or not
+    m.youboraTask.adevent = parseJson(formatJson({
+      id: event.id
+      name: event.name
+      properties: event.properties
+    }))
 
   end function
+
+
 
 end class

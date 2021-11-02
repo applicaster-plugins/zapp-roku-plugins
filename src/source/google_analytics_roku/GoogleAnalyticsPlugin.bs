@@ -1,25 +1,20 @@
 import "pkg:/source/analytics/BaseAnalyticsPlugin.bs"
+import "pkg:/source/video/analytics/VideoAnalyticsEvent.bs"
 
 class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
 
   private eventFactory = invalid
-  private isTrakingUserIdEnabled = false
+  private isTrackingUserIdEnabled = false
 
   public function new(plugin)
     super("GoogleAnalyticsPlugin", plugin)
-    m.task = m.createInstance("GoogleAnalyticsTask", invalid, "googleAnalyticsTask")
-
     constants = m.getInstance("constants")
 
     m.task.trackingId = plugin.getStringValue("tracking_id")
     m.task.clientId = constants.googleAnalyticsClientId
-
     buildConfig = m.getInstance("buildConfig")
     versionId = buildConfig.app_family_id
     userIdString = plugin.getStringValue("user_id")
-
-    m.isTrakingUserIdEnabled = m.checkIfTrackingUserIdAllowed(userIdString, versionId)
-
   end function
 
 
@@ -28,6 +23,14 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public override function start()
+    m.log.info("start")
+
+    m.task = m.createInstance("GoogleAnalyticsTask", invalid, "googleAnalyticsTask")
+
+
+
+    m.isTrackingUserIdEnabled = m.checkIfTrackingUserIdAllowed(userIdString, versionId)
+
     m.eventFactory = m.createInstance("AnalyticsEventFactory", invalid, "googleAnalyticsEventFactory")
     m.setInstance("googleAnalyticsEventFactory", m.eventFactory)
     m.setInstance("googleAnalyticsTask", m.task)
@@ -40,8 +43,8 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
 
     if m.isEnabled
 
-      if m.isTrakingUserIdEnabled <> true
-        m.log.info("traking user is not allowed skip isIdentified")
+      if m.isTrackingUserIdEnabled <> true
+        m.log.info("tracking user is not allowed skip isIdentified")
         return true
       end if
 
@@ -63,7 +66,7 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
           m.identifyAsAnonymous()
         end if
       else
-        m.log.warn("idenitfy called; but there is no logged in user; goint to unidentify, to get anonymous analytics")
+        m.log.warn("identify called; but there is no logged in user; point to unidentify, to get anonymous analytics")
         m.identifyAsAnonymous()
       end if
     end if
@@ -74,6 +77,27 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
   private function identifyAsAnonymous()
     m.log.info("identifying as anonymous user")
     m.setGoogleTaskUserId(invalid)
+  end function
+
+  public function _trackVideoEvent(event as zapp.video.VideoAnalyticsEvent)
+    m.log.error("_trackVideoEvent is not implemented in ", m.__classname)
+
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    ' Use the Event for application state events, such as a login or registration.
+    '
+    ' | Parameter | Value Type  | Default Value | Max Length
+    ' ------------------------------------------------------
+    ' | category  | text        | None          | 150 Bytes
+    ' | action    | text        | None          | 500 Bytes
+    ' | label     | text        | None          | 500 Bytes
+    ' | value     | text     | None          | None
+
+    googleAnalytics.event = {
+      category: "video"
+      action: event.id
+      label: event.name
+      value: formatJson(event.properties)
+    }
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -12,10 +12,10 @@ function initializeGA()
   if gamobile_client_id = invalid or gamobile_client_id = ""
     gamobile_client_id = device.GetRandomUUID()
   end if
-  gamobile_custom_fileds = m.top.customSessionParams
+  gamobile_custom_fields = m.top.customSessionParams
 
   ' Init analytics
-  initGAMobile(gamobile_tracking_ids, gamobile_client_id, gamobile_custom_fileds)
+  initGAMobile(gamobile_tracking_ids, gamobile_client_id, gamobile_custom_fields)
   enableGAMobile(true)
 
   ' Enable or disable debug here for viewing events on the console
