@@ -51,6 +51,7 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
   private youboraTask = invalid
   private config = {}
   private taskName = "YBPluginRokuVideo"
+  private isHandlingVideoEvents = false
 
   public function new(plugin)
     super("YouboraVideoAnalytics")
@@ -61,6 +62,7 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
       "expectAds": plugin.getBoolValue("expect_ads")
       "enableDebug": plugin.getBoolValue("is_debug")
     }
+    m.isHandlingVideoEvents = plugin.getBoolValue("use_advanced_video_analytics")
   end function
 
   public override function videoStart(videoNode, contentNode)
@@ -119,12 +121,13 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
 
   public override function onVideoAnalyticsEvent(event as zapp.video.VideoAnalyticsEvent)
     'TODO - not sure if this is right or not
-    m.youboraTask.adevent = parseJson(formatJson({
-      id: event.id
-      name: event.name
-      properties: event.properties
-    }))
-
+    if m.isHandlingVideoEvents
+      m.youboraTask.adevent = parseJson(formatJson({
+        id: event.id
+        name: event.name
+        properties: event.properties
+      }))
+    end if
   end function
 
 

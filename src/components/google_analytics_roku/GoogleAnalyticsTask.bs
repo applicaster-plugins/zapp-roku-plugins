@@ -27,6 +27,7 @@ function execGampLoop()
   port = CreateObject("roMessagePort")
   m.top.observeField("pageView", port)
   m.top.observeField("event", port)
+  m.top.observeField("genericEvent", port)
   m.top.observeField("screenView", port)
   m.top.observeField("transaction", port)
   m.top.observeField("exception", port)
@@ -57,6 +58,8 @@ function execGampLoop()
         if data.label = invalid then data.label = ""
         if data.value = invalid then data.value = ""
         gamobileEvent(data.category, data.action, data.label, data.value)
+      else if field = "genericEvent" then
+        gamobileGenericEvent(data)
       else if field = "screenView" then
         if data.screenName = invalid then data.screenName = ""
         gamobileScreenView(data.screenName)

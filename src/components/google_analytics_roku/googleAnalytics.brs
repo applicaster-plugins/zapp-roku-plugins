@@ -114,6 +114,14 @@ function gamobilePageView(hostname = "" as string, page = "" as string, title = 
   gamobileSendHit(hit_params)
 end function
 
+function gamobileGenericEvent(hitParams as mc.types.assocarray) as void
+  if m.gamobile.debug
+    ? "[GA] PageView: " + page
+  end if
+
+
+  gamobileSendHit(hitParams)
+end function
 
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ' Use the Event for application state events, such as a login or registration.

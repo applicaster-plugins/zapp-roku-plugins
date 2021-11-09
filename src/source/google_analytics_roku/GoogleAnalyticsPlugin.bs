@@ -5,18 +5,19 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
 
   private eventFactory = invalid
   private isTrackingUserIdEnabled = false
+  private trackingId = false
+  private clientId = false
 
   public function new(plugin)
     super("GoogleAnalyticsPlugin", plugin)
     constants = m.getInstance("constants")
 
-    m.task.trackingId = plugin.getStringValue("tracking_id")
-    m.task.clientId = constants.googleAnalyticsClientId
+    m.trackingId = plugin.getStringValue("tracking_id")
+    m.clientId = constants.googleAnalyticsClientId
     buildConfig = m.getInstance("buildConfig")
     versionId = buildConfig.app_family_id
     userIdString = plugin.getStringValue("user_id")
   end function
-
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ overridden methods
@@ -26,8 +27,8 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
     m.log.info("start")
 
     m.task = m.createInstance("GoogleAnalyticsTask", invalid, "googleAnalyticsTask")
-
-
+    m.task.trackingId = trackingId
+    m.task.clientId = clientId
 
     m.isTrackingUserIdEnabled = m.checkIfTrackingUserIdAllowed(userIdString, versionId)
 
@@ -80,7 +81,7 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
   end function
 
   public function _trackVideoEvent(event as zapp.video.VideoAnalyticsEvent)
-    m.log.error("_trackVideoEvent is not implemented in ", m.__classname)
+    m.log.info("sending video event ", event)
 
     '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
     ' Use the Event for application state events, such as a login or registration.
@@ -92,7 +93,8 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
     ' | label     | text        | None          | 500 Bytes
     ' | value     | text     | None          | None
 
-    googleAnalytics.event = {
+    'TODO - map the values in here - this will be done in a subsequent ticket
+    googleAnalytics.genericEvent = {
       category: "video"
       action: event.id
       label: event.name

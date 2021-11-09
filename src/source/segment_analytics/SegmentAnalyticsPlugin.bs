@@ -126,7 +126,7 @@ class SegmentAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
       options.append(m.defaultOptions)
       properties.append(m.defaultProperties)
 
-      m.log.info("TRACK OPTINS ", options)
+      m.log.info("TRACK OPTIONS ", options)
       m.library.track(eventName, properties, options)
     end if
 
