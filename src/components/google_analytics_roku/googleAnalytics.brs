@@ -114,7 +114,7 @@ function gamobilePageView(hostname = "" as string, page = "" as string, title = 
   gamobileSendHit(hit_params)
 end function
 
-function gamobileGenericEvent(hitParams as mc.types.assocarray) as void
+function gamobileGenericEvent(hitParams as object) as void
   if m.gamobile.debug
     ? "[GA] PageView: " + page
   end if
