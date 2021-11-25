@@ -26,9 +26,6 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
   private providerId = invalid
   private isValid = false
 
-  @inject("analyticsManager")
-  private analyticsManager
-
   public function new(riversJson)
     super(riversJson, "RegcodeLoginScreenVM")
 
