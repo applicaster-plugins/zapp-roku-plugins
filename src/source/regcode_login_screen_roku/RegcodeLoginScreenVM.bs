@@ -15,6 +15,7 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
   public pollTimerDuration = 5
   private isDebugOverrideSet = false
 
+  public title = ""
   public text1 = ""
   public text2 = ""
   public text3 = ""
@@ -54,6 +55,8 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
       text = m.localizations[key]
       m.setField(key, text)
     end for
+    m.title = m.localizations.title
+
     m.isDebugOverrideSet = mc.getPath(styles, "force_authentication_on_all", "off") = "on"
   end function
 
@@ -176,6 +179,7 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
         end if
         m.setField(key, text)
       end for
+      m.title = m.localizations.title
 
       if result.pollInterval <> invalid
         m.pollTimerDuration = result.pollInterval
