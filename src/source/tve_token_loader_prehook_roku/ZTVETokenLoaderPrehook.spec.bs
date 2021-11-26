@@ -1,7 +1,7 @@
 namespace zapp.tests
   @tags("public", "auth")
   @suite
-  class TVETokenLoaderPrehookTests extends tests.BaseTestSuite
+  class ZTVETokenLoaderPrehookTests extends tests.BaseTestSuite
 
     private pluginJson
     private plugin
