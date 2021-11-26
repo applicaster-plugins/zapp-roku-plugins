@@ -57,8 +57,11 @@ class SegmentAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
 
   private function onScreenHeartBeatTimer()
     if m.lastScreenName <> invalid and m.lastScreenName <> ""
-      m._trackEvent("Screen Heartbeat", m.lastScreenName, m.lastScreenProperties, m.lastScreenOptions)
+      m.log.info("sending screen heartbeat for screen", m.lastScreenName)
+      m._trackEvent("Screen Heartbeat", invalid, m.lastScreenProperties, m.lastScreenOptions)
       m.toggleHeartbeat(true)
+    else
+      m.log.info("no screen name to send with heartbeat")
     end if
   end function
 
@@ -147,12 +150,17 @@ class SegmentAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
   end function
 
   public override function _trackScreen(screenName, properties = {}, options = {})
+    m.log.info("calling trackscreen with name", screenName)
+
     if screenName <> m.lastScreenName and screenName <> invalid and screenName <> ""
+      m.log.info("track screen ", screenName)
       m.lastScreenName = screenName
       m.lastScreenOptions = options
       m.lastScreenProperties = properties
-      m._trackEvent("Screen", screenName, properties, options)
+      m._trackEvent(`Screen viewed: ${screenName}`, invalid, properties, options)
       m.toggleHeartbeat(true)
+    else
+      m.log.info("ignoring track screen for empty or same screen")
     end if
   end function
 

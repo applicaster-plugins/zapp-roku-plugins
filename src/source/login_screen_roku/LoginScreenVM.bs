@@ -47,6 +47,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   private _onKeyboardDialogButtonSelected = zapp.keyboardDialogMixin.onKeyboardDialogButtonSelected
   private _closeKeyboardDialog = zapp.keyboardDialogMixin.closeKeyboardDialog
   private setTextFromKeyboard = zapp.keyboardDialogMixin.setTextFromKeyboard
+  protected fireScreenAnalyticsOnShow = false
 
   public function new(riversJson)
     super(riversJson, "LoginScreenVM")
@@ -229,6 +230,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
     if m.getInstance("user").isLoggedIn
       m.dismiss("success")
     else
+      m.trackScreen()
       m.signalAppLaunchDialog(false)
       m.isRefreshing = false
     end if

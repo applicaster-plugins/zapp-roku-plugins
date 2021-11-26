@@ -1,4 +1,5 @@
 namespace zapp.tests
+  @only
   @tags("public", "analytics")
   @suite
   class SegmentAnalyticsPluginTests extends tests.BaseTestSuite
@@ -141,7 +142,7 @@ namespace zapp.tests
       m.plugin.lastScreenName = "sn"
       m.plugin.lastScreenOptions = "o"
       m.plugin.lastScreenProperties = "p"
-      m.expectOnce(m.plugin, "_trackEvent", ["Screen Heartbeat", "sn", "p", "o"])
+      m.expectOnce(m.plugin, "_trackEvent", ["Screen Heartbeat", invalid, "p", "o"])
       m.plugin.onScreenHeartBeatTimer()
     end function
 
@@ -169,10 +170,10 @@ namespace zapp.tests
     end function
 
     @it("updates last screen trackign vars and starts the heartbeat timer")
-    @params("screen", { id: "p" }, { id: "o" })
-    @params("screen2", { id: "p2" }, { id: "o2" })
-    function _(name, properties, options)
-      m.expectOnce(m.plugin, "_trackEvent", ["Screen", name, properties, options])
+    @params("s", { id: "p" }, { id: "o" }, "Screen viewed: s")
+    @params("s2", { id: "p2" }, { id: "o2" }, "Screen viewed: s2")
+    function _(name, properties, options, expectedEventName)
+      m.expectOnce(m.plugin, "_trackEvent", [expectedEventName, invalid, properties, options])
       m.expectOnce(m.plugin, "toggleHeartbeat", [true])
 
       m.plugin._trackScreen(name, properties, options)
