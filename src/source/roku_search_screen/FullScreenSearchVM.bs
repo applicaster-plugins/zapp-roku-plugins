@@ -235,7 +235,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
 
   protected override function onShow() as void
     m.log.method("onShow")
-
+    m.trackScreen()
     if not m.isShowingContent
       m.reset()
     end if
