@@ -19,6 +19,7 @@ class SegmentAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
   private lastScreenName = invalid
   private lastScreenProperties = invalid
   private lastScreenOptions = invalid
+  private lastScreenIsVideoPlayer = false
   private heartbeatTimer = invalid
 
   public function new(plugin)
@@ -56,12 +57,14 @@ class SegmentAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
   end function
 
   private function onScreenHeartBeatTimer()
-    if m.lastScreenName <> invalid and m.lastScreenName <> ""
-      m.log.info("sending screen heartbeat for screen", m.lastScreenName)
-      m._trackEvent("Screen Heartbeat", invalid, m.lastScreenProperties, m.lastScreenOptions)
-      m.toggleHeartbeat(true)
-    else
-      m.log.info("no screen name to send with heartbeat")
+    if m.isEnabled
+      if m.lastScreenName <> invalid and m.lastScreenName <> "" and not m.lastScreenIsVideoPlayer
+        m.log.info("sending screen heartbeat for screen", m.lastScreenName)
+        m._trackEvent("Screen Heartbeat", invalid, m.lastScreenProperties, m.lastScreenOptions)
+        m.toggleHeartbeat(true)
+      else
+        m.log.info("no screen name to send with heartbeat")
+      end if
     end if
   end function
 
@@ -134,12 +137,20 @@ class SegmentAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
 
   public override function _trackEvent(eventName, actionName = invalid, properties = {}, options = {})
 
+    if options = invalid
+      options = {}
+    end if
+    if properties = invalid
+      properties = {}
+    end if
+
     if actionName <> invalid
       properties.name = eventName
       properties.action_name = actionName
     end if
 
     if m.isEnabled
+
       options.append(m.defaultOptions)
       properties.append(m.defaultProperties)
 
@@ -149,18 +160,22 @@ class SegmentAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
 
   end function
 
-  public override function _trackScreen(screenName, properties = {}, options = {})
+  public override function _trackScreen(screenName, properties = {}, options = {}, isVideoPlayer = false)
     m.log.info("calling trackscreen with name", screenName)
 
-    if screenName <> m.lastScreenName and screenName <> invalid and screenName <> ""
-      m.log.info("track screen ", screenName)
-      m.lastScreenName = screenName
-      m.lastScreenOptions = options
-      m.lastScreenProperties = properties
-      m._trackEvent(`Screen viewed: ${screenName}`, invalid, properties, options)
-      m.toggleHeartbeat(true)
-    else
-      m.log.info("ignoring track screen for empty or same screen")
+    if m.isEnabled
+      if screenName <> m.lastScreenName and screenName <> invalid and screenName <> ""
+        m.log.info("track screen ", screenName)
+        m.lastScreenName = screenName
+        m.lastScreenOptions = options
+        m.lastScreenProperties = properties
+        m.lastScreenIsVideoPlayer = isVideoPlayer
+        m._trackEvent(`Screen viewed: ${screenName}`, invalid, properties, options)
+        m.log.info("Is this screen a video player? ", isVideoPlayer)
+        m.toggleHeartbeat(not isVideoPlayer)
+      else
+        m.log.info("ignoring track screen for empty or same screen")
+      end if
     end if
   end function
 
