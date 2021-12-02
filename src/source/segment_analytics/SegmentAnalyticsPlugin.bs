@@ -51,7 +51,7 @@ class SegmentAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
   end function
 
   private function onScreenHeartBeatTimer()
-    if m.isEnabled
+    if m.isEnabled and not m.isAnalyticsManagerDisabled
       if m.lastScreenName <> invalid and m.lastScreenName <> "" and not m.lastScreenIsVideoPlayer
         m.log.info("sending screen heartbeat for screen", m.lastScreenName)
         m._trackEvent("Screen Heartbeat", invalid, m.lastScreenProperties, m.lastScreenOptions)
