@@ -181,7 +181,7 @@ class SegmentAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
     m.cancelWaitTimer(m.heartbeatTimer)
     m.heartbeatTimer = invalid
 
-    if isActive
+    if isActive and m.screenHeartBeatInterval > 0
       m.heartbeatTimer = m.waitAFrame(m.onScreenHeartBeatTimer, m.screenHeartBeatInterval)
     end if
   end function
