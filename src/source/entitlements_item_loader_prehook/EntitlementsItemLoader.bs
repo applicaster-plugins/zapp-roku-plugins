@@ -38,7 +38,7 @@ class EntitlementsItemLoader extends zapp.BaseClass
     item = mc.getPath(m.getInstance("currentSelection"), "currentItem")
 
     if item = invalid
-      m.log.error("no item - entitlements loader reuires currentSelection.currentItem is populated")
+      m.log.error("no item - entitlements loader requires currentSelection.currentItem is populated")
       return "error"
     end if
 

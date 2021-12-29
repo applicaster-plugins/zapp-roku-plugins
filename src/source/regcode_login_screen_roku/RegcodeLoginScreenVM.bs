@@ -30,6 +30,7 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
 
   @inject("analyticsManager")
   private analyticsManager
+  protected fireScreenAnalyticsOnShow = false
 
   public function new(riversJson)
     super(riversJson, "RegcodeLoginScreenVM")
@@ -86,6 +87,7 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
       m.log.info("not displaying in prehook")
       m.analyticsManager@.trackEvent("Waiting Page", "page_loaded", { "Provider": m.providerId })
       m.isContentGroupVisible = true
+      m.trackScreen()
       m.loadCode()
     end if
 
@@ -124,6 +126,7 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
     else
       m.isContentGroupVisible = true
       m.signalAppLaunchDialog(false)
+      m.trackScreen()
       m.loadCode()
     end if
 

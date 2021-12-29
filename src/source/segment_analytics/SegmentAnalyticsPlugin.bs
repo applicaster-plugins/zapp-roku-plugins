@@ -7,13 +7,20 @@ class SegmentAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
 
   private writeKey = ""
   private isDebug = false
-  ' private getInstance
   private applicasterDeviceId
   private isIdentifyingOnLogout
   private library
   private segmentTask
   private defaultOptions
   private defaultProperties
+  private screenHeartBeatTimer = invalid
+  private screenHeartBeatInterval = -1
+  private userNation = invalid
+  private lastScreenName = invalid
+  private lastScreenProperties = invalid
+  private lastScreenOptions = invalid
+  private lastScreenIsVideoPlayer = false
+  private heartbeatTimer = invalid
 
   public function new(plugin)
     super("SegmentAnalyticsPlugin", plugin)
@@ -26,6 +33,7 @@ class SegmentAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
     m.writeKey = plugin.getStringValue("write_key")
     m.isDebug = plugin.getBoolValue("is_debug")
     m.isIdentifyingOnLogout = plugin.getBoolValue("send_identify_on_logout")
+    m.screenHeartBeatInterval = plugin.getIntValue("screen_heartbeat_interval", -1)
     m.library = SegmentAnalyticsConnector(m.segmentTask)
   end function
 
@@ -42,9 +50,22 @@ class SegmentAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
       "retryLimit": 0
     }
 
+    m.userNation = m.getInstance("segmentUserNation")
     'bs:disable-next-line
     m.library.init(config)
 
+  end function
+
+  private function onScreenHeartBeatTimer()
+    if m.isEnabled and not m.isAnalyticsManagerDisabled
+      if m.lastScreenName <> invalid and m.lastScreenName <> "" and not m.lastScreenIsVideoPlayer
+        m.log.info("sending screen heartbeat for screen", m.lastScreenName)
+        m._trackEvent("Screen Heartbeat", invalid, m.lastScreenProperties, m.lastScreenOptions)
+        m.toggleHeartbeat(true)
+      else
+        m.log.info("no screen name to send with heartbeat")
+      end if
+    end if
   end function
 
   private override function mapPropertyValues(properties)
@@ -116,12 +137,20 @@ class SegmentAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
 
   public override function _trackEvent(eventName, actionName = invalid, properties = {}, options = {})
 
+    if options = invalid
+      options = {}
+    end if
+    if properties = invalid
+      properties = {}
+    end if
+
     if actionName <> invalid
       properties.name = eventName
       properties.action_name = actionName
     end if
 
     if m.isEnabled
+
       options.append(m.defaultOptions)
       properties.append(m.defaultProperties)
 
@@ -131,10 +160,37 @@ class SegmentAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
 
   end function
 
+  public override function _trackScreen(screenName, properties = {}, options = {}, isVideoPlayer = false)
+    m.log.info("calling trackscreen with name", screenName)
+
+    if m.isEnabled
+      if screenName <> m.lastScreenName and screenName <> invalid and screenName <> ""
+        m.log.info("track screen ", screenName)
+        m.lastScreenName = screenName
+        m.lastScreenOptions = options
+        m.lastScreenProperties = properties
+        m.lastScreenIsVideoPlayer = isVideoPlayer
+        m._trackEvent(`Screen viewed: ${screenName}`, invalid, properties, options)
+        m.log.info("Is this screen a video player? ", isVideoPlayer)
+        m.toggleHeartbeat(not isVideoPlayer)
+      else
+        m.log.info("ignoring track screen for empty or same screen")
+      end if
+    end if
+  end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ private impl
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function toggleHeartbeat(isActive)
+    m.cancelWaitTimer(m.heartbeatTimer)
+    m.heartbeatTimer = invalid
+
+    if isActive and m.screenHeartBeatInterval > 0
+      m.heartbeatTimer = m.waitAFrame(m.onScreenHeartBeatTimer, m.screenHeartBeatInterval)
+    end if
+  end function
 
   private function screen(eventName, category, properties = {}, options = {})
 
@@ -177,6 +233,9 @@ class SegmentAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
       properties.user_gigya_id = "anonymous"
     end if
 
+    if m.userNation <> invalid
+      properties.user_nation = m.userNation
+    end if
     primetimeAccountInfo = m.getSessionStoreValue("AdobeAccessEnabler", "account", true)
     if primetimeAccountInfo <> invalid
       properties.user_adobe_id = m.hash(primetimeAccountInfo.id)

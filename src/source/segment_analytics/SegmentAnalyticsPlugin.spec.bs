@@ -1,5 +1,5 @@
 namespace zapp.tests
-
+  @only
   @tags("public", "analytics")
   @suite
   class SegmentAnalyticsPluginTests extends tests.BaseTestSuite
@@ -27,11 +27,30 @@ namespace zapp.tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("constructor")
-    function _()
+    @params("wk1", false, false, invalid, -1)
+    @params("wk2", false, false, "", -1)
+    @params("wk3", false, false, "20", 20)
+    @params("wk4", true, false, "20", 20)
+    @params("wk5", true, true, "20", 20)
+    @params("wk6", false, true, "20", 20)
+    function _(writeKey, isDebug, isIdentifyingOnLogout, screenHeartBeatInterval, expectedHeartBeatInterval)
+      config = {
+        "write_key": writeKey
+        "is_debug": isDebug
+        "send_identify_on_logout": isIdentifyingOnLogout
+        "screen_heartbeat_interval": screenHeartBeatInterval
+      }
+      m.pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "segment_analytics_roku" })
+
+      m.plugin = new SegmentAnalyticsPlugin(m.pluginData)
+
       m.assertEqual(m.plugin.id, "segment_analytics_roku")
       m.assertSubType(m.plugin.segmentTask, "SegmentAnalyticsTask")
-      m.assertEqual(m.plugin.writeKey, "#w")
       m.assertEqual(m.plugin.applicasterDeviceId, "#a")
+      m.assertEqual(m.plugin.writeKey, writeKey)
+      m.assertEqual(m.plugin.isDebug, isDebug)
+      m.assertEqual(m.plugin.isIdentifyingOnLogout, isIdentifyingOnLogout)
+      m.assertEqual(m.plugin.screenHeartBeatInterval, expectedHeartBeatInterval)
       m.assertNotInvalid(m.plugin.library)
     end function
 
@@ -40,12 +59,16 @@ namespace zapp.tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("start")
-    function _()
+    @params(invalid)
+    @params("ES")
+    @params("US")
+    function _(nation)
 
-      library = { "id": "library" }
-      m.plugin.library = library
+      segmentLib = { "id": "library" }
+      mioc.setInstance("segmentUserNation", nation)
+      m.plugin.library = segmentLib
 
-      m.expectOnce(library, "init", [{
+      m.expectOnce(segmentLib, "init", [{
         "writeKey": "#w"
         "debug": true
         "queueSize": 3
@@ -53,6 +76,8 @@ namespace zapp.tests
       }])
 
       m.plugin.start()
+      m.assertEqual(m.plugin.userNation, nation)
+
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -85,9 +110,6 @@ namespace zapp.tests
         "write_key": "#w"
         "provider_key_1": ""
         "provider_value_1": ""
-
-
-
         "provider_key_2": ""
         "provider_value_2": ""
         "provider_key_3": ""
@@ -109,6 +131,101 @@ namespace zapp.tests
     function _()
       m.plugin.isIdentifyingOnLogout = false
       m.assertTrue(m.plugin._identify("pid", invalid, invalid, true))
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onScreenHeartBeatTimer")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("sends the heartbeat for the current screen and schedules the timer again")
+    function _()
+      m.plugin.lastScreenName = "sn"
+      m.plugin.lastScreenOptions = "o"
+      m.plugin.lastScreenProperties = "p"
+      m.expectOnce(m.plugin, "_trackEvent", ["Screen Heartbeat", invalid, "p", "o"])
+      m.plugin.onScreenHeartBeatTimer()
+    end function
+
+    @it("does nothing if there is no last screen")
+    @params(2)
+    @params(20)
+    function _(interval)
+      m.plugin.lastScreenName = invalid
+      m.expectNone(m.plugin, "_trackEvent")
+      m.expectNone(m.plugin, "waitAFrame")
+      m.plugin.onScreenHeartBeatTimer()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("track screen")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @it("does nothing if the new screenname is invalid")
+    @params(invalid)
+    @params("")
+    function _(name)
+      m.expectNone(m.plugin, "_trackEvent")
+      m.expectNone(m.plugin, "toggleHeartbeat")
+
+      m.plugin._trackScreen(name)
+    end function
+
+    @it("updates last screen trackign vars and starts the heartbeat timer")
+    @params("s", { id: "p" }, { id: "o" }, "Screen viewed: s")
+    @params("s2", { id: "p2" }, { id: "o2" }, "Screen viewed: s2")
+    function _(name, properties, options, expectedEventName)
+      m.expectOnce(m.plugin, "_trackEvent", [expectedEventName, invalid, properties, options])
+      m.expectOnce(m.plugin, "toggleHeartbeat", [true])
+
+      m.plugin._trackScreen(name, properties, options)
+
+      m.assertEqual(m.plugin.lastScreenName, name)
+      m.assertEqual(m.plugin.lastScreenProperties, properties)
+      m.assertEqual(m.plugin.lastScreenOptions, options)
+    end function
+
+    @it("does nothing if screen is unchanged")
+    function _()
+      m.expectNone(m.plugin, "_trackEvent")
+      m.expectNone(m.plugin, "toggleHeartbeat")
+
+      m.plugin.lastScreenName = "n"
+      m.plugin.lastScreenProperties = { id: "p" }
+      m.plugin.lastScreenOptions = { id: "o" }
+
+      m.plugin._trackScreen(m.plugin.lastScreenName, m.plugin.lastScreenProperties, m.plugin.lastScreenOptions)
+      m.assertEqual(m.plugin.lastScreenName, "n")
+      m.assertEqual(m.plugin.lastScreenProperties, { id: "p" })
+      m.assertEqual(m.plugin.lastScreenOptions, { id: "o" })
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("toggleHeartbeat")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @it("schedules if active")
+    @params(2)
+    @params(20)
+    function _(interval)
+      m.plugin.screenHeartBeatInterval = interval
+      timer = { "id": "timer" }
+
+      m.expectOnce(m.plugin, "cancelWaitTimer")
+      m.expectOnce(m.plugin, "waitAFrame", [m.plugin.onScreenHeartBeatTimer, interval], timer)
+
+      m.plugin.toggleHeartbeat(true)
+
+      m.assertEqual(m.plugin.heartbeatTimer, timer)
+    end function
+
+
+    @it("does not start timer if inactive")
+    function _()
+      m.plugin.heartbeatTimer = { "id": "timer" }
+      m.expectOnce(m.plugin, "cancelWaitTimer", [m.plugin.heartbeatTimer])
+      m.expectNone(m.plugin, "waitAFrame")
+
+      m.plugin.toggleHeartbeat(false)
+
+      m.assertInvalid(m.plugin.heartbeatTimer)
     end function
 
   end class
