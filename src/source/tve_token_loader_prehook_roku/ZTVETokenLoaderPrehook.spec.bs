@@ -1,7 +1,7 @@
 namespace zapp.tests
   @tags("public", "auth")
   @suite
-  class TVETokenLoaderPrehookTests extends tests.BaseTestSuite
+  class ZTVETokenLoaderPrehookTests extends tests.BaseTestSuite
 
     private pluginJson
     private plugin
@@ -29,7 +29,7 @@ namespace zapp.tests
 
       mioc.setInstance("constants", { "applicasterDeviceId": "did" })
 
-      m.plugin = new TVETokenLoaderPrehook()
+      m.plugin = new ZTVETokenLoaderPrehook()
     end function
 
 
@@ -46,7 +46,7 @@ namespace zapp.tests
       m.expectOnce(plugins, "getPluginById", ["tve_token_loader_prehook_roku"], loaderPlugin)
       m.expectOnce(plugins, "getPluginById", ["AdobeAccessEnabler"], adobePlugin)
 
-      m.plugin = new TVETokenLoaderPrehook()
+      m.plugin = new ZTVETokenLoaderPrehook()
       m.assertFalse(m.plugin.isValid)
     end function
 
@@ -59,7 +59,7 @@ namespace zapp.tests
       m.expectOnce(plugins, "getPluginById", ["tve_token_loader_prehook_roku"], loaderPlugin)
       m.expectOnce(plugins, "getPluginById", ["AdobeAccessEnabler"], adobePlugin)
 
-      m.plugin = new TVETokenLoaderPrehook()
+      m.plugin = new ZTVETokenLoaderPrehook()
       m.assertFalse(m.plugin.isValid)
     end function
 

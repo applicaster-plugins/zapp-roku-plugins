@@ -2,7 +2,7 @@ namespace zapp.tests
 
   @tags("public", "video")
   @suite
-  class MPXVideoPlaybackPrehookTests extends tests.BaseTestSuite
+  class ZMPXVideoPlaybackPrehookTests extends tests.BaseTestSuite
     private plugin
 
     protected override function beforeEach()
@@ -12,7 +12,7 @@ namespace zapp.tests
           "matching_value": "video"
       })])
 
-      m.plugin = new MPXVideoPlaybackPrehook()
+      m.plugin = new ZMPXVideoPlaybackPrehook()
     end function
 
 
@@ -23,7 +23,7 @@ namespace zapp.tests
     @it("no plugin")
     function _()
       mioc.setInstance("plugins", [])
-      m.plugin = new MPXVideoPlaybackPrehook()
+      m.plugin = new ZMPXVideoPlaybackPrehook()
 
       m.assertNotInvalid(m.plugin.plugins)
     end function

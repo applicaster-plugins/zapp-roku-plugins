@@ -17,6 +17,7 @@ namespace zapp.tests
 
       m.pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "google_analytics_roku" })
       m.plugin = new GoogleAnalyticsPlugin(m.pluginData)
+      m.plugin.task = { id: "task"}
     end function
 
 

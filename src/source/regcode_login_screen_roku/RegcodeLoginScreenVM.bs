@@ -15,6 +15,7 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
   public pollTimerDuration = 5
   private isDebugOverrideSet = false
 
+  public title = ""
   public text1 = ""
   public text2 = ""
   public text3 = ""
@@ -29,6 +30,7 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
 
   @inject("analyticsManager")
   private analyticsManager
+  protected fireScreenAnalyticsOnShow = false
 
   public function new(riversJson)
     super(riversJson, "RegcodeLoginScreenVM")
@@ -54,6 +56,8 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
       text = m.localizations[key]
       m.setField(key, text)
     end for
+    m.title = m.localizations.title
+
     m.isDebugOverrideSet = mc.getPath(styles, "force_authentication_on_all", "off") = "on"
   end function
 
@@ -83,6 +87,7 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
       m.log.info("not displaying in prehook")
       m.analyticsManager@.trackEvent("Waiting Page", "page_loaded", { "Provider": m.providerId })
       m.isContentGroupVisible = true
+      m.trackScreen()
       m.loadCode()
     end if
 
@@ -121,6 +126,7 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
     else
       m.isContentGroupVisible = true
       m.signalAppLaunchDialog(false)
+      m.trackScreen()
       m.loadCode()
     end if
 
@@ -176,6 +182,7 @@ class RegcodeLoginScreenVM extends zapp.uib.ScreenVM
         end if
         m.setField(key, text)
       end for
+      m.title = m.localizations.title
 
       if result.pollInterval <> invalid
         m.pollTimerDuration = result.pollInterval

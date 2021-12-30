@@ -38,7 +38,8 @@
         visible='{{isContentGroupVisible}}'>
       <mv_Label
           id='titleLabel'
-          style='{{=zapp_viewUtils_UIBLabel("title")}}' />
+          style='{{=zapp_viewUtils_UIBLabel("title", "", invalid)}}'
+          text='{{title}}' />
       <LayoutGroup
           id='labelsGroup'
           layoutDirection='vert'

@@ -5,10 +5,10 @@ import "pkg:/source/lib/Request.bs"
 import "pkg:/source/lib/URI.bs"
 
 ' /**
-'  * @module MPXVideoPlaybackPrehook
+'  * @module ZMPXVideoPlaybackPrehook
 '  * @description appends the content url from mpx, using adobe shortmedia token
 '  */
-class MPXVideoPlaybackPrehook extends zapp.BaseClass
+class ZMPXVideoPlaybackPrehook extends zapp.BaseClass
 
   public isValid = false
   private matchingPath = ""
@@ -24,7 +24,7 @@ class MPXVideoPlaybackPrehook extends zapp.BaseClass
   private uri
 
   public function new()
-    super("MPXVideoPlaybackPrehook")
+    super("ZMPXVideoPlaybackPrehook")
 
     plugin = m.plugins.getPluginById("mpx_video_playback_prehook_roku")
     m.isValid = plugin.isValid
@@ -86,10 +86,9 @@ class MPXVideoPlaybackPrehook extends zapp.BaseClass
     }
 
     'FIXME
-    url = item.link + "?" + m.uri.encodeParams(params)
+    url = mc.getPath(item, "url", "") + "?" + m.uri.encodeParams(params)
     result = m.getXMLSync(url)
     m.log.info("got result", result)
-    'what a monstrosity - this will be so much better when we have try/catch
     if result <> invalid and result.body <> invalid and result.body.seq <> invalid
       if result.body.seq.switch <> invalid and result.body.seq.switch.count() > 0 and result.body.seq.switch[0] <> invalid and result.body.seq.switch[0].video <> invalid
         item.url = result.body.seq.switch[0].video@src
@@ -107,9 +106,11 @@ class MPXVideoPlaybackPrehook extends zapp.BaseClass
   end function
 
   public function getXMLSync(url)
+    m.log.info("requesting mpx from: ", url)
     result = m.request.getSync(url)
 
     if result <> invalid and result <> ""
+      m.log.info("got mpx response: ", result)
       xml = CreateObject("roXMLElement")
       if xml.Parse(result)
         return xml

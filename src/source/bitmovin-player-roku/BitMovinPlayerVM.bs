@@ -102,8 +102,9 @@ class BitMovinPlayerVM extends zapp.BaseZappVM
     m.currentItem = item
     m.playMode = playMode
     playerItem = m.getPlayerItem(m.currentItem)
+    startOffset = m.currentItem.PlayStart ? m.currentItem.PlayStart : 0
     playerItem.options = {
-      "startOffset": m.currentItem.PlayStart
+      "startOffset": startOffset
     }
     m.log.info("playing with player item", formatJson(playerItem))
 
@@ -111,7 +112,7 @@ class BitMovinPlayerVM extends zapp.BaseZappVM
       m.pendingPlayerItem = invalid
       m.playBitmovinItem(playerItem)
     else
-      m.log.warn("player is not ready yet; settig this item as pending")
+      m.log.warn("player is not ready yet; setting this item as pending")
       m.pendingPlayerItem = playerItem
     end if
   end function
