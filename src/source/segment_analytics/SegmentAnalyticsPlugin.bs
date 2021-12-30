@@ -3,6 +3,8 @@ import "pkg:/source/plugin-support/PluginManager.bs"
 import "./SegmentAnalyticsConnector.brs"
 import "pkg:/source/analytics/BaseAnalyticsPlugin.bs"
 import "pkg:/source/segment_video_analytics/SegmentVideoAnalyticsPlugin.bs"
+import "pkg:/source/video/analytics/VideoAnalyticsEvent.bs"
+
 
 class SegmentAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
 
@@ -69,12 +71,12 @@ class SegmentAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
     end if
   end function
 
-  private override function mapPropertyValues(properties)
+  protected override function mapPropertyValues(properties)
     m.substituteValue(m.valuesMap.providerNames, properties, "provider")
     return properties
   end function
 
-  public override function _identify(pluginId, traits = {}, options = {}, isFromLogout = false) as boolean
+  protected override function _identify(pluginId, traits = {}, options = {}, isFromLogout = false) as boolean
     m.log.info("identify", pluginId)
     if options = invalid
       options = {}
@@ -132,11 +134,11 @@ class SegmentAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
     ' m.library.identify("anonymous", m.defaultOptions, m.defaultProperties)
   end function
 
-  public override function _track(eventName, properties = {}, options = {})
+  protected override function _track(eventName, properties = {}, options = {})
     m.trackEvent(eventName, invalid, properties, options)
   end function
 
-  public override function _trackEvent(eventName, actionName = invalid, properties = {}, options = {})
+  protected override function _trackEvent(eventName, actionName = invalid, properties = {}, options = {})
 
     if options = invalid
       options = {}
@@ -161,12 +163,12 @@ class SegmentAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
 
   end function
 
-  public override function _trackVideoEvent(event as zapp.video.VideoAnalyticsEvent)
+  protected override function _trackVideoEvent(event as zapp.video.VideoAnalyticsEvent) as void
     m.log.info("tracking video event ", event)
     m._trackEvent(event.id, event.name, event.properties)
   end function
 
-  public override function _trackScreen(screenName, properties = {}, options = {}, isVideoPlayer = false)
+  protected override function _trackScreen(screenName, properties = {}, options = {}, isVideoPlayer = false)
     m.log.info("calling trackscreen with name", screenName)
 
     if m.isEnabled

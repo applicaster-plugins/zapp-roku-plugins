@@ -1,5 +1,6 @@
 import "pkg:/source/lib/BaseClass.bs"
 import "pkg:/source/video/analytics/BaseVideoAnalyticsPlugin.bs"
+import "pkg:/source/video/analytics/VideoAnalyticsEvent.bs"
 
 class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
   ' Example Config:
@@ -51,7 +52,7 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
   private youboraTask = invalid
   private config = {}
   private taskName = "YBPluginRokuVideo"
-  private isHandlingVideoEvents = false
+  private isUsingAdvancedVideoAnalytics = false
 
   public function new(plugin)
     super("YouboraVideoAnalytics")
@@ -62,10 +63,10 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
       "expectAds": plugin.getBoolValue("expect_ads")
       "enableDebug": plugin.getBoolValue("is_debug")
     }
-    m.isHandlingVideoEvents = plugin.getBoolValue("use_advanced_video_analytics")
+    m.isUsingAdvancedVideoAnalytics = plugin.getBoolValue("use_advanced_video_analytics")
   end function
 
-  public override function videoStart(videoNode, contentNode)
+  public override function videoStart(videoNode, contentNode) as void
     super.videoStart(videoNode, contentNode)
 
     m.contentNode = contentNode
@@ -78,6 +79,9 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
       m.setInstance("youboraAnalyticsTask", m.youboraTask)
     end if
 
+    if m.isUsingAdvancedVideoAnalytics
+      return
+    end if
     videoOptions = {}
     videoOptions.content = {
       "title": contentNode.title,
@@ -92,17 +96,20 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
     m.youboraTask.event = { handler: "play" }
   end function
 
-  public override function videoEnd()
+  public override function videoEnd() as void
     m.log.method("videoEnd")
     super.videoEnd()
 
+    if m.isUsingAdvancedVideoAnalytics
+      return
+    end if
     if m.youboraTask <> invalid
       m.youboraTask.event = { handler: "stop" }
       m.youboraTask.taskState = "stop"
     end if
   end function
 
-  public override function adBreakStart()
+  public override function adBreakStart() as void
     super.adBreakStart()
   end function
 
@@ -110,18 +117,20 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
     super.adBreakEnd()
   end function
 
-  public override function adTrackingEvent(eventType, rafCtx)
+  public override function adTrackingEvent(eventType, rafCtx) as void
     m.log.method("adTrackingEvent")
     super.adTrackingEvent(eventType, rafCtx)
 
+    if m.isUsingAdvancedVideoAnalytics
+      return
+    end if
     if m.youboraTask <> invalid
       m.youboraTask.adevent = parseJson(formatJson(rafCtx))
     end if
   end function
 
   public override function onVideoAnalyticsEvent(event as zapp.video.VideoAnalyticsEvent)
-    'TODO - not sure if this is right or not
-    if m.isHandlingVideoEvents
+    if m.isUsingAdvancedVideoAnalytics
       m.youboraTask.adevent = parseJson(formatJson({
         id: event.id
         name: event.name

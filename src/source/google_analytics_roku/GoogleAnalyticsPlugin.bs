@@ -1,5 +1,6 @@
 import "pkg:/source/analytics/BaseAnalyticsPlugin.bs"
 import "pkg:/source/video/analytics/VideoAnalyticsEvent.bs"
+import "pkg:/source/video/analytics/VideoAnalyticsEvent.bs"
 
 class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
 
@@ -7,6 +8,52 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
   private isTrackingUserIdEnabled = false
   private trackingId = false
   private clientId = false
+
+  private analyticsPropertiesByGoogleKey = {
+    "uuid": "TODO"
+    "version": "TODO"
+    "build_number": "TODO"
+    "bundle_id": "TODO"
+    "sdk_version": "TODO"
+    "quickbrick_version": "TODO"
+    "layout_id": "TODO"
+    "name": "TODO"
+    "media_id": "TODO"
+    "duration": "TODO"
+    "stream_type": "TODO"
+    "media_type": "TODO"
+    "player_type": "TODO"
+    "downloaded": "TODO"
+    ' "show_name":  "TODO"
+    ' "season_name":  "TODO"
+    ' "genre":  "TODO"
+    ' "show type":  "TODO"
+    ' "rating":  "TODO"
+    ' "network":  "TODO"
+    "stream_format": "TODO"
+    "artist": "TODO"
+    "album": "TODO"
+    "label": "TODO"
+    "author": "TODO"
+    "station": "TODO"
+    "publisher": "TODO"
+    "start_time": "TODO"
+    "position": "TODO"
+    "total_ads": "TODO"
+    "name": "TODO"
+    "ad_id": "TODO"
+    "position": "TODO"
+    ' "advertiser":  "TODO"
+    ' "campaign":  "TODO"
+    "creative": "TODO"
+    ' "placement":  "TODO"
+    ' "site":  "TODO"
+    ' "creative url":  "TODO"
+    ' "ad_type":  "TODO"
+    "system": "TODO"
+    "ad_duration": "TODO"
+    "current_position": "TODO"
+  }
 
   public function new(plugin)
     super("GoogleAnalyticsPlugin", plugin)
@@ -17,13 +64,14 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
     buildConfig = m.getInstance("buildConfig")
     versionId = buildConfig.app_family_id
     userIdString = plugin.getStringValue("user_id")
+
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ overridden methods
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  public override function start()
+  protected override function start()
     m.log.info("start")
 
     m.task = m.createInstance("GoogleAnalyticsTask", invalid, "googleAnalyticsTask")
@@ -39,7 +87,7 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
 
   end function
 
-  public override function _identify(pluginId, traits = {}, options = {}, isFromLogout = false) as boolean
+  protected override function _identify(pluginId, traits = {}, options = {}, isFromLogout = false) as boolean
     m.log.info("identify", pluginId)
 
     if m.isEnabled
@@ -80,7 +128,7 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
     m.setGoogleTaskUserId(invalid)
   end function
 
-  public function _trackVideoEvent(event as zapp.video.VideoAnalyticsEvent)
+  protected override function _trackVideoEvent(event as zapp.video.VideoAnalyticsEvent)
     m.log.info("sending video event ", event)
 
     '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -93,18 +141,32 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
     ' | label     | text        | None          | 500 Bytes
     ' | value     | text     | None          | None
 
-    'TODO - map the values in here - this will be done in a subsequent ticket
+
     googleAnalytics.genericEvent = {
       category: "video"
       action: event.id
       label: event.name
-      value: formatJson(event.properties)
+      value: formatJson(m.getGoogleCompliantProperties(event))
     }
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ private impl
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function getGoogleCompliantProperties(event as zapp.video.VideoAnalyticsEvent) as mc.types.assocarray
+    properties = {
+
+    }
+
+    for each key in m.analyticsPropertiesByGoogleKey
+      if event.properties.doesExist(key)
+        properties[m.analyticsPropertiesByGoogleKey[key]] = event.properties[key]
+      end if
+    end for
+
+    return properties
+  end function
 
   private function checkIfTrackingUserIdAllowed(userIdString, versionId)
 
