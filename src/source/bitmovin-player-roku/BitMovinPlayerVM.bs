@@ -26,7 +26,7 @@ class BitMovinPlayerVM extends zapp.BaseZappVM
 
     m.licenseKey = mc.getPath(view.riversJson, "general.license_key", "")
     m.overrideVideoUrl = mc.getPath(view.riversJson, "general.override_video_url", "")
-    m.sdkPath =  mc.getPath(view.riversJson, "general.sdk_url", "https://cdn.bitmovin.com/player/roku/1.22.0/bitmovinplayer.zip")
+    m.sdkPath = mc.getPath(view.riversJson, "general.sdk_url", "https://cdn.bitmovin.com/player/roku/1.22.0/bitmovinplayer.zip")
     themeColor = mc.getPath(view.riversJson, "styles.theme_color")
 
     if themeColor = invalid
@@ -102,8 +102,20 @@ class BitMovinPlayerVM extends zapp.BaseZappVM
     m.currentItem = item
     m.playMode = playMode
     playerItem = m.getPlayerItem(m.currentItem)
+    if m.overrideVideoUrl <> invalid and m.overrideVideoUrl <> ""
+      videoType = "hls"
+      if len(m.overrideVideoUrl) > 3
+        videoType = right(m.overrideVideoUrl, 3)
+        if videoType <> "mpd"
+          videoType = "hls"
+        end if
+      end if
+      m.log.warn("using override url ", m.overrideVideoUrl)
+      playerItem[videoType] = m.overrideVideoUrl
+    end if
+    startOffset = mc.getPath(m.currentItem, "PlayStart", 0) > 0 ? m.currentItem.PlayStart : 0
     playerItem.options = {
-      "startOffset": m.currentItem.PlayStart
+      "startOffset": startOffset
     }
     m.log.info("playing with player item", formatJson(playerItem))
 
