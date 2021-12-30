@@ -113,7 +113,7 @@ class BitMovinPlayerVM extends zapp.BaseZappVM
       m.log.warn("using override url ", m.overrideVideoUrl)
       playerItem[videoType] = m.overrideVideoUrl
     end if
-    startOffset = m.currentItem.PlayStart ? m.currentItem.PlayStart : 0
+    startOffset = mc.getPath(m.currentItem, "PlayStart", 0) > 0 ? m.currentItem.PlayStart : 0
     playerItem.options = {
       "startOffset": startOffset
     }
