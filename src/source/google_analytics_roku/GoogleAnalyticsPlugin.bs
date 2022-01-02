@@ -71,12 +71,12 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
   '++ overridden methods
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  protected override function start()
+  public override function start()
     m.log.info("start")
 
     m.task = m.createInstance("GoogleAnalyticsTask", invalid, "googleAnalyticsTask")
-    m.task.trackingId = trackingId
-    m.task.clientId = clientId
+    m.task.trackingId = m.trackingId
+    m.task.clientId = m.clientId
 
     m.isTrackingUserIdEnabled = m.checkIfTrackingUserIdAllowed(userIdString, versionId)
 
