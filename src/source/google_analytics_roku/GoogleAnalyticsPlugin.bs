@@ -10,49 +10,48 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
   private clientId = false
 
   private analyticsPropertiesByGoogleKey = {
-    "uuid": "TODO"
-    "version": "TODO"
-    "build_number": "TODO"
-    "bundle_id": "TODO"
-    "sdk_version": "TODO"
-    "quickbrick_version": "TODO"
-    "layout_id": "TODO"
-    "name": "TODO"
-    "media_id": "TODO"
-    "duration": "TODO"
-    "stream_type": "TODO"
-    "media_type": "TODO"
-    "player_type": "TODO"
-    "downloaded": "TODO"
+    "name": "in"
+    "media_id": "cd14"
+    "media_type": "iv"
+    "uuid": "uid"
+    "version": "av"
+    "bundle_id": "aiid"
+    "build_number": "cd1"
+    "sdk_version": "cd2"
+    "quickbrick_version": "cd3"
+    "layout_id": "cd4"
+    "stream_type": "cd5"
+    "stream_format": "cd6"
+    "ad_duration": "cd7"
+    "label": "cd8"
+    "author": "cd9"
+    "station": "cd10"
+    "publisher": "cd11"
+    "player_type": "cd12"
+    "ad_id": "cd13"
+    "creative": "cd"
+    "start_time": "cm1"
+    "position": "cm2"
+    "position": "cm3"
+    "duration": "cm4"
+    "total_ads": "cm5"
+    "current_position": "cm6"
+    ' "downloaded": "TODO"
     ' "show_name":  "TODO"
     ' "season_name":  "TODO"
     ' "genre":  "TODO"
     ' "show type":  "TODO"
     ' "rating":  "TODO"
     ' "network":  "TODO"
-    "stream_format": "TODO"
-    "artist": "TODO"
-    "album": "TODO"
-    "label": "TODO"
-    "author": "TODO"
-    "station": "TODO"
-    "publisher": "TODO"
-    "start_time": "TODO"
-    "position": "TODO"
-    "total_ads": "TODO"
-    "name": "TODO"
-    "ad_id": "TODO"
-    "position": "TODO"
+    ' "artist": "TODO"
+    ' "album": "TODO"
     ' "advertiser":  "TODO"
     ' "campaign":  "TODO"
-    "creative": "TODO"
     ' "placement":  "TODO"
     ' "site":  "TODO"
     ' "creative url":  "TODO"
     ' "ad_type":  "TODO"
-    "system": "TODO"
-    "ad_duration": "TODO"
-    "current_position": "TODO"
+    ' "system": "TODO"
   }
 
   public function new(plugin)
@@ -151,22 +150,8 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '++ private impl
+  '++ Private Methods
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-  private function getGoogleCompliantProperties(event as zapp.video.VideoAnalyticsEvent) as mc.types.assocarray
-    properties = {
-
-    }
-
-    for each key in m.analyticsPropertiesByGoogleKey
-      if event.properties.doesExist(key)
-        properties[m.analyticsPropertiesByGoogleKey[key]] = event.properties[key]
-      end if
-    end for
-
-    return properties
-  end function
 
   private function checkIfTrackingUserIdAllowed(userIdString, versionId)
 
@@ -191,6 +176,24 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
     else
       m.task.customSessionParams = invalid
     end if
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Advanced Analytics Support
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function getGoogleCompliantProperties(event as zapp.video.VideoAnalyticsEvent) as mc.types.assocarray
+    properties = {}
+
+    for each key in m.analyticsPropertiesByGoogleKey
+      if event.properties.doesExist(key)
+        value = event.properties[key]
+        'TODO = ensure value is correctly converted
+        properties[m.analyticsPropertiesByGoogleKey[key]] = value
+      end if
+    end for
+
+    return properties
   end function
 
 end class
