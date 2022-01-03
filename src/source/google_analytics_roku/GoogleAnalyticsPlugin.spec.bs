@@ -1,7 +1,4 @@
 namespace zapp.tests
-
-  @only
-  @nocatch
   @tags("public", "anaytics")
   @suite
   class GoogleAnalyticsPluginTests extends tests.BaseTestSuite
@@ -40,14 +37,14 @@ namespace zapp.tests
     @it("creates the task")
     function _()
 
-      m.plugin.task.trackingId = "#t"
-      m.plugin.task.clientId = "#c"
+      m.plugin.trackingId = "#t"
+      m.plugin.clientId = "#c"
 
       task = { "id": "task" }
+      m.expectOnce(m.plugin, "createInstance", ["GoogleAnalyticsTask", invalid, "googleAnalyticsTask"], task)
 
       factory = { "id": "factory" }
       m.expectOnce(m.plugin, "createInstance", ["AnalyticsEventFactory", invalid, "googleAnalyticsEventFactory"], factory)
-      m.expectOnce(m.plugin, "createInstance", ["GoogleAnalyticsTask", invalid, "googleAnalyticsTask"], task)
 
       m.expectOnce(m.plugin, "setInstance", ["googleAnalyticsEventFactory", factory])
       m.expectOnce(m.plugin, "setInstance", ["googleAnalyticsTask", task])
@@ -77,13 +74,11 @@ namespace zapp.tests
 
     @it("is user id allowed")
     @params("allow-tracking-user-id-for-app-family-aaaa", "aaaa", true)
-    @params("allow-tracking-user-id-for-app-family-aaaa", "aaaa", false)
+    @params("allow-tracking-user-id-for-app-family-aaab", "aaaa", false)
     @params("allow-tracking-user-id-for-app-family-aaaa", "aaaac", false)
-    function _(userIdString, versionId, result)
+    function _(userIdString, versionId, expected)
 
-      fResult = m.plugin.checkIfTrackingUserIdAllowed(userIdString, versionId)
-
-      m.assertEqual(result, fResult)
+      m.assertEqual(m.plugin.checkIfTrackingUserIdAllowed(userIdString, versionId), expected)
 
     end function
 
@@ -107,7 +102,7 @@ namespace zapp.tests
       m.pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "google_analytics_roku" })
       m.plugin = new GoogleAnalyticsPlugin(m.pluginData)
 
-      m.assertEqual(m.plugin.isTrakingUserIdEnabled, result)
+      m.assertEqual(m.plugin.isTrackingUserIdEnabled, result)
 
     end function
 

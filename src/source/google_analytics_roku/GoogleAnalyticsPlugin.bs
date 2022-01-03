@@ -8,6 +8,7 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
   private isTrackingUserIdEnabled = false
   private trackingId = false
   private clientId = false
+  private task as mc.types.node
 
   private analyticsPropertiesByGoogleKey = {
     "name": "in"
@@ -63,7 +64,7 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
     buildConfig = m.getInstance("buildConfig")
     versionId = buildConfig.app_family_id
     userIdString = plugin.getStringValue("user_id")
-
+    m.isTrackingUserIdEnabled = m.checkIfTrackingUserIdAllowed(userIdString, versionId)
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -76,8 +77,6 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
     m.task = m.createInstance("GoogleAnalyticsTask", invalid, "googleAnalyticsTask")
     m.task.trackingId = m.trackingId
     m.task.clientId = m.clientId
-
-    m.isTrackingUserIdEnabled = m.checkIfTrackingUserIdAllowed(userIdString, versionId)
 
     m.eventFactory = m.createInstance("AnalyticsEventFactory", invalid, "googleAnalyticsEventFactory")
     m.setInstance("googleAnalyticsEventFactory", m.eventFactory)
@@ -141,11 +140,13 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
     ' | value     | text     | None          | None
 
 
-    googleAnalytics.genericEvent = {
+
+    googleAnalytics = m.getInstance("googleAnalyticsTask")
+    googleAnalytics.event = {
       category: "video"
-      action: event.id
-      label: event.name
-      value: formatJson(m.getGoogleCompliantProperties(event))
+      action: event.name
+      ' value: formatJson(m.getGoogleCompliantProperties(event))
+      label: m.propertiesToLabel(event.properties)
     }
   end function
 
@@ -194,6 +195,61 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
     end for
 
     return properties
+  end function
+
+
+  private function padString(s as string, width as integer, c as string)
+    result = s.trim()
+
+    ' don't get stuck in a while loop if pad characters are empty
+    if c = "" return result
+
+    while result.len() < width
+      difference = width - result.len()
+      result = right(c, difference) + result
+    end while
+    return result
+  end function
+
+  private function timeFormat(length as dynamic) as string
+    if type(length) = "roFloat" or type(length) = "Double" then length = Int(length)
+    if type(length) = "Integer" or type(length) = "roInteger"
+      hours = length \ 3600
+      minutes = (length mod 3600) \ 60
+      seconds = length mod 60
+      result = m.padString(stri(hours), 2, "0") + ":" + m.padString(stri(minutes), 2, "0") + ":" + m.padString(stri(seconds), 2, "0")
+      return result
+    else
+      return ""
+    end if
+  end function
+
+  private function propertiesToLabel(properties)
+    if type(properties) <> "roAssociativeArray" then return ""
+
+    label = ""
+    sortedKeys = properties.keys()
+    for i = 0 to sortedKeys.count() - 1
+      ' be careful only to include string values here. Necessary conversions should happen in the public methods
+      value = properties[sortedKeys[i]]
+      if mc.isString(value)
+        value = value.toStr()
+      end if
+
+      if i > 0
+        label = label + ";"
+      end if
+      label += `${sortedKeys[i]}=${value}`
+    end for
+    return label
+  end function
+
+  public function booleanString(tf)
+    if tf
+      return "True"
+    else
+      return "False"
+    end if
   end function
 
 end class

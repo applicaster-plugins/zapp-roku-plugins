@@ -43,7 +43,7 @@ function initGAMobile(tracking_ids as dynamic, client_id as string, custom_sessi
   end if
 
   ' Set up some invariants
-  gamobile.url = "http://www.google-analytics.com/collect"
+  gamobile.url = "www.google-analytics.com/collect"
   gamobile.version = "1"
   gamobile.tracking_ids = tracking_ids
   gamobile.next_z = 1
@@ -116,10 +116,9 @@ end function
 
 function gamobileGenericEvent(hitParams as object) as void
   if m.gamobile.debug
-    ? "[GA] PageView: " + page
+    ? "[GA] PageView: " + formatJson(hitParams)
   end if
-
-
+  hitParams.t = "event"
   gamobileSendHit(hitParams)
 end function
 
@@ -269,7 +268,7 @@ function gamobileSendHit(hit_params as object) as void
     m.gamobile.asyncReqById[requestId] = request
 
     if m.gamobile.debug
-      ? "[GA] sendHit POSTed (" + requestId + "): ";postStr
+      ? "[GA] sendHit POSTed (" + requestId + "): ";url;postStr
       ? "[GA] pending req: ";getGaPendingRequestsMap()
       ? "[GA] didSend: ";didSend
     end if
