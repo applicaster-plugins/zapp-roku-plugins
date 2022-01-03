@@ -317,7 +317,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
   end function
 
   function getRokuItemForFee(fee, rokuItems)
-    m.log.info("looking for roku product that maches fee", fee.id)
+    m.log.info("looking for roku product that maches fee", mc.getPath(fee, "id"))
     m.log.info("==========================================")
     if rokuItems.count() = 0
       m.log.error("there are no available roku products")
@@ -333,7 +333,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
         end for
       end for
     else
-      m.log.error("fee", fee.id, "has no external_ids configured - it cannot be used")
+      m.log.error("fee", mc.getPath(fee, "id"), "has no external_ids configured - it cannot be used")
     end if
     m.log.info("==========================================")
 

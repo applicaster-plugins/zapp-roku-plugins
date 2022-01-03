@@ -93,15 +93,18 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public function onUsernameButtonSelected(value)
-    m.showKeyboardDialog("Enter your username", m.username, "onUsernameKeyboardDialogDismissal", false, "register")
+    palette = zapp.viewUtils.getUIBKeyboardDialogPalette(m.riversJson.styles, "keyboard")
+    m.showKeyboardDialog("Enter your username", m.username, "onUsernameKeyboardDialogDismissal", false, "register", palette)
   end function
 
   public function onNameButtonSelected(value)
-    m.showKeyboardDialog("Enter your name", m.humanName, "onNameKeyboardDialogDismissal")
+    palette = zapp.viewUtils.getUIBKeyboardDialogPalette(m.riversJson.styles, "keyboard")
+    m.showKeyboardDialog("Enter your name", m.humanName, "onNameKeyboardDialogDismissal", false, "none", palette)
   end function
 
   public function onPasswordButtonSelected(value)
-    m.showKeyboardDialog("Enter your password", m.password, "onPasswordKeyboardDialogDismissal", true)
+    palette = zapp.viewUtils.getUIBKeyboardDialogPalette(m.riversJson.styles, "keyboard")
+    m.showKeyboardDialog("Enter your password", m.password, "onPasswordKeyboardDialogDismissal", true, "none", palette)
   end function
 
   public function onRegisterButtonSelected(value)
@@ -126,11 +129,11 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
     if text.trim() = ""
       m.username = ""
       m.usernameText = m.usernamePlaceholderText
-      m.usernameButtonType =  "textInputPlaceholder"
+      m.usernameButtonType = "textInputPlaceholder"
     else
       m.usernameText = text
       m.username = text
-      m.usernameButtonType =  "textInput"
+      m.usernameButtonType = "textInput"
     end if
   end function
 

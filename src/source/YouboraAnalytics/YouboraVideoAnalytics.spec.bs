@@ -1,6 +1,5 @@
 namespace zapp.tests
 
-  @only
   @tags("public", "analytics", "video")
   @suite
   class YouboraVideoAnalyticsTests extends tests.BaseTestSuite

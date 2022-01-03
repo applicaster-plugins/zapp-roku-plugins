@@ -135,11 +135,13 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   end function
 
   public function onUsernameButtonSelected()
-    m.showKeyboardDialog("Enter your username", m.username, "onUsernameKeyboardDialogDismissal", false, "login")
+    palette = zapp.viewUtils.getUIBKeyboardDialogPalette(m.riversJson.styles, "keyboard")
+    m.showKeyboardDialog("Enter your username", m.username, "onUsernameKeyboardDialogDismissal", false, "login", palette)
   end function
 
   public function onPasswordButtonSelected()
-    m.showKeyboardDialog("Enter your password", m.password, "onPasswordKeyboardDialogDismissal", true)
+    palette = zapp.viewUtils.getUIBKeyboardDialogPalette(m.riversJson.styles, "keyboard")
+    m.showKeyboardDialog("Enter your password", m.password, "onPasswordKeyboardDialogDismissal", true, "none", palette)
   end function
 
   public function onRegisterButtonSelected()
