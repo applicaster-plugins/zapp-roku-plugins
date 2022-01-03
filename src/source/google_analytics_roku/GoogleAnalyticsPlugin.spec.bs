@@ -1,10 +1,9 @@
 namespace zapp.tests
-
   @tags("public", "anaytics")
   @suite
   class GoogleAnalyticsPluginTests extends tests.BaseTestSuite
 
-   protected override function beforeEach()
+    protected override function beforeEach()
       super.beforeEach()
       config = {
         "tracking_id": "#t"
@@ -15,6 +14,7 @@ namespace zapp.tests
 
       m.pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "google_analytics_roku" })
       m.plugin = new GoogleAnalyticsPlugin(m.pluginData)
+      m.plugin.task = { id: "task"}
     end function
 
 
@@ -25,20 +25,23 @@ namespace zapp.tests
     @it("constructor")
     function _()
       m.assertEqual(m.plugin.id, "google_analytics_roku")
-      m.assertSubType(m.plugin.task, "GoogleAnalyticsTask")
-      m.assertEqual(m.plugin.task.trackingId, "#t")
-      m.assertEqual(m.plugin.task.clientId, "#c")
+      m.assertEqual(m.plugin.trackingId, "#t")
+      m.assertEqual(m.plugin.clientId, "#c")
+
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("start")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @it("start")
+    @it("creates the task")
     function _()
 
+      m.plugin.trackingId = "#t"
+      m.plugin.clientId = "#c"
+
       task = { "id": "task" }
-      m.plugin.task = task
+      m.expectOnce(m.plugin, "createInstance", ["GoogleAnalyticsTask", invalid, "googleAnalyticsTask"], task)
 
       factory = { "id": "factory" }
       m.expectOnce(m.plugin, "createInstance", ["AnalyticsEventFactory", invalid, "googleAnalyticsEventFactory"], factory)
@@ -47,7 +50,11 @@ namespace zapp.tests
       m.expectOnce(m.plugin, "setInstance", ["googleAnalyticsTask", task])
 
       m.plugin.start()
+
+      m.assertEqual(m.plugin.task.trackingId, "#t")
+      m.assertEqual(m.plugin.task.clientId, "#c")
       m.assertEqual(m.plugin.task.control, "run")
+
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -67,13 +74,11 @@ namespace zapp.tests
 
     @it("is user id allowed")
     @params("allow-tracking-user-id-for-app-family-aaaa", "aaaa", true)
-    @params("allow-tracking-user-id-for-app-familya-aaaa", "aaaa", false)
+    @params("allow-tracking-user-id-for-app-family-aaab", "aaaa", false)
     @params("allow-tracking-user-id-for-app-family-aaaa", "aaaac", false)
-    function _(userIdString, versionId, result)
+    function _(userIdString, versionId, expected)
 
-      fResult = m.plugin.checkIfTrackingUserIdAllowed(userIdString, versionId)
-
-      m.assertEqual(result, fResult)
+      m.assertEqual(m.plugin.checkIfTrackingUserIdAllowed(userIdString, versionId), expected)
 
     end function
 
@@ -97,7 +102,7 @@ namespace zapp.tests
       m.pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "google_analytics_roku" })
       m.plugin = new GoogleAnalyticsPlugin(m.pluginData)
 
-      m.assertEqual(m.plugin.isTrakingUserIdEnabled, result)
+      m.assertEqual(m.plugin.isTrackingUserIdEnabled, result)
 
     end function
 

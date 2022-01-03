@@ -1,55 +1,53 @@
 import "pkg:/source/lib/BaseClass.bs"
 import "pkg:/source/plugin-support/BasePlugin.bs"
 import "pkg:/source/plugin-support/PluginManager.bs"
-import "pkg:/source/lib/Country.bs"
 import "pkg:/source/video/analytics/BaseVideoAnalyticsPlugin.bs"
 
-class SegmentVideoAnalyticsPlugin extends zapp.video.BaseVideoAnalyticsPlugin
+class GoogleVideoAnalyticsPlugin extends zapp.video.BaseVideoAnalyticsPlugin
 
   @inject("analyticsManager")
   private analyticsManager
   private deviceInfo
   private videoHeight
   private videoResolution
+  private countryISOMapping
 
   public function new()
-    super("SegmentVideoAnalyticsPlugin")
+    super("GoogleVideoAnalyticsPlugin")
     m.heartbeatInterval = 15
-    constants = m.getInstance("constants")
     m.deviceInfo = constants.deviceInfo
     m.videoHeight = m.deviceInfo.videoMode.left(len(m.deviceInfo.videoMode) - 1)
     m.videoResolution = m.getVideoResolution(m.videoHeight)
-    m.createCountryCodeMap()
   end function
 
   public override function videoStart(videoNode, contentNode)
     super.videoStart(videoNode, contentNode)
     m.contentNode = contentNode
 
-    m.postSegmentEvent("Video Content Started")
+    m.postGoogleEvent("Video Content Started")
   end function
 
   public override function videoEnd()
     super.videoEnd()
-    m.postSegmentEvent("Video Completed")
+    m.postGoogleEvent("Video Completed")
   end function
 
   public override function videoPause()
     super.videoPause()
-    m.postSegmentEvent("Video Paused")
+    m.postGoogleEvent("Video Paused")
   end function
 
   public override function videoResume()
     super.videoResume()
-    m.postSegmentEvent("Video Playback Resume")
+    m.postGoogleEvent("Video Playback Resume")
   end function
 
   public override function videoContentStarted()
-    m.postSegmentEvent("Video Content Started")
+    m.postGoogleEvent("Video Content Started")
   end function
 
   public override function videoSeek(position)
-    m.postSegmentEvent("Player Seek")
+    m.postGoogleEvent("Player Seek")
   end function
 
   public override function videoHeartbeat()
@@ -61,27 +59,27 @@ class SegmentVideoAnalyticsPlugin extends zapp.video.BaseVideoAnalyticsPlugin
       eventName = "Video Heartbeat"
     end if
 
-    m.postSegmentEvent(eventName)
+    m.postGoogleEvent(eventName)
   end function
 
   public override function adBreakStart()
     super.adBreakStart()
-    m.postSegmentEvent("Video Ad Play")
+    m.postGoogleEvent("Video Ad Play")
   end function
 
   public override function adBreakEnd()
     super.adBreakEnd()
-    m.postSegmentEvent("Video Ad Completed")
+    m.postGoogleEvent("Video Ad Completed")
   end function
 
   public override function onSubtitleChange()
     super.onSubtitleChange()
-    m.postSegmentEvent("Subtitle Languge Changed")
+    m.postGoogleEvent("Subtitle Language Changed")
   end function
 
   public override function onAudioChange()
     super.onAudioChange()
-    m.postSegmentEvent("Audio Language Selected")
+    m.postGoogleEvent("Audio Language Selected")
   end function
 
   private function getProperties(contentNode, action = invalid)
@@ -135,14 +133,39 @@ class SegmentVideoAnalyticsPlugin extends zapp.video.BaseVideoAnalyticsPlugin
     return properties
   end function
 
-  public function postSegmentEvent(eventName)
+  private function getAudioLanguage()
+    tracks = m.videoNode.availableAudioTracks
+    for each track in tracks
+      ' m.log.info("track.Language", track.Language, " currentTrack ", m.videoNode.currentAudioTrack, " LANG ", track.Language)
+      if track.Track = m.videoNode.currentAudioTrack
+        return m.countryISOMapping[track.Language]
+      end if
+    end for
+
+    return "en"
+  end function
+
+  private function getSubtitleLanguage()
+    tracks = m.videoNode.availableSubtitleTracks
+    for each track in tracks
+      ' m.log.info("track.TrackName", track.TrackName, " currentTrack ", m.videoNode.currentSubtitleTrack, " LANG ", track.Language)
+      if track.TrackName = m.videoNode.currentSubtitleTrack
+        return m.countryISOMapping[track.Language]
+      end if
+    end for
+
+    return "EN"
+  end function
+
+  public function postGoogleEvent(eventName)
     properties = m.getProperties(m.contentNode)
     properties.name = eventName
-    m.analyticsManager@.trackUsingProvider("segment_analytics", eventName, properties)
+    m.analyticsManager@.trackUsingProvider("google_analytics_roku", eventName, properties)
   end function
 
   public override function onVideoAnalyticsEvent(event as zapp.video.VideoAnalyticsEvent)
-    m.analyticsManager@.trackVideoEventUsingProvider("segment_analytics", event)
+    m.analyticsManager@.trackVideoEventUsingProvider("google_analytics_roku", event)
   end function
+
 
 end class

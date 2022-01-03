@@ -21,8 +21,7 @@ namespace zapp.tests
         "analyticsManager": m.analyticsManager
       })
 
-      pluginJson = {}
-      m.plugin = new SegmentVideoAnalyticsPlugin(pluginJson)
+      m.plugin = new SegmentVideoAnalyticsPlugin()
     end function
 
 
@@ -310,7 +309,7 @@ namespace zapp.tests
         "eventName": eventName
       }
 
-      m.expectOnce(m.plugin.analyticsManager, "callFunc", ["track", eventName, matcher])
+      m.expectOnce(m.plugin.analyticsManager, "callFunc", ["trackUsingProvider", "segment_analytics", eventName, matcher])
 
       m.plugin.postSegmentEvent(eventName)
 

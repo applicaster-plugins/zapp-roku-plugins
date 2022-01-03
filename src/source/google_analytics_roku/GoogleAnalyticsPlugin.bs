@@ -1,33 +1,83 @@
 import "pkg:/source/analytics/BaseAnalyticsPlugin.bs"
+import "pkg:/source/video/analytics/VideoAnalyticsEvent.bs"
+import "pkg:/source/video/analytics/VideoAnalyticsEvent.bs"
 
 class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
 
   private eventFactory = invalid
-  private isTrakingUserIdEnabled = false
+  private isTrackingUserIdEnabled = false
+  private trackingId = false
+  private clientId = false
+  private task as mc.types.node
+
+  private analyticsPropertiesByGoogleKey = {
+    "name": "in"
+    "media_id": "cd14"
+    "media_type": "iv"
+    "uuid": "uid"
+    "version": "av"
+    "bundle_id": "aiid"
+    "build_number": "cd1"
+    "sdk_version": "cd2"
+    "quickbrick_version": "cd3"
+    "layout_id": "cd4"
+    "stream_type": "cd5"
+    "stream_format": "cd6"
+    "ad_duration": "cd7"
+    "label": "cd8"
+    "author": "cd9"
+    "station": "cd10"
+    "publisher": "cd11"
+    "player_type": "cd12"
+    "ad_id": "cd13"
+    "creative": "cd"
+    "start_time": "cm1"
+    "position": "cm2"
+    "position": "cm3"
+    "duration": "cm4"
+    "total_ads": "cm5"
+    "current_position": "cm6"
+    ' "downloaded": "TODO"
+    ' "show_name":  "TODO"
+    ' "season_name":  "TODO"
+    ' "genre":  "TODO"
+    ' "show type":  "TODO"
+    ' "rating":  "TODO"
+    ' "network":  "TODO"
+    ' "artist": "TODO"
+    ' "album": "TODO"
+    ' "advertiser":  "TODO"
+    ' "campaign":  "TODO"
+    ' "placement":  "TODO"
+    ' "site":  "TODO"
+    ' "creative url":  "TODO"
+    ' "ad_type":  "TODO"
+    ' "system": "TODO"
+  }
 
   public function new(plugin)
     super("GoogleAnalyticsPlugin", plugin)
-    m.task = m.createInstance("GoogleAnalyticsTask", invalid, "googleAnalyticsTask")
-
     constants = m.getInstance("constants")
 
-    m.task.trackingId = plugin.getStringValue("tracking_id")
-    m.task.clientId = constants.googleAnalyticsClientId
-
+    m.trackingId = plugin.getStringValue("tracking_id")
+    m.clientId = constants.googleAnalyticsClientId
     buildConfig = m.getInstance("buildConfig")
     versionId = buildConfig.app_family_id
     userIdString = plugin.getStringValue("user_id")
-
-    m.isTrakingUserIdEnabled = m.checkIfTrackingUserIdAllowed(userIdString, versionId)
-
+    m.isTrackingUserIdEnabled = m.checkIfTrackingUserIdAllowed(userIdString, versionId)
   end function
-
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ overridden methods
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public override function start()
+    m.log.info("start")
+
+    m.task = m.createInstance("GoogleAnalyticsTask", invalid, "googleAnalyticsTask")
+    m.task.trackingId = m.trackingId
+    m.task.clientId = m.clientId
+
     m.eventFactory = m.createInstance("AnalyticsEventFactory", invalid, "googleAnalyticsEventFactory")
     m.setInstance("googleAnalyticsEventFactory", m.eventFactory)
     m.setInstance("googleAnalyticsTask", m.task)
@@ -35,13 +85,13 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
 
   end function
 
-  public override function _identify(pluginId, traits = {}, options = {}, isFromLogout = false) as boolean
+  protected override function _identify(pluginId, traits = {}, options = {}, isFromLogout = false) as boolean
     m.log.info("identify", pluginId)
 
     if m.isEnabled
 
-      if m.isTrakingUserIdEnabled <> true
-        m.log.info("traking user is not allowed skip isIdentified")
+      if m.isTrackingUserIdEnabled <> true
+        m.log.info("tracking user is not allowed skip isIdentified")
         return true
       end if
 
@@ -63,7 +113,7 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
           m.identifyAsAnonymous()
         end if
       else
-        m.log.warn("idenitfy called; but there is no logged in user; goint to unidentify, to get anonymous analytics")
+        m.log.warn("identify called; but there is no logged in user; point to unidentify, to get anonymous analytics")
         m.identifyAsAnonymous()
       end if
     end if
@@ -76,8 +126,32 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
     m.setGoogleTaskUserId(invalid)
   end function
 
+  protected override function _trackVideoEvent(event as zapp.video.VideoAnalyticsEvent)
+    m.log.info("sending video event ", event)
+
+    '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+    ' Use the Event for application state events, such as a login or registration.
+    '
+    ' | Parameter | Value Type  | Default Value | Max Length
+    ' ------------------------------------------------------
+    ' | category  | text        | None          | 150 Bytes
+    ' | action    | text        | None          | 500 Bytes
+    ' | label     | text        | None          | 500 Bytes
+    ' | value     | text     | None          | None
+
+
+
+    googleAnalytics = m.getInstance("googleAnalyticsTask")
+    googleAnalytics.event = {
+      category: "video"
+      action: event.name
+      ' value: formatJson(m.getGoogleCompliantProperties(event))
+      label: m.propertiesToLabel(event.properties)
+    }
+  end function
+
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '++ private impl
+  '++ Private Methods
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   private function checkIfTrackingUserIdAllowed(userIdString, versionId)
@@ -102,6 +176,79 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
       }
     else
       m.task.customSessionParams = invalid
+    end if
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Advanced Analytics Support
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function getGoogleCompliantProperties(event as zapp.video.VideoAnalyticsEvent) as mc.types.assocarray
+    properties = {}
+
+    for each key in m.analyticsPropertiesByGoogleKey
+      if event.properties.doesExist(key)
+        value = event.properties[key]
+        'TODO = ensure value is correctly converted
+        properties[m.analyticsPropertiesByGoogleKey[key]] = value
+      end if
+    end for
+
+    return properties
+  end function
+
+
+  private function padString(s as string, width as integer, c as string)
+    result = s.trim()
+
+    ' don't get stuck in a while loop if pad characters are empty
+    if c = "" return result
+
+    while result.len() < width
+      difference = width - result.len()
+      result = right(c, difference) + result
+    end while
+    return result
+  end function
+
+  private function timeFormat(length as dynamic) as string
+    if type(length) = "roFloat" or type(length) = "Double" then length = Int(length)
+    if type(length) = "Integer" or type(length) = "roInteger"
+      hours = length \ 3600
+      minutes = (length mod 3600) \ 60
+      seconds = length mod 60
+      result = m.padString(stri(hours), 2, "0") + ":" + m.padString(stri(minutes), 2, "0") + ":" + m.padString(stri(seconds), 2, "0")
+      return result
+    else
+      return ""
+    end if
+  end function
+
+  private function propertiesToLabel(properties)
+    if type(properties) <> "roAssociativeArray" then return ""
+
+    label = ""
+    sortedKeys = properties.keys()
+    for i = 0 to sortedKeys.count() - 1
+      ' be careful only to include string values here. Necessary conversions should happen in the public methods
+      value = properties[sortedKeys[i]]
+      if mc.isString(value)
+        value = value.toStr()
+      end if
+
+      if i > 0
+        label = label + ";"
+      end if
+      label += `${sortedKeys[i]}=${value}`
+    end for
+    return label
+  end function
+
+  public function booleanString(tf)
+    if tf
+      return "True"
+    else
+      return "False"
     end if
   end function
 

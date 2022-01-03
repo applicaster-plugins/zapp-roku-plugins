@@ -12,10 +12,10 @@ function initializeGA()
   if gamobile_client_id = invalid or gamobile_client_id = ""
     gamobile_client_id = device.GetRandomUUID()
   end if
-  gamobile_custom_fileds = m.top.customSessionParams
+  gamobile_custom_fields = m.top.customSessionParams
 
   ' Init analytics
-  initGAMobile(gamobile_tracking_ids, gamobile_client_id, gamobile_custom_fileds)
+  initGAMobile(gamobile_tracking_ids, gamobile_client_id, gamobile_custom_fields)
   enableGAMobile(true)
 
   ' Enable or disable debug here for viewing events on the console
@@ -27,6 +27,7 @@ function execGampLoop()
   port = CreateObject("roMessagePort")
   m.top.observeField("pageView", port)
   m.top.observeField("event", port)
+  m.top.observeField("genericEvent", port)
   m.top.observeField("screenView", port)
   m.top.observeField("transaction", port)
   m.top.observeField("exception", port)
@@ -57,6 +58,8 @@ function execGampLoop()
         if data.label = invalid then data.label = ""
         if data.value = invalid then data.value = ""
         gamobileEvent(data.category, data.action, data.label, data.value)
+      else if field = "genericEvent" then
+        gamobileGenericEvent(data)
       else if field = "screenView" then
         if data.screenName = invalid then data.screenName = ""
         gamobileScreenView(data.screenName)
