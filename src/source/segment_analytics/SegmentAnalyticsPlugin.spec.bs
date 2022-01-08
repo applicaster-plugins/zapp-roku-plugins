@@ -1,5 +1,4 @@
 namespace zapp.tests
-  @only
   @tags("public", "analytics")
   @suite
   class SegmentAnalyticsPluginTests extends tests.BaseTestSuite

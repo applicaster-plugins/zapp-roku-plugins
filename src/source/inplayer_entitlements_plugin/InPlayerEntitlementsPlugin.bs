@@ -119,7 +119,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
     entitlements = m.getInstance("entitlements")
 
     if entitlements = invalid or entitlements.subType() <> "SimpleEntitlements"
-      m.log.info("the current IOC registred entitlements object is incompatible with this plugin, creating a new entitlements object")
+      m.log.info("the current IOC registered entitlements object is incompatible with this plugin, creating a new entitlements object")
       entitlements = m.createInstance("SimpleEntitlements", invalid, "entitlements")
       m.setInstance("entitlements", entitlements)
     end if

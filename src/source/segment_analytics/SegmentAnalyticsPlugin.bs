@@ -3,7 +3,7 @@ import "pkg:/source/plugin-support/PluginManager.bs"
 import "./SegmentAnalyticsConnector.brs"
 import "pkg:/source/analytics/BaseAnalyticsPlugin.bs"
 
-class SegmentAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
+class SegmentAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
 
   private writeKey = ""
   private isDebug = false
@@ -15,6 +15,10 @@ class SegmentAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
   private lastScreenOptions = invalid
   private lastScreenIsVideoPlayer = false
   private heartbeatTimer = invalid
+  private isIdentifyingOnLogout = invalid
+  private applicasterDeviceId = invalid
+  private library = invalid
+  private segmentTask = invalid
 
   public function new(plugin)
     super("SegmentAnalyticsPlugin", plugin)
