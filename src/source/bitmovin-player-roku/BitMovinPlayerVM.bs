@@ -106,7 +106,9 @@ class BitMovinPlayerVM extends zapp.BaseZappVM
       videoType = "hls"
       if len(m.overrideVideoUrl) > 3
         videoType = right(m.overrideVideoUrl, 3)
-        if videoType <> "mpd"
+        if videoType = "mpd"
+          videoType = "dash"
+        else
           videoType = "hls"
         end if
       end if
