@@ -132,7 +132,7 @@ class FullScreenSearchVM extends zapp.uib.ScreenVM
 
     m.isLoading = true
     m.setGridVisible(true)
-    m.toggleLoadingDataTask(true, { "query": text.trim().encodeUriComponent() }, m.loadDepth)
+    m.toggleLoadingDataTask(true, { "search": text.trim().encodeUriComponent() }, m.loadDepth)
 
   end function
 
