@@ -17,12 +17,6 @@
         visible='{{isNotFoundLabelVisible}}'
         style='{{=zapp_viewUtils_UIBLabel("not_found")}}' />
 
-    <ZActionButton
-        id='textInput'
-        style='{{:inputStyle}}'
-        labelXOffset='9'
-        text='{{searchText}}' />
-
     <mv_MiniKeyboard
         id='keyboard'
         style='{{:keyboardStyle}}'
