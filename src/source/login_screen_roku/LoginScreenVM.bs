@@ -364,7 +364,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
 
     if m.focusId = "loginButton" and m.riversJson.styles.debug_skip_on_right = true
       m.log.warn("skipping debug flag is on")
-      m.onLoginComplete({state:"valid"})
+      m.onLoginComplete({ state: "valid" })
     end if
 
     return false
@@ -392,11 +392,13 @@ class LoginScreenVM extends zapp.uib.ScreenVM
       return true
     end if
 
-    m.debugAccountId = mc.clamp (m.debugAccountId+ 1, 0, m.maxDebugAccounts, true)
-    ' username = m.riversJson.styles.debug_username.replace("@", str(m.debugAccountId).trim() + "@")
     username = m.riversJson.styles.debug_username
-    if m.debugAccountId > 1
-      username += m.debugAccountId.toStr()
+    if m.maxDebugAccounts > 0
+      m.debugAccountId = mc.clamp (m.debugAccountId + 1, 0, m.maxDebugAccounts, true)
+      ' username = m.riversJson.styles.debug_username.replace("@", str(m.debugAccountId).trim() + "@")
+      if m.debugAccountId > 1
+        username += m.debugAccountId.toStr()
+      end if
     end if
     m.onUsernameKeyboardDialogDismissal(username)
     m.onPasswordKeyboardDialogDismissal(m.riversJson.styles.debug_password)
