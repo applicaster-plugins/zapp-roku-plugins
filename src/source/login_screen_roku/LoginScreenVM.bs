@@ -100,9 +100,21 @@ class LoginScreenVM extends zapp.uib.ScreenVM
     m.inputStyle = inputStyle
 
     m.loginButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "login_button", "custom", styles.login_button_text)
-    m.registerButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "register_button", "custom", styles.register_button_text)
-    m.forgotPasswordButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "forgot_password_button", "custom", styles.forgot_password_button_text)
+    registerButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "register_button", "custom", styles.register_button_text)
+    registerButtonStyle.visible = styles.use_register = true
+    forgotPasswordButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "forgot_password_button", "custom", styles.forgot_password_button_text)
+    forgotPasswordButtonStyle.visible = styles.use_forgot_password = true
+    m.registerButtonStyle = registerButtonStyle
+    m.forgotPasswordButtonStyle = forgotPasswordButtonStyle
     m.maxDebugAccounts = zapp.viewUtils.getUIBInt(styles, "debug_max_accounts")
+
+    m.focusIds = ["usernameInput", "passwordInput", "loginButton"]
+    if m.registerButtonStyle.visible = true
+      m.focusIds.push("registerButton")
+    end if
+    if m.forgotPasswordButtonStyle.visible = true
+      m.focusIds.push("forgotPasswordButton")
+    end if
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -335,15 +347,24 @@ class LoginScreenVM extends zapp.uib.ScreenVM
       return true
     end if
 
-    m.dismiss("cancel")
-    return true
+    isDismissable = m.getTopField("isDismissable")
+    if m.focusId = "usernameInput"
+      if isDismissable = true
+        m.dismiss("cancel")
+        return true
+      else
+        m.exitApp(invalid, true)
+        return true
+      end if
+    end if
+    return false
   end function
 
   public function onKeyPressRight() as boolean
 
     if m.focusId = "loginButton" and m.riversJson.styles.debug_skip_on_right = true
       m.log.warn("skipping debug flag is on")
-      m.onLoginComplete(true)
+      m.onLoginComplete({state:"valid"})
     end if
 
     return false
@@ -367,12 +388,16 @@ class LoginScreenVM extends zapp.uib.ScreenVM
 
   public function onKeyPressOptions() as boolean
     m.log.method("onKeyPressOptions", m.focusId)
-    m.debugAccountId++
-    if m.debugAccountId > m.maxDebugAccounts
-      m.debugAccountId = 1
+    if mc.getString(m.riversJson, "styles.debug_username") = ""
+      return true
     end if
+
+    m.debugAccountId = mc.clamp (m.debugAccountId+ 1, 0, m.maxDebugAccounts, true)
     ' username = m.riversJson.styles.debug_username.replace("@", str(m.debugAccountId).trim() + "@")
     username = m.riversJson.styles.debug_username
+    if m.debugAccountId > 1
+      username += m.debugAccountId.toStr()
+    end if
     m.onUsernameKeyboardDialogDismissal(username)
     m.onPasswordKeyboardDialogDismissal(m.riversJson.styles.debug_password)
 
