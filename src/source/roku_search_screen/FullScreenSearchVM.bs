@@ -12,7 +12,6 @@ class FullScreenSearchVM extends zapp.uib.ScreenVM
 
   public keyboardStyle = {}
   public gridStyle = {}
-  public inputStyle = {}
 
   public jumpToItem = 0
   public searchText = ""
@@ -49,11 +48,8 @@ class FullScreenSearchVM extends zapp.uib.ScreenVM
       keyboardBitmapUri: zapp.viewUtils.getPosterUri(styles.keyboard_bitmap_uri)
       focusBitmapUri: zapp.viewUtils.getPosterUri(styles.keyboard_focus_bitmap_uri)
       lowerCase: zapp.viewUtils.getUIBBool(styles, "keyboard_lower_case", false)
-      showTextEditBox: not zapp.viewUtils.getUIBBool(styles, "use_custom_text_input", true)
     }
 
-    m.inputStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "custom_text_input", "textInput", invalid, true)
-    m.inputStyle.visible = not m.keyboardStyle.showTextEditBox
     m.minCharacters = zapp.viewUtils.getUIBInt(styles, "search_min_chars", 3)
     m.searchQueryName = mc.getPath(styles, "search_query_name", "q")
   end function
