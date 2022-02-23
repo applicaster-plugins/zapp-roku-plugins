@@ -1,9 +1,9 @@
 import "pkg:/source/lib/ViewUtils.bs"
 import "pkg:/source/roku_modules/maestro/core/Utils.brs"
-import "pkg:/source/UIBuilder/view/ScreenVM.bs"
+import "pkg:/source/UIBuilder/view/ComponentVM.bs"
 import "pkg:/source/zapp-controls/CollectionRowUtils.bs"
 
-class FullScreenSearchVM extends zapp.uib.ScreenVM
+class FullScreenSearchVM extends zapp.uib.ComponentVM
 
   public results = invalid
   public isGridVisible = false
@@ -56,14 +56,14 @@ class FullScreenSearchVM extends zapp.uib.ScreenVM
 
   private function getGridStyle(styles, cellStyle)
     if cellStyle <> invalid
-      style = zapp.collectionRowUtils.getRowListStyle(styles, mc.getPath(cellStyle, "cell.normal", {}))
+      style = zapp.collectionRowUtils.getRowListStyle(styles, mc.getAA(m.style, "cell.normal"))
       style.itemSize = style.rowItemSize
       style.itemSpacing = zapp.viewUtils.makeUIBSize(styles, "grid_spacing", 44, 20)
     else
       style = {}
     end if
 
-    style.translation = zapp.viewUtils.makeUIBPosition(styles, "grid", 300, 500)
+    style.translation = zapp.viewUtils.makeUIBPosition(styles, "grid", 900, 500)
 
     return style
   end function
