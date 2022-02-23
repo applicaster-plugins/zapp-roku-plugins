@@ -254,7 +254,11 @@ class LoginScreenVM extends zapp.uib.ScreenVM
 
     if m.isCredsValid
       creds = m.createInstance("AuthenticationCredentials")
-      creds.username = m.usernameText
+      if mc.getBoolean(m.riversJson, "styles.force_lower_case")
+        creds.username = lcase(m.usernameText)
+      else
+        creds.username = m.usernameText
+      end if
       creds.password = m.password
       m.authTask = m.createAuthTask("execLogIn", m.providerId, m.onLoginComplete, creds)
 
