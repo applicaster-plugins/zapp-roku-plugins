@@ -74,6 +74,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
 
   public override function load()
     m.state = "ready"
+    m.isLoading = false
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -114,7 +115,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
 
   public function onSearchDelayComplete()
     m.log.method("onSearchDelayComplet")
-
+    m.searchDelayTask = invalid
     m.log.verbose("search debounce complete, exeucting search with", m.searchText)
     m.performSearch(m.searchText)
   end function
