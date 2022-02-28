@@ -59,6 +59,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
       style = zapp.collectionRowUtils.getRowListStyle(styles, mc.getAA(m.style, "cell.normal"))
       style.itemSize = style.rowItemSize
       style.itemSpacing = zapp.viewUtils.makeUIBSize(styles, "grid_spacing", 44, 20)
+      style["numColumns"] = zapp.viewUtils.getUIBInt(styles, "number_of_cols", 2)
     else
       style = {}
     end if
