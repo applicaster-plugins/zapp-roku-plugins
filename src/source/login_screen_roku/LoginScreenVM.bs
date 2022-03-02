@@ -233,7 +233,6 @@ class LoginScreenVM extends zapp.uib.ScreenVM
     else
       m.trackScreen()
       m.signalAppLaunchDialog(false)
-      m.autoPopulateUserInfo()
       m.isRefreshing = false
     end if
 
