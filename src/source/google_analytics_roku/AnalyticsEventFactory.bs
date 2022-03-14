@@ -100,7 +100,7 @@ class AnalyticsEventFactory
   end function
 
   public function booleanString(tf)
-    if tf
+    if tf = true
       return "True"
     else
       return "False"
@@ -126,7 +126,8 @@ class AnalyticsEventFactory
     dict["ATOM feed name"] = "N/A"
 
     if type(item) <> "roAssociativeArray" and type(item) <> "roSGNode" then return dict
-    if item.free <> invalid then dict["Free"] = m.booleanString(item.free)
+    isFree = mc.getPath(item, "json.extensions.free", false)
+    if isFree then dict["Free"] = m.booleanString(isFree)
     if item.itemType <> invalid
       if item.itemType = "channel"
         dict["Item Type"] = "Channel - Applicaster Model"
