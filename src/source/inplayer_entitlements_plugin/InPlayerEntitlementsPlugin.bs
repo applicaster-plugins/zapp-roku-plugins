@@ -101,8 +101,12 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
     inPlayerFees = m.getInPlayerFeesForItem(m.currentItem)
     usedProducts = {}
     products = []
+    allFeeIds = []
     for each fee in inPlayerFees
+      allFeeIds.push(`${fee.id}`)
+
       rokuProduct = m.getRokuItemForFee(fee, rokuProducts)
+
       if rokuProduct <> invalid and mc.collections.getArrayIndex(purchasedItemIds, rokuProduct.code) = -1 and usedProducts[rokuProduct.code] = invalid
         rokuProduct.fee = fee
         usedProducts[rokuProduct.code] = true
@@ -113,6 +117,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
     end for
 
     m.availableProducts.availableProducts = products
+    m.availableProducts.serviceProductIds = allFeeIds
   end function
 
   public override function getEntitlements() as dynamic
