@@ -45,7 +45,7 @@ class ZGigyaAuthPlugin extends zapp.auth.BaseAuthPlugin
     constants = m.getInstance("constants")
     url = m.baseUrl + "CreateDevice"
 
-    params = { "deviceId": constants.applicasterdeviceid }
+    params = { "deviceId": constants.applicasterdeviceid, "deviceType": "src-gigya-OOTV-roku" }
     headers = { "Accept": "application/json", "Content-Type": "application/json" }
     response = m.request.post(url, params, headers)
 
