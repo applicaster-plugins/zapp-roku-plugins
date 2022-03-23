@@ -51,7 +51,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
       return invalid
     end if
 
-    return m.executeApiRequest(method, endpoint, args, true, m.token)
+    return m.executeApiRequest(method, endpoint, args, m.token)
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -90,8 +90,6 @@ namespace zapp.tests
       m.vm.loadDataTask = loadDataTask
 
       m.expectOnce(m.vm, "cancelTask", [loadDataTask])
-      m.expectOnce(m.vm, "cancelTask") 'it calls super, which in turn cancels some things
-      m.expectOnce(m.vm, "cancelWaitTimer")
       m.expectOnce(m.vm, "cancelWaitTimer", [searchDelayTask])
 
       m.vm.onHide()

@@ -99,14 +99,12 @@ namespace zapp.tests
       }
       m.vm.processStyles(styles)
 
-      m.assertTrue(m.vm.isForgotPasswordButtonVisible)
-      m.assertFalse(m.vm.isRegisterButtonVisible)
+      m.assertTrue(m.vm.forgotPasswordButtonStyle.visible)
+      m.assertFalse(m.vm.registerButtonStyle.visible)
 
       m.assertEqual(m.vm.focusIds, ["usernameInput", "passwordInput", "loginButton", "forgotPasswordButton"])
 
     end function
-
-
 
     @it("adds registerButton to focusIds if active")
     function _()
@@ -116,14 +114,12 @@ namespace zapp.tests
       }
       m.vm.processStyles(styles)
 
-      m.assertFalse(m.vm.isForgotPasswordButtonVisible)
-      m.assertTrue(m.vm.isRegisterButtonVisible)
+      m.assertFalse(m.vm.forgotPasswordButtonStyle.visible)
+      m.assertTrue(m.vm.registerButtonStyle.visible)
 
       m.assertEqual(m.vm.focusIds, ["usernameInput", "passwordInput", "loginButton", "registerButton"])
 
     end function
-
-
 
     @it("adds forgotPasswordButton, and registerButton to focusIds if active")
     function _()
@@ -133,10 +129,10 @@ namespace zapp.tests
       }
       m.vm.processStyles(styles)
 
-      m.assertTrue(m.vm.isForgotPasswordButtonVisible)
-      m.assertTrue(m.vm.isRegisterButtonVisible)
+      m.assertTrue(m.vm.forgotPasswordButtonStyle.visible)
+      m.assertTrue(m.vm.registerButtonStyle.visible)
 
-      m.assertEqual(m.vm.focusIds, ["usernameInput", "passwordInput", "loginButton", "forgotPasswordButton", "registerButton"])
+      m.assertEqual(m.vm.focusIds, ["usernameInput", "passwordInput", "loginButton", "registerButton", "forgotPasswordButton"])
 
     end function
 
@@ -277,12 +273,29 @@ namespace zapp.tests
     @describe("onKeyPressBack")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @it("dismisses if subscreen is not visible")
+    @it("dismisses if dismissable, no subscreen is not visible and focused on username input")
     function _()
       m.vm.isSubScreenVisible = false
+      m.vm.focusId = "usernameInput"
+      m.expectOnce(m.vm, "getTopField", ["isDismissable"], true)
+
       m.expectOnce(m.vm, "dismiss", ["cancel"])
 
       m.assertTrue(m.vm.onKeyPressBack())
+
+      m.assertEqual(m.vm.focusId, "usernameInput")
+    end function
+
+    @it("exits app if no subscreen, not dismissable and focused on username input")
+    function _()
+      m.vm.isSubScreenVisible = false
+      m.vm.focusId = "usernameInput"
+      m.expectOnce(m.vm, "getTopField", ["isDismissable"], false)
+
+      m.expectOnce(m.vm, "exitApp", [invalid, true])
+
+      m.assertTrue(m.vm.onKeyPressBack())
+
       m.assertEqual(m.vm.focusId, "usernameInput")
     end function
 
@@ -290,11 +303,25 @@ namespace zapp.tests
     @it("does not dismiss if subscreen is visible")
     function _()
       m.vm.isSubScreenVisible = true
-      m.expectNone(m.vm, "dismiss", ["cancel"])
+      m.expectNone(m.vm, "dismiss")
 
       m.assertTrue(m.vm.onKeyPressBack())
+
       m.assertEqual(m.vm.focusId, "usernameInput")
     end function
+
+    @it("ignores other caes")
+    function _()
+      m.vm.isSubScreenVisible = false
+      m.vm.focusId = "other"
+      m.expectNone(m.vm, "dismiss")
+      m.expectNone(m.vm, "exitApp")
+
+      m.assertFalse(m.vm.onKeyPressBack())
+
+      m.assertEqual(m.vm.focusId, "other")
+    end function
+
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -502,16 +529,17 @@ namespace zapp.tests
 
     end function
 
-
     @it("does not dismiss on refresh failure")
     function _()
       user = { "id": "user", isLoggedIn: false }
       m.expectOnce(m.vm, "getInstance", ["user"], user)
       m.expectNone(m.vm, "dismiss", ["success"])
       m.expectOnce(m.vm, "signalAppLaunchDialog", [false])
+      m.expectOnce(m.vm, "autoPopulateUserInfo", [])
 
       m.vm.isLoading = true
       m.vm.isRefreshing = true
+
       m.vm.onRefreshComplete({})
 
       m.assertNotEqual(m.vm.state, "success")
@@ -520,22 +548,6 @@ namespace zapp.tests
       m.assertFalse(m.vm.isLoading)
 
     end function
-
-
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("onFirstShow")
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    @it("autopopulates the register fields")
-    function _()
-      'from super
-      m.stub(m.vm, "sendLaunchBeacon")
-      m.stub(m.vm, "load")
-      m.expectOnce(m.vm, "autoPopulateUserInfo", [])
-
-      m.vm.onFirstShow()
-    end function
-
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("autoPopulateUserInfo")

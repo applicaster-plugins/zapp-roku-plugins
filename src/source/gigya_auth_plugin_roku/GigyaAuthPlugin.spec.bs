@@ -160,7 +160,8 @@ namespace zapp.tests
       response = {
         "devicePinCode": "pcode"
       }
-      m.expectOnce(m.plugin.request, "post", ["host/CreateDevice", { "deviceId": "did" }, m.expectedHeaders], response)
+      params = { "deviceId": "did", "deviceType": "src-gigya-OOTV-roku" }
+      m.expectOnce(m.plugin.request, "post", ["host/CreateDevice", params, m.expectedHeaders], response)
 
       m.expectOnce(m.plugin, "setSessionStoreValue", ["gigya_auth_plugin_roku", "regcode", "pcode"])
 
@@ -180,7 +181,8 @@ namespace zapp.tests
       regCodeResult = { "id": "regCodeResult" }
       m.expectOnce(m.plugin, "createRegCodeResult", [invalid, -1, "could not retrieve regcode"], regCodeResult)
 
-      m.expectOnce(m.plugin.request, "post", ["host/CreateDevice", { "deviceId": "did" }, m.expectedHeaders], response)
+      params = { "deviceId": "did", "deviceType": "src-gigya-OOTV-roku" }
+      m.expectOnce(m.plugin.request, "post", ["host/CreateDevice", params, m.expectedHeaders], response)
 
       m.expectOnce(m.plugin, "setSessionStoreValue", ["gigya_auth_plugin_roku", "regcode", invalid])
 

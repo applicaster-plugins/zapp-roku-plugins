@@ -28,30 +28,6 @@ namespace zapp.tests
       m.plugin.token = "t"
     end function
 
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("execute")
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    @it("invalid token")
-    @params("GET", "foo", { "id": "args" })
-    @params("PUSH", "foo2", { "id": "args2" })
-    @params("PUSH", "foo2", { "id": "args2" })
-    function _(method, endpoint, args)
-      m.plugin.token = invalid
-      m.expectNone(m.plugin, "executeApiRequest")
-
-      m.assertInvalid(m.plugin.execute(method, endpoint, args))
-    end function
-
-    @it("execute_valid_token")
-    @params("GET", "foo", { "id": "args" }, { "id": "result" })
-    @params("PUSH", "foo2", { "id": "args2" }, { "id": "result" })
-    @params("PUSH", "foo2", { "id": "args2" }, invalid)
-    function _(method, endpoint, args, result)
-      m.expectOnce(m.plugin, "executeApiRequest", [method, endpoint, args, true, "t"], result)
-
-      m.assertEqual(m.plugin.execute(method, endpoint, args), result)
-    end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("constructor")
@@ -85,7 +61,37 @@ namespace zapp.tests
       m.assertEqual(plugin.entitlementsPolicy, entitlementsPolicy)
       m.assertEqual(plugin.clientId, id)
       m.assertEqual(plugin.isUsingRokuStore, expectedIsUsingRokuStore)
+      m.assertTrue(plugin.isItemRequiredToLoadEntitlements)
+      m.assertTrue(plugin.requiresLoadToAscertainEntitlements)
 
+
+    end function
+
+
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("execute")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("invalid token")
+    @params("GET", "foo", { "id": "args" })
+    @params("PUSH", "foo2", { "id": "args2" })
+    @params("PUSH", "foo2", { "id": "args2" })
+    function _(method, endpoint, args)
+      m.plugin.token = invalid
+      m.expectNone(m.plugin, "executeApiRequest")
+
+      m.assertInvalid(m.plugin.execute(method, endpoint, args))
+    end function
+
+    @it("execute_valid_token")
+    @params("GET", "foo", { "id": "args" }, { "id": "result" })
+    @params("PUSH", "foo2", { "id": "args2" }, { "id": "result" })
+    @params("PUSH", "foo2", { "id": "args2" }, invalid)
+    function _(method, endpoint, args, result)
+      m.expectOnce(m.plugin, "executeApiRequest", [method, endpoint, args, "t"], result)
+
+      m.assertEqual(m.plugin.execute(method, endpoint, args), result)
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -414,21 +414,4 @@ class LoginScreenVM extends zapp.uib.ScreenVM
     return true
   end function
 
-  ' override function onGainedFocus(isSelfFocused)
-  '   m.log.info("onGainedFocus")
-  '   super.onGainedFocus(isSelfFocused)
-  '   if isSelfFocused
-  '     m.setFocusId(m.preScreenFocusId)
-  '   end if
-  ' end function
-
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '++ lifecycle
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-  protected override function onFirstShow()
-    super.onFirstShow()
-  end function
-
-
 end class

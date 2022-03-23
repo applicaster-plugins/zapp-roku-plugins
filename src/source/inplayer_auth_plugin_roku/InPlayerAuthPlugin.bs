@@ -11,7 +11,6 @@ class InPlayerAuthPlugin extends zapp.auth.BaseAuthPlugin
 
   'mixin api methods
   private createResult = zapp.APIUtils.createResult
-  private executeApiRequest = zapp.APIUtils.executeApiRequest
 
   public function new(plugin)
     super("InPlayerAuthPlugin", plugin)
@@ -140,8 +139,12 @@ class InPlayerAuthPlugin extends zapp.auth.BaseAuthPlugin
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '++ utils
+  '++ Private Methods
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function executeApiRequest(method, endpoint, params = invalid, jwt = invalid, url = invalid)
+    zapp.APIUtils.executeApiRequest(method, endpoint, params, true, jwt, url)
+  end function
 
   private function createErrorFromResult(result)
     m.log.method("trying to get error from", result)
