@@ -12,15 +12,10 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
 
   private assetKey
   private clientId
-  private token
   private apiUrl
 
   @inject("authenticationData")
   private authenticationData
-
-  'mixin api methods
-  private createResult = zapp.APIUtils.createResult
-  private executeApiRequest = zapp.APIUtils.executeApiRequest
 
   public function new(plugin)
     super("ApplicasterEntitlementsPlugin", plugin)
@@ -35,7 +30,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
     m.clientId = plugin.getStringValue("client_id")
     m.pluginInplayerAssetKey = plugin.getStringValue("inplayer_custom_asset_key", invalid)
 
-    m.token = m.getSessionStoreValue("inplayer_auth_plugin_roku", "token")
+    m.jwt = m.getSessionStoreValue("inplayer_auth_plugin_roku", "token")
 
     if plugin.getStringValue("environment", "prod") = "prod"
       m.apiUrl = "https://services.inplayer.com"
@@ -46,12 +41,12 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
   end function
 
   private function execute(method, endpoint, args = invalid)
-    if m.token = invalid
+    if m.jwt = invalid
       m.log.error("not authenticated with inplayer auth")
       return invalid
     end if
 
-    return m.executeApiRequest(method, endpoint, args, m.token)
+    return m.executeApiRequest(method, endpoint, args, m.jwt)
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -92,7 +87,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
   public override function getAvailableProducts(rokuProducts, purchasedItemIds) as void
     m.log.method("getAvailableProducts")
     'note - available inplayer items are always scoped to an item
-    if m.currentItem = invalid or m.token = invalid
+    if m.currentItem = invalid or m.jwt = invalid
       m.log.error("these entitlements only work when there is a current selection or user is logged in")
       m.availableProducts.availableProducts = []
       return
@@ -147,7 +142,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
       return false
     end if
 
-    if m.token = invalid
+    if m.jwt = invalid
       errorMessage = "not authenticated with inplayer when retrieving item: " + item.id
       m.log.error(errorMessage, item)
       mc.setOrAddNodeField(item, "errorMessage", errorMessage)
@@ -213,7 +208,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
   '  */
   private function sendPurchasesToInPlayer(purchases)
     m.log.method("postPurchasesImpl")
-    if m.token = invalid
+    if m.jwt = invalid
       m.log.error("not authenticated with inplayer when sending purchases")
       return []
     end if

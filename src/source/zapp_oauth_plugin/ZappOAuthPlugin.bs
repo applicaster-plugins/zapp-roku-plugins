@@ -173,9 +173,4 @@ class ZappOauthPlugin extends zapp.auth.BaseAuthPlugin
     return m.createAuthData()
   end function
 
-
-  private function executeApiRequest(method, endpoint, params = invalid, jwt = invalid, url = invalid)
-    zapp.APIUtils.executeApiRequest(method, endpoint, params, true, jwt, url)
-  end function
-
 end class

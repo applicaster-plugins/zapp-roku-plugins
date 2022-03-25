@@ -9,9 +9,6 @@ class InPlayerAuthPlugin extends zapp.auth.BaseAuthPlugin
   public apiUrl = "" ' note this is used by APIMixin
   private clientId as string
 
-  'mixin api methods
-  private createResult = zapp.APIUtils.createResult
-
   public function new(plugin)
     super("InPlayerAuthPlugin", plugin)
     m.clientId = plugin.getStringValue("client_id")
@@ -141,10 +138,6 @@ class InPlayerAuthPlugin extends zapp.auth.BaseAuthPlugin
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ Private Methods
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-  private function executeApiRequest(method, endpoint, params = invalid, jwt = invalid, url = invalid)
-    zapp.APIUtils.executeApiRequest(method, endpoint, params, true, jwt, url)
-  end function
 
   private function createErrorFromResult(result)
     m.log.method("trying to get error from", result)
