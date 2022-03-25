@@ -402,11 +402,10 @@ class LoginScreenVM extends zapp.uib.ScreenVM
       return true
     end if
 
-    m.debugAccountId = mc.clamp (m.debugAccountId + 1, 0, m.maxDebugAccounts, true)
-    ' username = m.riversJson.styles.debug_username.replace("@", str(m.debugAccountId).trim() + "@")
     username = m.riversJson.styles.debug_username
-    if m.debugAccountId > 1
-      username += m.debugAccountId.toStr()
+    if m.maxDebugAccounts > 1
+      m.debugAccountId = mc.clamp (m.debugAccountId + 1, 0, m.maxDebugAccounts, true)
+      username = username.replace("@", str(m.debugAccountId).trim() + "@")
     end if
     m.onUsernameKeyboardDialogDismissal(username)
     m.onPasswordKeyboardDialogDismissal(m.riversJson.styles.debug_password)
