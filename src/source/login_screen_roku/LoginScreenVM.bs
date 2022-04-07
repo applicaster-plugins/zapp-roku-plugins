@@ -69,7 +69,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
     if not m.isLoginRequired()
       m.log.info("no need to show in this case")
       m.dismiss("success")
-    else if m.getInstance("user").isLoggedIn
+    else if m.isLoggedIn()
       m.log.info("user is logged in, no need to show")
       m.dismiss("success")
     else
@@ -233,7 +233,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
     m.isLoading = false
     m.isMainGroupVisible = true
 
-    if m.getInstance("user").isLoggedIn
+    if m.isLoggedIn()
       m.dismiss("success")
     else
       m.trackScreen()
@@ -242,6 +242,10 @@ class LoginScreenVM extends zapp.uib.ScreenVM
       m.isRefreshing = false
     end if
 
+  end function
+
+  private function isLoggedIn()
+    return m.getInstance("user").loggedInServices[m.providerId] = true
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
