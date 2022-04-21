@@ -55,7 +55,7 @@ class AWSLoginScreenVM extends zapp.uib.ScreenVM
     m.log.info("createContent is overridden in this screen")
   end function
 
-  public override function load() as boolean
+  public override function load(doNotLoadIfReady = false) as boolean
     m.log.info("load - refreshing login")
     m.refreshLogin()
     return true

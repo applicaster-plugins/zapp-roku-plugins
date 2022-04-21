@@ -74,7 +74,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
   '++ overridden
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  public override function load()
+  public override function load(doNotLoadIfReady = false)
     m.state = "ready"
     m.isLoading = false
   end function

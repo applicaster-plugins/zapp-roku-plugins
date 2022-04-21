@@ -48,7 +48,7 @@ class WarningMessageScreenVM extends zapp.uib.ScreenVM
     m.log.info("createContent is overridden in this screen")
   end function
 
-  public override function load() as boolean
+  public override function load(doNotLoadIfReady = false) as boolean
     isShowingWarning = false
 
     if m.originEntry <> invalid and mc.isString(m.conditionPath) and mc.isString(m.conditionValue)

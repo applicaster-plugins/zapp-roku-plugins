@@ -62,7 +62,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
     m.log.info("createContent is overridden in this screen")
   end function
 
-  public override function load() as boolean
+  public override function load(doNotLoadIfReady = false) as boolean
     if not m.isLoginRequired()
       m.log.info("no need to show in this case")
       m.dismiss("success")
