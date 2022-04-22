@@ -25,19 +25,28 @@ class SegmentAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
   private lastScreenIsVideoPlayer = false
   private heartbeatTimer = invalid
 
-  public function new(plugin)
-    super("SegmentAnalyticsPlugin", plugin)
+  public function new(plugin = invalid)
+    super("SegmentAnalyticsPlugin", m.getPlugin(plugin))
 
     m.segmentTask = createObject("roSGNode", "SegmentAnalyticsTask")
     m.segmentTask.id = "segmentAnalyticsTask"
 
     constants = m.getInstance("constants")
     m.applicasterDeviceId = constants.applicasterDeviceId
-    m.writeKey = plugin.getStringValue("write_key")
-    m.isDebug = plugin.getBoolValue("is_debug")
-    m.isIdentifyingOnLogout = plugin.getBoolValue("send_identify_on_logout")
-    m.screenHeartBeatInterval = plugin.getIntValue("screen_heartbeat_interval", -1)
+    m.writeKey = m.plugin.getStringValue("write_key")
+    m.isDebug = m.plugin.getBoolValue("is_debug")
+    m.isIdentifyingOnLogout = m.plugin.getBoolValue("send_identify_on_logout")
+    m.screenHeartBeatInterval = m.plugin.getIntValue("screen_heartbeat_interval", -1)
     m.library = SegmentAnalyticsConnector(m.segmentTask)
+  end function
+
+  private function getPlugin(plugin = invalid)
+    if plugin = invalid
+      pluginManager = new zapp.PluginManager()
+      plugin = pluginManager.getPluginById("segment_analytics")
+    end if
+
+    return plugin
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

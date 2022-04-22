@@ -55,16 +55,26 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
     ' "system": "TODO"
   }
 
-  public function new(plugin)
-    super("GoogleAnalyticsPlugin", plugin)
+  public function new(plugin = invalid)
+    super("GoogleAnalyticsPlugin", m.getPlugin(plugin))
     constants = m.getInstance("constants")
 
-    m.trackingId = plugin.getStringValue("tracking_id")
+    m.trackingId = m.plugin.getStringValue("tracking_id")
     m.clientId = constants.googleAnalyticsClientId
     buildConfig = m.getInstance("buildConfig")
     versionId = buildConfig.app_family_id
-    userIdString = plugin.getStringValue("user_id")
+    userIdString = m.plugin.getStringValue("user_id")
     m.isTrackingUserIdEnabled = m.checkIfTrackingUserIdAllowed(userIdString, versionId)
+  end function
+
+
+  private function getPlugin(plugin = invalid)
+    if plugin = invalid
+      pluginManager = new zapp.PluginManager()
+      plugin = pluginManager.getPluginById("google_analytics_roku")
+    end if
+
+    return plugin
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
