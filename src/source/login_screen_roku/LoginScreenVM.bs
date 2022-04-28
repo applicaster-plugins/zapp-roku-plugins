@@ -370,8 +370,10 @@ class LoginScreenVM extends zapp.uib.ScreenVM
         m.exitApp(invalid, true)
         return true
       end if
+    else
+      m.onKeyPressUp()
+      return true
     end if
-    return false
   end function
 
   public function onKeyPressRight() as boolean
