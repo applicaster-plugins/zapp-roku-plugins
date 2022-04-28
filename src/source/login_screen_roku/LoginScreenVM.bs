@@ -362,16 +362,11 @@ class LoginScreenVM extends zapp.uib.ScreenVM
     end if
 
     isDismissable = m.getTopField("isDismissable")
-    if m.focusId = "usernameInput"
-      if isDismissable = true
-        m.dismiss("cancel")
-        return true
-      else
-        m.exitApp(invalid, true)
-        return true
-      end if
+    if isDismissable = true
+      m.dismiss("cancel")
+      return true
     else
-      m.onKeyPressUp()
+      m.exitApp(invalid, true)
       return true
     end if
   end function
