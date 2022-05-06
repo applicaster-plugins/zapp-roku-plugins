@@ -1,5 +1,4 @@
 namespace zapp.tests
-  @ignore("wip")
   @tags("public", "auth", "vm")
   @suite("LoginScreenVMTests")
   class LoginScreenVMTests extends tests.BaseTestSuite
@@ -274,13 +273,10 @@ namespace zapp.tests
     @describe("onKeyPressBack")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @it("dismisses if dismissable, no subscreen is not visible and focused on username input")
+    @it("does not dismiss if subscreen is visible")
     function _()
-      m.vm.isSubScreenVisible = false
-      m.vm.focusId = "usernameInput"
-      m.expectOnce(m.vm, "getTopField", ["isDismissable"], true)
-
-      m.expectOnce(m.vm, "dismiss", ["cancel"])
+      m.vm.isSubScreenVisible = true
+      m.expectNone(m.vm, "dismiss")
 
       m.assertTrue(m.vm.onKeyPressBack())
 
@@ -300,29 +296,18 @@ namespace zapp.tests
       m.assertEqual(m.vm.focusId, "usernameInput")
     end function
 
-
-    @it("does not dismiss if subscreen is visible")
+    @it("dismisses if dismissable, no subscreen is not visible and focused on username input")
     function _()
-      m.vm.isSubScreenVisible = true
-      m.expectNone(m.vm, "dismiss")
+      m.vm.isSubScreenVisible = false
+      m.vm.focusId = "usernameInput"
+      m.expectOnce(m.vm, "getTopField", ["isDismissable"], true)
+
+      m.expectOnce(m.vm, "dismiss", ["cancel"])
 
       m.assertTrue(m.vm.onKeyPressBack())
 
       m.assertEqual(m.vm.focusId, "usernameInput")
     end function
-
-    @it("ignores other caes")
-    function _()
-      m.vm.isSubScreenVisible = false
-      m.vm.focusId = "other"
-      m.expectNone(m.vm, "dismiss")
-      m.expectNone(m.vm, "exitApp")
-
-      m.assertFalse(m.vm.onKeyPressBack())
-
-      m.assertEqual(m.vm.focusId, "other")
-    end function
-
 
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -391,7 +376,92 @@ namespace zapp.tests
       m.assertEmpty(m.vm.errorText)
     end function
 
-    @ignore("- only use these with your own creds, and for non suit tests")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("load")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("dismisses if login is not required")
+    function _()
+      m.expectCalled(m.vm.isLoginRequired(), false)
+      m.expectCalled(m.vm.dismiss("success"))
+
+      m.expectNotCalled(m.vm.refreshLogin)
+
+      m.vm.load()
+    end function
+
+    @it("dismisses if logged in")
+    function _()
+      m.expectCalled(m.vm.isLoginRequired(), true)
+      m.expectCalled(m.vm.isLoggedIn(), true)
+      m.expectCalled(m.vm.dismiss("success"))
+
+      m.expectNotCalled(m.vm.refreshLogin)
+
+      m.vm.load()
+    end function
+
+    @it("dismisses if skip condition is met")
+    function _()
+      m.expectCalled(m.vm.isLoginRequired(), true)
+      m.expectCalled(m.vm.isKeyToSkipSet(), true)
+      m.expectCalled(m.vm.dismiss("success"))
+
+      m.expectNotCalled(m.vm.refreshLogin)
+
+      m.vm.load()
+    end function
+
+
+    @it("otherwise refreshes")
+    function _()
+      m.expectCalled(m.vm.isLoginRequired(), true)
+      m.expectCalled(m.vm.isKeyToSkipSet(), false)
+      m.expectCalled(m.vm.isLoggedIn(), false)
+      m.expectCalled(m.vm.refreshLogin())
+
+      m.expectNotCalled(m.vm.dismiss)
+
+      m.vm.load()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("isKeyToSkipSet")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns false for invalid keys")
+    @params("")
+    @params("key")
+    function _(key)
+      m.vm.skipKey = key
+      m.assertFalse(m.vm.isKeyToSkipSet())
+    end function
+
+    @it("returns true if the key is set on session store")
+    @params("key.a", "a", invalid, false)
+    @params("key.b", "b", "set", true)
+    function _(key, keyPart, value, isSkipped)
+      m.vm.skipKey = key
+      m.expectCalled(m.vm.getSessionStoreValue("key", keyPart), value)
+      m.assertEqual(m.vm.isKeyToSkipSet(), isSkipped)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("isLoginRequired")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns expected value")
+    @params(invalid, true)
+    @params({ json: invalid }, true)
+    @params({ json: { extensions: invalid } }, true)
+    @params({ json: { extensions: { requires_authentication: true } } }, true)
+    @params({ json: { extensions: { requires_authentication: false } } }, false)
+    function _(item, isLoginRequired)
+      m.expectCalled(m.vm.getInstance("currentSelection", "currentItem"), item)
+
+      m.assertEqual(m.vm.isLoginRequired(), isLoginRequired)
+    end function
+
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @tags("integration")
     @describe("INTEGRATION tests processLogin")
@@ -519,27 +589,34 @@ namespace zapp.tests
 
     @it("dismisses on succesful refresh")
     function _()
-      user = { "id": "user", isLoggedIn: true }
-      m.expectOnce(m.vm, "getInstance", ["user"], user)
-      m.expectOnce(m.vm, "dismiss", ["success"])
+      m.vm.providerId = "pid"
+      m.expectCalled(m.vm.isLoggedIn(), true)
+      m.expectCalled(m.vm.dismiss("success"))
 
-      m.vm.isLoading = true
       m.vm.isRefreshing = true
+      m.vm.isLoading = true
+      m.vm.isMainGroupVisible = true
 
       m.vm.onRefreshComplete({})
+
+      m.assertFalse(m.vm.isRefreshing)
+      m.assertFalse(m.vm.isLoading)
+      m.assertTrue(m.vm.isMainGroupVisible)
 
     end function
 
     @it("does not dismiss on refresh failure")
     function _()
-      user = { "id": "user", isLoggedIn: false }
-      m.expectOnce(m.vm, "getInstance", ["user"], user)
-      m.expectNone(m.vm, "dismiss", ["success"])
-      m.expectOnce(m.vm, "signalAppLaunchDialog", [false])
-      m.expectOnce(m.vm, "autoPopulateUserInfo", [])
 
-      m.vm.isLoading = true
       m.vm.isRefreshing = true
+      m.vm.isLoading = true
+      m.vm.isMainGroupVisible = true
+
+      m.expectCalled(m.vm.isLoggedIn(), false)
+      m.expectCalled(m.vm.trackScreen())
+      m.expectCalled(m.vm.signalAppLaunchDialog(false))
+      m.expectCalled(m.vm.autoPopulateUserInfo())
+      m.expectNotCalled(m.vm.dismiss)
 
       m.vm.onRefreshComplete({})
 
@@ -547,6 +624,7 @@ namespace zapp.tests
 
       m.assertFalse(m.vm.isRefreshing)
       m.assertFalse(m.vm.isLoading)
+      m.assertTrue(m.vm.isMainGroupVisible)
 
     end function
 

@@ -48,10 +48,12 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   private _closeKeyboardDialog = zapp.keyboardDialogMixin.closeKeyboardDialog
   private setTextFromKeyboard = zapp.keyboardDialogMixin.setTextFromKeyboard
   protected fireScreenAnalyticsOnShow = false
+  private skipKey = ""
 
   public function new(riversJson)
     super(riversJson, "LoginScreenVM")
     m.focusId = "usernameInput"
+    m.skipKey = asString(m.riversJson.data.skip_login_if_key_exists)
     m.processStyles(m.riversJson.styles)
     m.providerId = m.getAuthProviderId()
   end function
@@ -69,6 +71,9 @@ class LoginScreenVM extends zapp.uib.ScreenVM
     if not m.isLoginRequired()
       m.log.info("no need to show in this case")
       m.dismiss("success")
+    else if m.isKeyToSkipSet()
+      m.log.info("skip key set")
+      m.dismiss("success")
     else if m.isLoggedIn()
       m.log.info("user is logged in, no need to show")
       m.dismiss("success")
@@ -80,13 +85,25 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   end function
 
   private function isLoginRequired()
-    currentItem = mc.getPath(m.getInstance("currentSelection"), "currentItem")
-    if currentItem <> invalid and mc.getPath(currentItem.json, "extensions.requires_authentication", false) = false
-      return false
-    else
-      return true
-    end if
+    currentItem = m.getInstance("currentSelection", "currentItem")
+
+    return asBoolean(currentItem.json.extensions.requires_authentication, true)
   end function
+
+  private function isKeyToSkipSet()
+    m.log.info("checking if this key is set", m.skipKey)
+    parts = m.skipKey.split(".")
+    if parts.count() = 2
+      value = m.getSessionStoreValue(parts[0], parts[1])
+      m.log.info("session store contained value:", value)
+      if value <> invalid
+        return true
+      end if
+    end if
+
+    return false
+  end function
+
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ styles
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -232,6 +249,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
     m.log.method("onRefreshComplete", result)
     m.isLoading = false
     m.isMainGroupVisible = true
+    m.isRefreshing = false
 
     if m.isLoggedIn()
       m.dismiss("success")
@@ -239,7 +257,6 @@ class LoginScreenVM extends zapp.uib.ScreenVM
       m.trackScreen()
       m.signalAppLaunchDialog(false)
       m.autoPopulateUserInfo()
-      m.isRefreshing = false
     end if
 
   end function
@@ -332,7 +349,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
     m.log.method("onGetUserData")
 
     if data <> invalid
-      m.setTextFromKeyboard("username", mc.getPath(data, "email", ""))
+      m.setTextFromKeyboard("username", asString(data.email))
       m.focusId = "passwordInput"
     end if
 
@@ -367,8 +384,9 @@ class LoginScreenVM extends zapp.uib.ScreenVM
       return true
     else
       m.exitApp(invalid, true)
-      return true
     end if
+
+    return true
   end function
 
   public function onKeyPressRight() as boolean
