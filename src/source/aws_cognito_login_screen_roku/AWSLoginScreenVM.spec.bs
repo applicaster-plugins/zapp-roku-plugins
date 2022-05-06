@@ -190,7 +190,7 @@ namespace zapp.tests
     function _(text, expectedText)
       m.vm.password = text
 
-      m.expectOnce(m.vm, "showKeyboardDialog", ["Enter your password", expectedText, "onPasswordKeyboardDialogDismissal", true])
+      m.expectOnce(m.vm, "showKeyboardDialog", ["Enter your password", expectedText, "onPasswordKeyboardDialogDismissal", true, "none"])
 
       m.vm.onPasswordButtonSelected(true)
 

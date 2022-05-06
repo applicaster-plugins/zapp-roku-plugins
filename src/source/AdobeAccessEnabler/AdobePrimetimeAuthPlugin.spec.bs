@@ -254,10 +254,10 @@ namespace zapp.tests
     @params(invalid)
     @params({ "currentItem": invalid })
     function _(currentSelection)
-      m.expectOnce(m.plugin, "getInstance", ["currentSelection"], currentSelection)
+      m.expectCalled(m.plugin.getInstance("currentSelection"), currentSelection)
 
       text = m.plugin.getResourceText()
-      m.assertEqual(text, "rqd")
+      m.assertEqual(text, "rod")
     end function
 
     @it("with selection")
@@ -277,7 +277,7 @@ namespace zapp.tests
       ' expected += chr(10) + "  </channel>"
       ' expected += chr(10) + "</rss>"
 
-      expected = "rqd"
+      expected = "rod"
       m.assertEqual(text, expected)
     end function
 
@@ -296,27 +296,27 @@ namespace zapp.tests
         "Accept": "application/json"
         "Authorization": "aut"
       }
-      url = "#url/api/v1/authorize?deviceId=did&requestor=rqd&resource=rqd"
+      url = "#url/api/v1/authorize?deviceId=did&requestor=rqd&resource=rod"
 
       requestUtil = { "id": "requestUtil"
         lastResponseCode: lastResponseCode
       }
-      m.expectOnce(m.plugin, "getRequestUtil", [], requestUtil)
+      m.expectCalled(m.plugin.getRequestUtil(), requestUtil)
 
       response = {
         "expires": "1589402085000"
       }
-      m.expectOnce(requestUtil, "getJsonSync", [url, expectedHeaders], response)
-      m.expectOnce(m.plugin.date, "getSecondsUntil", [mc.strToLong("1589402085000") / 1000], 9999)
+      m.expectCalled(requestUtil.getJsonSync(url, expectedHeaders), response)
+      m.expectCalled(m.plugin.date.getSecondsUntil(mc.strToLong("1589402085000") / 1000), 9999)
       m.plugin.pollResult = { "id": "pollResult" }
 
       result = {
         "id": "result"
       }
       token = formatJson(response)
-      m.expectOnce(m.plugin, "createAuthData", ["valid", token, token, token, response, 9999, expectedCode, "", m.plugin.pollResult], result)
+      m.expectCalled(m.plugin.createAuthData("valid", token, token, token, response, 9999, expectedCode, "", m.plugin.pollResult), result)
 
-      m.expectNone(m.plugin, "createErrorResult")
+      m.expectNotCalled(m.plugin.createErrorResult)
 
       m.assertEqual(m.plugin.getAuthorization(), result)
     end function
@@ -336,7 +336,7 @@ namespace zapp.tests
         "Accept": "application/json"
         "Authorization": "aut"
       }
-      url = "#url/api/v1/authorize?deviceId=did&requestor=rqd&resource=rqd"
+      url = "#url/api/v1/authorize?deviceId=did&requestor=rqd&resource=rod"
 
       m.expectOnce(requestUtil, "getJsonSync", [url, expectedHeaders], response)
 

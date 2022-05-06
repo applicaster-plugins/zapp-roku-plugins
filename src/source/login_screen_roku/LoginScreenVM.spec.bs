@@ -1,4 +1,5 @@
 namespace zapp.tests
+  @ignore("wip")
   @tags("public", "auth", "vm")
   @suite("LoginScreenVMTests")
   class LoginScreenVMTests extends tests.BaseTestSuite

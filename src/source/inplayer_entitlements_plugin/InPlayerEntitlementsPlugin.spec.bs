@@ -25,7 +25,7 @@ namespace zapp.tests
       }))
 
       m.plugin = new InPlayerEntitlementsPlugin(plugin)
-      m.plugin.token = "t"
+      m.plugin.jwt = "t"
     end function
 
 
@@ -63,11 +63,7 @@ namespace zapp.tests
       m.assertEqual(plugin.isUsingRokuStore, expectedIsUsingRokuStore)
       m.assertTrue(plugin.isItemRequiredToLoadEntitlements)
       m.assertTrue(plugin.requiresLoadToAscertainEntitlements)
-
-
     end function
-
-
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("execute")
@@ -78,8 +74,8 @@ namespace zapp.tests
     @params("PUSH", "foo2", { "id": "args2" })
     @params("PUSH", "foo2", { "id": "args2" })
     function _(method, endpoint, args)
-      m.plugin.token = invalid
-      m.expectNone(m.plugin, "executeApiRequest")
+      m.plugin.jwt = invalid
+      m.expectNotCalled(m.plugin.executeApiRequest)
 
       m.assertInvalid(m.plugin.execute(method, endpoint, args))
     end function
@@ -89,7 +85,8 @@ namespace zapp.tests
     @params("PUSH", "foo2", { "id": "args2" }, { "id": "result" })
     @params("PUSH", "foo2", { "id": "args2" }, invalid)
     function _(method, endpoint, args, result)
-      m.expectOnce(m.plugin, "executeApiRequest", [method, endpoint, args, "t"], result)
+      m.plugin.jwt = "t"
+      m.expectCalled(m.plugin.executeApiRequest(method, endpoint, args), result)
 
       m.assertEqual(m.plugin.execute(method, endpoint, args), result)
     end function
@@ -100,7 +97,7 @@ namespace zapp.tests
 
     @it("not logged in")
     function _()
-      m.plugin.token = invalid
+      m.plugin.jwt = invalid
       m.assertEmpty(m.plugin.getPurchasedItemIds([]))
     end function
 
@@ -114,8 +111,8 @@ namespace zapp.tests
       response = { "id": "response", "collection": [receipt1] }
       fee1 = { "id": "fee1", external_fees: externalFees }
 
-      m.expectOnce(m.plugin, "execute", ["GET", "items/access/customers?status=active"], response)
-      m.expectOnce(m.plugin, "getFeeForAccessReceipt", [receipt1], fee1)
+      m.expectCalled(m.plugin.execute("GET", "items/access/customers?status=active"), response)
+      m.expectCalled(m.plugin.getFeeForAccessReceipt(receipt1), fee1)
 
       result = m.plugin.getPurchasedItemIds(rokuPurchases)
       m.assertArrayContainsSubset(result, expectedIds)
@@ -139,13 +136,13 @@ namespace zapp.tests
       fee2 = { "id": "fee2" }
       fee3 = { "id": "fee3" }
 
-      m.expectOnce(m.plugin, "execute", ["GET", "items/access/customers?status=active"], response)
-      m.expectOnce(m.plugin, "getFeeForAccessReceipt", [receipt1], fee1)
-      m.expectOnce(m.plugin, "getFeeForAccessReceipt", [receipt2], fee2)
-      m.expectOnce(m.plugin, "getFeeForAccessReceipt", [receipt3], fee3)
-      m.expectOnce(m.plugin, "getRokuItemForFee", [fee1, rokuPurchases], rr1)
-      m.expectOnce(m.plugin, "getRokuItemForFee", [fee2, rokuPurchases], rr2)
-      m.expectOnce(m.plugin, "getRokuItemForFee", [fee3, rokuPurchases], rr3)
+      m.expectCalled(m.plugin.execute("GET", "items/access/customers?status=active"), response)
+      m.expectCalled(m.plugin.getFeeForAccessReceipt(receipt1), fee1)
+      m.expectCalled(m.plugin.getFeeForAccessReceipt(receipt2), fee2)
+      m.expectCalled(m.plugin.getFeeForAccessReceipt(receipt3), fee3)
+      m.expectCalled(m.plugin.getRokuItemForFee(fee1, rokuPurchases), rr1)
+      m.expectCalled(m.plugin.getRokuItemForFee(fee2, rokuPurchases), rr2)
+      m.expectCalled(m.plugin.getRokuItemForFee(fee3, rokuPurchases), rr3)
 
       result = m.plugin.getPurchasedItemIds(rokuPurchases)
       m.assertArrayContainsSubset(result, expectedIds)
@@ -161,7 +158,7 @@ namespace zapp.tests
     @params([{ "error": "here" }], false)
     function _(response, expectedResult)
       rokuPurchases = {}
-      m.expectOnce(m.plugin, "sendPurchasesToInPlayer", [rokuPurchases], response)
+      m.expectCalled(m.plugin.sendPurchasesToInPlayer(rokuPurchases), response)
 
       result = m.plugin.postPurchases(rokuPurchases)
       m.assertEqual(result, expectedResult)
@@ -179,7 +176,7 @@ namespace zapp.tests
       rokuCatalogItems = [tests.utils.createRokuCatalogItem("1"), tests.utils.createRokuCatalogItem("2"), tests.utils.createRokuCatalogItem("3")]
       m.plugin.currentItem = item
 
-      m.plugin.token = token
+      m.plugin.jwt = token
       m.availableProducts.availableProducts = ["something"]
       m.plugin.getAvailableProducts(rokuCatalogItems, ["1"])
       m.assertEmpty(m.availableProducts.availableProducts)
@@ -200,7 +197,7 @@ namespace zapp.tests
 
       m.availableProducts.availableProducts = ["something"]
 
-      m.expectOnce(m.plugin, "getInPlayerFeesForItem", [item], fees)
+      m.expectCalled(m.plugin.getInPlayerFeesForItem(item), fees)
 
       purchasedIds = []
       m.plugin.getAvailableProducts(rokuCatalogItems, purchasedIds)
@@ -232,7 +229,7 @@ namespace zapp.tests
 
       m.availableProducts.availableProducts = ["something"]
 
-      m.expectOnce(m.plugin, "getInPlayerFeesForItem", [item], fees)
+      m.expectCalled(m.plugin.getInPlayerFeesForItem(item), fees)
 
       m.plugin.getAvailableProducts(rokuCatalogItems, purchasedIds)
 
@@ -254,7 +251,7 @@ namespace zapp.tests
 
     @it("noToken")
     function _()
-      m.plugin.token = invalid
+      m.plugin.jwt = invalid
       item = createObject("roSGNode", "ZPEntry")
       item.json = { extensions: {
           inplayer_asset_id: "xid"
@@ -292,9 +289,9 @@ namespace zapp.tests
           content: formatJson({ mobile_url: "changedUrl" })
         }
       }
-      m.expectOnce(m.plugin, "getInplayerId", [item], "xid")
+      m.expectCalled(m.plugin.getInplayerId(item), "xid")
 
-      m.expectOnce(m.plugin, "execute", ["GET", "items/xid/access"], result)
+      m.expectCalled(m.plugin.execute("GET", "items/xid/access"), result)
 
       m.assertTrue(m.plugin.loadItem(item))
 
@@ -331,9 +328,9 @@ namespace zapp.tests
           })
         }
       }
-      m.expectOnce(m.plugin, "getInplayerId", [item], "xid")
+      m.expectCalled(m.plugin.getInplayerId(item), "xid")
 
-      m.expectOnce(m.plugin, "execute", ["GET", "items/xid/access"], result)
+      m.expectCalled(m.plugin.execute("GET", "items/xid/access"), result)
 
       m.assertTrue(m.plugin.loadItem(item))
 
@@ -364,8 +361,8 @@ namespace zapp.tests
         url: "ourl"
       })
 
-      m.expectOnce(m.plugin, "getInplayerId", [item], "xid")
-      m.expectOnce(m.plugin, "execute", ["GET", "items/xid/access"], result)
+      m.expectCalled(m.plugin.getInplayerId(item), "xid")
+      m.expectCalled(m.plugin.execute("GET", "items/xid/access"), result)
 
       m.assertFalse(m.plugin.loadItem(item))
 
@@ -387,11 +384,11 @@ namespace zapp.tests
       m.plugin.policy = policy
 
       entitlementsNode = { "id": "entitlements" }
-      m.expectOnce(m.plugin, "getInstance", ["entitlements"], entitlementsNode)
+      m.expectCalled(m.plugin.getInstance("entitlements"), entitlementsNode)
       m.expectOnce(entitlementsNode, "subType", [], "SimpleEntitlements")
       m.expectOnce(entitlementsNode, "callFunc", ["configure"])
 
-      m.expectNone(m.plugin, "setInstance")
+      m.expectNotCalled(m.plugin.setInstance)
 
       result = m.plugin.getEntitlements()
 
@@ -411,12 +408,12 @@ namespace zapp.tests
       m.plugin.policy = policy
 
       oldEntitlements = { "id": "oldentitlements" }
-      m.expectOnce(m.plugin, "getInstance", ["entitlements"], oldEntitlements)
+      m.expectCalled(m.plugin.getInstance("entitlements"), oldEntitlements)
       m.expectOnce(oldEntitlements, "subType", [], subType)
       entitlementsNode = { "id": "entitlements" }
-      m.expectOnce(m.plugin, "createInstance", ["SimpleEntitlements", invalid, "entitlements"], entitlementsNode)
+      m.expectCalled(m.plugin.createInstance("SimpleEntitlements", invalid, "entitlements"), entitlementsNode)
       m.expectOnce(entitlementsNode, "callFunc", ["configure"])
-      m.expectOnce(m.plugin, "setInstance", ["entitlements", entitlementsNode])
+      m.expectCalled(m.plugin.setInstance("entitlements", entitlementsNode))
 
       result = m.plugin.getEntitlements()
 
@@ -435,11 +432,11 @@ namespace zapp.tests
       m.plugin.vodModel = vodModel
       m.plugin.policy = policy
 
-      m.expectOnce(m.plugin, "getInstance", ["entitlements"], invalid)
+      m.expectCalled(m.plugin.getInstance("entitlements"), invalid)
       entitlementsNode = { "id": "entitlements" }
-      m.expectOnce(m.plugin, "createInstance", ["SimpleEntitlements", invalid, "entitlements"], entitlementsNode)
+      m.expectCalled(m.plugin.createInstance("SimpleEntitlements", invalid, "entitlements"), entitlementsNode)
       m.expectOnce(entitlementsNode, "callFunc", ["configure"])
-      m.expectOnce(m.plugin, "setInstance", ["entitlements", entitlementsNode])
+      m.expectCalled(m.plugin.setInstance("entitlements", entitlementsNode))
 
       result = m.plugin.getEntitlements()
 
@@ -460,7 +457,7 @@ namespace zapp.tests
     @params([])
     @params([{ id: "p1" }])
     function _(purchases)
-      m.plugin.token = invalid
+      m.plugin.jwt = invalid
       m.assertEmpty(m.plugin.sendPurchasesToInPlayer(purchases))
     end function
 
@@ -479,7 +476,7 @@ namespace zapp.tests
       result = {
         "code": code
       }
-      m.expectOnce(m.plugin, "execute", ["FORMPOST", "v2/external-payments/roku/validate", expectedParams], result)
+      m.expectCalled(m.plugin.execute("FORMPOST", "v2/external-payments/roku/validate", expectedParams), result)
 
       m.assertArrayCount(m.plugin.sendPurchasesToInPlayer(purchases), expectedFailCount)
     end function
@@ -512,9 +509,9 @@ namespace zapp.tests
       }
       r3 = { "code": code3 }
 
-      m.expectOnce(m.plugin, "execute", ["FORMPOST", "v2/external-payments/roku/validate", expectedParams1], r1)
-      m.expectOnce(m.plugin, "execute", ["FORMPOST", "v2/external-payments/roku/validate", expectedParams2], r2)
-      m.expectOnce(m.plugin, "execute", ["FORMPOST", "v2/external-payments/roku/validate", expectedParams3], r3)
+      m.expectCalled(m.plugin.execute("FORMPOST", "v2/external-payments/roku/validate", expectedParams1), r1)
+      m.expectCalled(m.plugin.execute("FORMPOST", "v2/external-payments/roku/validate", expectedParams2), r2)
+      m.expectCalled(m.plugin.execute("FORMPOST", "v2/external-payments/roku/validate", expectedParams3), r3)
 
       failedReceipts = m.plugin.sendPurchasesToInPlayer(purchases)
       m.assertArrayCount(failedReceipts, expectedFailIds.count())
@@ -536,7 +533,7 @@ namespace zapp.tests
     @params({ item_id: invalid })
     function _(feeReceipt)
 
-      m.expectNone(m.plugin, "execute")
+      m.expectNotCalled(m.plugin.execute)
 
       m.assertInvalid(m.plugin.getFeeForAccessReceipt(feeReceipt))
 
@@ -549,7 +546,7 @@ namespace zapp.tests
     function _(id, endpoint, response, expectedFee)
       feeReceipt = { "id": id, item_id: id, purchased_access_fee_id: id }
 
-      m.expectOnce(m.plugin, "execute", ["GET", endpoint], response)
+      m.expectCalled(m.plugin.execute("GET", endpoint), response)
 
       fee = m.plugin.getFeeForAccessReceipt(feeReceipt)
 
@@ -599,7 +596,7 @@ namespace zapp.tests
     @params({ id: "2a", json: { extensions: { "inplayer_asset_type": "vimeo" } } }, "items/assets/external/vimeo/2a", invalid, invalid)
     function _(item, endpoint, result, expected)
 
-      m.expectOnce(m.plugin, "execute", ["GET", endpoint], result)
+      m.expectCalled(m.plugin.execute("GET", endpoint), result)
       m.assertEqual(m.plugin.getInplayerId(item), expected)
     end function
 
@@ -620,7 +617,7 @@ namespace zapp.tests
       }
       'DO NOT COMMIT THIS TOKEN
       m.plugin.currentItem = m.item
-      m.plugin.token = "CHANGE ME"
+      m.plugin.jwt = "CHANGE ME"
     end function
 
     @it("integration_makePurchase")
