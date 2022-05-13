@@ -17,6 +17,9 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
   @inject("authenticationData")
   private authenticationData
 
+  @inject("debugFlags", "store.isEnitlementsPluginLoadHardCodedToFail")
+  private isEnitlementsPluginLoadHardCodedToFail = false
+
   public function new(plugin)
     super("ApplicasterEntitlementsPlugin", plugin)
 
@@ -138,7 +141,16 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
 
   public override function loadItem(item) as boolean
     m.log.method("loadItem")
+
     if item = invalid
+      m.log.error("item is invalid")
+      return false
+    end if
+
+    if m.isEnitlementsPluginLoadHardCodedToFail
+      errorMessage = "WARNING - debugFlags have hardcoded loading of this plugin to fail"
+      m.log.error(errorMessage)
+      mc.setOrAddNodeField(item, "errorMessage", errorMessage)
       return false
     end if
 
