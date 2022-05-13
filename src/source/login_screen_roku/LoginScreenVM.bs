@@ -67,6 +67,8 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   end function
 
   public override function load() as boolean
+    m.sendHttpLogsNow()
+
     m.state = "loading"
     if not m.isLoginRequired()
       m.log.info("no need to show in this case")
