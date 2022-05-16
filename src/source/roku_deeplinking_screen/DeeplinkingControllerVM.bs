@@ -19,16 +19,6 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
   public function new(riversJson)
     super(riversJson, "DeeplinkingControllerVM")
     m.focusId = "screenContainer"
-    m.processStyles(riversJson.styles)
-  end function
-
-  private function processStyles(styles)
-    m.screenIdsByName = {
-      "series": mc.getPath(styles, "series_screen")
-      "season": mc.getPath(styles, "series_screen")
-      "episode": mc.getPath(styles, "episode_screen")
-      "detail": mc.getPath(styles, "detail_screen")
-    }
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -294,14 +284,6 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
     if content <> invalid
       selection.currentItem = content
       selection.initialItem = content
-
-      if deeplinkingData.itemType = "series"
-        selection.action = "deeplinkSeries"
-      else if deeplinkingData.action = "play"
-        selection.action = "deeplinkPlay"
-      else
-        selection.action = "deeplinkDisplay"
-      end if
 
       collection = createObject("roSGNode", "ZPEntry")
       collection.appendChild(content)
