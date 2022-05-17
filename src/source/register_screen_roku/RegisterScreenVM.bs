@@ -75,7 +75,7 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
 
     m.humanNameText = m.localizations.name_placeholder_text
     m.namePlaceholderText = m.humanNameText
-    m.isNameFieldVisible = styles.use_human_name
+    m.isNameFieldVisible = zapp.viewUtils.getUIBBool(styles, "use_human_name")
 
     m.passwordText = m.localizations.password_placeholder_text
     m.passwordPlaceholderText = m.passwordText
@@ -84,13 +84,7 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
     m.registerButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "register_button", "custom", styles.register_button_text)
     m.maxDebugAccounts = zapp.viewUtils.getUIBInt(styles, "debug_max_accounts")
 
-    if m.isNameFieldVisible = false
-      for i = m.focusIds.count() - 1 to 0 step -1
-        if m.focusIds[i] = "nameInput"
-          m.focusIds.Delete(i)
-        end if
-      end for
-    end if
+    m.updateFocusControls()
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -207,6 +201,16 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ private
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  function updateFocusControls()
+    if m.isNameFieldVisible = false
+      for i = m.focusIds.count() - 1 to 0 step -1
+        if m.focusIds[i] = "nameInput"
+          m.focusIds.delete(i)
+        end if
+      end for
+    end if
+  end function
 
   function autoPopulateUserInfo()
     m.log.method("autoPopulateUserInfo")
