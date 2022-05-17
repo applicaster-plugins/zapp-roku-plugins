@@ -13,6 +13,7 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
 
   'state
   public isCredsValid = false
+  public isNameFieldVisible = true
   public isRegisterButtonEnabled = false
   public isMainGroupVisible = true
   public isDoneGroupVisible = false
@@ -74,18 +75,22 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
 
     m.humanNameText = m.localizations.name_placeholder_text
     m.namePlaceholderText = m.humanNameText
+    m.isNameFieldVisible = styles.use_human_name
 
     m.passwordText = m.localizations.password_placeholder_text
     m.passwordPlaceholderText = m.passwordText
-
     inputStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "general_input", "textInputPlaceholder")
-
     m.inputStyle = inputStyle
-
     m.registerButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "register_button", "custom", styles.register_button_text)
-
     m.maxDebugAccounts = zapp.viewUtils.getUIBInt(styles, "debug_max_accounts")
 
+    if m.isNameFieldVisible = false
+      for i = m.focusIds.count() - 1 to 0 step -1
+        if m.focusIds[i] = "nameInput"
+          m.focusIds.Delete(i)
+        end if
+      end for
+    end if
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -152,7 +157,7 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public function checkCredsValid()
-    m.isCredsValid = m.usernameText <> invalid and m.usernameText.trim() <> "" and m.password <> invalid and m.password.trim() <> "" and m.humanNameText <> invalid and m.humanNameText.trim() <> ""
+    m.isCredsValid = m.usernameText <> invalid and m.usernameText.trim() <> "" and m.password <> invalid and m.password.trim() <> "" and ((m.humanNameText <> invalid and m.humanNameText.trim() <> "") or m.isNameFieldVisible = false)
 
     m.isRegisterButtonEnabled = m.isCredsValid and not m.isLoading
   end function
