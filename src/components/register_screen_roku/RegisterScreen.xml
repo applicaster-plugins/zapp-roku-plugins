@@ -63,6 +63,7 @@
             labelXOffset='9'
             text='{{humanNameText}}'
             buttonType='{{nameButtonType}}'
+            visible='{{isNameFieldVisible}}'
             selected='{(onNameButtonSelected(value))}'
             width='{{=zapp_viewUtils_UIBInt("input_w")}}' />
 
