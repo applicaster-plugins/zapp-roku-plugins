@@ -134,6 +134,7 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
     m.toggleDeeplinkingTask(false)
 
     if deeplinkingData.isValid
+      m.setInstance("deeplinkingData", deeplinkingData)
       m.applyDeeplinking(deeplinkingData)
     else
       m.log.error("deeplinking task did not yield valid deep linking info")
@@ -148,6 +149,11 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
 
   function applyDeeplinking(deeplinkingData) as void
     m.log.method("applyDeeplinking - app is configured for deeplinking. Navigating to the appropriate view")
+    if deeplinkingData.version = 2
+      m.applyDeeplinkingForDSP2(deeplinkingData)
+      return
+    end if
+
     m.deeplinkingData = deeplinkingData
     deeplinkingSelection = m.getDeeplinkingSelectionWithData(deeplinkingData)
 
@@ -178,7 +184,48 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
         m.signalAppLaunchComplete()
         if not m.isShowingParentScreen
           m.log.info("not actually showing parent screen - moving fuax focus")
-          m.focusId = "logPoster"
+          m.focusId = "logoPoster"
+        end if
+      end if
+    else
+      m.log.error("could not do deeplinking - exiting")
+      m.exitFromDeeplinking()
+    end if
+  end function
+
+  function applyDeeplinkingForDSP2(deeplinkingData) as void
+    m.log.method("applyDeeplinking - app is configured for deeplinking. Navigating to the appropriate view")
+    m.deeplinkingData = deeplinkingData
+    deeplinkingSelection = m.getDeeplinkingSelectionWithData(deeplinkingData)
+
+    if deeplinkingSelection = invalid
+      m.log.error("Deep linking data could not be configured.")
+      m.dismissDeeplinkingController()
+      return
+    end if
+
+    m.log.info("Applying deep link for entry with entry ", mc.dv(deeplinkingData.entry), mc.dv(deeplinkingData.parentEntry))
+
+    m.setInstance("deeplinkingSelection", deeplinkingSelection)
+
+
+    if deeplinkingData.parentEntry <> invalid
+
+      screen = m.getParentScreen(deeplinkingData, deeplinkingSelection)
+
+      if screen <> invalid and deeplinkingData.itemType <> "channel"
+        m.isShowingParentScreen = m.deeplinkingData.isShowingParentScreen
+        m.currentScreen = screen
+        m.observeNodeField(screen, "state", m.onScreenStateChange)
+        m.toggleNavMenuFocus(false)
+        m.onContentStateChange(screen.state)
+        m.observeNodeField(screen, "state", m.onContentStateChange)
+
+        m.isDeeplinkingApplied = true
+        m.signalAppLaunchComplete()
+        if not m.isShowingParentScreen
+          m.log.info("not actually showing parent screen - moving fuax focus")
+          m.focusId = "logoPoster"
         end if
       end if
     else
@@ -188,41 +235,22 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '++ private impl
+  '++ Private Methods
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  'brute force child finding, which will look in all known components content, to see if the child we want is there
-  private function findEntryInVisualNode(node as mc.types.node, id as string) as mc.types.node
-    for each child in node.getChildren(-1, 0)
-      subType = child.subType()
-      if subType = "mv_MarkupGrid" or subType = "mv_RowList"
-        entry = m.findEntryInContent(child, id)
-        if entry <> invalid
-          return entry
-        end if
-      else
-        entry = m.findEntryInVisualNode(child, id)
-        if entry <> invalid
-          return entry
-        end if
+  private function getParentScreen(deeplinkingData as mc.types.node, deeplinkingSelection as mc.types.node)
+    data = { "originEntry": deeplinkingData.parentEntry, "selection": deeplinkingSelection }
+    screen = invalid
+    if deeplinkingData.screen_id <> ""
+      screen = zapp.uib.mixin.getScreen(deeplinkingData.screen_id, data)
+      if screen = invalid
+        m.log.error("could not get deeplinking screen with id", deeplinkingData.screen_id)
       end if
-    end for
-    return invalid
-  end function
+    end if
 
-  private function findEntryInContent(node as mc.types.node, id as string) as mc.types.node
-    entry = invalid
-    for each child in node.getChildren(-1, 0)
-      if child.subType = "ZPEntry" and child.id = id
-        return child
-      else
-        entry = m.findEntryInContent(child, id)
-        if entry <> invalid
-          return entry
-        end if
-      end if
-    end for
-    return invalid
+    'fallback to this
+    screen = zapp.uib.mixin.getMappedScreen(deeplinkingData.parentEntry)
+    return screen
   end function
 
   private function onScreenStateChange(state as string)
@@ -234,16 +262,6 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
       if m.isShowingParentScreen
         m.isHidingContent = false
       end if
-      if m.deeplinkingData.entryId <> invalid
-        m.findAndShowChild()
-      end if
-    end if
-  end function
-
-  private function findAndShowChild()
-    childEntry = m.findEntryInContent(m.currentScreen, m.deeplinkingData.entryId)
-    if childEntry <> invalid
-
     end if
   end function
 
@@ -284,6 +302,16 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
     if content <> invalid
       selection.currentItem = content
       selection.initialItem = content
+
+      'REALLY IMPORTANT: - we have a new type for deeplinking mappings on roku
+      'these types map to screens.
+      if deeplinkingData.itemType = "series"
+        selection.action = "deeplinkSeries"
+      else if deeplinkingData.action = "play"
+        selection.action = "deeplinkPlay"
+      else
+        selection.action = "deeplinkDisplay"
+      end if
 
       collection = createObject("roSGNode", "ZPEntry")
       collection.appendChild(content)
