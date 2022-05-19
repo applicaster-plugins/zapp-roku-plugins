@@ -151,6 +151,7 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
     m.log.method("applyDeeplinking - app is configured for deeplinking. Navigating to the appropriate view")
     if deeplinkingData.version = 2
       m.applyDeeplinkingForDSP2(deeplinkingData)
+      m.log.method("applyDeeplinking - we are using deeplink version 2")
       return
     end if
 
