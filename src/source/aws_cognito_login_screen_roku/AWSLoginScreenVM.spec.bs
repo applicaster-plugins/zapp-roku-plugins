@@ -360,7 +360,6 @@ namespace zapp.tests
       m.assertFalse(m.vm.isErrorShowing)
       m.assertEmpty(m.vm.errorText)
 
-
     end function
 
     @ignore("- only use these with your own creds, and for non suit tests")

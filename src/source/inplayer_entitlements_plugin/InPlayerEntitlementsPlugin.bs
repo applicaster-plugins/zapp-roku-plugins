@@ -147,7 +147,7 @@ class InPlayerEntitlementsPlugin extends zapp.entitlements.BaseEntitlementsPlugi
       return false
     end if
 
-    if m.isEnitlementsPluginLoadHardCodedToFail
+    if m.isEnitlementsPluginLoadHardCodedToFail = true
       errorMessage = "WARNING - debugFlags have hardcoded loading of this plugin to fail"
       m.log.error(errorMessage)
       mc.setOrAddNodeField(item, "errorMessage", errorMessage)

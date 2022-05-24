@@ -32,7 +32,7 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
   public isErrorShowing = false
 
   private providerId = invalid
-  private focusIds = ["usernameInput", "nameInput", "passwordInput", "registerButton"]
+  private focusIds = []
   private maxDebugAccounts = 1
   private debugAccountId = 0
 
@@ -203,13 +203,10 @@ class RegisterScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   function updateFocusControls()
-    if m.isNameFieldVisible = false
-      for i = m.focusIds.count() - 1 to 0 step -1
-        if m.focusIds[i] = "nameInput"
-          m.focusIds.delete(i)
-        end if
-      end for
-    end if
+    m.focusIds = ["usernameInput", "nameInput", "passwordInput", "registerButton"]
+    m.focusIds = mc.collections.filter(m.focusIds, function(id)
+      return id <> "nameInput" or m.isNameFieldVisible
+    end function)
   end function
 
   function autoPopulateUserInfo()

@@ -20,10 +20,6 @@ namespace zapp.tests
           text_y: 600
           button_x: 700
           button_y: 400
-          title_text: "are you sure"
-          signed_out_text: "you are signed out"
-          logout_button_text: "signed out"
-          signed_out_button_text: "ok"
         }
       }
 
@@ -41,11 +37,6 @@ namespace zapp.tests
       m.assertEqual(m.vm.textPosition, [20, 600])
       m.assertEqual(m.vm.textWidth, 300)
       m.assertEqual(m.vm.buttonPosition, [700, 400])
-      m.assertEqual(m.vm.titleText, "are you sure")
-      m.assertEqual(m.vm.buttonText, "Sign out")
-      m.assertEqual(m.vm.signedOutTitle, "you are signed out")
-      m.assertEqual(m.vm.signedOutButtonText, "ok")
-
     end function
 
 
@@ -153,12 +144,14 @@ namespace zapp.tests
 
       m.expectOnce(m.vm, "setFocus")
 
+      m.vm.signedOutButtonText = "ok"
+      m.vm.signedOutTitle = "title"
       m.vm.onLogoutComplete({ isOK: true })
 
       m.assertFalse(m.vm.isShowingLoadingIndicator)
       m.assertTrue(m.vm.isButtonVisible)
       m.assertEqual(m.vm.buttonText, "ok")
-      m.assertEqual(m.vm.titleText, "you are signed out")
+      m.assertEqual(m.vm.titleText, "title")
     end function
 
   end class

@@ -1,4 +1,5 @@
 namespace zapp.tests
+  @nocatch
   @tags("public", "auth", "vm")
   @suite
   class RegisterScreenVMTests extends tests.BaseTestSuite
@@ -175,9 +176,34 @@ namespace zapp.tests
     @params("registerButton", "passwordInput")
     function _(focusId, expectedFocusId)
       m.vm.focusId = focusId
+      m.vm.isNameFieldVisible = true
+      m.vm.updateFocusControls()
 
       m.assertTrue(m.vm.onKeyPressUp())
       m.assertEqual(m.vm.focusId, expectedFocusId)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("updateFocusControls")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("includes name input if isNameFieldVisible is true")
+    function _()
+      m.vm.isNameFieldVisible = true
+      m.vm.updateFocusControls()
+
+      m.assertEqual(m.vm.focusIds, ["usernameInput", "nameInput", "passwordInput", "registerButton"])
+
+    end function
+
+
+    @it("excludes name input if isNameFieldVisible is false")
+    function _()
+      m.vm.isNameFieldVisible = false
+      m.vm.updateFocusControls()
+
+      m.assertEqual(m.vm.focusIds, ["usernameInput", "passwordInput", "registerButton"])
+
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -191,7 +217,8 @@ namespace zapp.tests
     @params("registerButton", "registerButton")
     function _(focusId, expectedFocusId)
       m.vm.focusId = focusId
-
+      m.vm.isNameFieldVisible = true
+      m.vm.updateFocusControls()
       m.assertTrue(m.vm.onKeyPressDown())
       m.assertEqual(m.vm.focusId, expectedFocusId)
     end function

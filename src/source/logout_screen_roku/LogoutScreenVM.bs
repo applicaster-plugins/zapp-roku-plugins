@@ -7,7 +7,7 @@ class LogoutScreenVM extends zapp.uib.ScreenVM
   public isShowingLoadingIndicator = false
 
   'styles
-  public titleStyle = invalid
+  public titleStyle = {}
   public titleText = "Are you sure you want to sign out?"
   public buttonText = "Sign out"
   public buttonStyle = invalid
