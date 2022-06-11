@@ -8,9 +8,6 @@
     </interface>
 
   <children>
-    <mv_DynamicContainer
-        id='screenContainer'
-        setNextView='{{currentScreen}}' />
     <Rectangle
         id='backgroundRect'
         visible='{{isHidingContent}}'
@@ -31,6 +28,9 @@
         id='logoPoster'
         visible='{{isHidingContent}}'
         style='{{=zapp_viewUtils_UIBPoster("logo")}}' />
+    <mv_DynamicContainer
+        id='screenContainer'
+        setNextView='{{currentScreen}}' />
 
     <LoadingIndicator
         id='loadingIndicator'

@@ -13,6 +13,7 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
   private deeplinkingTask = invalid
   private deeplinkingData = invalid
   private willExitOnShow = false
+  private parentScreen as mc.types.node
 
   public screenIdsByName = {}
 
@@ -38,17 +39,10 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
       end if
       return false
     else
-      ' prehookController = m.getPrehookController()
-
-      ' if prehookController <> invalid
-      ' m.log.info("this deeplinking screen has a prehookController")
-      ' m.togglePrehookController(true, prehookController)
-      ' else
       m.log.info("toggling deeplink task")
       args = m.getInstance("deeplinkingArgs")
       m.isLiveDeeplink = args.isLiveDeeplink = true
       m.toggleDeeplinkingTask(true, args)
-      ' end if
     end if
 
     return true
@@ -63,11 +57,12 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
     m.log.method("togglePrehookController", isActive)
     m.isLoadingIndicatorVisible = false
 
-    m.unobserveNodeField(m.currentScreen, "state", m.onPrehookControllerStateChange)
+    m.unobserve(m.currentScreen.state, m.onPrehookControllerStateChange)
 
     if isActive
-      m.observeNodeField(controller, "state", m.onPrehookControllerStateChange, "value", true)
+      m.observe(controller.state, m.onPrehookControllerStateChange, "value")
       m.currentScreen = controller
+      m.setFocus(m.currentScreen)
     else
       m.currentScreen = invalid
     end if
@@ -77,35 +72,34 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
 
   private function onPrehookControllerStateChange(state)
     m.log.info("prehook state changed", state)
-    m.currentScreen = invalid
 
     if state = "success"
-
-      m.log.info("prehook successfully finished - playing item")
-      args = m.getInstance("deeplinkingArgs")
-      m.toggleDeeplinkingTask(true, args)
-
-    else
+      ' m.currentScreen = invalid
+      m.log.info("prehook successfully finished - continuing")
+      m.toggleLoadingIndicator(true)
+      m.showParentScreen()
+    else if state = "error" or state = "back"
+      ' m.currentScreen = invalid
       m.dismissDeeplinkingController()
     end if
   end function
 
-  ' private function getPrehookController()
-  '   m.log.info("getPrehookController")
-  '   prehooks = mc.getPath(m.riversJson, "hooks.preload_plugins")
+  private function getPrehookController(screen as mc.types.node)
+    m.log.info("getPrehookController")
+    prehooks = asArray(screen.riversJson.hooks.preload_plugins)
 
-  '   if prehooks <> invalid and prehooks.count() > 0
-  '     m.log.info("this deeplink controller has prehooks")
-  '     prehookScreen = m.createInstance("ScreenHookController", invalid, "prehooksController")
-  '     prehookScreen.hooks = prehooks
-  '     prehookScreen.targetScreen = invalid
-  '     prehookScreen.isManagingScreensOnCompletion = false
-  '     return prehookScreen
-  '   else
-  '     return invalid
-  '   end if
+    if prehooks <> invalid and prehooks.count() > 0
+      m.log.info("this deeplink controller has prehooks")
+      prehookScreen = m.createInstance("ScreenHookController", invalid, "prehooksController")
+      prehookScreen.hooks = prehooks
+      prehookScreen.targetScreen = invalid
+      prehookScreen.isManagingScreensOnCompletion = false
+      return prehookScreen
+    else
+      return invalid
+    end if
 
-  ' end function
+  end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ Deeplinking data retrieval
@@ -212,26 +206,47 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
 
     if deeplinkingData.parentEntry <> invalid
 
-      screen = m.getParentScreen(deeplinkingData, deeplinkingSelection)
+      m.parentScreen = m.getParentScreen(deeplinkingData, deeplinkingSelection)
 
-      if screen <> invalid and deeplinkingData.itemType <> "channel"
-        m.isShowingParentScreen = m.deeplinkingData.isShowingParentScreen
-        m.currentScreen = screen
-        m.observeNodeField(screen, "state", m.onScreenStateChange)
-        m.toggleNavMenuFocus(false)
-        m.onContentStateChange(screen.state)
-        m.observeNodeField(screen, "state", m.onContentStateChange)
-
-        m.isDeeplinkingApplied = true
-        m.signalAppLaunchComplete()
-        if not m.isShowingParentScreen
-          m.log.info("not actually showing parent screen - moving fuax focus")
-          m.focusId = "logoPoster"
-        end if
+      if m.shouldShowPrehook()
+        m.log.info("this screen requires a prehook to be executed first. showing it now")
+      else
+        m.showParentScreen()
       end if
     else
       m.log.error("could not do deeplinking - exiting")
       m.exitFromDeeplinking()
+    end if
+  end function
+
+  private function shouldShowPrehook()
+    prehookController = m.getPrehookController(m.parentScreen)
+
+    if prehookController <> invalid
+      m.log.info("this deeplinking screen has a prehookController")
+      m.togglePrehookController(true, prehookController)
+      return true
+    end if
+    return false
+  end function
+
+  private function showParentScreen()
+    m.log.info("showing parent screen")
+
+    if m.parentScreen <> invalid and m.deeplinkingData.itemType <> "channel"
+      m.isShowingParentScreen = m.deeplinkingData.isShowingParentScreen
+      m.currentScreen = m.parentScreen
+      m.observeNodeField(m.parentScreen, "state", m.onScreenStateChange)
+      m.toggleNavMenuFocus(false)
+      m.onContentStateChange(m.parentScreen.state)
+      m.observeNodeField(m.parentScreen, "state", m.onContentStateChange)
+
+      m.isDeeplinkingApplied = true
+      m.signalAppLaunchComplete()
+      if not m.isShowingParentScreen
+        m.log.info("not actually showing parent m.parentScreen - moving fuax focus")
+        m.focusId = "logoPoster"
+      end if
     end if
   end function
 
@@ -355,6 +370,13 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
     if m.isDeeplinkingApplied and not m.isShowingParentScreen
       m.log.info("the screen has appeared again, probably from a video player; but has no parent screen, exiting from deeplinking")
       m.exitFromDeeplinking()
+    end if
+  end function
+
+  protected override function onGainedFocus(isSelfFocused as boolean)
+    super.onGainedFocus(isSelfFocused)
+    if isSelfFocused and m.currentScreen <> invalid
+      m.setFocus(m.currentScreen)
     end if
   end function
 
