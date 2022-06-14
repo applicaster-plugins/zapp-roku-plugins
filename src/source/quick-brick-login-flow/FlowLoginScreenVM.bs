@@ -1,0 +1,450 @@
+import "pkg:/source/UIBuilder/view/ScreenVM.bs"
+import "pkg:/source/lib/ViewUtils.bs"
+import "pkg:/source/mixin/KeyboardDialogMixin.bs"
+
+class FlowLoginScreenVM extends zapp.uib.ScreenVM
+
+  'styles
+  public inputStyle = invalid
+  public loginButtonStyle = invalid
+  public registerButtonStyle = invalid
+  public forgotPasswordButtonStyle = invalid
+  public usernamePlaceholderText = ""
+  public passwordPlaceholderText = ""
+  'state
+  public isCredsValid = false
+  public isLoginButtonEnabled = false
+  public isRefreshing = true
+  public usernameButtonType = "textInput"
+  public passwordButtonType = "textInput"
+  public isSubScreenVisible = false
+  public isMainGroupVisible = false
+  public currentScreen = invalid
+
+  public isForgotPasswordButtonVisible = false
+  public isRegisterButtonVisible = false
+
+  public usernameText = ""
+  public username = ""
+  public passwordText = ""
+  public password = ""
+
+  public errorText = ""
+  public isErrorShowing = false
+
+  private providerId = invalid
+  private isShowingRegisterScreen = false
+  private preScreenFocusId = "registerButton"
+  private focusIds = ["usernameInput", "passwordInput", "loginButton"]
+  private maxDebugAccounts = 1
+  private debugAccountId = 0
+
+  private authTask
+  private channelStore
+
+  'mixin keyboard
+  private showKeyboardDialog = zapp.keyboardDialogMixin.showKeyboardDialog
+  private _onKeyboardDialogButtonSelected = zapp.keyboardDialogMixin.onKeyboardDialogButtonSelected
+  private _closeKeyboardDialog = zapp.keyboardDialogMixin.closeKeyboardDialog
+  private setTextFromKeyboard = zapp.keyboardDialogMixin.setTextFromKeyboard
+  protected fireScreenAnalyticsOnShow = false
+  private skipKey = ""
+
+  public function new(riversJson)
+    super(riversJson, "FlowLoginScreenVM")
+    m.focusId = "usernameInput"
+    m.skipKey = asString(m.riversJson.data.skip_login_if_key_exists)
+    m.processStyles(m.riversJson.styles)
+    m.providerId = "quick-brick-login-flow"
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Overridden
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public override function createContent()
+    m.log.info("createContent is overridden in this screen")
+  end function
+
+  public override function load() as boolean
+    m.sendHttpLogsNow()
+
+    m.state = "loading"
+    if not m.isLoginRequired()
+      m.log.info("no need to show in this case")
+      m.dismiss("success")
+    else if m.isKeyToSkipSet()
+      m.log.info("skip key set")
+      m.dismiss("success")
+    else if m.isLoggedIn()
+      m.log.info("user is logged in, no need to show")
+      m.dismiss("success")
+    else
+      m.log.info("user not logged in - attemping refreshing")
+      m.refreshLogin()
+    end if
+    return true
+  end function
+
+  private function isLoginRequired()
+    currentItem = m.getInstance("currentSelection", "currentItem")
+
+    return asBoolean(currentItem.json.extensions.requires_authentication, true)
+  end function
+
+  private function isKeyToSkipSet()
+    m.log.info("checking if this key is set", m.skipKey)
+    parts = m.skipKey.split(".")
+    if parts.count() = 2
+      value = m.getSessionStoreValue(parts[0], parts[1])
+      m.log.info("session store contained value:", value)
+      if value <> invalid
+        return true
+      end if
+    end if
+
+    return false
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ styles
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  function processStyles(styles)
+    m.usernameText = m.localizations.username_placeholder_text
+    m.usernamePlaceholderText = m.usernameText
+
+    m.passwordText = m.localizations.password_placeholder_text
+    m.passwordPlaceholderText = m.passwordText
+
+    inputStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "general_input", "textInputPlaceholder")
+
+    m.inputStyle = inputStyle
+
+    m.loginButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "button", "custom", "styles.login_button_text")
+    registerButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "button", "custom", "styles.register_button_text")
+    registerButtonStyle.visible = styles.show_register_button = true
+
+    forgotPasswordButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "button", "custom", "styles.forgot_password_button_text")
+    forgotPasswordButtonStyle.visible = styles.show_forgot_password_button = true
+
+    m.registerButtonStyle = registerButtonStyle
+    m.forgotPasswordButtonStyle = forgotPasswordButtonStyle
+    m.maxDebugAccounts = zapp.viewUtils.getUIBInt(styles, "debug_max_accounts")
+
+    m.focusIds = ["usernameInput", "passwordInput", "loginButton"]
+    if m.registerButtonStyle.visible = true
+      m.focusIds.push("registerButton")
+    end if
+    if m.forgotPasswordButtonStyle.visible = true
+      m.focusIds.push("forgotPasswordButton")
+    end if
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ callbacks
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public function onLoginButtonSelected()
+    m.log.method("onLoginButtonSelected")
+
+    if not m.isLoading and m.isCredsValid
+      m.processLogin()
+    else if not m.isCredsValid
+      m.errorText = "Please enter your email address and password"
+      m.isErrorShowing = true
+      m.setFocus(m.getMField("top"))
+    else
+      m.log.warn("ignoring loging button, while loading")
+    end if
+  end function
+
+  public function onUsernameButtonSelected()
+    palette = zapp.viewUtils.getUIBKeyboardDialogPalette(m.riversJson.styles, "keyboard")
+    m.showKeyboardDialog("Enter your username", m.username, "onUsernameKeyboardDialogDismissal", false, "login", palette)
+  end function
+
+  public function onPasswordButtonSelected()
+    palette = zapp.viewUtils.getUIBKeyboardDialogPalette(m.riversJson.styles, "keyboard")
+    m.showKeyboardDialog("Enter your password", m.password, "onPasswordKeyboardDialogDismissal", true, "none", palette)
+  end function
+
+  public function onRegisterButtonSelected()
+    m.isShowingRegisterScreen = true
+    screen = m.createSubScreen("FlowRegisterScreen")
+    m.toggleSubScreen(screen)
+  end function
+
+  public function onForgotPasswordButtonSelected()
+    screen = m.createSubScreen("FlowForgotPasswordScreen")
+    m.toggleSubScreen(screen)
+  end function
+
+  private function createSubScreen(screenType as string)
+    screen = m.createInstance(screenType, invalid, `${screenType}`)
+    if screen <> invalid
+      screen.riversJson = m.riversJson
+      mc.setOrAddNodeField(screen, "__screenId", `${screenType}`)
+      originEntry = m.screenState.originEntry
+      mc.setOrAddNodeField(screen, "screenState", zapp.uib.mixin.createScreenState(screen.__screenId, originEntry))
+    end if
+    return screen
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ sub screen support
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  function toggleSubScreen(screen)
+    m.log.method("toggleSubScreen")
+
+    if m.focusId <> "screenContainer"
+      m.preScreenFocusId = m.focusId
+    end if
+
+    m.unobserveNodeField(m.currentScreen, "state", m.onsubScreenStateChange)
+
+    m.isSubScreenVisible = screen <> invalid
+    m.isMainGroupVisible = screen = invalid
+    m.currentScreen = invalid
+
+    if screen <> invalid
+      m.currentScreen = screen
+      m.onsubScreenStateChange(m.currentScreen.state)
+      m.observeNodeField(m.currentScreen, "state", m.onSubScreenStateChange)
+      m.setFocusId("screenContainer")
+    else
+      m.setFocusId(m.preScreenFocusId)
+    end if
+
+  end function
+
+  private function onSubScreenStateChange(state)
+    m.log.method("current screen state change", state, "m.isShowingRegisterScreen", m.isShowingRegisterScreen)
+
+    if m.isShowingRegisterScreen and state = "success"
+      m.signalAppLaunchDialog(true)
+      m.dismiss("success")
+
+    else if state = "success" or state = "cancel"
+      m.toggleSubScreen(invalid)
+    end if
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Keyboard dialog
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function onUsernameKeyboardDialogDismissal(text)
+    m.log.method("onKeyboardDialogDismissal")
+    m.setTextFromKeyboard("username", text)
+
+  end function
+
+  private function onPasswordKeyboardDialogDismissal(text)
+    m.log.method("onPasswordKeyboardDialogDismissal")
+    m.setTextFromKeyboard("password", text, true)
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ refresh
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function refreshLogin()
+    m.log.info("calling authTask to refresh login")
+
+    m.authTask = m.createAuthTask("execLoad", m.providerId, m.onRefreshComplete)
+
+    m.isRefreshing = true
+    m.isMainGroupVisible = false
+    m.isLoginButtonEnabled = false
+  end function
+
+  private function onRefreshComplete(result)
+    m.log.method("onRefreshComplete", result)
+    m.isLoading = false
+    m.isMainGroupVisible = true
+    m.isRefreshing = false
+
+    if m.isLoggedIn()
+      m.dismiss("success")
+    else
+      m.trackScreen()
+      m.signalAppLaunchDialog(false)
+      m.autoPopulateUserInfo()
+    end if
+
+  end function
+
+  private function isLoggedIn()
+    return m.getInstance("user").loggedInServices[m.providerId] = true
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ login
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public function checkCredsValid()
+    m.isCredsValid = m.usernameText <> invalid and m.usernameText.trim() <> "" and m.password <> invalid and m.password.trim() <> ""
+
+    m.isLoginButtonEnabled = m.isCredsValid and not m.isLoading
+  end function
+
+  public function processLogin()
+    m.log.info("logging in")
+
+    if m.isCredsValid
+      creds = m.createInstance("AuthenticationCredentials")
+      if mc.getBoolean(m.riversJson, "styles.force_lower_case")
+        creds.username = lcase(m.usernameText)
+      else
+        creds.username = m.usernameText
+      end if
+      creds.password = m.password
+      m.authTask = m.createAuthTask("execLogIn", m.providerId, m.onLoginComplete, creds)
+
+      ' m.isLoginButtonEnabled = false
+
+      m.isLoading = true
+      m.errorText = ""
+      m.isErrorShowing = false
+      m.state = "loading"
+    end if
+  end function
+
+  public function onLoginComplete(result)
+    m.log.method("onLoginComplete", result)
+
+    if result <> invalid and result.state = "valid"
+      m.log.info("logged in successful")
+      m.signalAppLaunchDialog(true)
+      m.dismiss("success")
+
+    else
+      m.state = "ready"
+      if result <> invalid and result.message <> invalid
+        m.errorText = result.message
+      else
+        m.errorText = "Unknown error"
+      end if
+      m.isErrorShowing = true
+      m.isLoginButtonEnabled = true
+      m.setFocus(m.getMField("top"))
+    end if
+
+    m.isLoading = false
+
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ launch support
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  override function sendLaunchBeacon()
+    'we handle this manually
+  end function
+
+
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ private
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  function autoPopulateUserInfo()
+    m.log.method("autoPopulateUserInfo")
+
+    m.channelStore = m.createSGNode("ChannelStore", invalid, "channelStore", {
+      requestedUserData: "email"
+    })
+    m.observeNodeField(m.channelStore, "userData", m.onGetUserData, "value", true)
+    m.channelStore.command = "getUserData"
+  end function
+
+  function onGetUserData(data)
+    m.log.method("onGetUserData")
+
+    if data <> invalid
+      m.setTextFromKeyboard("username", asString(data.email))
+      m.focusId = "passwordInput"
+    end if
+
+    if m.channelStore.getParent() <> invalid
+      m.channelStore.getParent().removeChild(m.channelStore.getParent())
+    end if
+    m.channelStore = invalid
+  end function
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Key Handling
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public function isCapturingAnyKeyPress(key, press)
+    'do not anyone escape this screen!
+    if press and key = "back" and not mc.getPath(m.riversJson, "general.isflowBlocker", true)
+      return false
+    else
+      return true
+    end if
+  end function
+
+  public function onKeyPressBack() as boolean
+    m.log.method("onKeyPressBack", m.focusId)
+    if m.isSubScreenVisible
+      'this should be caught by the subscreen
+      return true
+    end if
+
+    isDismissable = m.getTopField("isDismissable")
+    if isDismissable = true
+      m.dismiss("cancel")
+      return true
+    else
+      m.exitApp(invalid, true)
+    end if
+
+    return true
+  end function
+
+  public function onKeyPressRight() as boolean
+
+    if m.focusId = "loginButton" and m.riversJson.styles.debug_skip_on_right = true
+      m.log.warn("skipping debug flag is on")
+      m.onLoginComplete({ state: "valid" })
+    end if
+
+    return false
+  end function
+
+  public function onKeyPressDown() as boolean
+    m.log.method("onKeyPressDown", m.focusId)
+    if not m.isSubScreenVisible
+      m.setFocusId(mc.collections.getItemAtOffset(m.focusIds, m.focusId, 1))
+    end if
+    return true
+  end function
+
+  public override function onKeyPressUp() as boolean
+    m.log.method("onKeyPressUp", m.focusId)
+    if not m.isSubScreenVisible
+      m.setFocusId(mc.collections.getItemAtOffset(m.focusIds, m.focusId, -1))
+    end if
+    return true
+  end function
+
+  public function onKeyPressOptions() as boolean
+    m.log.method("onKeyPressOptions", m.focusId)
+    if mc.getString(m.riversJson, "styles.debug_username") = ""
+      return true
+    end if
+
+    username = m.riversJson.styles.debug_username
+    if m.maxDebugAccounts > 1
+      m.debugAccountId = mc.clamp (m.debugAccountId + 1, 0, m.maxDebugAccounts, true)
+      username = username.replace("@", str(m.debugAccountId).trim() + "@")
+    end if
+    m.onUsernameKeyboardDialogDismissal(username)
+    m.onPasswordKeyboardDialogDismissal(m.riversJson.styles.debug_password)
+
+    return true
+  end function
+
+end class
