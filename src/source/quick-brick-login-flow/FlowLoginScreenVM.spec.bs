@@ -1,0 +1,678 @@
+namespace zapp.tests
+  @tags("public", "auth", "vm")
+  @only
+  @suite("FlowLoginScreenVMTests")
+  class FlowLoginScreenVMTests extends tests.BaseTestSuite
+    private riversJson
+    private vm
+    private user
+
+    protected override function beforeEach()
+      super.beforeEach()
+
+      m.riversJson = {
+        "name": "SmallSystemFont"
+        "id": "11937f34-a364-4601-a0du3-1dace40fe0ed"
+        "styles": {
+          "title_text": "#title_text"
+          "description_text": "#description_text"
+          "optional_text1_text": "#optional_text1_text"
+          "optional_text2_text": "#optional_text2_text"
+          "login_button_text": "#login_button_text"
+          "username_placeholder_text": "#username_placeholder_text"
+          "password_placeholder_text": "#password_placeholder_text"
+          "title_font_name": "SmallSystemFont"
+          "title_font_size": "23"
+          "title_color": "#ff0000ff"
+          "description_font_name": "SmallSystemFont"
+          "description_font_size": "23"
+          "description_color": "#ff0000ff"
+          "error_font_name": "SmallSystemFont"
+          "error_font_size": "23"
+          "error_color": "#ff0000ff"
+          "optional_text1_font_name": "SmallSystemFont"
+          "optional_text1_font_size": "23"
+          "optional_text1_color": "#ff0000ff"
+          "optional_text2_font_name": "SmallSystemFont"
+          "optional_text2_font_size": "23"
+          "optional_text2_color": "#ff0000ff"
+          "input_font_name": "SmallSystemFont"
+          "input_font_size": "23"
+          "input_placeholder_font_name": "SmallSystemFont"
+          "input_placeholder_font_size": "23"
+          "input_color": "#ff0000ff"
+          "input_highlighted_font_name": "SmallSystemFont"
+          "input_highlighted_font_size": "23"
+          "input_highlighted_color": "#ff0000ff"
+          "login_button_font_name": "SmallSystemFont"
+          "login_button_font_size": "23"
+          "login_button_color": "#ff0000ff"
+          "login_button_background_color": "#ff0000ff"
+          "login_button_highlighted_font_name": "SmallSystemFont"
+          "login_button_highlighted_font_size": "23"
+          "login_button_highlighted_color": "#ff0000ff"
+          "login_button_highlighted_background_color": "#ff0000ff"
+          "input_color": "#ff0000ff"
+          "input_placeholder_color": "#ff0000ff"
+          "background_color": "#ff0000ff"
+        }
+      }
+
+      m.vm = new FlowLoginScreenVM(m.riversJson)
+      m.vm.initialize()
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("constructor")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("constructor")
+    function _()
+      m.assertEqual(m.vm.focusId, "usernameInput")
+      m.assertEqual(m.vm.riversJson, m.riversJson)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("processStyles")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("does not add forgotPasswordButton, and registerButton to focusIds if inactive")
+    function _()
+      styles = {
+        use_forgot_password: false
+        use_register: false
+      }
+      m.vm.processStyles(styles)
+
+      m.assertFalse(m.vm.isForgotPasswordButtonVisible)
+      m.assertFalse(m.vm.isRegisterButtonVisible)
+
+    end function
+
+
+
+    @it("adds forgotPasswordButton to focusIds if active")
+    function _()
+      styles = {
+        use_forgot_password: true
+        use_register: false
+      }
+      m.vm.processStyles(styles)
+
+      m.assertTrue(m.vm.forgotPasswordButtonStyle.visible)
+      m.assertFalse(m.vm.registerButtonStyle.visible)
+
+      m.assertEqual(m.vm.focusIds, ["usernameInput", "passwordInput", "loginButton", "forgotPasswordButton"])
+
+    end function
+
+    @it("adds registerButton to focusIds if active")
+    function _()
+      styles = {
+        use_forgot_password: false
+        use_register: true
+      }
+      m.vm.processStyles(styles)
+
+      m.assertFalse(m.vm.forgotPasswordButtonStyle.visible)
+      m.assertTrue(m.vm.registerButtonStyle.visible)
+
+      m.assertEqual(m.vm.focusIds, ["usernameInput", "passwordInput", "loginButton", "registerButton"])
+
+    end function
+
+    @it("adds forgotPasswordButton, and registerButton to focusIds if active")
+    function _()
+      styles = {
+        use_forgot_password: true
+        use_register: true
+      }
+      m.vm.processStyles(styles)
+
+      m.assertTrue(m.vm.forgotPasswordButtonStyle.visible)
+      m.assertTrue(m.vm.registerButtonStyle.visible)
+
+      m.assertEqual(m.vm.focusIds, ["usernameInput", "passwordInput", "loginButton", "registerButton", "forgotPasswordButton"])
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onLoginButtonSelected")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+    @it("onLoginButtonSelected")
+    function _()
+      m.vm.isLoading = false
+      m.vm.isCredsValid = true
+
+      m.expectOnce(m.vm, "processLogin")
+
+      m.vm.onLoginButtonSelected()
+    end function
+
+    @it("in progress")
+    function _()
+      m.vm.isLoading = true
+      m.expectNone(m.vm, "processLogin")
+      m.expectOnce(m.vm, "setFocus")
+
+      m.vm.onLoginButtonSelected()
+    end function
+
+    @it("invalid creds")
+    function _()
+      m.vm.isLoading = false
+      m.vm.isCredsValid = false
+      m.expectOnce(m.vm, "setFocus")
+      m.expectNone(m.vm, "processLogin")
+
+      m.vm.onLoginButtonSelected()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onUsernameButtonSelected")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("onUsernameButtonSelected")
+    @params("", "")
+    @params("other", "other")
+    function _(text, expectedText)
+      m.vm.username = text
+
+      m.expectOnce(m.vm, "showKeyboardDialog", ["Enter your username", expectedText, "onUsernameKeyboardDialogDismissal", false, "login", m.ignoreValue])
+
+      m.vm.onUsernameButtonSelected()
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onPasswordButtonSelected")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("onPasswordButtonSelected")
+    @params("", "")
+    @params("other", "other")
+    function _(text, expectedText)
+      m.vm.password = text
+
+      m.expectOnce(m.vm, "showKeyboardDialog", ["Enter your password", expectedText, "onPasswordKeyboardDialogDismissal", true, "none", m.ignoreValue])
+
+      m.vm.onPasswordButtonSelected()
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onUsernameKeyboardDialogDismissal")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("onUsernameKeyboardDialogDismissal")
+    @params("", "placeholder", "textInputPlaceholder")
+    @params("   ", "placeholder", "textInputPlaceholder")
+    @params("george@foo.bar", "george@foo.bar", "textInput")
+    function _(text, expectedText, expectedButtonStyle)
+
+      m.vm.usernamePlaceholderText = "placeholder"
+
+      m.vm.onUsernameKeyboardDialogDismissal(text)
+
+      m.assertEqual(m.vm.usernameText, expectedText)
+      m.assertEqual(m.vm.usernameButtonType, expectedButtonStyle)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onPasswordKeyboardDialogDismissal")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("onPasswordKeyboardDialogDismissal")
+    @params("", "placeholder", "textInputPlaceholder", "")
+    @params("   ", "placeholder", "textInputPlaceholder", "")
+    @params("12345678", "********", "textInput", "12345678")
+    function _(text, expectedText, expectedButtonStyle, expectedPassword)
+      m.vm.passwordPlaceholderText = "placeholder"
+
+      m.vm.onPasswordKeyboardDialogDismissal(text)
+
+      m.assertEqual(m.vm.passwordText, expectedText)
+      m.assertEqual(m.vm.password, expectedPassword)
+      m.assertEqual(m.vm.passwordButtonType, expectedButtonStyle)
+    end function
+
+
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onKeyPressUp")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("onKeyPressUp")
+    @params("usernameInput", "usernameInput")
+    @params("passwordInput", "usernameInput")
+    @params("loginButton", "passwordInput")
+    function _(focusId, expectedFocusId)
+      m.vm.focusId = focusId
+
+      m.assertTrue(m.vm.onKeyPressUp())
+      m.assertEqual(m.vm.focusId, expectedFocusId)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onKeyPressDown")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("onKeyPressDown")
+    @params("usernameInput", "passwordInput")
+    @params("passwordInput", "loginButton")
+    function _(focusId, expectedFocusId)
+      m.vm.focusId = focusId
+
+      m.assertTrue(m.vm.onKeyPressDown())
+      m.assertEqual(m.vm.focusId, expectedFocusId)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onKeyPressBack")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("does not dismiss if subscreen is visible")
+    function _()
+      m.vm.isSubScreenVisible = true
+      m.expectNone(m.vm, "dismiss")
+
+      m.assertTrue(m.vm.onKeyPressBack())
+
+      m.assertEqual(m.vm.focusId, "usernameInput")
+    end function
+
+    @it("exits app if no subscreen, not dismissable and focused on username input")
+    function _()
+      m.vm.isSubScreenVisible = false
+      m.vm.focusId = "usernameInput"
+      m.expectOnce(m.vm, "getTopField", ["isDismissable"], false)
+
+      m.expectOnce(m.vm, "exitApp", [invalid, true])
+
+      m.assertTrue(m.vm.onKeyPressBack())
+
+      m.assertEqual(m.vm.focusId, "usernameInput")
+    end function
+
+    @it("dismisses if dismissable, no subscreen is not visible and focused on username input")
+    function _()
+      m.vm.isSubScreenVisible = false
+      m.vm.focusId = "usernameInput"
+      m.expectOnce(m.vm, "getTopField", ["isDismissable"], true)
+
+      m.expectOnce(m.vm, "dismiss", ["cancel"])
+
+      m.assertTrue(m.vm.onKeyPressBack())
+
+      m.assertEqual(m.vm.focusId, "usernameInput")
+    end function
+
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("checkCredsValid")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("checkCredsValid")
+    @params(invalid, invalid, false)
+    @params("", "", false)
+    @params("   ", "   ", false)
+    @params("valid", "", false)
+    @params("valid", "   ", false)
+    @params(invalid, "valid", false)
+    @params("", "valid", false)
+    @params("  ", "valid", false)
+    @params("valid", "valid", true)
+    function _(username, password, expectedValue)
+      m.vm.usernameText = username
+      m.vm.password = password
+
+      m.vm.checkCredsValid()
+
+      m.assertEqual(m.vm.isCredsValid, expectedValue)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("processLogin")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("invalid creds")
+    function _()
+      m.vm.isCredsValid = false
+
+      m.expectNone(m.vm, "createInstance")
+      m.expectNone(m.vm, "createAuthTask")
+
+      m.vm.processLogin()
+
+      m.assertFalse(m.vm.isLoading)
+
+    end function
+
+    @it("valid creds")
+    function _()
+      m.vm.isCredsValid = true
+      m.vm.usernameText = "user"
+      m.vm.password = "pass"
+      m.vm.providerID = "p"
+      authTask = { "id": "authTask" }
+      creds = { "id": "creds" }
+
+      m.expectOnce(m.vm, "createAuthTask", ["execLogIn", "p", m.vm.onLoginComplete, creds], authTask)
+      m.expectOnce(m.vm, "createInstance", ["AuthenticationCredentials"], creds)
+
+      m.vm.processLogin()
+
+      m.assertEqual(m.vm.authTask, authTask)
+
+      m.assertEqual(creds.username, "user")
+      m.assertEqual(creds.password, "pass")
+      m.assertEqual(m.vm.state, "loading")
+
+      m.assertTrue(m.vm.isLoading)
+      m.assertFalse(m.vm.isLoginButtonEnabled)
+      m.assertFalse(m.vm.isErrorShowing)
+      m.assertEmpty(m.vm.errorText)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("load")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("dismisses if login is not required")
+    function _()
+      m.expectCalled(m.vm.isLoginRequired(), false)
+      m.expectCalled(m.vm.dismiss("success"))
+
+      m.expectNotCalled(m.vm.refreshLogin)
+
+      m.vm.load()
+    end function
+
+    @it("dismisses if logged in")
+    function _()
+      m.expectCalled(m.vm.isLoginRequired(), true)
+      m.expectCalled(m.vm.isLoggedIn(), true)
+      m.expectCalled(m.vm.dismiss("success"))
+
+      m.expectNotCalled(m.vm.refreshLogin)
+
+      m.vm.load()
+    end function
+
+    @it("dismisses if skip condition is met")
+    function _()
+      m.expectCalled(m.vm.isLoginRequired(), true)
+      m.expectCalled(m.vm.isKeyToSkipSet(), true)
+      m.expectCalled(m.vm.dismiss("success"))
+
+      m.expectNotCalled(m.vm.refreshLogin)
+
+      m.vm.load()
+    end function
+
+
+    @it("otherwise refreshes")
+    function _()
+      m.expectCalled(m.vm.isLoginRequired(), true)
+      m.expectCalled(m.vm.isKeyToSkipSet(), false)
+      m.expectCalled(m.vm.isLoggedIn(), false)
+      m.expectCalled(m.vm.refreshLogin())
+
+      m.expectNotCalled(m.vm.dismiss)
+
+      m.vm.load()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("isKeyToSkipSet")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns false for invalid keys")
+    @params("")
+    @params("key")
+    function _(key)
+      m.vm.skipKey = key
+      m.assertFalse(m.vm.isKeyToSkipSet())
+    end function
+
+    @it("returns true if the key is set on session store")
+    @params("key.a", "a", invalid, false)
+    @params("key.b", "b", "set", true)
+    function _(key, keyPart, value, isSkipped)
+      m.vm.skipKey = key
+      m.expectCalled(m.vm.getSessionStoreValue("key", keyPart), value)
+      m.assertEqual(m.vm.isKeyToSkipSet(), isSkipped)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("isLoginRequired")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns expected value")
+    @params(invalid, true)
+    @params({ json: invalid }, true)
+    @params({ json: { extensions: invalid } }, true)
+    @params({ json: { extensions: { requires_authentication: true } } }, true)
+    @params({ json: { extensions: { requires_authentication: false } } }, false)
+    function _(item, isLoginRequired)
+      m.expectCalled(m.vm.getInstance("currentSelection", "currentItem"), item)
+
+      m.assertEqual(m.vm.isLoginRequired(), isLoginRequired)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @tags("integration")
+    @describe("INTEGRATION tests processLogin")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @beforeEach
+    override function integratin_processLogin_beforeEach()
+      m.beforeEach()
+      mioc.setInstance("constants", { "simulateInAppPurchases": true })
+      mioc.setInstance("entitlements", createObject("roSGNode", "SimpleEntitlements"))
+      mioc.setInstance("authenticationData", createObject("roSGNode", "AuthenticationData"))
+      mioc.setInstance("buildConfig", {})
+      m.user = createObject("roSGNode", "user")
+      mioc.setInstance("user", m.user)
+      mioc.setInstance("plugins", [{
+        "identifier": "aws_cognito_auth_plugin",
+        "api": {
+          "require_startup_execution": false,
+          "class_name": "AwsCognitoAuthPlugin",
+          "interfaces": ["IAuthProvider"]
+        },
+        "type": "auth_provider"
+        "configuration_json": {
+          "host": "SOME_HOST"
+          "region": "SOME_REGION"
+          "endpoint": "SOME_ENDPOINT"
+          "app_client_id": "SOME_CLIENT_ID"
+        }
+      }])
+
+    end function
+
+    @it("valid creds")
+    function _()
+      m.vm.isCredsValid = true
+      m.vm.usernameText = "SOME_USER@email.com"
+      m.vm.password = "SOME_PASSWORD"
+
+      m.expectOnce(m.vm, "createInstance", ["AuthenticationCredentials"], createObject("roSGNode", "AuthenticationCredentials"))
+
+      m.vm.processLogin()
+
+      tests.utils.waitForField(m.vm, "isLoading", 3000, 5)
+
+      m.assertEqual(m.vm.state, "finished")
+      m.assertFalse(m.vm.isLoading)
+    end function
+
+    @it("processLogin_integration_test_invalid")
+    function _()
+
+      m.vm.isCredsValid = true
+      m.vm.usernameText = "user"
+      m.vm.password = "pass"
+
+      m.expectOnce(m.vm, "createInstance", ["AuthenticationCredentials"], createObject("roSGNode", "AuthenticationCredentials"))
+
+      m.vm.processLogin()
+
+      tests.utils.waitForField(m.vm, "isLoading")
+
+      m.assertEqual(m.vm.state, "ready")
+      m.assertFalse(m.vm.isLoading)
+      m.assertEqual(m.vm.errorText, "User does not exist.")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onLoginComplete")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("valid")
+    function _()
+      m.vm.state = "loading"
+      m.expectOnce(m.vm, "dismiss", ["success"])
+      m.expectOnce(m.vm, "signalAppLaunchDialog", [true])
+
+      m.vm.onLoginComplete({ "state": "valid" })
+
+      m.assertFalse(m.vm.isLoading)
+
+    end function
+
+    @it("fail")
+    @params(invalid, "Unknown error")
+    @params({}, "Unknown error")
+    @params({ "state": "error" }, "Unknown error")
+    @params({ "state": "error", "message": "m" }, "m")
+    function onLoginComplete_fail(result, expectedMessage)
+      m.vm.state = "loading"
+      m.expectNone(m.vm, "dismiss")
+      m.expectOnce(m.vm, "setFocus")
+
+      m.vm.onLoginComplete(result)
+
+      m.assertFalse(m.vm.isLoading)
+      m.assertEqual(m.vm.state, "ready")
+      m.assertEqual(m.vm.errorText, expectedMessage)
+      m.assertTrue(m.vm.isErrorShowing)
+      m.assertTrue(m.vm.isLoginButtonEnabled)
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("refreshLogin")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("refreshLogin")
+    function _()
+      authTask = { "id": "authTask" }
+      m.vm.providerId = "p"
+
+      m.expectOnce(m.vm, "createAuthTask", ["execLoad", "p", m.vm.onRefreshComplete], authTask)
+
+      m.vm.refreshLogin()
+
+      m.assertEqual(m.vm.authTask, authTask)
+
+      m.assertTrue(m.vm.isRefreshing)
+      m.assertFalse(m.vm.isLoginButtonEnabled)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onRefreshComplete")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("dismisses on succesful refresh")
+    function _()
+      m.vm.providerId = "pid"
+      m.expectCalled(m.vm.isLoggedIn(), true)
+      m.expectCalled(m.vm.dismiss("success"))
+
+      m.vm.isRefreshing = true
+      m.vm.isLoading = true
+      m.vm.isMainGroupVisible = true
+
+      m.vm.onRefreshComplete({})
+
+      m.assertFalse(m.vm.isRefreshing)
+      m.assertFalse(m.vm.isLoading)
+      m.assertTrue(m.vm.isMainGroupVisible)
+
+    end function
+
+    @it("does not dismiss on refresh failure")
+    function _()
+
+      m.vm.isRefreshing = true
+      m.vm.isLoading = true
+      m.vm.isMainGroupVisible = true
+
+      m.expectCalled(m.vm.isLoggedIn(), false)
+      m.expectCalled(m.vm.trackScreen())
+      m.expectCalled(m.vm.signalAppLaunchDialog(false))
+      m.expectCalled(m.vm.autoPopulateUserInfo())
+      m.expectNotCalled(m.vm.dismiss)
+
+      m.vm.onRefreshComplete({})
+
+      m.assertNotEqual(m.vm.state, "success")
+
+      m.assertFalse(m.vm.isRefreshing)
+      m.assertFalse(m.vm.isLoading)
+      m.assertTrue(m.vm.isMainGroupVisible)
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("autoPopulateUserInfo")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("creates channel store and requests data")
+    function _()
+      channelStore = { "id": "channelStore" }
+      m.expectOnce(m.vm, "createSGNode", ["ChannelStore", invalid, "channelStore", {
+          requestedUserData: "email"
+      }], channelStore)
+
+      m.expectOnce(m.vm, "observeNodeField", [channelStore, "userData", m.vm.onGetUserData, "value", true])
+
+      m.vm.autoPopulateUserInfo()
+    end function
+
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onGetUserData")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("populates text fields if set")
+    @params("")
+    @params("e")
+    function _(email)
+      m.vm.channelStore = {
+        id: "channelStore"
+      }
+      m.expectOnce(m.vm, "setTextFromKeyboard", ["username", email])
+
+      parent = { "id": "parent" }
+      m.expect(m.vm.channelStore, "getParent", 3, [], parent)
+      m.expectOnce(parent, "removeChild")
+
+      data = {
+        email: email
+      }
+
+      m.vm.onGetUserData(data)
+
+      m.assertEqual(m.vm.focusId, "passwordInput")
+
+
+    end function
+
+  end class
+end namespace

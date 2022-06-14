@@ -1,0 +1,310 @@
+import "pkg:/source/UIBuilder/view/ScreenVM.bs"
+import "pkg:/source/lib/ViewUtils.bs"
+import "pkg:/source/mixin/KeyboardDialogMixin.bs"
+import "pkg:/source/roku_modules/maestro/core/Utils.brs"
+
+class FlowRegisterScreenVM extends zapp.uib.ScreenVM
+  'styles
+  public inputStyle = invalid
+  public registerButtonStyle = invalid
+  public usernamePlaceholderText = ""
+  public namePlaceholderText = ""
+  public passwordPlaceholderText = ""
+
+  'state
+  public isCredsValid = false
+  public isNameFieldVisible = true
+  public isRegisterButtonEnabled = false
+  public isMainGroupVisible = true
+  public isDoneGroupVisible = false
+  public nameButtonType = "textInput"
+  public usernameButtonType = "textInput"
+  public passwordButtonType = "textInput"
+
+  public usernameText = ""
+  public username = ""
+  public humanNameText = ""
+  public humanName = ""
+  public passwordText = ""
+  public password = ""
+
+  public errorText = ""
+  public isErrorShowing = false
+
+  private providerId = invalid
+  private focusIds = []
+  private maxDebugAccounts = 1
+  private debugAccountId = 0
+
+  private authTask
+  private channelStore
+
+  'mixin keyboard
+  private showKeyboardDialog = zapp.keyboardDialogMixin.showKeyboardDialog
+  private _onKeyboardDialogButtonSelected = zapp.keyboardDialogMixin.onKeyboardDialogButtonSelected
+  private _closeKeyboardDialog = zapp.keyboardDialogMixin.closeKeyboardDialog
+  private setTextFromKeyboard = zapp.keyboardDialogMixin.setTextFromKeyboard
+  public function new(riversJson)
+    super(riversJson, "RegisterScreenVM")
+
+    m.focusId = "usernameInput"
+    m.processStyles(m.riversJson.styles)
+    m.providerId = "quick-brick-login-flow"
+
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Overridden
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public override function createContent()
+    m.log.info("createContent is overridden in this screen")
+  end function
+
+  public override function load() as boolean
+    return true
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ styles
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  function processStyles(styles)
+    m.usernameText = m.localizations.username_placeholder_text
+    m.usernamePlaceholderText = m.usernameText
+
+    m.humanNameText = m.localizations.name_placeholder_text
+    m.namePlaceholderText = m.humanNameText
+    m.isNameFieldVisible = zapp.viewUtils.getUIBBool(styles, "use_human_name")
+
+    m.passwordText = m.localizations.password_placeholder_text
+    m.passwordPlaceholderText = m.passwordText
+    inputStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "general_input", "textInputPlaceholder")
+    m.inputStyle = inputStyle
+    m.registerButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "button", "custom", "styles.register_button_text")
+    m.maxDebugAccounts = zapp.viewUtils.getUIBInt(styles, "debug_max_accounts")
+
+    m.updateFocusControls()
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ callbacks
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public function onUsernameButtonSelected(value)
+    palette = zapp.viewUtils.getUIBKeyboardDialogPalette(m.riversJson.styles, "keyboard")
+    m.showKeyboardDialog("Enter your username", m.username, "onUsernameKeyboardDialogDismissal", false, "register", palette)
+  end function
+
+  public function onNameButtonSelected(value)
+    palette = zapp.viewUtils.getUIBKeyboardDialogPalette(m.riversJson.styles, "keyboard")
+    m.showKeyboardDialog("Enter your name", m.humanName, "onNameKeyboardDialogDismissal", false, "none", palette)
+  end function
+
+  public function onPasswordButtonSelected(value)
+    palette = zapp.viewUtils.getUIBKeyboardDialogPalette(m.riversJson.styles, "keyboard")
+    m.showKeyboardDialog("Enter your password", m.password, "onPasswordKeyboardDialogDismissal", true, "none", palette)
+  end function
+
+  public function onRegisterButtonSelected(value)
+    m.log.method("onRegisterButtonSelected")
+
+    if not m.isLoading and m.isCredsValid
+      m.register()
+    else if not m.isCredsValid
+      m.errorText = "Please enter your email address and password"
+      m.isErrorShowing = true
+    else
+      m.log.warn("ignoring register button, while loading")
+    end if
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Keyboard dialog
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function onUsernameKeyboardDialogDismissal(text)
+    m.log.method("onKeyboardDialogDismissal")
+    if text.trim() = ""
+      m.username = ""
+      m.usernameText = m.usernamePlaceholderText
+      m.usernameButtonType = "textInputPlaceholder"
+    else
+      m.usernameText = text
+      m.username = text
+      m.usernameButtonType = "textInput"
+    end if
+  end function
+
+  private function onNameKeyboardDialogDismissal(text)
+    m.log.method("onNameKeyboardDialogDismissal")
+    m.setTextFromKeyboard("humanName", text)
+  end function
+
+  private function onPasswordKeyboardDialogDismissal(text)
+    m.log.method("onPasswordKeyboardDialogDismissal")
+    m.setTextFromKeyboard("password", text, true)
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ register
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public function checkCredsValid()
+    m.isCredsValid = m.usernameText <> invalid and m.usernameText.trim() <> "" and m.password <> invalid and m.password.trim() <> "" and ((m.humanNameText <> invalid and m.humanNameText.trim() <> "") or m.isNameFieldVisible = false)
+
+    m.isRegisterButtonEnabled = m.isCredsValid and not m.isLoading
+  end function
+
+  public function register()
+    m.log.info("registering")
+
+    if m.isCredsValid
+      creds = m.createInstance("AuthenticationCredentials")
+      creds.name = m.humanNameText
+      creds.username = m.usernameText
+      creds.password = m.password
+      creds.passwordConfirmation = m.password
+      m.authTask = m.createAuthTask("execRegister", m.providerId, m.onRegisterComplete, creds)
+
+      m.isRegisterButtonEnabled = false
+
+      m.isLoading = true
+      m.errorText = ""
+      m.isErrorShowing = false
+      m.state = "loading"
+    end if
+  end function
+
+  public function onRegisterComplete(result)
+    m.log.method("onRegisterComplete", result)
+
+    if result <> invalid and result.state = "valid"
+      m.log.info("Register successful")
+      m.dismiss("success")
+    else
+      m.state = "ready"
+      if result <> invalid and result.message <> invalid
+        m.errorText = result.message
+      else
+        m.errorText = "Unknown error"
+      end if
+      m.isErrorShowing = true
+      m.isRegisterButtonEnabled = true
+      m.setFocus(m.getMField("top"))
+    end if
+
+    m.isLoading = false
+
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Private Methods
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  function updateFocusControls()
+    m.focusIds = ["usernameInput", "nameInput", "passwordInput", "registerButton"]
+    m.focusIds = mc.collections.filter(m.focusIds, function(id)
+      return id <> "nameInput" or m.isNameFieldVisible
+    end function)
+  end function
+
+  function autoPopulateUserInfo()
+    m.log.method("autoPopulateUserInfo")
+
+    m.channelStore = m.createSGNode("ChannelStore", invalid, "channelStore", {
+      requestedUserData: "email,firstname,lastname"
+    })
+    m.observeNodeField(m.channelStore, "userData", m.onGetUserData, "value", true)
+    m.channelStore.command = "getUserData"
+  end function
+
+  function onGetUserData(data)
+    m.log.method("onGetUserData")
+
+    if data <> invalid
+      m.setTextFromKeyboard("username", mc.getPath(data, "email", ""))
+      firstName = mc.getPath(data, "firstname", "")
+      lastName = mc.getPath(data, "lastname", "")
+      sep = firstName <> "" and lastName <> "" ? " " : ""
+      m.setTextFromKeyboard("humanName", firstName + sep + lastName)
+      m.focusId = "passwordInput"
+    end if
+
+    if m.channelStore.getParent() <> invalid
+      m.channelStore.getParent().removeChild(m.channelStore.getParent())
+    end if
+    m.channelStore = invalid
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Key Handling
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public function isCapturingAnyKeyPress(key, press)
+    'do not anyone escape this screen!
+    if press and key = "back" and not mc.getPath(m.riversJson, "general.isflowBlocker", true)
+      return false
+    else
+      return true
+    end if
+  end function
+
+  public function onKeyPressBack() as boolean
+    m.log.method("onKeyPressBack", m.focusId)
+
+    m.dismiss("cancel")
+    return true
+  end function
+
+  public function onKeyPressRight() as boolean
+
+    if m.focusId = "loginButton" and m.riversJson.styles.debug_skip_on_right = true
+      m.log.warn("skipping debug flag is on")
+      m.onRegisterComplete(true)
+    end if
+
+    return false
+  end function
+
+  public function onKeyPressDown() as boolean
+    m.log.method("onKeyPressDown", m.focusId)
+
+    m.setFocusId(mc.collections.getItemAtOffset(m.focusIds, m.focusId, 1))
+
+    return true
+  end function
+
+  public function onKeyPressOptions() as boolean
+    m.log.method("onKeyPressOptions", m.focusId)
+    m.debugAccountId++
+    if m.debugAccountId > m.maxDebugAccounts
+      m.debugAccountId = 1
+    end if
+    username = m.riversJson.styles.debug_username.replace("@", str(m.debugAccountId).trim() + "@")
+
+    m.onUsernameKeyboardDialogDismissal(username)
+    m.onNameKeyboardDialogDismissal(m.riversJson.styles.debug_name)
+    m.onPasswordKeyboardDialogDismissal(m.riversJson.styles.debug_password)
+    return true
+  end function
+
+  public override function onKeyPressUp() as boolean
+    m.log.method("onKeyPressUp", m.focusId)
+
+    m.setFocusId(mc.collections.getItemAtOffset(m.focusIds, m.focusId, -1))
+
+    return true
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ lifecycle
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  protected override function onFirstShow()
+    super.onFirstShow()
+    m.autoPopulateUserInfo()
+  end function
+
+
+end class
