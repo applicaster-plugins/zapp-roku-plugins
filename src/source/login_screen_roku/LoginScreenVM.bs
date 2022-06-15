@@ -66,6 +66,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
     m.log.info("createContent is overridden in this screen")
   end function
 
+  'TODO - remove ALL OF THIS!!! and the method sit calls... it is already handled by QuickBrickAuthenticationFLowScreen
   public override function load() as boolean
     m.sendHttpLogsNow()
 

@@ -130,6 +130,7 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
 
   private function performNextAction()
     'TODO - this depneds on the login_completion_action
+    'This will be done in monday ticket: https://applicaster.monday.com/boards/1615228456/pulses/2810836219
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
