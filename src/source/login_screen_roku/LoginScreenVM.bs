@@ -130,7 +130,6 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   public function onRegisterButtonSelected()
     m.isShowingRegisterScreen = true
     screen = m.createSubScreen("FlowRegisterScreen")
-    screen.isFirstScreen = true
     m.toggleSubScreen(screen)
   end function
 
