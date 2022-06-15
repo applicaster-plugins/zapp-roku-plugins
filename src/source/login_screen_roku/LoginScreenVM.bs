@@ -169,13 +169,24 @@ class LoginScreenVM extends zapp.uib.ScreenVM
 
   public function onRegisterButtonSelected()
     m.isShowingRegisterScreen = true
-    screen = m.getScreen(m.riversJson.styles.register_screen)
+    screen = m.createSubScreen("FlowRegisterScreen")
     m.toggleSubScreen(screen)
   end function
 
   public function onForgotPasswordButtonSelected()
-    screen = m.getScreen(m.riversJson.styles.forgot_password_screen)
+    screen = m.createSubScreen("FlowForgotPasswordScreen")
     m.toggleSubScreen(screen)
+  end function
+
+  private function createSubScreen(screenType as string)
+    screen = m.createInstance(screenType, invalid, `${screenType}`, invalid, false)
+    if screen <> invalid
+      screen.riversJson = m.riversJson
+      mc.setOrAddNodeField(screen, "__screenId", `${screenType}`)
+      originEntry = m.screenState.originEntry
+      mc.setOrAddNodeField(screen, "screenState", zapp.uib.mixin.createScreenState(screen.__screenId, originEntry))
+    end if
+    return screen
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
