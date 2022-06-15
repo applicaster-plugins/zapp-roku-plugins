@@ -32,7 +32,7 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
   public errorText = ""
   public isErrorShowing = false
 
-  private providerId = invalid
+  private providerId = "quick-brick-login-flow"
   private isShowingRegisterScreen = false
   private preScreenFocusId = "registerButton"
   private focusIds = ["usernameInput", "passwordInput", "loginButton"]
@@ -55,7 +55,6 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
     m.focusId = "usernameInput"
     m.skipKey = asString(m.riversJson.data.skip_login_if_key_exists)
     m.processStyles(m.riversJson.styles)
-    m.providerId = "quick-brick-login-flow"
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -111,34 +110,28 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   function processStyles(styles)
-    m.usernameText = m.localizations.username_placeholder_text
+    m.usernameText = m.localizations.login_username_placeholder_text
     m.usernamePlaceholderText = m.usernameText
 
-    m.passwordText = m.localizations.password_placeholder_text
+    m.passwordText = m.localizations.login_password_placeholder_text
     m.passwordPlaceholderText = m.passwordText
 
     inputStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "general_input", "textInputPlaceholder")
 
     m.inputStyle = inputStyle
 
-    m.loginButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "button", "custom", "styles.login_button_text")
-    registerButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "button", "custom", "styles.register_button_text")
-    registerButtonStyle.visible = styles.show_register_button = true
+    m.loginButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "button", "custom", m.localizations.login_title)
+    registerButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "button", "custom", m.localizations.register_title)
+    registerButtonStyle.visible = m.riversJson.general.show_register_button_on_login_screen = true and m.getTopField("isFirstScreen") = true
 
-    forgotPasswordButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "button", "custom", "styles.forgot_password_button_text")
+    forgotPasswordButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "button", "custom", m.localizations.forgot_password_title)
     forgotPasswordButtonStyle.visible = styles.show_forgot_password_button = true
 
     m.registerButtonStyle = registerButtonStyle
     m.forgotPasswordButtonStyle = forgotPasswordButtonStyle
     m.maxDebugAccounts = zapp.viewUtils.getUIBInt(styles, "debug_max_accounts")
 
-    m.focusIds = ["usernameInput", "passwordInput", "loginButton"]
-    if m.registerButtonStyle.visible = true
-      m.focusIds.push("registerButton")
-    end if
-    if m.forgotPasswordButtonStyle.visible = true
-      m.focusIds.push("forgotPasswordButton")
-    end if
+    m.updateFocusControls()
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -172,6 +165,7 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
   public function onRegisterButtonSelected()
     m.isShowingRegisterScreen = true
     screen = m.createSubScreen("FlowRegisterScreen")
+    screen.isFirstScreen = true
     m.toggleSubScreen(screen)
   end function
 
@@ -349,6 +343,16 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ private
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  function updateFocusControls()
+    m.focusIds = ["usernameInput", "passwordInput", "loginButton"]
+    if m.registerButtonStyle.visible = true
+      m.focusIds.push("registerButton")
+    end if
+    if m.forgotPasswordButtonStyle.visible = true
+      m.focusIds.push("forgotPasswordButton")
+    end if
+  end function
 
   function autoPopulateUserInfo()
     m.log.method("autoPopulateUserInfo")

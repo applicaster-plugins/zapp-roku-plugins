@@ -66,47 +66,6 @@ class LoginScreenVM extends zapp.uib.ScreenVM
     m.log.info("createContent is overridden in this screen")
   end function
 
-  'TODO - remove ALL OF THIS!!! and the method sit calls... it is already handled by QuickBrickAuthenticationFLowScreen
-  public override function load() as boolean
-    m.sendHttpLogsNow()
-
-    m.state = "loading"
-    if not m.isLoginRequired()
-      m.log.info("no need to show in this case")
-      m.dismiss("success")
-    else if m.isKeyToSkipSet()
-      m.log.info("skip key set")
-      m.dismiss("success")
-    else if m.isLoggedIn()
-      m.log.info("user is logged in, no need to show")
-      m.dismiss("success")
-    else
-      m.log.info("user not logged in - attemping refreshing")
-      m.refreshLogin()
-    end if
-    return true
-  end function
-
-  private function isLoginRequired()
-    currentItem = m.getInstance("currentSelection", "currentItem")
-
-    return asBoolean(currentItem.json.extensions.requires_authentication, true)
-  end function
-
-  private function isKeyToSkipSet()
-    m.log.info("checking if this key is set", m.skipKey)
-    parts = m.skipKey.split(".")
-    if parts.count() = 2
-      value = m.getSessionStoreValue(parts[0], parts[1])
-      m.log.info("session store contained value:", value)
-      if value <> invalid
-        return true
-      end if
-    end if
-
-    return false
-  end function
-
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ styles
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -171,6 +130,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   public function onRegisterButtonSelected()
     m.isShowingRegisterScreen = true
     screen = m.createSubScreen("FlowRegisterScreen")
+    screen.isFirstScreen = true
     m.toggleSubScreen(screen)
   end function
 
@@ -246,40 +206,6 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '++ refresh
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-  private function refreshLogin()
-    m.log.info("calling authTask to refresh login")
-
-    m.authTask = m.createAuthTask("execLoad", m.providerId, m.onRefreshComplete)
-
-    m.isRefreshing = true
-    m.isMainGroupVisible = false
-    m.isLoginButtonEnabled = false
-  end function
-
-  private function onRefreshComplete(result)
-    m.log.method("onRefreshComplete", result)
-    m.isLoading = false
-    m.isMainGroupVisible = true
-    m.isRefreshing = false
-
-    if m.isLoggedIn()
-      m.dismiss("success")
-    else
-      m.trackScreen()
-      m.signalAppLaunchDialog(false)
-      m.autoPopulateUserInfo()
-    end if
-
-  end function
-
-  private function isLoggedIn()
-    return m.getInstance("user").loggedInServices[m.providerId] = true
-  end function
-
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ login
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -342,8 +268,6 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   override function sendLaunchBeacon()
     'we handle this manually
   end function
-
-
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ private

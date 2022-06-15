@@ -6,6 +6,7 @@ import "pkg:/source/roku_modules/maestro/core/Utils.brs"
 class FlowRegisterScreenVM extends zapp.uib.ScreenVM
   'styles
   public inputStyle = invalid
+  public loginButtonStyle = invalid
   public registerButtonStyle = invalid
   public usernamePlaceholderText = ""
   public namePlaceholderText = ""
@@ -15,11 +16,13 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
   public isCredsValid = false
   public isNameFieldVisible = true
   public isRegisterButtonEnabled = false
+  public isSubScreenVisible = false
   public isMainGroupVisible = true
   public isDoneGroupVisible = false
   public nameButtonType = "textInput"
   public usernameButtonType = "textInput"
   public passwordButtonType = "textInput"
+  public currentScreen = invalid
 
   public usernameText = ""
   public username = ""
@@ -31,7 +34,9 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
   public errorText = ""
   public isErrorShowing = false
 
-  private providerId = invalid
+  private providerId = "quick-brick-login-flow"
+  private preScreenFocusId = "loginButton"
+  private isShowingLoginScreen = false
   private focusIds = []
   private maxDebugAccounts = 1
   private debugAccountId = 0
@@ -46,11 +51,8 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
   private setTextFromKeyboard = zapp.keyboardDialogMixin.setTextFromKeyboard
   public function new(riversJson)
     super(riversJson, "RegisterScreenVM")
-
     m.focusId = "usernameInput"
     m.processStyles(m.riversJson.styles)
-    m.providerId = "quick-brick-login-flow"
-
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -70,18 +72,23 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   function processStyles(styles)
-    m.usernameText = m.localizations.username_placeholder_text
+    m.usernameText = m.localizations.register_username_placeholder_text
     m.usernamePlaceholderText = m.usernameText
 
-    m.humanNameText = m.localizations.name_placeholder_text
+    m.humanNameText = m.localizations.register_name_placeholder_text
     m.namePlaceholderText = m.humanNameText
     m.isNameFieldVisible = zapp.viewUtils.getUIBBool(styles, "use_human_name")
 
-    m.passwordText = m.localizations.password_placeholder_text
+    loginButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "button", "custom", m.localizations.login_title)
+    loginButtonStyle.visible = asBoolean(m.riversJson.general.show_login_button_on_register_screen) = true and m.getTopField("isFirstScreen") = true
+
+    m.passwordText = m.localizations.register_password_placeholder_text
     m.passwordPlaceholderText = m.passwordText
     inputStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "general_input", "textInputPlaceholder")
+
     m.inputStyle = inputStyle
-    m.registerButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "button", "custom", "styles.register_button_text")
+    m.loginButtonStyle = loginButtonStyle
+    m.registerButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "button", "custom", m.localizations.register_title)
     m.maxDebugAccounts = zapp.viewUtils.getUIBInt(styles, "debug_max_accounts")
 
     m.updateFocusControls()
@@ -90,6 +97,13 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ callbacks
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public function onLoginButtonSelected()
+    m.log.method("onLoginButtonSelected")
+    m.isShowingLoginScreen = true
+    screen = m.createSubScreen("FlowLoginScreen")
+    m.toggleSubScreen(screen)
+  end function
 
   public function onUsernameButtonSelected(value)
     palette = zapp.viewUtils.getUIBKeyboardDialogPalette(m.riversJson.styles, "keyboard")
@@ -116,6 +130,58 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
       m.isErrorShowing = true
     else
       m.log.warn("ignoring register button, while loading")
+    end if
+  end function
+
+  private function createSubScreen(screenType as string)
+    screen = m.createInstance(screenType, invalid, `${screenType}`)
+    if screen <> invalid
+      screen.riversJson = m.riversJson
+      mc.setOrAddNodeField(screen, "__screenId", `${screenType}`)
+      originEntry = m.screenState.originEntry
+      mc.setOrAddNodeField(screen, "screenState", zapp.uib.mixin.createScreenState(screen.__screenId, originEntry))
+    end if
+    return screen
+  end function
+
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Sub Screen Support
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  function toggleSubScreen(screen)
+    m.log.method("toggleSubScreen")
+
+    if m.focusId <> "screenContainer"
+      m.preScreenFocusId = m.focusId
+    end if
+
+    m.unobserveNodeField(m.currentScreen, "state", m.onsubScreenStateChange)
+
+    m.isSubScreenVisible = screen <> invalid
+    m.isMainGroupVisible = screen = invalid
+    m.currentScreen = invalid
+
+    if screen <> invalid
+      m.currentScreen = screen
+      m.onsubScreenStateChange(m.currentScreen.state)
+      m.observeNodeField(m.currentScreen, "state", m.onSubScreenStateChange)
+      m.setFocusId("screenContainer")
+    else
+      m.setFocusId(m.preScreenFocusId)
+    end if
+
+  end function
+
+  private function onSubScreenStateChange(state)
+    m.log.method("current screen state change", state, "m.isShowingRegisterScreen")
+
+    if state = "success"
+      m.signalAppLaunchDialog(true)
+      m.dismiss("success")
+    else if state = "cancel"
+      m.toggleSubScreen(invalid)
+      m.dismiss("cancel")
     end if
   end function
 
@@ -204,6 +270,9 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
 
   function updateFocusControls()
     m.focusIds = ["usernameInput", "nameInput", "passwordInput", "registerButton"]
+    if m.loginButtonStyle.visible = true
+      m.focusIds.push("loginButton")
+    end if
     m.focusIds = mc.collections.filter(m.focusIds, function(id)
       return id <> "nameInput" or m.isNameFieldVisible
     end function)

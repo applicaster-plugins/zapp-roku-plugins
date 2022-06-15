@@ -9,6 +9,7 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
   private skipKey = ""
   private providerId = "quick-brick-login-flow"
   private isShowingRegisterScreenFirst = false
+  private isSubScreenVisible = invalid
   private loginCompletionAction = ""
   private authTask as mc.types.node
 
@@ -16,8 +17,7 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
     super(riversJson, "QuickBrickAuthenticationFlowScreenVM")
     m.focusId = "usernameInput"
     m.skipKey = asString(m.riversJson.data.skip_login_if_key_exists)
-    m.processStyles(m.riversJson.styles)
-    m.providerId = "quick-brick-login-flow"
+    m.processStyles(m.riversJson)
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -73,10 +73,9 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   function processStyles(styles)
-    m.isShowingRegisterScreenFirst = zapp.viewUtils.getUIBBool(styles, "general.show_register_screen_first")
-    m.loginCompletionAction = zapp.viewUtils.getUIBBool(styles, "general.login_completion_action")
+    m.isShowingRegisterScreenFirst = zapp.viewUtils.getUIBBool(m.riversJson, "general.show_register_screen_first")
+    m.loginCompletionAction = zapp.viewUtils.getUIBBool(m.riversJson, "general.login_completion_action")
   end function
-
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ First Screen Management
@@ -84,7 +83,9 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
 
   private function showFirstScreen()
     m.log.info("showing first screen - is register first? ", m.isShowingRegisterScreenFirst)
-    screen = m.createSubScreen(m.isShowingRegisterScreenFirst ? "FlowRegisterScreen" : "FlowLoginScreen")
+    'screen = m.createSubScreen(m.isShowingRegisterScreenFirst ? "FlowRegisterScreen" : "FlowLoginScreen")
+    screen = m.createSubScreen("FlowLoginScreen")
+    screen.isFirstScreen = true
     m.toggleSubScreen(screen)
   end function
 
