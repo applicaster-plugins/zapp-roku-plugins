@@ -121,5 +121,12 @@
         isActive='{{isLoading}}'
         backgroundVisible='false'
         text='' />
+
+
+    <mv_DynamicContainer
+        id='screenContainer'
+        visible='{{isSubScreenVisible}}'
+        isDestroyingChildViewsOnRemoval='true'
+        setNextView='{{currentScreen}}' />
   </children>
 </component>

@@ -184,7 +184,6 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
       m.dismiss("success")
     else if state = "cancel"
       m.toggleSubScreen(invalid)
-      m.dismiss("cancel")
     end if
   end function
 

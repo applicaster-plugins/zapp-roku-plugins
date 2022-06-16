@@ -10,6 +10,7 @@ function init()
   initializeView(m.top.findNode("labelsGroup"))
   initializeView(m.top.findNode("controlsGroup"))
   initializeView(m.top.findNode("doneGroup"))
+  initializeView(m.top.findNode("screenContainer"))
 end function
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
