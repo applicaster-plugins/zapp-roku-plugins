@@ -92,7 +92,7 @@
         <ZActionButton
             id='loginButton'
             style='{{:loginButtonStyle}}'
-            visible='{{isLoading:transform=mx_transform_invertBoolean}}'
+            visible='{{isLoginButtonVisible}}'
             selected='{(onLoginButtonSelected())}'
             width='610' />
 

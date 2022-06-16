@@ -19,6 +19,7 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
   public isSubScreenVisible = false
   public isMainGroupVisible = true
   public isDoneGroupVisible = false
+  public isLoginButtonVisible = false
   public nameButtonType = "textInput"
   public usernameButtonType = "textInput"
   public passwordButtonType = "textInput"
@@ -64,6 +65,7 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
   end function
 
   public override function load() as boolean
+    m.log.info("load is overridden in this FlowRegisterScreenVM")
     return true
   end function
 
@@ -81,6 +83,7 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
 
     loginButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "button", "custom", m.localizations.login_title)
     loginButtonStyle.visible = asBoolean(m.riversJson.general.show_login_button_on_register_screen) = true and m.getTopField("isFirstScreen") = true
+    'loginButtonStyle.visible = false
 
     m.passwordText = m.localizations.register_password_placeholder_text
     m.passwordPlaceholderText = m.passwordText
@@ -271,6 +274,7 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
   function updateFocusControls()
     m.focusIds = ["usernameInput", "nameInput", "passwordInput", "registerButton"]
     if m.loginButtonStyle.visible = true
+      m.isLoginButtonVisible = true
       m.focusIds.push("loginButton")
     end if
     m.focusIds = mc.collections.filter(m.focusIds, function(id)

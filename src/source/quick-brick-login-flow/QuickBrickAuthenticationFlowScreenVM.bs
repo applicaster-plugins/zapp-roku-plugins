@@ -83,8 +83,9 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
 
   private function showFirstScreen()
     m.log.info("showing first screen - is register first? ", m.isShowingRegisterScreenFirst)
-    'screen = m.createSubScreen(m.isShowingRegisterScreenFirst ? "FlowRegisterScreen" : "FlowLoginScreen")
-    screen = m.createSubScreen("FlowLoginScreen")
+    screen = m.createSubScreen(m.isShowingRegisterScreenFirst ? "FlowRegisterScreen" : "FlowLoginScreen")
+    screen.isFirstScreen = true
+    'screen = m.createSubScreen("FlowLoginScreen")
     m.toggleSubScreen(screen)
   end function
 
