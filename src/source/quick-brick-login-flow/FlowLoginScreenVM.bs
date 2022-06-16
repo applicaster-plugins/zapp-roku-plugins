@@ -227,15 +227,14 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
         creds.username = m.usernameText
       end if
       creds.password = m.password
+      creds.apiUrlLogin = m.riversJson.general.api_url_login
+      creds.apiUrlRegister = m.riversJson.general.api_url_register
+      creds.apiUrlReset = m.riversJson.general.api_url_reset_password
+      creds.apiUrlRefresh = m.riversJson.general.api_url_refresh
+
       m.authTask = m.createAuthTask("execLogIn", m.providerId, m.onLoginComplete, creds)
 
-      'Ivan - TODO HERE!!! and in flow register and flow forgot passowrd
-      ' creds.apiUrlLogin = m.reviersJson.general.name_of_field_I_do_not_remember
-      ' creds.apiUrlRegister = m.reviersJson.general.name_of_field_I_do_not_remember
-      ' creds.apiUrlReset = m.reviersJson.general.name_of_field_I_do_not_remember
-      ' creds.apiUrlRefresh = m.reviersJson.general.name_of_field_I_do_not_remember
-      ' m.isLoginButtonEnabled = false
-
+      m.isLoginButtonEnabled = false
       m.isLoading = true
       m.errorText = ""
       m.isErrorShowing = false

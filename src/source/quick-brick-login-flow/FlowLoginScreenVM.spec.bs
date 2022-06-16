@@ -1,6 +1,5 @@
 namespace zapp.tests
   @tags("public", "auth", "vm")
-  @only
   @suite("FlowLoginScreenVMTests")
   class FlowLoginScreenVMTests extends tests.BaseTestSuite
     private riversJson
@@ -56,6 +55,26 @@ namespace zapp.tests
           "input_placeholder_color": "#ff0000ff"
           "background_color": "#ff0000ff"
         }
+        "general": {
+          "api_url_reset_password": "",
+          "login_completion_action": "go_home",
+          "api_url_refresh": "",
+          "identifier": "",
+          "enable_marketing": true,
+          "login_endpoint": "",
+          "intro_external_url": "",
+          "show_register_button_on_login_screen": true,
+          "terms_external_url": "",
+          "api_url_login": "",
+          "enable_first_name": true,
+          "show_register_screen_first": true,
+          "api_url_register": "",
+          "navigate_to_login_screen": "",
+          "enable_last_name": true,
+          "show_hook_once": false,
+          "show_login_button_on_register_screen": true,
+          "enable_tou": true
+        }
       }
 
       m.vm = new FlowLoginScreenVM(m.riversJson)
@@ -77,64 +96,18 @@ namespace zapp.tests
     @describe("processStyles")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @it("does not add forgotPasswordButton, and registerButton to focusIds if inactive")
-    function _()
-      styles = {
-        use_forgot_password: false
-        use_register: false
-      }
-      m.vm.processStyles(styles)
+    @it("set visible of registerButtonStyle depend of params")
+    @params(true, true, true)
+    @params(true, false, false)
+    @params(false, true, false)
+    function _(generalVisible, isFirstScreen, expected)
+      m.riversJson.general.show_register_button_on_login_screen = generalVisible
+      m.stubCall(m.vm.getTopField("isFirstScreen"), isFirstScreen)
+      m.expectCalled(m.vm.updateFocusControls())
 
-      m.assertFalse(m.vm.isForgotPasswordButtonVisible)
-      m.assertFalse(m.vm.isRegisterButtonVisible)
+      m.vm.processStyles(m.riversJson.styles)
 
-    end function
-
-
-
-    @it("adds forgotPasswordButton to focusIds if active")
-    function _()
-      styles = {
-        use_forgot_password: true
-        use_register: false
-      }
-      m.vm.processStyles(styles)
-
-      m.assertTrue(m.vm.forgotPasswordButtonStyle.visible)
-      m.assertFalse(m.vm.registerButtonStyle.visible)
-
-      m.assertEqual(m.vm.focusIds, ["usernameInput", "passwordInput", "loginButton", "forgotPasswordButton"])
-
-    end function
-
-    @it("adds registerButton to focusIds if active")
-    function _()
-      styles = {
-        use_forgot_password: false
-        use_register: true
-      }
-      m.vm.processStyles(styles)
-
-      m.assertFalse(m.vm.forgotPasswordButtonStyle.visible)
-      m.assertTrue(m.vm.registerButtonStyle.visible)
-
-      m.assertEqual(m.vm.focusIds, ["usernameInput", "passwordInput", "loginButton", "registerButton"])
-
-    end function
-
-    @it("adds forgotPasswordButton, and registerButton to focusIds if active")
-    function _()
-      styles = {
-        use_forgot_password: true
-        use_register: true
-      }
-      m.vm.processStyles(styles)
-
-      m.assertTrue(m.vm.forgotPasswordButtonStyle.visible)
-      m.assertTrue(m.vm.registerButtonStyle.visible)
-
-      m.assertEqual(m.vm.focusIds, ["usernameInput", "passwordInput", "loginButton", "registerButton", "forgotPasswordButton"])
-
+      m.assertEqual(m.vm.registerButtonStyle.visible, expected)
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -378,92 +351,6 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("load")
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    @it("dismisses if login is not required")
-    function _()
-      m.expectCalled(m.vm.isLoginRequired(), false)
-      m.expectCalled(m.vm.dismiss("success"))
-
-      m.expectNotCalled(m.vm.refreshLogin)
-
-      m.vm.load()
-    end function
-
-    @it("dismisses if logged in")
-    function _()
-      m.expectCalled(m.vm.isLoginRequired(), true)
-      m.expectCalled(m.vm.isLoggedIn(), true)
-      m.expectCalled(m.vm.dismiss("success"))
-
-      m.expectNotCalled(m.vm.refreshLogin)
-
-      m.vm.load()
-    end function
-
-    @it("dismisses if skip condition is met")
-    function _()
-      m.expectCalled(m.vm.isLoginRequired(), true)
-      m.expectCalled(m.vm.isKeyToSkipSet(), true)
-      m.expectCalled(m.vm.dismiss("success"))
-
-      m.expectNotCalled(m.vm.refreshLogin)
-
-      m.vm.load()
-    end function
-
-
-    @it("otherwise refreshes")
-    function _()
-      m.expectCalled(m.vm.isLoginRequired(), true)
-      m.expectCalled(m.vm.isKeyToSkipSet(), false)
-      m.expectCalled(m.vm.isLoggedIn(), false)
-      m.expectCalled(m.vm.refreshLogin())
-
-      m.expectNotCalled(m.vm.dismiss)
-
-      m.vm.load()
-    end function
-
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("isKeyToSkipSet")
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    @it("returns false for invalid keys")
-    @params("")
-    @params("key")
-    function _(key)
-      m.vm.skipKey = key
-      m.assertFalse(m.vm.isKeyToSkipSet())
-    end function
-
-    @it("returns true if the key is set on session store")
-    @params("key.a", "a", invalid, false)
-    @params("key.b", "b", "set", true)
-    function _(key, keyPart, value, isSkipped)
-      m.vm.skipKey = key
-      m.expectCalled(m.vm.getSessionStoreValue("key", keyPart), value)
-      m.assertEqual(m.vm.isKeyToSkipSet(), isSkipped)
-    end function
-
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("isLoginRequired")
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    @it("returns expected value")
-    @params(invalid, true)
-    @params({ json: invalid }, true)
-    @params({ json: { extensions: invalid } }, true)
-    @params({ json: { extensions: { requires_authentication: true } } }, true)
-    @params({ json: { extensions: { requires_authentication: false } } }, false)
-    function _(item, isLoginRequired)
-      m.expectCalled(m.vm.getInstance("currentSelection", "currentItem"), item)
-
-      m.assertEqual(m.vm.isLoginRequired(), isLoginRequired)
-    end function
-
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @tags("integration")
     @describe("INTEGRATION tests processLogin")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -566,70 +453,6 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("refreshLogin")
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    @it("refreshLogin")
-    function _()
-      authTask = { "id": "authTask" }
-      m.vm.providerId = "p"
-
-      m.expectOnce(m.vm, "createAuthTask", ["execLoad", "p", m.vm.onRefreshComplete], authTask)
-
-      m.vm.refreshLogin()
-
-      m.assertEqual(m.vm.authTask, authTask)
-
-      m.assertTrue(m.vm.isRefreshing)
-      m.assertFalse(m.vm.isLoginButtonEnabled)
-    end function
-
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("onRefreshComplete")
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    @it("dismisses on succesful refresh")
-    function _()
-      m.vm.providerId = "pid"
-      m.expectCalled(m.vm.isLoggedIn(), true)
-      m.expectCalled(m.vm.dismiss("success"))
-
-      m.vm.isRefreshing = true
-      m.vm.isLoading = true
-      m.vm.isMainGroupVisible = true
-
-      m.vm.onRefreshComplete({})
-
-      m.assertFalse(m.vm.isRefreshing)
-      m.assertFalse(m.vm.isLoading)
-      m.assertTrue(m.vm.isMainGroupVisible)
-
-    end function
-
-    @it("does not dismiss on refresh failure")
-    function _()
-
-      m.vm.isRefreshing = true
-      m.vm.isLoading = true
-      m.vm.isMainGroupVisible = true
-
-      m.expectCalled(m.vm.isLoggedIn(), false)
-      m.expectCalled(m.vm.trackScreen())
-      m.expectCalled(m.vm.signalAppLaunchDialog(false))
-      m.expectCalled(m.vm.autoPopulateUserInfo())
-      m.expectNotCalled(m.vm.dismiss)
-
-      m.vm.onRefreshComplete({})
-
-      m.assertNotEqual(m.vm.state, "success")
-
-      m.assertFalse(m.vm.isRefreshing)
-      m.assertFalse(m.vm.isLoading)
-      m.assertTrue(m.vm.isMainGroupVisible)
-
-    end function
-
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("autoPopulateUserInfo")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -644,7 +467,6 @@ namespace zapp.tests
 
       m.vm.autoPopulateUserInfo()
     end function
-
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("onGetUserData")
