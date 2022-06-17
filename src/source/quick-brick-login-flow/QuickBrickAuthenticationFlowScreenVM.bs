@@ -120,7 +120,6 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
 
     if state = "success"
       m.signalAppLaunchDialog(true)
-      m.dismiss("success")
       m.performNextAction()
     else if state = "cancel"
       m.toggleSubScreen(invalid)
@@ -129,8 +128,33 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
   end function
 
   private function performNextAction()
-    'TODO - this depneds on the login_completion_action
+    m.log.info("ascertaining next action")
+
+    action = asString(m.riversJson.general.login_completion_action, "go_back")
+
+    if m.isDisplayedInPrehook
+      m.log.info("was displayed in prehook - ignoring all next actions")
+      m.dismiss("succeess")
+      'TODO - this depneds on the m.riversJson.general.login_completion_action
+    else if action = "go_back"
+      m.dismiss("success")
+    else if action = "go_home"
+      m.navigatetoHomeItem()
+    else if action = "go_to_screen"
+      screenId = "???"' comes from the m.riversJson.general, I guess..
+      m.navigateToScreen(screenId)
+    end if
     'This will be done in monday ticket: https://applicaster.monday.com/boards/1615228456/pulses/2810836219
+  end function
+
+  'PUT THIS WRAPPER FUNCTIONS IN BaseZappVM - so everyone can use them
+  private function navigateToHomeItem()
+    'TODO call new appservice function here
+  end function
+
+  'PUT THIS WRAPPER FUNCTIONS IN BaseZappVM - so everyone can use them
+  private function navigateToScreen(screenId as string)
+    'TODO call new appservice function here
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
