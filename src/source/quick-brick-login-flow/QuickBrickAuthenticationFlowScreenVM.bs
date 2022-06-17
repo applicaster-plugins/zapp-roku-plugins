@@ -129,32 +129,27 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
 
   private function performNextAction()
     m.log.info("ascertaining next action")
-
     action = asString(m.riversJson.general.login_completion_action, "go_back")
 
     if m.isDisplayedInPrehook
       m.log.info("was displayed in prehook - ignoring all next actions")
-      m.dismiss("succeess")
-      'TODO - this depneds on the m.riversJson.general.login_completion_action
+      m.dismiss("success")
     else if action = "go_back"
       m.dismiss("success")
     else if action = "go_home"
       m.navigatetoHomeItem()
     else if action = "go_to_screen"
-      screenId = "???"' comes from the m.riversJson.general, I guess..
-      m.navigateToScreen(screenId)
+      screenId = m.riversJson.navigations.id
+      m.navigateToScreenByScreenId(screenId)
     end if
-    'This will be done in monday ticket: https://applicaster.monday.com/boards/1615228456/pulses/2810836219
   end function
 
-  'PUT THIS WRAPPER FUNCTIONS IN BaseZappVM - so everyone can use them
   private function navigateToHomeItem()
-    'TODO call new appservice function here
+    m.navigateToHomeItemScreen()
   end function
 
-  'PUT THIS WRAPPER FUNCTIONS IN BaseZappVM - so everyone can use them
-  private function navigateToScreen(screenId as string)
-    'TODO call new appservice function here
+  private function navigateToScreenByScreenId(screenId as string)
+    m.navigateToScreenById(screenId)
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

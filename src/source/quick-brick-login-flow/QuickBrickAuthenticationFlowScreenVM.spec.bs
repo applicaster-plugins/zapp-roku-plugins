@@ -1,6 +1,5 @@
 namespace zapp.tests
   @tags("public", "auth", "vm")
-  @only
   @suite("QuickBrickAuthenticationFlowScreenVMTests")
   class QuickBrickAuthenticationFlowScreenVMTests extends tests.BaseTestSuite
     private riversJson
@@ -269,6 +268,71 @@ namespace zapp.tests
 
       m.vm.onRefreshComplete({})
 
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @only
+    @describe("performNextAction")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("go to home screen if action match")
+    function _()
+      m.vm.riversJson = {
+        general: {
+          login_completion_action: "go_home"
+        }
+      }
+      m.vm.isDisplayedInPrehook = false
+
+      m.expectCalled(m.vm.navigatetoHomeItem())
+
+      m.vm.performNextAction()
+    end function
+
+    @it("go to back if action match")
+    function _()
+      m.vm.riversJson = {
+        general: {
+          login_completion_action: "go_back"
+        }
+      }
+      m.vm.isDisplayedInPrehook = false
+
+      m.expectCalled(m.vm.dismiss("success"))
+
+      m.vm.performNextAction()
+    end function
+
+    @it("go to home screen if prehook is active")
+    function _()
+      m.vm.riversJson = {
+        general: {
+          login_completion_action: "go_home"
+        }
+      }
+      m.vm.isDisplayedInPrehook = true
+
+      m.expectCalled(m.vm.dismiss("success"))
+
+      m.vm.performNextAction()
+    end function
+
+    @it("go to some screen if action match")
+    function _()
+      m.vm.riversJson = {
+        general: {
+          login_completion_action: "go_to_screen"
+        }
+        navigations: {
+          id: "someScreenId"
+        }
+      }
+      m.vm.isDisplayedInPrehook = false
+
+      screenId = m.vm.riversJson.navigations.id
+      m.expectCalled(m.vm.navigateToScreenByScreenId(screenId))
+
+      m.vm.performNextAction()
     end function
 
   end class
