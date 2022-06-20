@@ -137,19 +137,12 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
     else if action = "go_back"
       m.dismiss("success")
     else if action = "go_home"
-      m.navigatetoHomeItem()
+      m.navigateToHomeScreen()
     else if action = "go_to_screen"
-      screenId = m.riversJson.navigations.id
-      m.navigateToScreenByScreenId(screenId)
+      screenId = asString(m.riversJson.navigations.id)
+
+      m.navigateToScreenById(screenId)
     end if
-  end function
-
-  private function navigateToHomeItem()
-    m.navigateToHomeItemScreen()
-  end function
-
-  private function navigateToScreenByScreenId(screenId as string)
-    m.navigateToScreenById(screenId)
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

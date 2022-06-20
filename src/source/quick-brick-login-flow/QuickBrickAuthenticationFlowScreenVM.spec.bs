@@ -271,25 +271,10 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @only
     @describe("performNextAction")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @it("go to home screen if action match")
-    function _()
-      m.vm.riversJson = {
-        general: {
-          login_completion_action: "go_home"
-        }
-      }
-      m.vm.isDisplayedInPrehook = false
-
-      m.expectCalled(m.vm.navigatetoHomeItem())
-
-      m.vm.performNextAction()
-    end function
-
-    @it("go to back if action match")
+    @it("go to back if action go_back")
     function _()
       m.vm.riversJson = {
         general: {
@@ -303,11 +288,15 @@ namespace zapp.tests
       m.vm.performNextAction()
     end function
 
-    @it("go to home screen if prehook is active")
-    function _()
+    @it("dismisses if displayed in prehook, regardless of the login completion action")
+
+    @params("go_home")
+    @params("bo_back")
+    @params("go_to_screen")
+    function _(action)
       m.vm.riversJson = {
         general: {
-          login_completion_action: "go_home"
+          login_completion_action: action
         }
       }
       m.vm.isDisplayedInPrehook = true
@@ -317,7 +306,21 @@ namespace zapp.tests
       m.vm.performNextAction()
     end function
 
-    @it("go to some screen if action match")
+    @it("go to home screen action is go_home")
+    function _()
+      m.vm.riversJson = {
+        general: {
+          login_completion_action: "go_home"
+        }
+      }
+      m.vm.isDisplayedInPrehook = false
+
+      m.expectCalled(m.vm.navigateToHomeScreen())
+
+      m.vm.performNextAction()
+    end function
+
+    @it("go to some screen if action is go_to_screen")
     function _()
       m.vm.riversJson = {
         general: {
@@ -330,7 +333,7 @@ namespace zapp.tests
       m.vm.isDisplayedInPrehook = false
 
       screenId = m.vm.riversJson.navigations.id
-      m.expectCalled(m.vm.navigateToScreenByScreenId(screenId))
+      m.expectCalled(m.vm.navigateToScreenById(screenId))
 
       m.vm.performNextAction()
     end function
