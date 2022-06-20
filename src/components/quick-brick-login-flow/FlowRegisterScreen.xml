@@ -4,7 +4,12 @@
     extends='UIBScreen'
     vm='FlowRegisterScreenVM'>
 
-  <interface></interface>
+  <interface>
+    <field
+        id='isFirstScreen'
+        type='boolean'
+        value='false' />
+  </interface>
 
   <children>
     <Rectangle
@@ -28,19 +33,19 @@
           itemSpacings='[56, 56, 26]'>
         <mv_Label
             id='titleText'
-            style='{{=zapp_viewUtils_UIBLabel("title", invalid, "title")}}'
+            style='{{=zapp_viewUtils_UIBLabel("title", invalid, "register_title")}}'
             width='{{=zapp_viewUtils_UIBInt("label_w")}}' />
         <mv_Label
             id='descriptionText'
-            style='{{=zapp_viewUtils_UIBLabel("description", invalid, "description")}}'
+            style='{{=zapp_viewUtils_UIBLabel("description", invalid, "register_description")}}'
             width='{{=zapp_viewUtils_UIBInt("label_w")}}' />
         <mv_Label
             id='optionalText1'
-            style='{{=zapp_viewUtils_UIBLabel("optional_text1", invalid, "optional_text1")}}'
+            style='{{=zapp_viewUtils_UIBLabel("optional_text1", invalid, "register_optional_text1")}}'
             width='{{=zapp_viewUtils_UIBInt("label_w")}}' />
         <mv_Label
             id='optionalText2'
-            style='{{=zapp_viewUtils_UIBLabel("optional_text2", invalid, "optional_text2")}}'
+            style='{{=zapp_viewUtils_UIBLabel("optional_text2", invalid, "register_optional_text2")}}'
             width='{{=zapp_viewUtils_UIBInt("label_w")}}' />
       </mv_LayoutGroup>
 
@@ -84,6 +89,13 @@
             selected='{(onRegisterButtonSelected(value))}'
             width='{{=zapp_viewUtils_UIBInt("input_w")}}' />
 
+        <ZActionButton
+            id='loginButton'
+            style='{{:loginButtonStyle}}'
+            visible='{{isLoginButtonVisible}}'
+            selected='{(onLoginButtonSelected())}'
+            width='610' />
+
       </mv_LayoutGroup>
 
       <Group
@@ -109,5 +121,12 @@
         isActive='{{isLoading}}'
         backgroundVisible='false'
         text='' />
+
+
+    <mv_DynamicContainer
+        id='screenContainer'
+        visible='{{isSubScreenVisible}}'
+        isDestroyingChildViewsOnRemoval='true'
+        setNextView='{{currentScreen}}' />
   </children>
 </component>

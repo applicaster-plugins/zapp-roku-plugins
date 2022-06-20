@@ -1,0 +1,216 @@
+import "pkg:/source/UIBuilder/view/ScreenVM.bs"
+import "pkg:/source/lib/ViewUtils.bs"
+import "pkg:/source/mixin/KeyboardDialogMixin.bs"
+
+class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
+
+  public currentScreen = invalid
+
+  private skipKey = ""
+  private providerId = "quick-brick-login-flow"
+  private isShowingRegisterScreenFirst = false
+  private isSubScreenVisible = invalid
+  private loginCompletionAction = ""
+  private authTask as mc.types.node
+
+  public function new(riversJson)
+    super(riversJson, "QuickBrickAuthenticationFlowScreenVM")
+    m.focusId = "usernameInput"
+    m.skipKey = asString(m.riversJson.data.skip_login_if_key_exists)
+    m.processStyles(m.riversJson)
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Overridden
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public override function createContent()
+    m.log.info("createContent is overridden in this screen")
+  end function
+
+  public override function load() as boolean
+    m.sendHttpLogsNow()
+
+    m.state = "loading"
+    if not m.isLoginRequired()
+      m.log.info("no need to show in this case")
+      m.dismiss("success")
+    else if m.isKeyToSkipSet()
+      m.log.info("skip key set")
+      m.dismiss("success")
+    else if m.isLoggedIn()
+      m.log.info("user is logged in, no need to show")
+      m.dismiss("success")
+    else
+      m.log.info("user not logged in - attemping refreshing")
+      m.refreshLogin()
+    end if
+    return true
+  end function
+
+  private function isLoginRequired()
+    currentItem = m.getInstance("currentSelection", "currentItem")
+
+    return asBoolean(currentItem.json.extensions.requires_authentication, true)
+  end function
+
+  private function isKeyToSkipSet()
+    m.log.info("checking if this key is set", m.skipKey)
+    parts = m.skipKey.split(".")
+    if parts.count() = 2
+      value = m.getSessionStoreValue(parts[0], parts[1])
+      m.log.info("session store contained value:", value)
+      if value <> invalid
+        return true
+      end if
+    end if
+
+    return false
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ styles
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  function processStyles(styles)
+    m.isShowingRegisterScreenFirst = zapp.viewUtils.getUIBBool(m.riversJson, "general.show_register_screen_first")
+    m.loginCompletionAction = zapp.viewUtils.getUIBBool(m.riversJson, "general.login_completion_action")
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ First Screen Management
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function showFirstScreen()
+    m.log.info("showing first screen - is register first? ", m.isShowingRegisterScreenFirst)
+    screen = m.createSubScreen(m.isShowingRegisterScreenFirst ? "FlowRegisterScreen" : "FlowLoginScreen")
+    screen.isFirstScreen = true
+    m.toggleSubScreen(screen)
+  end function
+
+  private function createSubScreen(screenType as string)
+    screen = m.createInstance(screenType, invalid, `${screenType}`)
+    if screen <> invalid
+      screen.riversJson = m.riversJson
+      mc.setOrAddNodeField(screen, "__screenId", `${screenType}`)
+      originEntry = m.screenState.originEntry
+      mc.setOrAddNodeField(screen, "screenState", zapp.uib.mixin.createScreenState(screen.__screenId, originEntry))
+    end if
+    return screen
+  end function
+
+  function toggleSubScreen(screen)
+    m.log.method("toggleSubScreen")
+
+    m.unobserveNodeField(m.currentScreen, "state", m.onsubScreenStateChange)
+
+    m.currentScreen = invalid
+
+    if screen <> invalid
+      m.currentScreen = screen
+      m.onsubScreenStateChange(m.currentScreen.state)
+      m.observeNodeField(m.currentScreen, "state", m.onSubScreenStateChange)
+      m.setFocusId("screenContainer")
+    end if
+
+  end function
+
+  private function onSubScreenStateChange(state)
+    m.log.method("current screen state change", state, "m.isShowingRegisterScreen")
+
+    if state = "success"
+      m.signalAppLaunchDialog(true)
+      m.performNextAction()
+    else if state = "cancel"
+      m.toggleSubScreen(invalid)
+      m.dismiss("cancel")
+    end if
+  end function
+
+  private function performNextAction()
+    m.log.info("ascertaining next action")
+    action = asString(m.riversJson.general.login_completion_action, "go_back")
+
+    if m.isDisplayedInPrehook
+      m.log.info("was displayed in prehook - ignoring all next actions")
+      m.dismiss("success")
+    else if action = "go_back"
+      m.dismiss("success")
+    else if action = "go_home"
+      m.navigateToHomeScreen()
+    else if action = "go_to_screen"
+      screenId = asString(m.riversJson.navigations.id)
+
+      m.navigateToScreenById(screenId)
+    end if
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Refresh
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function refreshLogin()
+    m.log.info("calling authTask to refresh login")
+
+    m.isLoading = true
+    m.authTask = m.createAuthTask("execLoad", m.providerId, m.onRefreshComplete)
+  end function
+
+  private function onRefreshComplete(result)
+    m.log.method("onRefreshComplete", result)
+    m.isLoading = false
+
+    if m.isLoggedIn()
+      m.dismiss("success")
+    else
+      m.trackScreen()
+      m.signalAppLaunchDialog(false)
+      m.showFirstScreen()
+    end if
+
+  end function
+
+  private function isLoggedIn()
+    return m.getInstance("user").loggedInServices[m.providerId] = true
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ launch support
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  override function sendLaunchBeacon()
+    'we handle this manually
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Private
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public function isCapturingAnyKeyPress(key, press)
+    'do not anyone escape this screen!
+    if press and key = "back" and not mc.getPath(m.riversJson, "general.isflowBlocker", true)
+      return false
+    else
+      return true
+    end if
+  end function
+
+  public function onKeyPressBack() as boolean
+    m.log.method("onKeyPressBack", m.focusId)
+    if m.isSubScreenVisible
+      'this should be caught by the subscreen
+      return true
+    end if
+
+    isDismissable = m.getTopField("isDismissable")
+    if isDismissable = true
+      m.dismiss("cancel")
+      return true
+    else
+      m.exitApp(invalid, true)
+    end if
+
+    return true
+  end function
+
+end class

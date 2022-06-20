@@ -11,14 +11,14 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
   public forgotPasswordButtonStyle = invalid
   public usernamePlaceholderText = ""
   public passwordPlaceholderText = ""
+
   'state
   public isCredsValid = false
   public isLoginButtonEnabled = false
-  public isRefreshing = true
   public usernameButtonType = "textInput"
   public passwordButtonType = "textInput"
   public isSubScreenVisible = false
-  public isMainGroupVisible = false
+  public isMainGroupVisible = true
   public currentScreen = invalid
 
   public isForgotPasswordButtonVisible = false
@@ -32,7 +32,7 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
   public errorText = ""
   public isErrorShowing = false
 
-  private providerId = invalid
+  private providerId = "quick-brick-login-flow"
   private isShowingRegisterScreen = false
   private preScreenFocusId = "registerButton"
   private focusIds = ["usernameInput", "passwordInput", "loginButton"]
@@ -55,7 +55,6 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
     m.focusId = "usernameInput"
     m.skipKey = asString(m.riversJson.data.skip_login_if_key_exists)
     m.processStyles(m.riversJson.styles)
-    m.providerId = "quick-brick-login-flow"
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -67,43 +66,10 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
   end function
 
   public override function load() as boolean
-    m.sendHttpLogsNow()
-
-    m.state = "loading"
-    if not m.isLoginRequired()
-      m.log.info("no need to show in this case")
-      m.dismiss("success")
-    else if m.isKeyToSkipSet()
-      m.log.info("skip key set")
-      m.dismiss("success")
-    else if m.isLoggedIn()
-      m.log.info("user is logged in, no need to show")
-      m.dismiss("success")
-    else
-      m.log.info("user not logged in - attemping refreshing")
-      m.refreshLogin()
-    end if
+    'TODO - decide how to hide the screen
+    m.getMField("top").isForcingMenuHidden = true
+    m.isLoading = false
     return true
-  end function
-
-  private function isLoginRequired()
-    currentItem = m.getInstance("currentSelection", "currentItem")
-
-    return asBoolean(currentItem.json.extensions.requires_authentication, true)
-  end function
-
-  private function isKeyToSkipSet()
-    m.log.info("checking if this key is set", m.skipKey)
-    parts = m.skipKey.split(".")
-    if parts.count() = 2
-      value = m.getSessionStoreValue(parts[0], parts[1])
-      m.log.info("session store contained value:", value)
-      if value <> invalid
-        return true
-      end if
-    end if
-
-    return false
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -111,34 +77,28 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   function processStyles(styles)
-    m.usernameText = m.localizations.username_placeholder_text
+    m.usernameText = m.localizations.login_username_placeholder_text
     m.usernamePlaceholderText = m.usernameText
 
-    m.passwordText = m.localizations.password_placeholder_text
+    m.passwordText = m.localizations.login_password_placeholder_text
     m.passwordPlaceholderText = m.passwordText
 
     inputStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "general_input", "textInputPlaceholder")
 
     m.inputStyle = inputStyle
 
-    m.loginButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "button", "custom", "styles.login_button_text")
-    registerButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "button", "custom", "styles.register_button_text")
-    registerButtonStyle.visible = styles.show_register_button = true
+    m.loginButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "button", "custom", m.localizations.login_title)
+    registerButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "button", "custom", m.localizations.register_title)
+    registerButtonStyle.visible = asBoolean(m.riversJson.general.show_register_button_on_login_screen) = true and m.getTopField("isFirstScreen") = true
 
-    forgotPasswordButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "button", "custom", "styles.forgot_password_button_text")
+    forgotPasswordButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "button", "custom", m.localizations.forgot_password_title)
     forgotPasswordButtonStyle.visible = styles.show_forgot_password_button = true
 
     m.registerButtonStyle = registerButtonStyle
     m.forgotPasswordButtonStyle = forgotPasswordButtonStyle
     m.maxDebugAccounts = zapp.viewUtils.getUIBInt(styles, "debug_max_accounts")
 
-    m.focusIds = ["usernameInput", "passwordInput", "loginButton"]
-    if m.registerButtonStyle.visible = true
-      m.focusIds.push("registerButton")
-    end if
-    if m.forgotPasswordButtonStyle.visible = true
-      m.focusIds.push("forgotPasswordButton")
-    end if
+    m.updateFocusControls()
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -247,40 +207,6 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '++ refresh
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-  private function refreshLogin()
-    m.log.info("calling authTask to refresh login")
-
-    m.authTask = m.createAuthTask("execLoad", m.providerId, m.onRefreshComplete)
-
-    m.isRefreshing = true
-    m.isMainGroupVisible = false
-    m.isLoginButtonEnabled = false
-  end function
-
-  private function onRefreshComplete(result)
-    m.log.method("onRefreshComplete", result)
-    m.isLoading = false
-    m.isMainGroupVisible = true
-    m.isRefreshing = false
-
-    if m.isLoggedIn()
-      m.dismiss("success")
-    else
-      m.trackScreen()
-      m.signalAppLaunchDialog(false)
-      m.autoPopulateUserInfo()
-    end if
-
-  end function
-
-  private function isLoggedIn()
-    return m.getInstance("user").loggedInServices[m.providerId] = true
-  end function
-
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ login
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -301,10 +227,14 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
         creds.username = m.usernameText
       end if
       creds.password = m.password
+      creds.apiUrlLogin = m.riversJson.general.api_url_login
+      creds.apiUrlRegister = m.riversJson.general.api_url_register
+      creds.apiUrlReset = m.riversJson.general.api_url_reset_password
+      creds.apiUrlRefresh = m.riversJson.general.api_url_refresh
+
       m.authTask = m.createAuthTask("execLogIn", m.providerId, m.onLoginComplete, creds)
 
-      ' m.isLoginButtonEnabled = false
-
+      m.isLoginButtonEnabled = false
       m.isLoading = true
       m.errorText = ""
       m.isErrorShowing = false
@@ -345,10 +275,19 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
   end function
 
 
-
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ private
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  function updateFocusControls()
+    m.focusIds = ["usernameInput", "passwordInput", "loginButton"]
+    if m.registerButtonStyle.visible = true
+      m.focusIds.push("registerButton")
+    end if
+    if m.forgotPasswordButtonStyle.visible = true
+      m.focusIds.push("forgotPasswordButton")
+    end if
+  end function
 
   function autoPopulateUserInfo()
     m.log.method("autoPopulateUserInfo")
