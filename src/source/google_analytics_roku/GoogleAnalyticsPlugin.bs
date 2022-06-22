@@ -10,50 +10,6 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
   private clientId = false
   private task as mc.types.node
 
-  private analyticsPropertiesByGoogleKey = {
-    "name": "in"
-    "media_id": "cd14"
-    "media_type": "iv"
-    "uuid": "uid"
-    "version": "av"
-    "bundle_id": "aiid"
-    "build_number": "cd1"
-    "sdk_version": "cd2"
-    "quickbrick_version": "cd3"
-    "layout_id": "cd4"
-    "stream_type": "cd5"
-    "stream_format": "cd6"
-    "ad_duration": "cd7"
-    "label": "cd8"
-    "author": "cd9"
-    "station": "cd10"
-    "publisher": "cd11"
-    "player_type": "cd12"
-    "ad_id": "cd13"
-    "creative": "cd"
-    "start_time": "cm1"
-    "position": "cm2"
-    "position": "cm3"
-    "duration": "cm4"
-    "total_ads": "cm5"
-    "current_position": "cm6"
-    ' "downloaded": "TODO"
-    ' "show_name":  "TODO"
-    ' "season_name":  "TODO"
-    ' "genre":  "TODO"
-    ' "show type":  "TODO"
-    ' "rating":  "TODO"
-    ' "network":  "TODO"
-    ' "artist": "TODO"
-    ' "album": "TODO"
-    ' "advertiser":  "TODO"
-    ' "campaign":  "TODO"
-    ' "placement":  "TODO"
-    ' "site":  "TODO"
-    ' "creative url":  "TODO"
-    ' "ad_type":  "TODO"
-    ' "system": "TODO"
-  }
 
   public function new(plugin = invalid)
     super("GoogleAnalyticsPlugin", m.getPlugin(plugin))
@@ -84,12 +40,10 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
   public override function start()
     m.log.info("start")
 
-    m.task = m.createInstance("GoogleAnalyticsTask", invalid, "googleAnalyticsTask")
+    m.task = m.createInstance("GoogleAnalytics", invalid, "googleAnalyticsTask")
     m.task.trackingId = m.trackingId
     m.task.clientId = m.clientId
 
-    m.eventFactory = m.createInstance("AnalyticsEventFactory", invalid, "googleAnalyticsEventFactory")
-    m.setInstance("googleAnalyticsEventFactory", m.eventFactory)
     m.setInstance("googleAnalyticsTask", m.task)
     m.task.control = "run"
 
@@ -155,7 +109,6 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
     googleAnalytics.event = {
       category: "video"
       action: event.name
-      ' value: formatJson(m.getGoogleCompliantProperties(event))
       label: m.propertiesToLabel(event.properties)
     }
   end function
@@ -192,21 +145,6 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ Advanced Analytics Support
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-  private function getGoogleCompliantProperties(event as zapp.video.VideoAnalyticsEvent) as mc.types.assocarray
-    properties = {}
-
-    for each key in m.analyticsPropertiesByGoogleKey
-      if event.properties.doesExist(key)
-        value = event.properties[key]
-        'TODO = ensure value is correctly converted
-        properties[m.analyticsPropertiesByGoogleKey[key]] = value
-      end if
-    end for
-
-    return properties
-  end function
-
 
   private function padString(s as string, width as integer, c as string)
     result = s.trim()
