@@ -47,8 +47,8 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
     '/* cspell:disable *\
     g.analytics@.initialize({
       measurementId: m.measurementId
-      appName: buildConfig.IVAN_FIX_ME
-      docLocation: buildConfig.IVAN_FIX_ME
+      appName: buildConfig.app_name
+      docLocation: buildConfig.data_source_providers_url
       isFirstOpen: true
       userId: m.userId
     })
@@ -139,64 +139,6 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
       }
     else
       m.task.customSessionParams = invalid
-    end if
-  end function
-
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '++ Advanced Analytics Support
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-  private function padString(s as string, width as integer, c as string)
-    result = s.trim()
-
-    ' don't get stuck in a while loop if pad characters are empty
-    if c = "" return result
-
-    while result.len() < width
-      difference = width - result.len()
-      result = right(c, difference) + result
-    end while
-    return result
-  end function
-
-  private function timeFormat(length as dynamic) as string
-    if type(length) = "roFloat" or type(length) = "Double" then length = Int(length)
-    if type(length) = "Integer" or type(length) = "roInteger"
-      hours = length \ 3600
-      minutes = (length mod 3600) \ 60
-      seconds = length mod 60
-      result = m.padString(stri(hours), 2, "0") + ":" + m.padString(stri(minutes), 2, "0") + ":" + m.padString(stri(seconds), 2, "0")
-      return result
-    else
-      return ""
-    end if
-  end function
-
-  private function propertiesToLabel(properties)
-    if type(properties) <> "roAssociativeArray" then return ""
-
-    label = ""
-    sortedKeys = properties.keys()
-    for i = 0 to sortedKeys.count() - 1
-      ' be careful only to include string values here. Necessary conversions should happen in the public methods
-      value = properties[sortedKeys[i]]
-      if mc.isString(value)
-        value = value.toStr()
-      end if
-
-      if i > 0
-        label = label + ";"
-      end if
-      label += `${sortedKeys[i]}=${value}`
-    end for
-    return label
-  end function
-
-  public function booleanString(tf)
-    if tf
-      return "True"
-    else
-      return "False"
     end if
   end function
 

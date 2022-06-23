@@ -1,5 +1,6 @@
 namespace zapp.tests
   @tags("public", "anaytics")
+  @only
   @suite
   class GoogleAnalyticsPluginTests extends tests.BaseTestSuite
 
@@ -14,9 +15,8 @@ namespace zapp.tests
 
       m.pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "google_analytics_roku" })
       m.plugin = new GoogleAnalyticsPlugin(m.pluginData)
-      m.plugin.task = { id: "task"}
+      m.plugin.task = { id: "task" }
     end function
-
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("constructor")
@@ -24,9 +24,14 @@ namespace zapp.tests
 
     @it("constructor")
     function _()
-      m.assertEqual(m.plugin.id, "google_analytics_roku")
-      m.assertEqual(m.plugin.trackingId, "#t")
-      m.assertEqual(m.plugin.clientId, "#c")
+      m.plugin.measurementId = "measurementId"
+      m.plugin.userId = "user_id"
+
+      m.assertEqual(m.plugin.constants, constants)
+      m.assertEqual(m.plugin.buildConfig, buildConfig)
+      m.assertEqual(m.plugin.measurementId, "measurement_id")
+      m.assertEqual(m.plugin.userId, "user_id")
+      m.assertEqual(m.plugin.userId, "user_id")
 
     end function
 
@@ -37,25 +42,105 @@ namespace zapp.tests
     @it("creates the task")
     function _()
 
-      m.plugin.trackingId = "#t"
-      m.plugin.clientId = "#c"
+      m.plugin.measurementId = "#t"
+      m.plugin.userId = "#c"
 
       task = { "id": "task" }
-      m.expectOnce(m.plugin, "createInstance", ["GoogleAnalyticsTask", invalid, "googleAnalyticsTask"], task)
-
-      factory = { "id": "factory" }
-      m.expectOnce(m.plugin, "createInstance", ["AnalyticsEventFactory", invalid, "googleAnalyticsEventFactory"], factory)
-
-      m.expectOnce(m.plugin, "setInstance", ["googleAnalyticsEventFactory", factory])
-      m.expectOnce(m.plugin, "setInstance", ["googleAnalyticsTask", task])
+      m.expectCalled(m.plugin.createInstance("GoogleAnalytics", invalid, "googleAnalyticsTask") task)
+      m.expectCalled(m.plugin.setInstance("googleAnalyticsTask", task))
 
       m.plugin.start()
 
-      m.assertEqual(m.plugin.task.trackingId, "#t")
-      m.assertEqual(m.plugin.task.clientId, "#c")
+      m.assertEqual(m.plugin.task.measurementId, "#m")
+      m.assertEqual(m.plugin.task.userId, "#u")
       m.assertEqual(m.plugin.task.control, "run")
 
     end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("_identify")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("return true if isEnabled = false")
+    function _()
+      pluginId = { "id": "pluginId" }
+      traits = { "id": "traits" }
+      options = { "id": "options" }
+      isFromLogout = false
+      m.plugin.isEnabled = false
+
+      result = m.plugin._identify(pluginId, traits = {}, options = {}, isFromLogout = false)
+
+      m.assertTrue(result)
+    end function
+
+    @it("return true if isTrackingUserIdEnabled = false")
+    function _()
+      pluginId = { "id": "pluginId" }
+      traits = { "id": "traits" }
+      options = { "id": "options" }
+      isFromLogout = false
+      m.plugin.isEnabled = true
+      m.plugin.isTrackingUserIdEnabled = false
+
+      result = m.plugin._identify(pluginId, traits = {}, options = {}, isFromLogout = false)
+
+      m.assertTrue(result)
+    end function
+
+    @it("return true if accountInfo = invalid and send anonymous user")
+    function _()
+      pluginId = invalid
+      traits = { "id": "traits" }
+      options = { "id": "options" }
+      isFromLogout = false
+      m.plugin.isEnabled = true
+      m.plugin.isTrackingUserIdEnabled = true
+
+      m.expectCalled(m.plugin.identifyAsAnonymous())
+
+      result = m.plugin._identify(pluginId, traits = {}, options = {}, isFromLogout = false)
+
+      m.assertTrue(result)
+    end function
+
+    @it("call anonymous user analytic")
+    function _()
+      pluginId = { "id": "pluginId" }
+      traits = { "id": "traits" }
+      options = { "id": "options" }
+      isFromLogout = false
+      m.plugin.isEnabled = true
+      m.plugin.isTrackingUserIdEnabled = true
+      accountInfo = { "id": "" }
+
+      m.expectCalled(m.plugin.getSessionStoreValue(pluginId, "account", true), accountInfo)
+      m.expectCalled(m.plugin.identifyAsAnonymous())
+
+      result = m.plugin._identify(pluginId, traits = {}, options = {}, isFromLogout = false)
+
+      m.assertTrue(result)
+    end function
+
+    @it("set google userID task ")
+    function _()
+      pluginId = { "id": "pluginId" }
+      traits = { "id": "traits" }
+      options = { "id": "options" }
+      isFromLogout = false
+      m.plugin.isEnabled = true
+      m.plugin.isTrackingUserIdEnabled = true
+      accountInfo = { "id": "accountInfo" }
+
+      m.expectCalled(m.plugin.getSessionStoreValue(pluginId, "account", true), accountInfo)
+      m.expectCalled(m.plugin.setGoogleTaskUserId(accountInfo.id))
+
+      result = m.plugin._identify(pluginId, traits = {}, options = {}, isFromLogout = false)
+
+      m.assertTrue(result)
+    end function
+
+
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("identifyAsAnonymous")
@@ -63,9 +148,35 @@ namespace zapp.tests
 
     @it("identifies as Anonymous")
     function _()
-      m.expectOnce(m.plugin, "setGoogleTaskUserId", invalid)
+      m.expectCalled(m.plugin.setGoogleTaskUserId(invalid))
 
       m.plugin.identifyAsAnonymous()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("_trackVideoEvent")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("track video event ")
+    function _()
+      event = { "id": "event", "properties": "props" }
+
+      m.expectCalled(m.plugin.processAnalyticsEvent(event))
+
+      m.plugin._trackVideoEvent()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("_processAnalyticsEvent")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("proceed Analytics Event ")
+    function _()
+      event = { "id": "event", "properties": "props" }
+
+      m.expectCalled(m.plugin.task@.logEvent(event.id, event.properties))
+
+      m.plugin._processAnalyticsEvent()
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -132,6 +243,8 @@ namespace zapp.tests
 
       m.assertEqual(m.plugin.task.customSessionParams, invalid)
     end function
+
+
 
   end class
 end namespace
