@@ -6,17 +6,19 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
 
   private eventFactory = invalid
   private isTrackingUserIdEnabled = false
-  private trackingId = false
-  private clientId = false
+  private measurementId = ""
+  private userId = ""
   private task as mc.types.node
 
 
   public function new(plugin = invalid)
     super("GoogleAnalyticsPlugin", m.getPlugin(plugin))
+    'FIXME TEST ME IVAN - constructor tests
     constants = m.getInstance("constants")
 
-    m.trackingId = m.plugin.getStringValue("tracking_id")
-    m.clientId = constants.googleAnalyticsClientId
+    m.measurementId = m.plugin.getStringValue("measurement_id")
+    m.userId = m.plugin.getStringValue("user_id")
+
     buildConfig = m.getInstance("buildConfig")
     versionId = buildConfig.app_family_id
     userIdString = m.plugin.getStringValue("user_id")
@@ -38,15 +40,22 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public override function start()
+    'FIXME TEST ME IVAN
     m.log.info("start")
 
-    m.task = m.createInstance("GoogleAnalytics", invalid, "googleAnalyticsTask")
-    m.task.trackingId = m.trackingId
-    m.task.clientId = m.clientId
+    m.task = createInstance("GoogleAnalytics", invalid, "googleAnalyticsTask")
+    '/* cspell:disable *\
+    g.analytics@.initialize({
+      measurementId: m.measurementId
+      appName: buildConfig.IVAN_FIX_ME
+      docLocation: buildConfig.IVAN_FIX_ME
+      isFirstOpen: true
+      userId: m.userId
+    })
+    '/* cspell:enable *\
+    g.analytics@.start()
 
     m.setInstance("googleAnalyticsTask", m.task)
-    m.task.control = "run"
-
   end function
 
   protected override function _identify(pluginId, traits = {}, options = {}, isFromLogout = false) as boolean
@@ -71,6 +80,8 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
         if accountInfo.id <> invalid and accountInfo.id.trim() <> ""
           m.log.info("identifying analytics with the userId", accountInfo.id, "for plugin:", pluginId)
           m.log.info("recrating GoogleAnalyticsTask with the userId", accountInfo.id, "for plugin:", pluginId)
+          'FIXME TEST ME IVAN
+          'FIXME - Ivan - this has changed name in the task setUserId
           m.setGoogleTaskUserId(accountInfo.id)
         else
           m.log.error("identify called; but there id was empty!")
@@ -87,30 +98,19 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
 
   private function identifyAsAnonymous()
     m.log.info("identifying as anonymous user")
+    'FIXME TEST ME IVAN
+    'FIXME - Ivan - this has changed name in the task setUserId
     m.setGoogleTaskUserId(invalid)
   end function
 
   protected override function _trackVideoEvent(event as zapp.video.VideoAnalyticsEvent)
-    m.log.info("sending video event ", event)
+    'FIXME TEST ME IVAN
+    m.processAnalyticsEvent(event)
+  end function
 
-    '''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    ' Use the Event for application state events, such as a login or registration.
-    '
-    ' | Parameter | Value Type  | Default Value | Max Length
-    ' ------------------------------------------------------
-    ' | category  | text        | None          | 150 Bytes
-    ' | action    | text        | None          | 500 Bytes
-    ' | label     | text        | None          | 500 Bytes
-    ' | value     | text     | None          | None
-
-
-
-    googleAnalytics = m.getInstance("googleAnalyticsTask")
-    googleAnalytics.event = {
-      category: "video"
-      action: event.name
-      label: m.propertiesToLabel(event.properties)
-    }
+  protected function _processAnalyticsEvent(event as zapp.analytics.AnalyticsEvent)
+    'FIXME TEST ME IVAN
+    m.task@.logEvent(event.id, event.properties)
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -140,12 +140,6 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
     else
       m.task.customSessionParams = invalid
     end if
-  end function
-
-  private function processAnalyticsEvent(event as zapp.video.AnalyticsEventFactory)
-    'if m.isUsingAdvancedVideoAnalytics
-    '  m._trackVideoEvent(event)
-    'end if
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
