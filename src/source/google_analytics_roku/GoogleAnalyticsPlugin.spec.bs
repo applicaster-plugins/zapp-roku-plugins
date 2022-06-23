@@ -42,8 +42,8 @@ namespace zapp.tests
     @it("creates the task")
     function _()
 
-      m.plugin.measurementId = "#t"
-      m.plugin.userId = "#c"
+      m.plugin.measurementId = "#m"
+      m.plugin.userId = "#u"
 
       task = { "id": "task" }
       m.expectCalled(m.plugin.createInstance("GoogleAnalytics", invalid, "googleAnalyticsTask") task)
@@ -139,8 +139,6 @@ namespace zapp.tests
 
       m.assertTrue(result)
     end function
-
-
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("identifyAsAnonymous")
