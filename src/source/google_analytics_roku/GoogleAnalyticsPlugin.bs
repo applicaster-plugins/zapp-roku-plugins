@@ -2,7 +2,7 @@ import "pkg:/source/analytics/BaseAnalyticsPlugin.bs"
 import "pkg:/source/video/analytics/VideoAnalyticsEvent.bs"
 import "pkg:/source/video/analytics/VideoAnalyticsEvent.bs"
 
-class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
+class GoogleAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
 
   private eventFactory = invalid
   private isTrackingUserIdEnabled = false
@@ -10,21 +10,22 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
   private userId = ""
   private task as mc.types.node
 
+  @inject("buildConfig")
+  private buildConfig as mc.types.assocarray
+
+  @inject("constants")
+  private constants as mc.types.assocarray
+
 
   public function new(plugin = invalid)
     super("GoogleAnalyticsPlugin", m.getPlugin(plugin))
-    'FIXME TEST ME IVAN - constructor tests
-    constants = m.getInstance("constants")
-
     m.measurementId = m.plugin.getStringValue("measurement_id")
     m.userId = m.plugin.getStringValue("user_id")
 
-    buildConfig = m.getInstance("buildConfig")
-    versionId = buildConfig.app_family_id
+    versionId = m.buildConfig.app_family_id
     userIdString = m.plugin.getStringValue("user_id")
     m.isTrackingUserIdEnabled = m.checkIfTrackingUserIdAllowed(userIdString, versionId)
   end function
-
 
   private function getPlugin(plugin = invalid)
     if plugin = invalid
@@ -43,17 +44,17 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
     'FIXME TEST ME IVAN
     m.log.info("start")
 
-    m.task = createInstance("GoogleAnalytics", invalid, "googleAnalyticsTask")
+    m.task = m.createInstance("GoogleAnalytics", invalid, "googleAnalyticsTask")
     '/* cspell:disable *\
-    g.analytics@.initialize({
+    m.task@.initialize({
       measurementId: m.measurementId
-      appName: buildConfig.app_name
-      docLocation: buildConfig.data_source_providers_url
+      appName: m.buildConfig.app_name
+      docLocation: m.buildConfig.data_source_providers_url
       isFirstOpen: true
       userId: m.userId
     })
     '/* cspell:enable *\
-    g.analytics@.start()
+    m.task@.start()
 
     m.setInstance("googleAnalyticsTask", m.task)
   end function
@@ -108,7 +109,7 @@ class GoogleAnalyticsPlugin extends zapp.Analytics.BaseAnalyticsPlugin
     m.processAnalyticsEvent(event)
   end function
 
-  protected function _processAnalyticsEvent(event as zapp.analytics.AnalyticsEvent)
+  protected override function _processAnalyticsEvent(event as zapp.analytics.AnalyticsEvent)
     'FIXME TEST ME IVAN
     m.task@.logEvent(event.id, event.properties)
   end function

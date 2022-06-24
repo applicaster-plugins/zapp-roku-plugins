@@ -1,8 +1,10 @@
 namespace zapp.tests
   @tags("public", "anaytics")
-  @only
-  @suite
+  @suite("GoogleAnalyticsPluginTests")
   class GoogleAnalyticsPluginTests extends tests.BaseTestSuite
+
+    private plugin
+    private pluginData
 
     protected override function beforeEach()
       super.beforeEach()
@@ -10,12 +12,9 @@ namespace zapp.tests
         "tracking_id": "#t"
         "user_id": "#u"
       }
-      mioc.setInstance("buildConfig", { "app_family_id": "#vid" })
-      mioc.setInstance("constants", { "googleAnalyticsClientId": "#c" })
 
       m.pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "google_analytics_roku" })
       m.plugin = new GoogleAnalyticsPlugin(m.pluginData)
-      m.plugin.task = { id: "task" }
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -26,11 +25,19 @@ namespace zapp.tests
     function _()
       m.plugin.measurementId = "measurementId"
       m.plugin.userId = "user_id"
+      constants = { "id" : "constants" }
+      buildConfig = { "id" : "buildConfig" }
+      config = { "id" : "config" }
+
+      m.pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "google_analytics_roku" })
+      m.plugin = new GoogleAnalyticsPlugin(m.pluginData)
+
+      mioc.setInstance("buildConfig", buildConfig)
+      mioc.setInstance("constants", constants)
 
       m.assertEqual(m.plugin.constants, constants)
       m.assertEqual(m.plugin.buildConfig, buildConfig)
       m.assertEqual(m.plugin.measurementId, "measurement_id")
-      m.assertEqual(m.plugin.userId, "user_id")
       m.assertEqual(m.plugin.userId, "user_id")
 
     end function
@@ -46,7 +53,7 @@ namespace zapp.tests
       m.plugin.userId = "#u"
 
       task = { "id": "task" }
-      m.expectCalled(m.plugin.createInstance("GoogleAnalytics", invalid, "googleAnalyticsTask") task)
+      m.expectCalled(m.plugin.createInstance("GoogleAnalytics", invalid, "googleAnalyticsTask"), task)
       m.expectCalled(m.plugin.setInstance("googleAnalyticsTask", task))
 
       m.plugin.start()
@@ -161,7 +168,7 @@ namespace zapp.tests
 
       m.expectCalled(m.plugin.processAnalyticsEvent(event))
 
-      m.plugin._trackVideoEvent()
+      m.plugin._trackVideoEvent(event)
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -174,7 +181,7 @@ namespace zapp.tests
 
       m.expectCalled(m.plugin.task@.logEvent(event.id, event.properties))
 
-      m.plugin._processAnalyticsEvent()
+      m.plugin._processAnalyticsEvent(event)
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
