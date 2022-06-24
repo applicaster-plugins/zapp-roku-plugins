@@ -63,12 +63,22 @@
             width='{{=zapp_viewUtils_UIBInt("input_w")}}' />
 
         <ZActionButton
-            id='nameInput'
+            id='firstNameInput'
             style='{{:inputStyle}}'
             labelXOffset='9'
             text='{{humanNameText}}'
             buttonType='{{nameButtonType}}'
-            visible='{{isNameFieldVisible}}'
+            visible='{{isFirstNameFieldVisible}}'
+            selected='{(onNameButtonSelected(value))}'
+            width='{{=zapp_viewUtils_UIBInt("input_w")}}' />
+
+        <ZActionButton
+            id='lastNameInput'
+            style='{{:inputStyle}}'
+            labelXOffset='9'
+            text='{{humanNameText}}'
+            buttonType='{{nameButtonType}}'
+            visible='{{isLastNameFieldVisible}}'
             selected='{(onNameButtonSelected(value))}'
             width='{{=zapp_viewUtils_UIBInt("input_w")}}' />
 
