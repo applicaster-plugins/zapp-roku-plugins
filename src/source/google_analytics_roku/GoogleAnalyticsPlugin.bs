@@ -81,8 +81,7 @@ class GoogleAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
         if accountInfo.id <> invalid and accountInfo.id.trim() <> ""
           m.log.info("identifying analytics with the userId", accountInfo.id, "for plugin:", pluginId)
           m.log.info("recrating GoogleAnalyticsTask with the userId", accountInfo.id, "for plugin:", pluginId)
-          'FIXME - Ivan - this has changed name in the task setUserId
-          m.setGoogleTaskUserId(accountInfo.id)
+          m.setUserId(accountInfo.id)
         else
           m.log.error("identify called; but there id was empty!")
           m.identifyAsAnonymous()
@@ -98,8 +97,7 @@ class GoogleAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
 
   private function identifyAsAnonymous()
     m.log.info("identifying as anonymous user")
-    'FIXME - Ivan - this has changed name in the task setUserId
-    m.setGoogleTaskUserId(invalid)
+    m.setUserId(invalid)
   end function
 
   protected override function _trackVideoEvent(event as zapp.video.VideoAnalyticsEvent)
@@ -129,14 +127,8 @@ class GoogleAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
     return false
   end function
 
-  private function setGoogleTaskUserId(userId)
-    if mc.isString(userId)
-      m.task.customSessionParams = {
-        "uid": Box(userId).Escape()
-      }
-    else
-      m.task.customSessionParams = invalid
-    end if
+  private function setUserId(userId)
+    m.userId = asString(userId)
   end function
 
 end class

@@ -25,6 +25,7 @@ namespace zapp.tests
       config = {
         "tracking_id": "#t"
         "user_id": "#u"
+        "measurement_id": "G - RWBXRW5JYJ",
       }
 
       mioc.setInstance("constants", m.constants)
