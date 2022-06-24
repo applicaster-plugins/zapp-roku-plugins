@@ -272,7 +272,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public function checkCredsValid()
-    isUsernameValid = asString(m.username) <> ""
+    isUsernameValid = asString(m.username).trim() <> ""
     isPasswordValid = asString(m.password) <> ""
 
     m.isCredsValid = isUsernameValid and isPasswordValid
