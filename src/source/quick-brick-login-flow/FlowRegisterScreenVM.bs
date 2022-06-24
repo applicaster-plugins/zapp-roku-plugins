@@ -254,8 +254,10 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
 
     if m.isCredsValid
       creds = m.createInstance("AuthenticationCredentials")
+
       creds.firstName = m.firstName
       creds.lastName = m.lastName
+      creds.name = m.getFullName()
       creds.username = m.username
       creds.password = m.password
       creds.passwordConfirmation = m.password
@@ -272,6 +274,21 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
       m.isErrorShowing = false
       m.state = "loading"
     end if
+  end function
+
+  private function getFullName()
+    firstName = asString(m.firstName)
+    lastName = asString(m.lastName)
+
+    if m.isFirstNameFieldVisible and m.isLastNameFieldVisible
+      return `${firstName} ${lastName}`
+    else if m.isFirstNameFieldVisible
+      return firstName
+    else if m.isLastNameFieldVisible
+      return lastName
+    end if
+
+    return ""
   end function
 
   public function onRegisterComplete(result)
