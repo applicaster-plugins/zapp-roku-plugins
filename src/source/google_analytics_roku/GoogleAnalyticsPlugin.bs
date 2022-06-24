@@ -1,6 +1,6 @@
 import "pkg:/source/analytics/BaseAnalyticsPlugin.bs"
 import "pkg:/source/video/analytics/VideoAnalyticsEvent.bs"
-import "pkg:/source/video/analytics/VideoAnalyticsEvent.bs"
+import "pkg:/source/video/analytics/AnalyticsEvent.bs"
 
 class GoogleAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
 
@@ -81,7 +81,6 @@ class GoogleAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
         if accountInfo.id <> invalid and accountInfo.id.trim() <> ""
           m.log.info("identifying analytics with the userId", accountInfo.id, "for plugin:", pluginId)
           m.log.info("recrating GoogleAnalyticsTask with the userId", accountInfo.id, "for plugin:", pluginId)
-          'FIXME TEST ME IVAN
           'FIXME - Ivan - this has changed name in the task setUserId
           m.setGoogleTaskUserId(accountInfo.id)
         else
@@ -99,18 +98,15 @@ class GoogleAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
 
   private function identifyAsAnonymous()
     m.log.info("identifying as anonymous user")
-    'FIXME TEST ME IVAN
     'FIXME - Ivan - this has changed name in the task setUserId
     m.setGoogleTaskUserId(invalid)
   end function
 
   protected override function _trackVideoEvent(event as zapp.video.VideoAnalyticsEvent)
-    'FIXME TEST ME IVAN
     m.processAnalyticsEvent(event)
   end function
 
   protected override function _processAnalyticsEvent(event as zapp.analytics.AnalyticsEvent)
-    'FIXME TEST ME IVAN
     m.task@.logEvent(event.id, event.properties)
   end function
 
