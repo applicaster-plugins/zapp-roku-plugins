@@ -30,7 +30,7 @@ class GoogleAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
   private function getPlugin(plugin = invalid)
     if plugin = invalid
       pluginManager = new zapp.PluginManager()
-      plugin = pluginManager.getPluginById("google_analytics_roku")
+      plugin = pluginManager.getPluginById("google_analytics_4")
     end if
 
     return plugin
@@ -128,7 +128,9 @@ class GoogleAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
   end function
 
   private function setUserId(userId)
-    m.userId = asString(userId)
+    if mc.isString(userId) and userId <> ""
+      m.userId = userId
+    end if
   end function
 
 end class

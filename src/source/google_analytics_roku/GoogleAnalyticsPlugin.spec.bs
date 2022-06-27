@@ -25,7 +25,7 @@ namespace zapp.tests
       config = {
         "tracking_id": "#t"
         "user_id": "#u"
-        "measurement_id": "G - RWBXRW5JYJ",
+        "measurement_id": "G-RWBXRW5JYJ",
       }
 
       mioc.setInstance("constants", m.constants)
@@ -167,7 +167,7 @@ namespace zapp.tests
       accountInfo = { "id": "accountInfo" }
 
       m.expectCalled(m.plugin.getSessionStoreValue(pluginId, "account", true), accountInfo)
-      m.expectCalled(m.plugin.setGoogleTaskUserId(accountInfo.id))
+      m.expectCalled(m.plugin.setUserId(accountInfo.id))
 
       result = m.plugin._identify(pluginId, traits, options, isFromLogout)
 
@@ -180,7 +180,7 @@ namespace zapp.tests
 
     @it("identifies as Anonymous")
     function _()
-      m.expectCalled(m.plugin.setGoogleTaskUserId(invalid))
+      m.expectCalled(m.plugin.setUserId(invalid))
 
       m.plugin.identifyAsAnonymous()
     end function
@@ -250,21 +250,16 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("setGoogleTaskUserId")
+    @describe("setUserId")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("valid")
-    @params("user123", "user123")
-    @params("user 123", "user%20123")
-    function _(userID, encodeUserId)
-      params = {
-        "uid": encodeUserId
-      }
-      m.plugin.task = { "customSessionParams": "" }
+    @params("user123")
+    @params("user 123")
+    function _(userID)
+      m.plugin.setUserId(userID)
 
-      m.plugin.setGoogleTaskUserId(userID)
-
-      m.assertEqual(m.plugin.task.customSessionParams, params)
+      m.assertEqual(m.plugin.userId, userID)
     end function
 
     @it("return invalid")
@@ -274,9 +269,9 @@ namespace zapp.tests
     function _(userID)
       m.plugin.task = {}
 
-      m.plugin.setGoogleTaskUserId(userID)
+      m.plugin.setUserId(userID)
 
-      m.assertEqual(m.plugin.task.customSessionParams, invalid)
+      m.assertEqual(m.plugin.userId, m.plugin.userId)
     end function
 
   end class
