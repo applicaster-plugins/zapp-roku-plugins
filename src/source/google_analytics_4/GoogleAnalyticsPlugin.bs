@@ -113,7 +113,6 @@ class GoogleAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   private function checkIfTrackingUserIdAllowed(userIdString, versionId)
-
     prefix = "allow-tracking-user-id-for-app-family-"
     suffix = versionId
     s = userIdString

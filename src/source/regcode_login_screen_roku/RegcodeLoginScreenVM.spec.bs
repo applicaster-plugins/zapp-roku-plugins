@@ -63,6 +63,8 @@ namespace zapp.tests
       m.vm.isDisplayedInPrehook = false
 
       m.expectOnce(m.analyticsManager, "callFunc", ["trackEvent", "Waiting Page", "page_loaded", { "Provider": "pid" }])
+
+      m.expectOnce(m.vm, "trackScreen", [])
       m.expectOnce(m.vm, "loadCode", [])
 
       m.vm.load()
@@ -128,9 +130,9 @@ namespace zapp.tests
     function _()
       user = { "id": "user", isLoggedIn: false }
       m.expectOnce(m.vm, "getInstance", ["user"], user)
-      m.expectOnce(m.vm, "loadCode", [])
       m.expectOnce(m.vm, "signalAppLaunchDialog", [false])
-      m.expectNone(m.vm, "dismiss")
+      m.expectOnce(m.vm, "trackScreen")
+      m.expectOnce(m.vm, "loadCode", [])
 
       m.vm.onRefreshLoginComplete({})
 
@@ -145,7 +147,8 @@ namespace zapp.tests
 
     @it("onRefreshButtonSelected")
     function _()
-      m.expectOnce(m.vm, "loadCode", [])
+      m.expectCalled(m.vm.loadCode(), [])
+
       m.vm.onRefreshButtonSelected(true)
     end function
 
