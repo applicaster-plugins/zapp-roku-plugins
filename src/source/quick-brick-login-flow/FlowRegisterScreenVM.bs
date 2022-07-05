@@ -261,10 +261,10 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
       creds.username = m.username
       creds.password = m.password
       creds.passwordConfirmation = m.password
-      creds.apiUrlLogin = m.riversJson.general.api_url_login
-      creds.apiUrlRegister = m.riversJson.general.api_url_register
-      creds.apiUrlReset = m.riversJson.general.api_url_reset_password
-      creds.apiUrlRefresh = m.riversJson.general.api_url_refresh
+      creds.apiUrlLogin = asString(m.riversJson.general.api_url_login)
+      creds.apiUrlRegister = asString(m.riversJson.general.api_url_register)
+      creds.apiUrlReset = asString(m.riversJson.general.api_url_reset_password)
+      creds.apiUrlRefresh = asString(m.riversJson.general.api_url_refresh)
 
       m.authTask = m.createAuthTask("execRegister", m.providerId, m.onRegisterComplete, creds)
 

@@ -122,24 +122,26 @@ namespace zapp.tests
     @it("was not showing content")
     function _()
       m.vm.isShowingContent = true
-      m.expectNone(m.vm, "reset")
+
+      m.expectNotCalled(m.vm.reset())
+      m.expectCalled(m.vm.trackScreen())
 
       m.vm.onShow()
-      m.assertFalse(m.vm.isShowingContent)
 
+      m.assertFalse(m.vm.isShowingContent)
     end function
 
     @it("was showing content")
     function _()
       m.vm.isShowingContent = false
-      m.expectOnce(m.vm, "reset", [])
+
+      m.expectCalled(m.vm.reset())
+      m.expectCalled(m.vm.trackScreen())
 
       m.vm.onShow()
 
       m.assertFalse(m.vm.isShowingContent)
-
     end function
-
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("left keypress")
@@ -150,7 +152,9 @@ namespace zapp.tests
     @params("keyboard", "keyboard")
     function _(currentKey, expectedKey)
       m.vm.focusId = currentKey
+
       m.vm.onKeyPressLeft()
+
       m.assertEqual(m.vm.focusId, expectedKey)
     end function
 
