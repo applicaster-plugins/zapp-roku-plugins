@@ -10,11 +10,13 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
   public registerButtonStyle = invalid
   public usernamePlaceholderText = ""
   public namePlaceholderText = ""
+  public lastNamePlaceholderText = ""
   public passwordPlaceholderText = ""
 
   'state
   public isCredsValid = false
-  public isNameFieldVisible = true
+  public isFirstNameFieldVisible = false
+  public isLastNameFieldVisible = false
   public isRegisterButtonEnabled = false
   public isSubScreenVisible = false
   public isMainGroupVisible = true
@@ -27,10 +29,14 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
 
   public usernameText = ""
   public username = ""
-  public humanNameText = ""
-  public humanName = ""
-  public passwordText = ""
-  public password = ""
+
+  'firstName is firstName OR ONLY name
+  public firstNameText = "" ' text field is what is shown - this could be "enter your name"
+  public firstName = "" ' this is the actual value - this would be ""
+  public lastNameText = ""
+  public lastName = ""
+  public passwordText = "" ' text that is shown - this can be "*****"
+  public password = "" ' actula value, which coul be "abcde"
 
   public errorText = ""
   public isErrorShowing = false
@@ -77,13 +83,18 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
     m.usernameText = m.localizations.register_username_placeholder_text
     m.usernamePlaceholderText = m.usernameText
 
-    m.humanNameText = m.localizations.register_name_placeholder_text
-    m.namePlaceholderText = m.humanNameText
-    m.isNameFieldVisible = zapp.viewUtils.getUIBBool(styles, "use_human_name")
+    m.firstNameText = m.localizations.register_name_placeholder_text
+    m.namePlaceholderText = m.firstNameText
+
+    m.lastNameText = m.localizations.register_last_name_placeholder_text
+    m.lastNamePlaceholderText = m.lastNameText
 
     loginButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "button", "custom", m.localizations.login_title)
     loginButtonStyle.visible = asBoolean(m.riversJson.general.show_login_button_on_register_screen) = true and m.getTopField("isFirstScreen") = true
     'loginButtonStyle.visible = false
+
+    m.isFirstNameFieldVisible = asBoolean(m.riversJson.general.enable_first_name)
+    m.isLastNameFieldVisible = asBoolean(m.riversJson.general.enable_last_name)
 
     m.passwordText = m.localizations.register_password_placeholder_text
     m.passwordPlaceholderText = m.passwordText
@@ -115,7 +126,12 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
 
   public function onNameButtonSelected(value)
     palette = zapp.viewUtils.getUIBKeyboardDialogPalette(m.riversJson.styles, "keyboard")
-    m.showKeyboardDialog("Enter your name", m.humanName, "onNameKeyboardDialogDismissal", false, "none", palette)
+    m.showKeyboardDialog("Enter your name", m.firstName, "onNameKeyboardDialogDismissal", false, "none", palette)
+  end function
+
+  public function onLastNameButtonSelected(value)
+    palette = zapp.viewUtils.getUIBKeyboardDialogPalette(m.riversJson.styles, "keyboard")
+    m.showKeyboardDialog("Enter your last name", m.lastName, "onLastNameKeyboardDialogDismissal", false, "none", palette)
   end function
 
   public function onPasswordButtonSelected(value)
@@ -206,7 +222,11 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
 
   private function onNameKeyboardDialogDismissal(text)
     m.log.method("onNameKeyboardDialogDismissal")
-    m.setTextFromKeyboard("humanName", text)
+    m.setTextFromKeyboard("firstName", text)
+  end function
+  private function onLastNameKeyboardDialogDismissal(text)
+    m.log.method("onLastNameKeyboardDialogDismissal")
+    m.setTextFromKeyboard("lastName", text)
   end function
 
   private function onPasswordKeyboardDialogDismissal(text)
@@ -219,7 +239,12 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public function checkCredsValid()
-    m.isCredsValid = m.usernameText <> invalid and m.usernameText.trim() <> "" and m.password <> invalid and m.password.trim() <> "" and ((m.humanNameText <> invalid and m.humanNameText.trim() <> "") or m.isNameFieldVisible = false)
+    isUsernameValid = asString(m.username) <> ""
+    isFirstNameValid = m.isFirstNameFieldVisible and asString(m.firstName) <> ""
+    isLastNameValid = m.isLastNameFieldVisible and asString(m.lastName) <> ""
+    isPasswordValid = asString(m.password) <> ""
+
+    m.isCredsValid = isUsernameValid and isFirstNameValid and isLastNameValid and isPasswordValid
 
     m.isRegisterButtonEnabled = m.isCredsValid and not m.isLoading
   end function
@@ -229,8 +254,11 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
 
     if m.isCredsValid
       creds = m.createInstance("AuthenticationCredentials")
-      creds.name = m.humanNameText
-      creds.username = m.usernameText
+
+      creds.firstName = m.firstName
+      creds.lastName = m.lastName
+      creds.name = m.getFullName()
+      creds.username = m.username
       creds.password = m.password
       creds.passwordConfirmation = m.password
       creds.apiUrlLogin = asString(m.riversJson.general.api_url_login)
@@ -246,6 +274,21 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
       m.isErrorShowing = false
       m.state = "loading"
     end if
+  end function
+
+  private function getFullName()
+    firstName = asString(m.firstName)
+    lastName = asString(m.lastName)
+
+    if m.isFirstNameFieldVisible and m.isLastNameFieldVisible
+      return `${firstName} ${lastName}`
+    else if m.isFirstNameFieldVisible
+      return firstName
+    else if m.isLastNameFieldVisible
+      return lastName
+    end if
+
+    return ""
   end function
 
   public function onRegisterComplete(result)
@@ -275,13 +318,17 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   function updateFocusControls()
-    m.focusIds = ["usernameInput", "nameInput", "passwordInput", "registerButton"]
+    m.focusIds = ["usernameInput", "firstNameInput", "lastNameInput", "passwordInput", "registerButton"]
+
     if m.loginButtonStyle.visible = true
       m.isLoginButtonVisible = true
       m.focusIds.push("loginButton")
     end if
     m.focusIds = mc.collections.filter(m.focusIds, function(id)
-      return id <> "nameInput" or m.isNameFieldVisible
+      return id <> "firstNameInput" or m.isFirstNameFieldVisible
+    end function)
+    m.focusIds = mc.collections.filter(m.focusIds, function(id)
+      return id <> "lastNameInput" or m.isLastNameFieldVisible
     end function)
   end function
 
@@ -303,7 +350,7 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
       firstName = mc.getPath(data, "firstname", "")
       lastName = mc.getPath(data, "lastname", "")
       sep = firstName <> "" and lastName <> "" ? " " : ""
-      m.setTextFromKeyboard("humanName", firstName + sep + lastName)
+      m.setTextFromKeyboard("firstName", firstName + sep + lastName)
       m.focusId = "passwordInput"
     end if
 

@@ -186,7 +186,7 @@ namespace zapp.tests
 
     @it("uses keyboard helper to set text")
     function _()
-      m.expectOnce(m.vm, "setTextFromKeyboard", ["humanName", "name"])
+      m.expectOnce(m.vm, "setTextFromKeyboard", ["firstName", "name"])
 
       m.vm.onNameKeyboardDialogDismissal("name")
     end function
@@ -209,8 +209,9 @@ namespace zapp.tests
 
     @it("onKeyPressUp")
     @params("usernameInput", "usernameInput")
-    @params("nameInput", "usernameInput")
-    @params("passwordInput", "nameInput")
+    @params("firstNameInput", "usernameInput")
+    @params("lastNameInput", "firstNameInput")
+    @params("passwordInput", "lastNameInput")
     @params("registerButton", "passwordInput")
     function _(focusId, expectedFocusId)
       m.vm.focusId = focusId
@@ -225,22 +226,33 @@ namespace zapp.tests
     @describe("updateFocusControls")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @it("includes name input if isNameFieldVisible is true")
+    @it("includes name input if loginButtonStyle is true")
     function _()
-      m.vm.isNameFieldVisible = true
+      m.vm.loginButtonStyle.visible = true
       m.vm.updateFocusControls()
 
-      m.assertEqual(m.vm.focusIds, ["usernameInput", "nameInput", "passwordInput", "registerButton"])
+      m.assertEqual(m.vm.focusIds, ["usernameInput", "firstNameInput", "lastNameInput", "passwordInput", "registerButton", "loginButton"])
 
     end function
 
 
-    @it("excludes name input if isNameFieldVisible is false")
+    @it("excludes name firstNameInput if isFirstNameFieldVisible is false")
     function _()
-      m.vm.isNameFieldVisible = false
+      m.vm.loginButtonStyle.visible = true
+      m.vm.isFirstNameFieldVisible = false
       m.vm.updateFocusControls()
 
-      m.assertEqual(m.vm.focusIds, ["usernameInput", "passwordInput", "registerButton"])
+      m.assertEqual(m.vm.focusIds, ["usernameInput", "lastNameInput", "passwordInput", "registerButton", "loginButton"])
+
+    end function
+
+    @it("excludes name lastNameInput if isLastNameFieldVisible is false")
+    function _()
+      m.vm.loginButtonStyle.visible = true
+      m.vm.isLastNameFieldVisible = false
+      m.vm.updateFocusControls()
+
+      m.assertEqual(m.vm.focusIds, ["usernameInput", "firstNameInput", "passwordInput", "registerButton", "loginButton"])
 
     end function
 
@@ -249,8 +261,9 @@ namespace zapp.tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("onKeyPressDown")
-    @params("usernameInput", "nameInput")
-    @params("nameInput", "passwordInput")
+    @params("usernameInput", "firstNameInput")
+    @params("firstNameInput", "lastNameInput")
+    @params("lastNameInput", "passwordInput")
     @params("passwordInput", "registerButton")
     @params("registerButton", "registerButton")
     function _(focusId, expectedFocusId)
@@ -278,27 +291,30 @@ namespace zapp.tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("checkCredsValid")
-    @params("", invalid, invalid, false)
-    @params("", "", "", false)
-    @params("", "   ", "   ", false)
-    @params("", "valid", "", false)
-    @params("", "valid", "   ", false)
-    @params(invalid, invalid, "valid", false)
-    @params(invalid, "", "valid", false)
-    @params(invalid, "  ", "valid", false)
-    @params(invalid, invalid, invalid, false)
-    @params("name", "", "", false)
-    @params("name", "   ", "   ", false)
-    @params("name", "valid", "", false)
-    @params("name", "valid", "   ", false)
-    @params("name", invalid, "valid", false)
-    @params("name", "", "valid", false)
-    @params("name", "  ", "valid", false)
-    @params("name", "valid", "valid", true)
-    function _(name, username, password, expectedValue)
-      m.vm.usernameText = username
+    @params("", false, false, invalid, invalid, false)
+    @params("", false, false, "", "", false)
+    @params("", false, false, "   ", "   ", false)
+    @params("", false, false, "valid", "", false)
+    @params("", false, false, "valid", "   ", false)
+    @params(invalid, false, false, invalid, "valid", false)
+    @params(invalid, false, false, "", "valid", false)
+    @params(invalid, false, false, "  ", "valid", false)
+    @params(invalid, false, false, invalid, invalid, false)
+    @params("name", false, false, "", "", false)
+    @params("name", false, false, "   ", "   ", false)
+    @params("name", false, false, "valid", "", false)
+    @params("name", false, false, "valid", "   ", false)
+    @params("name", false, false, invalid, "valid", false)
+    @params("name", false, false, "", "valid", false)
+    @params("name", false, false, "  ", "valid", false)
+    @params("name", true, true, "valid", "valid", true)
+    function _(name, firstVisible, lastVisible, username, password, expectedValue)
+      m.vm.username = username
+      m.vm.isFirstNameFieldVisible = firstVisible
+      m.vm.isLastNameFieldVisible = lastVisible
+      m.vm.firstName = username
+      m.vm.lastName = username
       m.vm.password = password
-      m.vm.humanNameText = name
 
       m.vm.checkCredsValid()
 
@@ -325,23 +341,31 @@ namespace zapp.tests
     @it("starts auth task if creds are valid")
     function _()
       m.vm.isCredsValid = true
-      m.vm.usernameText = "user"
+      m.vm.username = "user"
       m.vm.humanNameText = "name"
       m.vm.password = "pass"
       m.vm.providerId = "p"
+      m.vm.firstName = "firstName"
+      m.vm.lastName = "lastName"
 
       authTask = { "id": "authTask" }
       creds = { "id": "creds" }
+      fullName = "fullName"
 
-      m.expectOnce(m.vm, "createAuthTask", ["execRegister", "p", m.vm.onRegisterComplete, creds], authTask)
-      m.expectOnce(m.vm, "createInstance", ["AuthenticationCredentials"], creds)
+      m.expectCalled(m.vm.createInstance("AuthenticationCredentials"), creds)
+      m.expectCalled(m.vm.createAuthTask("execRegister", "p", m.vm.onRegisterComplete, creds), authTask)
+      m.expectCalled(m.vm.getFullName(), fullName)
 
       m.vm.register()
 
       m.assertEqual(m.vm.authTask, authTask)
 
+      m.assertEqual(creds.firstName, "firstName")
+      m.assertEqual(creds.lastName, "lastName")
+      m.assertEqual(creds.name, "fullName")
       m.assertEqual(creds.username, "user")
       m.assertEqual(creds.password, "pass")
+      m.assertEqual(creds.passwordConfirmation, "pass")
       m.assertEqual(m.vm.state, "loading")
 
       m.assertTrue(m.vm.isLoading)
@@ -483,7 +507,7 @@ namespace zapp.tests
         id: "channelStore"
       }
       m.expectOnce(m.vm, "setTextFromKeyboard", ["username", email])
-      m.expectOnce(m.vm, "setTextFromKeyboard", ["humanName", expectedFullname])
+      m.expectOnce(m.vm, "setTextFromKeyboard", ["firstName", expectedFullname])
 
       parent = { "id": "parent" }
       m.expect(m.vm.channelStore, "getParent", 3, [], parent)
@@ -500,6 +524,26 @@ namespace zapp.tests
       m.assertEqual(m.vm.focusId, "passwordInput")
 
 
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("getFullName")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("return full name value depend on params")
+    @params(true, true, "first last")
+    @params(true, false, "first")
+    @params(false, true, "last")
+    @params(false, false, "")
+    function _(firstVisible, lastVisible, expextedFullName)
+      m.vm.firstName = "first"
+      m.vm.lastName = "last"
+      m.vm.isFirstNameFieldVisible = firstVisible
+      m.vm.isLastNameFieldVisible = lastVisible
+
+      result = m.vm.getFullName()
+
+      m.assertEqual(result, expextedFullName)
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

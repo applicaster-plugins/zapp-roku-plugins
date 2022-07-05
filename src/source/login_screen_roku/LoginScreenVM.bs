@@ -272,7 +272,10 @@ class LoginScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public function checkCredsValid()
-    m.isCredsValid = m.usernameText <> invalid and m.usernameText.trim() <> "" and m.password <> invalid and m.password.trim() <> ""
+    isUsernameValid = asString(m.username).trim() <> ""
+    isPasswordValid = asString(m.password) <> ""
+
+    m.isCredsValid = isUsernameValid and isPasswordValid
 
     m.isLoginButtonEnabled = m.isCredsValid and not m.isLoading
   end function
@@ -283,9 +286,9 @@ class LoginScreenVM extends zapp.uib.ScreenVM
     if m.isCredsValid
       creds = m.createInstance("AuthenticationCredentials")
       if mc.getBoolean(m.riversJson, "styles.force_lower_case")
-        creds.username = lcase(m.usernameText)
+        creds.username = lcase(m.username)
       else
-        creds.username = m.usernameText
+        creds.username = m.username
       end if
       creds.password = m.password
       m.authTask = m.createAuthTask("execLogIn", m.providerId, m.onLoginComplete, creds)

@@ -319,13 +319,13 @@ namespace zapp.tests
     @params("", "", false)
     @params("   ", "   ", false)
     @params("valid", "", false)
-    @params("valid", "   ", false)
+    @params("valid", "   ", true)
     @params(invalid, "valid", false)
     @params("", "valid", false)
     @params("  ", "valid", false)
     @params("valid", "valid", true)
     function _(username, password, expectedValue)
-      m.vm.usernameText = username
+      m.vm.username = username
       m.vm.password = password
 
       m.vm.checkCredsValid()
@@ -353,7 +353,7 @@ namespace zapp.tests
     @it("valid creds")
     function _()
       m.vm.isCredsValid = true
-      m.vm.usernameText = "user"
+      m.vm.username = "user"
       m.vm.password = "pass"
       m.vm.providerID = "p"
       authTask = { "id": "authTask" }
