@@ -30,7 +30,7 @@ namespace zapp.tests
 
       mioc.setInstance("constants", m.constants)
       mioc.setInstance("buildConfig", m.buildConfig)
-      m.pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "google_analytics_roku" })
+      m.pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "google_analytics_4" })
       m.plugin = new GoogleAnalyticsPlugin(m.pluginData)
     end function
 
@@ -42,7 +42,8 @@ namespace zapp.tests
     function _()
       config = {
         "tracking_id": "#t"
-        "user_id": "userID"
+        "user_id": "user_id"
+        "measurement_id": "measurement_id"
       }
       mioc.setInstance("buildConfig", m.buildConfig)
       mioc.setInstance("constants", m.constants)
@@ -50,7 +51,7 @@ namespace zapp.tests
       m.plugin.measurementId = "measurementId"
       m.plugin.userId = "user_id"
 
-      m.pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "google_analytics_roku" })
+      m.pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "google_analytics_4" })
       m.plugin = new GoogleAnalyticsPlugin(m.pluginData)
 
       m.assertEqual(m.plugin.constants, m.constants)
@@ -242,7 +243,7 @@ namespace zapp.tests
       mioc.setInstance("buildConfig", { "app_family_id": versionId })
       mioc.setInstance("constants", {})
 
-      m.pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "google_analytics_roku" })
+      m.pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "google_analytics_4" })
       m.plugin = new GoogleAnalyticsPlugin(m.pluginData)
 
       m.assertEqual(m.plugin.isTrackingUserIdEnabled, result)
