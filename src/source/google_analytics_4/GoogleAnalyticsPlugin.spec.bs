@@ -61,7 +61,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @ignore ("FIXME")
+    @ignore("FIXME")
     @describe("start")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -77,10 +77,11 @@ namespace zapp.tests
         isFirstOpen: true
         userId: "ui"
       }
-      task = createObject("roSGNode", "task")
+      'task = createObject("roSGNode", "task")
 
       task = m.expectCalled(m.plugin.createInstance("GoogleAnalytics", invalid, "googleAnalyticsTask"))
-      task = m.expectCalled(m.plugin.task@.initialize(params))
+      m.expectCalled(task@.initialize(params))
+      m.expectCalled(task@.start())
 
       m.expectCalled(m.plugin.setInstance("googleAnalyticsTask", task))
 
