@@ -1,0 +1,134 @@
+import "pkg:/source/analytics/BaseAnalyticsPlugin.bs"
+import "pkg:/source/video/analytics/VideoAnalyticsEvent.bs"
+import "pkg:/source/video/analytics/AnalyticsEvent.bs"
+
+class ZappAnalyticsPluginJwPlayer extends zapp.analytics.BaseAnalyticsPlugin
+
+  private eventFactory = invalid
+  private isTrackingUserIdEnabled = false
+  private analyticToken = ""
+  private userIdStorageKey = ""
+  private task as mc.types.node
+
+  @inject("buildConfig")
+  private buildConfig as mc.types.assocarray
+
+  @inject("constants")
+  private constants as mc.types.assocarray
+
+
+  public function new(plugin = invalid)
+    super("ZappAnalyticsPluginJwPlayer", m.getPlugin(plugin))
+    m.analyticToken = m.plugin.getStringValue("token")
+    m.userIdStorageKey = m.plugin.getStringValue("user_identity_storage_key")
+
+    versionId = m.buildConfig.app_family_id
+    userIdString = m.plugin.getStringValue("user_identity_storage_key")
+    m.isTrackingUserIdEnabled = m.checkIfTrackingUserIdAllowed(userIdString, versionId)
+  end function
+
+  private function getPlugin(plugin = invalid)
+    if plugin = invalid
+      pluginManager = new zapp.PluginManager()
+      plugin = pluginManager.getPluginById("zapp-analytics-plugin-jw-player")
+    end if
+
+    return plugin
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ overridden methods
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public override function start()
+    m.log.info("start")
+
+    m.task = m.createInstance("JwPlayerAnalytics", invalid, "JwPlayerAnalyticsTask")
+    '/* cspell:disable *\
+    m.task@.initialize({
+      analyticToken: m.analyticToken
+      appName: m.buildConfig.app_name
+      docLocation: m.buildConfig.data_source_providers_url
+      isFirstOpen: true
+      userIdStorageKey: m.userIdStorageKey
+    })
+    '/* cspell:enable *\
+    m.task@.start()
+
+    m.setInstance("JwPlayerAnalyticsTask", m.task)
+  end function
+
+  protected override function _identify(pluginId, traits = {}, options = {}, isFromLogout = false) as boolean
+    m.log.info("identify", pluginId)
+
+    if m.isEnabled
+
+      if m.isTrackingUserIdEnabled <> true
+        m.log.info("tracking user is not allowed skip isIdentified")
+        return true
+      end if
+
+      if pluginId <> invalid
+        accountInfo = m.getSessionStoreValue(pluginId, "account", true)
+      else
+        accountInfo = invalid
+      end if
+
+      m.log.info("identify accountInfo", accountInfo)
+
+      if accountInfo <> invalid
+        if accountInfo.id <> invalid and accountInfo.id.trim() <> ""
+          m.log.info("identifying analytics with the userId", accountInfo.id, "for plugin:", pluginId)
+          m.log.info("recrating JwPlayerTask with the userId", accountInfo.id, "for plugin:", pluginId)
+          m.setUserId(accountInfo.id)
+        else
+          m.log.error("identify called; but there id was empty!")
+          m.identifyAsAnonymous()
+        end if
+      else
+        m.log.warn("identify called; but there is no logged in user; point to unidentify, to get anonymous analytics")
+        m.identifyAsAnonymous()
+      end if
+    end if
+
+    return true
+  end function
+
+  private function identifyAsAnonymous()
+    m.log.info("identifying as anonymous user")
+    m.setUserId(invalid)
+  end function
+
+  protected override function _trackVideoEvent(event as zapp.video.VideoAnalyticsEvent)
+    m.processAnalyticsEvent(event)
+  end function
+
+  protected override function _processAnalyticsEvent(event as zapp.analytics.AnalyticsEvent)
+    m.task@.logEvent(event.id, event.properties)
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Private Methods
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function checkIfTrackingUserIdAllowed(userIdString, versionId)
+    prefix = "allow-tracking-user-id-for-app-family-"
+    suffix = versionId
+    s = userIdString
+
+    if mc.isString(s) and mc.isString(prefix) and mc.isString(suffix)
+      if prefix + suffix = s
+        return true
+      end if
+    end if
+
+    return false
+  end function
+
+  private function setUserId(userId)
+    if mc.isString(userId) and userId <> ""
+      m.userIdStorageKey = userId
+    end if
+  end function
+
+end class

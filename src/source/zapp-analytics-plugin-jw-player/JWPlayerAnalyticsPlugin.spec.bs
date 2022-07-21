@@ -1,0 +1,280 @@
+namespace zapp.tests
+  @tags("public", "anaytics")
+  @suite("ZappAnalyticsPluginJwPlayerTests")
+  class ZappAnalyticsPluginJwPlayerTests extends tests.BaseTestSuite
+
+    private plugin
+    private pluginData
+    private buildConfig = {
+      "app_family_id": "afi"
+      "app_name": "usp"
+      "data_source_providers_url": "dspu"
+    }
+    private constants = {
+      "deviceInfo": {
+        "modelName": "mn"
+        "model": "md"
+        "version": "ver"
+        "userAgent": "ua"
+      }
+      "applicasterDeviceId": "adid"
+    }
+
+    protected override function beforeEach()
+      super.beforeEach()
+      config = {
+        "tracking_id": "#t"
+        "user_id": "#u"
+        "measurement_id": "G-RWBXRW5JYJ",
+      }
+
+      mioc.setInstance("constants", m.constants)
+      mioc.setInstance("buildConfig", m.buildConfig)
+      m.pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "google_analytics_4" })
+      m.plugin = new ZappAnalyticsPluginJwPlayer(m.pluginData)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("constructor")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("constructor")
+    function _()
+      config = {
+        "tracking_id": "#t"
+        "user_id": "user_id"
+        "measurement_id": "measurement_id"
+      }
+      mioc.setInstance("buildConfig", m.buildConfig)
+      mioc.setInstance("constants", m.constants)
+
+      m.plugin.measurementId = "measurementId"
+      m.plugin.userId = "user_id"
+
+      m.pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "google_analytics_4" })
+      m.plugin = new ZappAnalyticsPluginJwPlayer(m.pluginData)
+
+      m.assertEqual(m.plugin.constants, m.constants)
+      m.assertEqual(m.plugin.buildConfig, m.buildConfig)
+      m.assertEqual(m.plugin.measurementId, "measurement_id")
+      m.assertEqual(m.plugin.userId, "user_id")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @ignore("FIXME")
+    @describe("start")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("creates the task")
+    function _()
+
+      m.plugin.measurementId = "#m"
+      m.plugin.userId = "#u"
+      params = {
+        measurementId: "id"
+        appName: "ap"
+        docLocation: "fs"
+        isFirstOpen: true
+        userId: "ui"
+      }
+      'task = createObject("roSGNode", "task")
+
+      task = m.expectCalled(m.plugin.createInstance("GoogleAnalytics", invalid, "googleAnalyticsTask"))
+      m.expectCalled(task@.initialize(params))
+      m.expectCalled(task@.start())
+
+      m.expectCalled(m.plugin.setInstance("googleAnalyticsTask", task))
+
+      m.plugin.start()
+
+      m.assertEqual(m.plugin.task.measurementId, "#m")
+      m.assertEqual(m.plugin.task.userId, "#u")
+      m.assertEqual(m.plugin.task.control, "run")
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("_identify")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("return true if isEnabled = false")
+    function _()
+      pluginId = { "id": "pluginId" }
+      traits = { "id": "traits" }
+      options = { "id": "options" }
+      isFromLogout = false
+      m.plugin.isEnabled = false
+
+      result = m.plugin._identify(pluginId, traits, options, isFromLogout)
+
+      m.assertTrue(result)
+    end function
+
+    @it("return true if isTrackingUserIdEnabled = false")
+    function _()
+      pluginId = { "id": "pluginId" }
+      traits = { "id": "traits" }
+      options = { "id": "options" }
+      isFromLogout = false
+      m.plugin.isEnabled = true
+      m.plugin.isTrackingUserIdEnabled = false
+
+      result = m.plugin._identify(pluginId, traits, options, isFromLogout)
+
+      m.assertTrue(result)
+    end function
+
+    @it("return true if accountInfo = invalid and send anonymous user")
+    function _()
+      pluginId = invalid
+      traits = { "id": "traits" }
+      options = { "id": "options" }
+      isFromLogout = false
+      m.plugin.isEnabled = true
+      m.plugin.isTrackingUserIdEnabled = true
+
+      m.expectCalled(m.plugin.identifyAsAnonymous())
+
+      result = m.plugin._identify(pluginId, traits, options, isFromLogout)
+
+      m.assertTrue(result)
+    end function
+
+    @it("call anonymous user analytic")
+    function _()
+      pluginId = { "id": "pluginId" }
+      traits = { "id": "traits" }
+      options = { "id": "options" }
+      isFromLogout = false
+      m.plugin.isEnabled = true
+      m.plugin.isTrackingUserIdEnabled = true
+      accountInfo = { "id": "" }
+
+      m.expectCalled(m.plugin.getSessionStoreValue(pluginId, "account", true), accountInfo)
+      m.expectCalled(m.plugin.identifyAsAnonymous())
+
+      result = m.plugin._identify(pluginId, traits, options, isFromLogout)
+
+      m.assertTrue(result)
+    end function
+
+    @it("set google userID task ")
+    function _()
+      pluginId = { "id": "pluginId" }
+      traits = { "id": "traits" }
+      options = { "id": "options" }
+      isFromLogout = false
+      m.plugin.isEnabled = true
+      m.plugin.isTrackingUserIdEnabled = true
+      accountInfo = { "id": "accountInfo" }
+
+      m.expectCalled(m.plugin.getSessionStoreValue(pluginId, "account", true), accountInfo)
+      m.expectCalled(m.plugin.setUserId(accountInfo.id))
+
+      result = m.plugin._identify(pluginId, traits, options, isFromLogout)
+
+      m.assertTrue(result)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("identifyAsAnonymous")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("identifies as Anonymous")
+    function _()
+      m.expectCalled(m.plugin.setUserId(invalid))
+
+      m.plugin.identifyAsAnonymous()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("_trackVideoEvent")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("track video event ")
+    function _()
+      event = { "id": "event", "properties": "props" }
+
+      m.expectCalled(m.plugin.processAnalyticsEvent(event))
+
+      m.plugin._trackVideoEvent(event)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("_processAnalyticsEvent")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("proceed Analytics Event ")
+    function _()
+      event = { "id": "event", "properties": "props" }
+
+      m.expectCalled(m.plugin.task@.logEvent(event.id, event.properties))
+
+      m.plugin._processAnalyticsEvent(event)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("is tracking user Id allowed")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("is user id allowed")
+    @params("allow-tracking-user-id-for-app-family-aaaa", "aaaa", true)
+    @params("allow-tracking-user-id-for-app-family-aaab", "aaaa", false)
+    @params("allow-tracking-user-id-for-app-family-aaaa", "aaaac", false)
+    function _(userIdString, versionId, expected)
+
+      m.assertEqual(m.plugin.checkIfTrackingUserIdAllowed(userIdString, versionId), expected)
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("trackUserIdAllowedFlag")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("constructor_trackUser")
+    @params("allow-tracking-user-id-for-app-family-aaaa", "aaaa", true)
+    @params("allow-tracking-user-id-for-app-family-aaac", "aaaa", false)
+    @params(invalid, "aaaa", false)
+    function _(userID, versionId, result)
+
+      config = {
+        "tracking_id": "#t"
+        "user_id": userID
+      }
+      mioc.setInstance("buildConfig", { "app_family_id": versionId })
+      mioc.setInstance("constants", {})
+
+      m.pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "google_analytics_4" })
+      m.plugin = new ZappAnalyticsPluginJwPlayer(m.pluginData)
+
+      m.assertEqual(m.plugin.isTrackingUserIdEnabled, result)
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("setUserId")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("valid")
+    @params("user123")
+    @params("user 123")
+    function _(userID)
+      m.plugin.setUserId(userID)
+
+      m.assertEqual(m.plugin.userId, userID)
+    end function
+
+    @it("return invalid")
+    @params(invalid)
+    @params({})
+    @params(123)
+    function _(userID)
+      m.plugin.task = {}
+
+      m.plugin.setUserId(userID)
+
+      m.assertEqual(m.plugin.userId, m.plugin.userId)
+    end function
+
+  end class
+end namespace
