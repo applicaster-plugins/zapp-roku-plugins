@@ -8,6 +8,7 @@ class ZappAnalyticsPluginJwPlayer extends zapp.analytics.BaseAnalyticsPlugin
   private isTrackingUserIdEnabled = false
   private analyticToken = ""
   private userIdStorageKey = ""
+  private eventURL = "https://ihe.jwpltx.com/v1/jwplayer6/ping.gif"
   private task as mc.types.node
 
   @inject("buildConfig")

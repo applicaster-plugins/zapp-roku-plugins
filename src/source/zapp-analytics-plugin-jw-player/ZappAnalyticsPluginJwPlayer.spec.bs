@@ -1,5 +1,6 @@
 namespace zapp.tests
   @tags("public", "anaytics")
+  @only
   @suite("ZappAnalyticsPluginJwPlayerTests")
   class ZappAnalyticsPluginJwPlayerTests extends tests.BaseTestSuite
 
@@ -24,8 +25,8 @@ namespace zapp.tests
       super.beforeEach()
       config = {
         "tracking_id": "#t"
-        "user_id": "#u"
-        "measurement_id": "G-RWBXRW5JYJ",
+        "user_identity_storage_key": "#u"
+        "token": "G-RWBXRW5JYJ",
       }
 
       mioc.setInstance("constants", m.constants)
@@ -42,22 +43,22 @@ namespace zapp.tests
     function _()
       config = {
         "tracking_id": "#t"
-        "user_id": "user_id"
-        "measurement_id": "measurement_id"
+        "user_identity_storage_key": "user_identity_storage_key"
+        "token": "token"
       }
       mioc.setInstance("buildConfig", m.buildConfig)
       mioc.setInstance("constants", m.constants)
 
-      m.plugin.measurementId = "measurementId"
-      m.plugin.userId = "user_id"
+      m.plugin.analyticToken = "analyticToken"
+      m.plugin.userIdStorageKey = "user_identity_storage_key"
 
-      m.pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "google_analytics_4" })
+      m.pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "zapp-analytics-plugin-jw-player" })
       m.plugin = new ZappAnalyticsPluginJwPlayer(m.pluginData)
 
       m.assertEqual(m.plugin.constants, m.constants)
       m.assertEqual(m.plugin.buildConfig, m.buildConfig)
-      m.assertEqual(m.plugin.measurementId, "measurement_id")
-      m.assertEqual(m.plugin.userId, "user_id")
+      m.assertEqual(m.plugin.analyticToken, "token")
+      m.assertEqual(m.plugin.userIdStorageKey, "user_identity_storage_key")
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -68,14 +69,14 @@ namespace zapp.tests
     @it("creates the task")
     function _()
 
-      m.plugin.measurementId = "#m"
-      m.plugin.userId = "#u"
+      m.plugin.analyticToken = "#m"
+      m.plugin.userIdStorageKey = "#u"
       params = {
-        measurementId: "id"
+        analyticToken: "id"
         appName: "ap"
         docLocation: "fs"
         isFirstOpen: true
-        userId: "ui"
+        userIdStorageKey: "ui"
       }
       'task = createObject("roSGNode", "task")
 
@@ -87,8 +88,8 @@ namespace zapp.tests
 
       m.plugin.start()
 
-      m.assertEqual(m.plugin.task.measurementId, "#m")
-      m.assertEqual(m.plugin.task.userId, "#u")
+      m.assertEqual(m.plugin.task.analyticToken, "#m")
+      m.assertEqual(m.plugin.task.userIdStorageKey, "#u")
       m.assertEqual(m.plugin.task.control, "run")
 
     end function
@@ -110,14 +111,14 @@ namespace zapp.tests
       m.assertTrue(result)
     end function
 
-    @it("return true if isTrackingUserIdEnabled = false")
+    @it("return true if isTrackinguserIdStorageKeyEnabled = false")
     function _()
       pluginId = { "id": "pluginId" }
       traits = { "id": "traits" }
       options = { "id": "options" }
       isFromLogout = false
       m.plugin.isEnabled = true
-      m.plugin.isTrackingUserIdEnabled = false
+      m.plugin.isTrackinguserIdStorageKeyEnabled = false
 
       result = m.plugin._identify(pluginId, traits, options, isFromLogout)
 
@@ -158,7 +159,7 @@ namespace zapp.tests
       m.assertTrue(result)
     end function
 
-    @it("set google userID task ")
+    @it("set google userIdStorageKey task ")
     function _()
       pluginId = { "id": "pluginId" }
       traits = { "id": "traits" }
@@ -235,11 +236,11 @@ namespace zapp.tests
     @params("allow-tracking-user-id-for-app-family-aaaa", "aaaa", true)
     @params("allow-tracking-user-id-for-app-family-aaac", "aaaa", false)
     @params(invalid, "aaaa", false)
-    function _(userID, versionId, result)
+    function _(userIdStorageKey, versionId, result)
 
       config = {
         "tracking_id": "#t"
-        "user_id": userID
+        "user_identity_storage_key": userIdStorageKey
       }
       mioc.setInstance("buildConfig", { "app_family_id": versionId })
       mioc.setInstance("constants", {})
@@ -258,22 +259,22 @@ namespace zapp.tests
     @it("valid")
     @params("user123")
     @params("user 123")
-    function _(userID)
-      m.plugin.setUserId(userID)
+    function _(userIdStorageKey)
+      m.plugin.setUserId(userIdStorageKey)
 
-      m.assertEqual(m.plugin.userId, userID)
+      m.assertEqual(m.plugin.userIdStorageKey, userIdStorageKey)
     end function
 
     @it("return invalid")
     @params(invalid)
     @params({})
     @params(123)
-    function _(userID)
+    function _(userIdStorageKey)
       m.plugin.task = {}
 
-      m.plugin.setUserId(userID)
+      m.plugin.setUserId(userIdStorageKey)
 
-      m.assertEqual(m.plugin.userId, m.plugin.userId)
+      m.assertEqual(m.plugin.userIdStorageKey, m.plugin.userIdStorageKey)
     end function
 
   end class
