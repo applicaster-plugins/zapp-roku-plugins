@@ -4,7 +4,16 @@
     extends='UIBScreen'
     vm='QuickBrickAuthenticationFlowScreenVM'>
 
-  <interface></interface>
+  <interface>
+    <field
+        id='ignoreCompletionAction'
+        type='boolean'
+        value='false' />
+    <field
+        id='isInsideStoreScreen'
+        type='boolean'
+        value='false' />
+  </interface>
 
   <children>
     <Rectangle
