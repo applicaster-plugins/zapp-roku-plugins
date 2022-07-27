@@ -9,10 +9,6 @@
         id='isFirstScreen'
         type='boolean'
         value='false' />
-    <field
-        id='ignoreCompletionAction'
-        type='boolean'
-        value='false' />
   </interface>
 
   <children>

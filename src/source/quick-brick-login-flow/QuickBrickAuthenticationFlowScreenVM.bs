@@ -115,11 +115,13 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
 
   end function
 
-  private function onSubScreenStateChange(state)
-    m.log.method("current screen state change", state, "m.isShowingRegisterScreen")
+  private function onSubScreenStateChange(state as string)
+    ignoreCompletionAction = m.getTopField("ignoreCompletionAction")
+    m.log.method("current screen state change", state, "m.isShowingRegisterScreenFirst", m.isShowingRegisterScreenFirst, "ignoreCompletionAction", ignoreCompletionAction)
 
-    if m.getTopField("ignoreCompletionAction") = true
-      m.dismiss("success")
+    if ignoreCompletionAction = true and (state = "success" or state = "cancel")
+      m.log.info("ignoreCompletionAction is true - dismissing on state", state)
+      m.dismiss(state)
     else if state = "success"
       m.signalAppLaunchDialog(true)
       m.performNextAction()
@@ -135,6 +137,8 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
 
     if m.isDisplayedInPrehook
       m.log.info("was displayed in prehook - ignoring all next actions")
+      m.dismiss("success")
+    else if action = "default"
       m.dismiss("success")
     else if action = "go_back"
       m.dismiss("success")
