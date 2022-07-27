@@ -118,7 +118,9 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
   private function onSubScreenStateChange(state)
     m.log.method("current screen state change", state, "m.isShowingRegisterScreen")
 
-    if state = "success"
+    if m.getTopField("ignoreCompletionAction") = true
+      m.dismiss("success")
+    else if state = "success"
       m.signalAppLaunchDialog(true)
       m.performNextAction()
     else if state = "cancel"
