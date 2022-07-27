@@ -1,6 +1,5 @@
 namespace zapp.tests
   @tags("public", "anaytics")
-  @only
   @suite("ZappAnalyticsPluginJwPlayerTests")
   class ZappAnalyticsPluginJwPlayerTests extends tests.BaseTestSuite
 
@@ -207,9 +206,10 @@ namespace zapp.tests
 
     @it("proceed Analytics Event ")
     function _()
-      event = { "id": "event", "properties": "props" }
+      event = { "id": "impression", "properties": "props" }
+      eventURL = "https://ihe.jwpltx.com/v1/clienta/ping.gif"
 
-      m.expectCalled(m.plugin.task@.logEvent(event.id, event.properties))
+      m.expectCalled(m.plugin.executeAPIRequest("POST", invalid, event.properties, invalid, eventURL))
 
       m.plugin._processAnalyticsEvent(event)
     end function

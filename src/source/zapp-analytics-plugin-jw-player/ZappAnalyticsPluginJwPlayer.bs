@@ -1,6 +1,8 @@
 import "pkg:/source/analytics/BaseAnalyticsPlugin.bs"
 import "pkg:/source/video/analytics/VideoAnalyticsEvent.bs"
 import "pkg:/source/video/analytics/AnalyticsEvent.bs"
+import "pkg:/source/plugin-support/BasePlugin.bs"
+
 
 class ZappAnalyticsPluginJwPlayer extends zapp.analytics.BaseAnalyticsPlugin
 
@@ -105,12 +107,19 @@ class ZappAnalyticsPluginJwPlayer extends zapp.analytics.BaseAnalyticsPlugin
   end function
 
   protected override function _processAnalyticsEvent(event as zapp.analytics.AnalyticsEvent)
-    m.task@.logEvent(event.id, event.properties)
+    if event.id = "impression"
+      m.eventURL = m.eventURL.replace("jwplayer6", "clienta")
+    end if
+    m.executeApiRequest("POST", invalid, event.properties, invalid, m.eventURL)
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ Private Methods
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function executeApiRequest(method, endpoint, params = invalid, jwt = invalid, url = invalid)
+    return zapp.APIUtils.executeApiRequest(m, method, endpoint, params, true, jwt, url)
+  end function
 
   private function checkIfTrackingUserIdAllowed(userIdString, versionId)
     prefix = "allow-tracking-user-id-for-app-family-"
