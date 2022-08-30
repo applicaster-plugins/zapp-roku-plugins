@@ -102,7 +102,7 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
 
     m.inputStyle = inputStyle
     m.loginButtonStyle = loginButtonStyle
-    m.registerButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "button", "custom", m.localizations.register_title)
+    m.registerButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "button", "custom", m.localizations.register_button_text)
     m.maxDebugAccounts = zapp.viewUtils.getUIBInt(styles, "debug_max_accounts")
 
     m.updateFocusControls()
