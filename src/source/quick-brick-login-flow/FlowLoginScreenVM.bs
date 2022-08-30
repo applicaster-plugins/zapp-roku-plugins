@@ -87,11 +87,11 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
 
     m.inputStyle = inputStyle
 
-    m.loginButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "button", "custom", m.localizations.login_title)
-    registerButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "button", "custom", m.localizations.register_title)
+    m.loginButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "button", "custom", m.localizations.login_button_text)
+    registerButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "button", "custom", m.localizations.register_button_text)
     registerButtonStyle.visible = asBoolean(m.riversJson.general.show_register_button_on_login_screen) = true and m.getTopField("isFirstScreen") = true
 
-    forgotPasswordButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "button", "custom", m.localizations.forgot_password_title)
+    forgotPasswordButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "button", "custom", m.localizations.forgot_password_button_text)
     forgotPasswordButtonStyle.visible = styles.show_forgot_password_button = true
 
     m.registerButtonStyle = registerButtonStyle
