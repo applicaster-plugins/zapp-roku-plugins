@@ -321,6 +321,33 @@ namespace zapp.tests
       m.assertEqual(m.vm.isCredsValid, expectedValue)
     end function
 
+    @it("does not require lastName field, if it is not shown")
+    function _()
+      m.vm.username = "username"
+      m.vm.isFirstNameFieldVisible = true
+      m.vm.isLastNameFieldVisible = false
+      m.vm.firstName = "username"
+      m.vm.lastName = ""
+      m.vm.password = "password"
+
+      m.vm.checkCredsValid()
+
+      m.assertEqual(m.vm.isCredsValid, true)
+    end function
+
+    @it("does not require firstName field, if it is not shown")
+    function _()
+      m.vm.username = "username"
+      m.vm.isFirstNameFieldVisible = false
+      m.vm.isLastNameFieldVisible = true
+      m.vm.firstName = ""
+      m.vm.lastName = "username"
+      m.vm.password = "password"
+
+      m.vm.checkCredsValid()
+
+      m.assertEqual(m.vm.isCredsValid, true)
+    end function
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("register")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
