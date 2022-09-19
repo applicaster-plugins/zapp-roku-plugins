@@ -348,6 +348,7 @@ namespace zapp.tests
 
       m.assertEqual(m.vm.isCredsValid, true)
     end function
+
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("register")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

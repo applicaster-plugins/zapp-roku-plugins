@@ -240,7 +240,7 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
 
   public function checkCredsValid()
     isUsernameValid = asString(m.username) <> ""
-    isFirstNameValid = (m.isFirstNameFieldVisible and asString(m.firstName) <> "")or (m.isFirstNameFieldVisible = false and asString(m.firstName) = "")
+    isFirstNameValid = (m.isFirstNameFieldVisible and asString(m.firstName) <> "") or (m.isFirstNameFieldVisible = false and asString(m.firstName) = "")
     isLastNameValid = (m.isLastNameFieldVisible and asString(m.lastName) <> "") or (m.isLastNameFieldVisible = false and asString(m.lastName) = "")
     isPasswordValid = asString(m.password) <> ""
 
