@@ -41,11 +41,11 @@
             width='{{=zapp_viewUtils_UIBInt("label_w")}}' />
         <mv_Label
             id='optionalText1'
-            style='{{=zapp_viewUtils_UIBLabel("optional_text1", invalid, "register_optional_text1")}}'
+            style='{{=zapp_viewUtils_UIBLabel("optional_text1", invalid, "register_optional1")}}'
             width='{{=zapp_viewUtils_UIBInt("label_w")}}' />
         <mv_Label
             id='optionalText2'
-            style='{{=zapp_viewUtils_UIBLabel("optional_text2", invalid, "register_optional_text2")}}'
+            style='{{=zapp_viewUtils_UIBLabel("optional_text2", invalid, "register_optional2")}}'
             width='{{=zapp_viewUtils_UIBInt("label_w")}}' />
       </mv_LayoutGroup>
 
