@@ -11,6 +11,7 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
   private isShowingRegisterScreenFirst = false
   private isSubScreenVisible = invalid
   private loginCompletionAction = ""
+  private nameOfParentScreen = ""
   private authTask as mc.types.node
 
   public function new(riversJson)
@@ -81,9 +82,15 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
   '++ First Screen Management
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+  private function setScreenParent(screen as mc.types.node)
+    parent = screen.getParent().getParent().getParent().getParent()
+    m.nameOfParentScreen = parent.name
+  end function
+
   private function showFirstScreen()
     m.log.info("showing first screen - is register first? ", m.isShowingRegisterScreenFirst)
     screen = m.createSubScreen(m.isShowingRegisterScreenFirst ? "FlowRegisterScreen" : "FlowLoginScreen")
+    m.setScreenParent(screen)
     screen.isFirstScreen = true
     m.toggleSubScreen(screen)
   end function
@@ -118,8 +125,9 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
   private function onSubScreenStateChange(state as string)
     ignoreCompletionAction = m.getTopField("ignoreCompletionAction")
     m.log.method("current screen state change", state, "m.isShowingRegisterScreenFirst", m.isShowingRegisterScreenFirst, "ignoreCompletionAction", ignoreCompletionAction)
-
-    if ignoreCompletionAction = true and (state = "success" or state = "cancel")
+    if m.nameOfParentScreen = "tabChildNavController" and state = "cancel"
+      m.navigateToHomeScreen()
+    else if ignoreCompletionAction = true and (state = "success" or state = "cancel")
       m.log.info("ignoreCompletionAction is true - dismissing on state", state)
       m.dismiss(state)
     else if state = "success"

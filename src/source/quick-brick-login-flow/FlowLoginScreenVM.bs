@@ -334,6 +334,7 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
 
     isDismissable = m.getTopField("isDismissable")
     if isDismissable = true
+      m.dismiss("none")
       m.dismiss("cancel")
       return true
     else
