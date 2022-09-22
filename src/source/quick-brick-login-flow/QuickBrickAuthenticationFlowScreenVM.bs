@@ -84,7 +84,7 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
 
   private function setScreenParent(screen as mc.types.node)
     parent = screen.getParent().getParent().getParent().getParent()
-    m.nameOfParentScreen = parent.name
+    m.nameOfParentScreen = asString(parent.name)
   end function
 
   private function showFirstScreen()
