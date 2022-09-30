@@ -276,6 +276,7 @@ namespace zapp.tests
       m.vm.focusId = "usernameInput"
       m.expectOnce(m.vm, "getTopField", ["isDismissable"], true)
 
+      m.expectOnce(m.vm, "dismiss", ["none"])
       m.expectOnce(m.vm, "dismiss", ["cancel"])
 
       m.assertTrue(m.vm.onKeyPressBack())
