@@ -59,6 +59,13 @@ class GoogleAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
     m.setInstance("googleAnalyticsTask", m.task)
   end function
 
+  public override function onVideoAnalyticsEvent(event as zapp.analytics.AnalyticsEvent)
+    if m.task = invalid
+      m.task = m.getInstance("googleAnalyticsTask")
+    end if
+    m.processAnalyticsEvent(event)
+  end function
+
   protected override function _identify(pluginId, traits = {}, options = {}, isFromLogout = false) as boolean
     m.log.info("identify", pluginId)
 
