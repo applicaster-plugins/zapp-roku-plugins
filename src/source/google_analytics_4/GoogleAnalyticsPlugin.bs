@@ -2,6 +2,7 @@ import "pkg:/source/analytics/BaseAnalyticsPlugin.bs"
 import "pkg:/source/video/analytics/VideoAnalyticsEvent.bs"
 import "pkg:/source/video/analytics/AnalyticsEvent.bs"
 
+
 class GoogleAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
 
   private eventFactory = invalid
@@ -59,9 +60,12 @@ class GoogleAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
     m.setInstance("googleAnalyticsTask", m.task)
   end function
 
-  public override function onVideoAnalyticsEvent(event as zapp.analytics.AnalyticsEvent)
+  public override function onVideoAnalyticsEvent(event as zapp.analytics.AnalyticsEvent) as void
+    m.log.info("this plugin does not have a google analtyics task, using the shared instance")
+    m.task = m.getInstance("googleAnalyticsTask")
     if m.task = invalid
-      m.task = m.getInstance("googleAnalyticsTask")
+      m.log.error("google analtyics task is invalid")
+      return
     end if
     m.processAnalyticsEvent(event)
   end function
