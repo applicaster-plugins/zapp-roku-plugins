@@ -3,16 +3,16 @@
 'Request.brs
 
 function Request(messagePort) As Object
-  'bs:disable-next-line
+
 	YouboraLog("Created Request")
-  this = CreateObject("roAssociativeArray")
-  
-  'Methods
-  this.getUrl = Request_getUrl
-  this.getQuery = Request_getQuery
-  this.send = Request_send
-  
-  'Fields
+    this = CreateObject("roAssociativeArray")
+
+    'Methods
+    this.getUrl = Request_getUrl
+    this.getQuery = Request_getQuery
+    this.send = Request_send
+
+    'Fields
     this.host = ""
     this.service = ""
     this.args = {}
@@ -26,9 +26,8 @@ end Function
 function Request_send() as Boolean
 	
 	url = m.getUrl()
-  m.request.SetUrl(url)
-  'bs:disable-next-line
-  YouboraLog("XHR Req: " + url)
+    m.request.SetUrl(url)
+    YouboraLog("XHR Req: " + url)
     
     'We need a little setup if the request is https
     if url.Left(5) = "https"

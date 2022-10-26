@@ -7,10 +7,10 @@ sub init()
     m.preloaders.AddTail("FastData")
 	m.requests = {} 
 
-	m.startedRequests = CreateObject("roList")
+	m.requestHost = "a-fds.youborafds01.com"
+	m.view = -1
 
-    m.top.requestHost = "nqs.nice264.com"
-    m.top.httpSecure = false
+	m.startedRequests = CreateObject("roList")
 
     m.top.observeField("request", m.port)
     m.top.observeField("addPreloader", m.port)
@@ -22,11 +22,13 @@ sub init()
 	m.top.functionName = "_run"
 	m.top.control = "RUN"
 
+	m.sessionStarted = false
+
 end sub
 
 
 sub _run()
-
+	m.httpSecure = m.top.httpSecure
 	'Endless loop to listen for events
     while true
 
@@ -46,7 +48,9 @@ sub _run()
                 preloader = msg.getData()
                 removePreloader(preloader)
             else if msg.getField() = "requestHost"
-            	setHost(m.top.requestHost)
+				' This will get executed before removing the preloader, so we make sure of saving the host just in case
+				m.requestHost = m.top.requestHost
+            	setHost(m.requestHost)
             else if msg.getField() = "nextView"
             	dict = msg.getData()
             	_nextView(dict.live)
@@ -85,7 +89,7 @@ end sub
 
 
 function getHost() as String
-	return addProtocol(m.host, m.top.httpSecure)
+	return addProtocol(m.host, m.httpSecure)
 end function
 
 sub addPreloader(preloader as String)
@@ -110,6 +114,16 @@ sub removePreloader(preloader as String)
 	if preloader = "FastData"
 		'Move requests from 'nocode' to the proper queue
 		nocodeRequests = m.requests["nocode"]
+		'Save the updated data
+
+		topFields = m.top.getFields()
+
+		m.code = topFields["code"]
+		m.prefix = topFields["prefix"]
+		m.requestHost = topFields["requestHost"]
+		m.pingTime = topFields["pingTime"]
+		m.balancerEnabled = topFields["balancerEnabled"]
+		m.youboraId = topFields["youboraId"]
 
 		if nocodeRequests <> Invalid and nocodeRequests.Count() > 0
 		    m.requests[getViewCode()] = nocodeRequests
@@ -128,10 +142,10 @@ sub sendRequest(service, args = Invalid)
 	if args = Invalid
 		args = {}
 	endif
-    print "Service: " + service
+	YouboraLog("Service: " + service)
 	'Remove code
 	args.delete("code")
-
+	
 	req = Request(m.port)
 	req.service = service
 	req.args = args
@@ -163,10 +177,35 @@ sub processRequests()
 			for each req in requestsForCode 'For each pending request for that view code
 
 				req.args.code = viewCode
-
+				req.args["sessionRoot"] = getSessionRoot()
 				if req.host = Invalid or req.host = ""
 					req.host = getHost()
 				endif
+
+				if req.service = "/start" OR req.service = "/init"
+					req.args["youboraId"] = m.youboraId
+				endif
+
+				if req.service = "/start" OR req.service = "/init" OR req.service = "/ping" OR req.service = "/error"
+					req.args["sessionParent"] = getSessionRoot() 'Since we won't have parent we use the same code as root
+				endif
+
+				if req.service = "/start" OR req.service = "/init" OR req.service = "/error"
+					req.args["parentId"] = req.args["sessionRoot"]
+				endif
+
+				if (req.service = "/infinity/session/start" OR req.service = "/infinity/session/stop" OR req.service = "/infinity/session/nav" OR req.service = "/infinity/session/event" OR req.service = "/infinity/session/beat")
+					req.args.Delete("code")
+					req.args["sessionId"] = getSessionRoot()
+
+					if req.service = "/infinity/session/start"
+						m.sessionStarted = true
+					endif
+
+					if req.service = "/infinity/session/stop"
+						m.sessionStarted = false
+					endif
+				end if
 
 				req.send()
 
@@ -180,19 +219,19 @@ end sub
 
 function _nextView(liveOrPrefix) as String
 
-	prefix = ""
+	prefix = "U"
 
 	'We don't check boolean type as it may be boxed (roBoolean) or unboxed (Boolean)
-	if liveOrPrefix = true
-		prefix = "L"
-	else if liveOrPrefix = false
-		prefix = "V"
-	else if type(liveOrPrefix) = "string"
-		prefix = liveOrPrefix
-	endif
+	' if liveOrPrefix = true
+	' 	prefix = "L"
+	' else if liveOrPrefix = false
+	' 	prefix = "V"
+	' else if type(liveOrPrefix) = "string"
+	' 	prefix = liveOrPrefix
+	' endif
 
-	m.top.view = m.top.view + 1
-	m.top.prefix = prefix
+	m.view = m.view + 1
+	m.prefix = prefix
 
 	vcode = getViewCode()
 	return vcode
@@ -200,11 +239,18 @@ function _nextView(liveOrPrefix) as String
 end function
 
 function getViewCode() as String
-	if m.top.code = Invalid or m.top.code = ""
+	if m.code = Invalid or m.code = ""
 		return "nocode"
 	else
-		return m.top.prefix + m.top.code + "_" + m.top.view.ToStr()
+		return m.prefix + m.code + "_" + m.view.ToStr()
 	endif
+end function
+
+function getSessionRoot() as String
+	if m.code = Invalid or m.code = ""
+		return "noSessionRoot"
+	end if
+		return m.prefix + m.code
 end function
 
 sub setHost(host as String)
