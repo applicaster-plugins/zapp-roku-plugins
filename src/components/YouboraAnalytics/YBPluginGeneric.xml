@@ -1,32 +1,73 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version='1.0' encoding='utf-8'?>
 <!-- Copyright 2016 Roku Corp.  All Rights Reserved. -->
 
-<component name="YBPluginGeneric" extends="Task">
-  
-    <interface>
+<component
+    name='YBPluginGeneric'
+    extends='Task'>
 
-        <!-- Video object from where to listen for events -->
-        <field id = "videoplayer" type = "node" value = "" />
+  <interface>
 
-        <!-- Field to emit a youbora event -->
-        <field id = "event" type = "assocarray" />
+    <!-- Video object from where to listen for events -->
+    <field
+        id='videoplayer'
+        type='node'
+        value='' />
 
-        <!-- Youbora options containing all media related info -->
-        <field id = "options" type = "assocarray" />
+    <!-- Field to emit a youbora event -->
+    <field
+        id='event'
+        type='assocarray' />
 
-        <!-- Logging flag. Set to true to view Youbora logs -->
-        <field id = "logging" type = "boolean" value = "false" />
-        
-        <!-- Field to emit a youbora adevent -->
-        <field id = "adevent" type = "assocarray" />
+    <!-- Youbora options containing all media related info -->
+    <field
+        id='options'
+        type='assocarray' />
 
-    </interface>
+    <!-- Logging flag. Set to true to view Youbora logs -->
+    <field
+        id='logging'
+        type='boolean'
+        value='false' />
 
-    
-    <script type="text/brightscript" uri="Utils.brs"/>  
-    <script type="text/brightscript" uri="Chrono.brs"/>  
-    <script type="text/brightscript" uri="ViewManager.brs"/>
-    <script type="text/brightscript" uri="Request.brs"/>
-    <script type="text/brightscript" uri="InfoManager.brs"/>
+    <!-- Field to emit a youbora adevent -->
+    <field
+        id='adevent'
+        type='assocarray' />
+
+    <!-- Field to emit a youbora IMA adevent -->
+    <field
+        id='imaadevent'
+        type='assocarray' />
+
+    <field
+        id='session'
+        type='assocarray' />
+
+    <!-- Determines if the plugin is actively listening for events. (READ-ONLY) -->
+    <field
+        id='monitoring'
+        type='boolean' />
+
+
+  </interface>
+
+  <script
+      type='text/brightscript'
+      uri='Utils.brs' />
+  <script
+      type='text/brightscript'
+      uri='YBPluginGeneric.brs' />
+  <script
+      type='text/brightscript'
+      uri='Chrono.brs' />
+  <script
+      type='text/brightscript'
+      uri='ViewManager.brs' />
+  <script
+      type='text/brightscript'
+      uri='Request.brs' />
+  <script
+      type='text/brightscript'
+      uri='InfoManager.brs' />
 
 </component>
