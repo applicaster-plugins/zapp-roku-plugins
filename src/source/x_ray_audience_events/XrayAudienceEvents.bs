@@ -1,0 +1,129 @@
+import "pkg:/source/video/analytics/XRayEventsFactory.bs"
+import "pkg:/source/plugin-support/BasePlugin.bs"
+import "pkg:/source/plugin-support/PluginManager.bs"
+import "pkg:/source/video/analytics/AnalyticsEventInfo.bs"
+import "pkg:/source/lib/APIUtils.bs"
+import "pkg:/source/authorization/BaseAuthPlugin.bs"
+import "pkg:/source/lib/URI.bs"
+import "pkg:/source/video/Quantile.bs"
+
+namespace zapp.video.analytics
+
+  class XrayAudienceEvents extends zapp.BaseClass
+
+    private eventFactory as zapp.video.analytics.XRayEventsFactory
+    private enabled = false
+    private eventURL = "https://track.applicaster.com/events/v1/"
+    private contentNode = invalid
+    private requestParams = []
+    private userIdStorageKey = ""
+    private eventBatch = 0
+    private maxEventCount = invalid
+    private executionTimer = invalid
+    private isActive = false
+    private listOfEvents = {}
+
+    @injectClass("zapp.URI")
+    private uri
+
+    function new()
+      super("XrayAudienceEvents")
+      pluginManager = new zapp.PluginManager()
+      m.eventFactory = new zapp.video.analytics.XRayEventsFactory()
+      m.maxEventCount = m.eventFactory.eventsByKey.count()
+      'mioc.setInstance("eventBatch", 0)
+      plugin = pluginManager.getPluginById("x-ray-audience-events")
+      m.userIdStorageKey = plugin.getStringValue("user_identity_storage_key", "quick-brick-login-flow.access-token")
+      m.enabled = plugin.getBoolValue("enabled")
+
+      m.initialize()
+
+      parts = m.userIdStorageKey.split(".")
+      m.eventFactory.accountSection = asString(parts[0])
+      m.eventFactory.accountKey = asString(parts[1])
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '++ Public Methods
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    function initialize()
+      m.log.info("initialize eventFactory")
+      m.eventFactory.initialize()
+    end function
+
+    function sendAppLaunchedEvent()
+      m.log.info("sending appLaunchedEvent")
+      event = m.eventFactory.createEvent("app_launched")
+      m.eventBatch = m.eventBatch + 1
+      m.sendXrayAudienceEvents(event)
+    end function
+
+    function sendAppPresentedEvent(duration as integer)
+      m.log.info("sending appPresented event")
+      event = m.eventFactory.createEvent("app_presented", duration)
+      m.eventBatch = m.eventBatch + 1
+      m.sendXrayAudienceEvents(event)
+    end function
+
+    function sendHookStartedEvent(hook as mc.types.assocarray)
+      m.log.info("sending hookStarted event")
+      event = m.eventFactory.createEvent("hook_started", invalid, hook)
+      m.eventBatch = m.eventBatch + 1
+      m.sendXrayAudienceEvents(event)
+    end function
+
+    function sendHookEndedEvent(duration as integer, hook as mc.types.assocarray)
+      m.log.info("sending hookEnded event")
+      event = m.eventFactory.createEvent("hook_ended", duration, hook)
+      m.eventBatch = m.eventBatch + 1
+      m.sendXrayAudienceEvents(event)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '++ Private Methods
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    private function sendXrayAudienceEvents(event)
+      m.log.info("sendXrayAudienceEvents with id ", event.id)
+      m.requestParams.push(event.properties)
+      m.listOfEvents = {
+        "events": m.requestParams
+      }
+      m.sendEventByTimerOrMaxEventCount()
+    end function
+
+    private function sendEventByTimerOrMaxEventCount()
+      if m.eventBatch = m.maxEventCount
+        m.executionEvents()
+        m.eventBatch = 0
+      else
+        if m.isActive = false
+          m.executionTimer = m.waitAFrame(m.executionEvents, 5)
+          m.isActive = true
+        end if
+      end if
+    end function
+
+    private function executionEvents()
+      m.log.info("sendXrayAudienceEvents with quantiti of ", m.eventBatch)
+      m.createTask("NetworkTask", {
+        "url": m.eventURL,
+        "method": "POST",
+        "params": m.listOfEvents
+      })
+      m.defaultValueAfterExecute()
+    end function
+
+    private function defaultValueAfterExecute()
+      m.requestParams = []
+      m.listOfEvents = {}
+      m.isActive = false
+    end function
+
+    private function executeApiRequest(method, endpoint, params = invalid, jwt = invalid, url = invalid)
+      return zapp.APIUtils.executeApiRequest(m, method, endpoint, params, true, jwt, url)
+    end function
+
+  end class
+end namespace
