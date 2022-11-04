@@ -165,7 +165,11 @@ namespace zapp.tests
       m.plugin.listOfEvents = {}
       m.plugin.eventURL = "https://track.applicaster.com/events/v1/"
 
-      m.expectCalled(m.plugin.executeApiRequest("POST", invalid, m.plugin.listOfEvents, invalid, m.plugin.eventURL))
+      m.expectCalled(m.plugin.createTask("NetworkTask", {
+        "url": m.plugin.eventURL,
+        "method": "POST",
+        "params": m.plugin.listOfEvents
+      }))
       m.expectCalled(m.plugin.defaultValueAfterExecute())
 
       m.plugin.executionEvents()

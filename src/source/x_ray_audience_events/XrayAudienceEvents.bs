@@ -121,9 +121,5 @@ namespace zapp.video.analytics
       m.isActive = false
     end function
 
-    private function executeApiRequest(method, endpoint, params = invalid, jwt = invalid, url = invalid)
-      return zapp.APIUtils.executeApiRequest(m, method, endpoint, params, true, jwt, url)
-    end function
-
   end class
 end namespace
