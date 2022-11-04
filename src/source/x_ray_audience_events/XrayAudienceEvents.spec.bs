@@ -1,0 +1,179 @@
+namespace zapp.tests
+  @tags("public", "anaytics")
+  @suite("XrayAudienceEventsTests")
+  class XrayAudienceEventsTests extends tests.BaseTestSuite
+
+    private plugin
+    private pluginData
+    private buildConfig = {
+      "app_family_id": "afi"
+      "app_name": "usp"
+      "data_source_providers_url": "dspu"
+    }
+    private constants = {
+      "deviceInfo": {
+        "modelName": "mn"
+        "model": "md"
+        "version": "ver"
+        "userAgent": "ua"
+      }
+      "applicasterDeviceId": "adid"
+    }
+
+    protected override function beforeEach()
+      super.beforeEach()
+      config = {
+        "tracking_id": "#t"
+        "user_identity_storage_key": "user_identity_storage_key"
+        "token": "token"
+      }
+
+      m.pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "x-ray-audience-events" })
+      m.plugin = new zapp.video.analytics.XrayAudienceEvents()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("constructor")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("constructor")
+    function _()
+      config = {
+        "user_identity_storage_key": "quick-brick-login-flow.access-token"
+      }
+
+      m.pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "x-ray-audience-events" })
+      m.plugin.userIdStorageKey = config.user_identity_storage_key
+      m.plugin = new zapp.video.analytics.XrayAudienceEvents()
+      m.plugin.eventFactory = new zapp.video.analytics.XRayEventsFactory()
+
+      m.assertEqual(m.plugin.userIdStorageKey, "quick-brick-login-flow.access-token")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("sendAppLaunchedEvent")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("sending appLaunchedEvent")
+    function _()
+      event = { "id": "event" }
+
+      m.expectCalled(m.plugin.eventFactory.createEvent("app_launched"), event)
+      m.expectCalled(m.plugin.sendXrayAudienceEvents(event))
+
+      m.plugin.sendAppLaunchedEvent()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("sendAppPresentedEvent")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("sending sendAppPresentedEvent")
+    function _()
+      event = { "id": "event" }
+      duration = 10
+      m.expectCalled(m.plugin.eventFactory.createEvent("app_presented", duration), event)
+      m.expectCalled(m.plugin.sendXrayAudienceEvents(event))
+
+      m.plugin.sendAppPresentedEvent(duration)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("sendHookStartedEvent")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("sending sendHookStartedEvent")
+    function _()
+      event = { "id": "event" }
+      hook = { "id": "hook" }
+
+      m.expectCalled(m.plugin.eventFactory.createEvent("hook_started", invalid, hook), event)
+      m.expectCalled(m.plugin.sendXrayAudienceEvents(event))
+
+      m.plugin.sendHookStartedEvent(hook)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("sendHookEndedEvent")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("sending sendHookEndedEvent")
+    function _()
+      event = { "id": "event" }
+      duration = 10
+      hook = { "id": "hook" }
+
+      m.expectCalled(m.plugin.eventFactory.createEvent("hook_ended", duration, hook), event)
+      m.expectCalled(m.plugin.sendXrayAudienceEvents(event))
+
+      m.plugin.sendHookEndedEvent(duration, hook)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("sendXrayAudienceEvents")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("generate array of events to send")
+
+    function _()
+      event1 = { "id": "event1", "properties": "props" }
+
+      m.expectCalled(m.plugin.sendEventByTimerOrMaxEventCount())
+
+      m.plugin.sendXrayAudienceEvents(event1)
+
+      result = {
+        "events": m.plugin.requestParams
+      }
+
+      m.assertEqual(m.plugin.listOfEvents, result)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("sendEventByTimerOrMaxEventCount")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("send Analytics Event if eventCount = maxEventCount")
+    function _()
+      m.plugin.eventBatch = 4
+      m.plugin.maxEventCount = 4
+
+      m.expectCalled(m.plugin.executionEvents())
+
+      m.plugin.sendEventByTimerOrMaxEventCount()
+    end function
+
+    @it("send Analytics Event by timer")
+    function _()
+      m.plugin.isActive = false
+      m.plugin.eventBatch = 1
+      m.plugin.maxEventCount = 4
+
+      m.expectCalled(m.plugin.waitAFrame(m.plugin.executionEvents, 5))
+
+      m.plugin.sendEventByTimerOrMaxEventCount()
+
+      m.assertTrue(m.plugin.isActive)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("executionEvents")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("send Analytics Event ")
+    function _()
+      m.plugin.listOfEvents = {}
+      m.plugin.eventURL = "https://track.applicaster.com/events/v1/"
+
+      m.expectCalled(m.plugin.createTask("NetworkTask", {
+        "url": m.plugin.eventURL,
+        "method": "POST",
+        "params": m.plugin.listOfEvents
+      }))
+      m.expectCalled(m.plugin.defaultValueAfterExecute())
+
+      m.plugin.executionEvents()
+    end function
+
+  end class
+end namespace
