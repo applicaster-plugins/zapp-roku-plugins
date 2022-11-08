@@ -52,7 +52,7 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
   private function isLoginRequired()
     currentItem = m.getInstance("currentSelection", "currentItem")
 
-    return asBoolean(currentItem.json.extensions.requires_authentication, true)
+    return asBoolean(currentItem.json.extensions.requires_authentication, false)
   end function
 
   private function isKeyToSkipSet()
