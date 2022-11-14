@@ -145,8 +145,8 @@ namespace zapp.tests
 
     @it("returns expected value")
     @params(invalid, true)
-    @params({ json: invalid }, true)
-    @params({ json: { extensions: invalid } }, true)
+    @params({ json: invalid }, false)
+    @params({ json: { extensions: invalid } }, false)
     @params({ json: { extensions: { requires_authentication: true } } }, true)
     @params({ json: { extensions: { requires_authentication: false } } }, false)
     function _(item, isLoginRequired)
