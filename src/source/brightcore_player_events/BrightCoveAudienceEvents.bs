@@ -1,0 +1,121 @@
+import "pkg:/source/video/analytics/BrightCoveEventsFactory.bs"
+import "pkg:/source/plugin-support/BasePlugin.bs"
+import "pkg:/source/plugin-support/PluginManager.bs"
+import "pkg:/source/video/analytics/AnalyticsEventInfo.bs"
+import "pkg:/source/lib/APIUtils.bs"
+import "pkg:/source/authorization/BaseAuthPlugin.bs"
+import "pkg:/source/lib/URI.bs"
+import "pkg:/source/video/Quantile.bs"
+
+namespace zapp.video.analytics
+
+  class BrightCoveAudienceEvents extends zapp.BaseClass
+
+    private eventFactory as zapp.video.analytics.BrightCoveEventsFactory
+    private enabled = false
+    private eventURL = "https://track.applicaster.com/events/v1/"
+    private contentNode = invalid
+    private requestParams = []
+    private userIdStorageKey = ""
+    private eventBatch = 0
+    private maxEventCount = invalid
+    private executionTimer = invalid
+    private isActive = false
+    private listOfEvents = {}
+
+    @injectClass("zapp.URI")
+    private uri
+
+    function new()
+      super("BrightCoveAudienceEvents")
+      pluginManager = new zapp.PluginManager()
+      m.eventFactory = new zapp.video.analytics.BrightCoveEventsFactory()
+      m.maxEventCount = m.eventFactory.eventsByKey.count()
+      'mioc.setInstance("eventBatch", 0)
+      plugin = pluginManager.getPluginById("brightcove-player-events")
+      m.userIdStorageKey = plugin.getStringValue("user_identity_storage_key", "quick-brick-login-flow.access-token")
+      m.enabled = plugin.getBoolValue("enabled")
+
+      m.initialize()
+
+      parts = m.userIdStorageKey.split(".")
+      m.eventFactory.accountSection = asString(parts[0])
+      m.eventFactory.accountKey = asString(parts[1])
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '++ Public Methods
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    function initialize()
+      m.log.info("initialize eventFactory")
+      m.eventFactory.initialize()
+    end function
+
+    function sendPlayRequestEvent()
+      m.log.info("sending sendPlayRequestEvent")
+      event = m.eventFactory.createEvent("play_request")
+      m.sendBrightCoveAudienceEvents(event)
+    end function
+
+    function sendVideoImpressionEvent(duration as integer)
+      m.log.info("sending sendVideoImpressionEvent event")
+      event = m.eventFactory.createEvent("video_impression", duration)
+      m.sendBrightCoveAudienceEvents(event)
+    end function
+
+    function sendVideoViewEvent(hook as mc.types.assocarray)
+      m.log.info("sending sendVideoViewEvent event")
+      event = m.eventFactory.createEvent("video_view", invalid, hook)
+      m.sendBrightCoveAudienceEvents(event)
+    end function
+
+    function sendVideoEngagementEvent(duration as integer, hook as mc.types.assocarray)
+      m.log.info("sending sendVideoEngagementEvent event")
+      event = m.eventFactory.createEvent("video_engagement", duration, hook)
+      m.sendBrightCoveAudienceEvents(event)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '++ Private Methods
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    private function sendBrightCoveAudienceEvents(event)
+      m.log.info("sendBrightCoveAudienceEvents with id ", event.id)
+      m.requestParams.push(event.properties)
+      m.listOfEvents = {
+        "events": m.requestParams
+      }
+      m.sendEventByTimerOrMaxEventCount()
+    end function
+
+    private function sendEventByTimerOrMaxEventCount()
+      if m.eventBatch = m.maxEventCount
+        m.executionEvents()
+        m.eventBatch = 0
+      else
+        if m.isActive = false
+          m.executionTimer = m.waitAFrame(m.executionEvents, 5)
+          m.isActive = true
+        end if
+      end if
+    end function
+
+    private function executionEvents()
+      m.log.info("sendBrightCoveAudienceEvents with quantiti of ", m.eventBatch)
+      m.createTask("NetworkTask", {
+        "url": m.eventURL,
+        "method": "POST",
+        "params": m.listOfEvents
+      })
+      m.defaultValueAfterExecute()
+    end function
+
+    private function defaultValueAfterExecute()
+      m.requestParams = []
+      m.listOfEvents = {}
+      m.isActive = false
+    end function
+
+  end class
+end namespace
