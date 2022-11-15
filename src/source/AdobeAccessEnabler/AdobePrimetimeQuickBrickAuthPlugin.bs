@@ -10,6 +10,7 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
   private secret = ""
   private publicKey = ""
   private baseUrl = ""
+  private softwareStatement = ""
   private pollResult as mc.types.assocarray
 
   @inject("constants", "applicasterDeviceId")
@@ -29,6 +30,7 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
     m.secret = plugin.getStringValue("secret", "")
     m.publicKey = plugin.getStringValue("publicKey", "")
     m.baseUrl = plugin.getStringValue("base_url", "https://api.auth.adobe.com")
+    m.softwareStatement = plugin.getStringValue("software_statement")
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -58,39 +60,9 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
     return m.createErrorResult("Invalid token for verification")
   end function
 
-  public override function initiateDCR()
-    m.log.method("initiateDCR_")
-    requestPath = "/o/client/register"
-    params = {
-      "software_statement": "softwareStatement"
-    }
-    headers = {
-      "Accept": "application/json"
-      "Authorization": "application/json"
-    }
-    url = m.baseUrl + requestPath
-    m.log.info("url ", url, "headers", headers, "params", params)
-
-    request = m.getRequestUtil()
-    result = request.post(url, params, headers)
-
-    m.log.info("result is ", result)
-
-    if result <> invalid and result.code <> invalid and result.code <> ""
-      return m.createDCRResult(result.code)
-    end if
-
-    m.log.error("Error retrieving client credentials")
-    return m.createDCRResult(invalid)
-  end function
-
   public override function _regcode()
 
-    'if apiVersion = "v3"
-    '  dcrTokenResponse = m.initiateDCR()
-    'end if
-    token = m.initiateDCR()
-    m.setInstance("adobeDCRToken", token)
+    m.setInstance("adobeDCRToken", m.initiateDCR())
 
     m.log.method("regCode_")
     ' <REGGIE_FQDN>/reggie/v1/{requestorId}/regcode
@@ -98,7 +70,7 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
     params = "deviceId=" + m.deviceId
     headers = {
       "Accept": "application/json"
-      "Authorization": m.signRequest("POST", requestPath)
+      "Authorization": `Bearer ${m.getInstance("adobeDCRToken")}`
     }
     url = m.baseUrl + requestPath
     m.log.info("url ", url, "headers", headers, "params", params)
@@ -120,11 +92,12 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
 
   public override function _poll()
     m.log.method("poll_")
+    m.setInstance("adobeDCRToken", m.initiateDCR())
     ' <SP_FQDN>/api/v1/tokens/authn
     requestPath = "/api/v1/tokens/authn"
     headers = {
       "Accept": "application/json"
-      "Authorization": m.signRequest("GET", requestPath)
+      "Authorization": `Bearer ${m.getInstance("adobeDCRToken")}`
     }
     params = {
       "requestor": m.requestorID
@@ -165,11 +138,12 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
 
   public override function _logOut()
     ' <SP_FQDN>/api/v1/logout
+    m.setInstance("adobeDCRToken", m.initiateDCR())
     requestPath = "/api/v1/logout"
 
     headers = {
       "Accept": "application/json"
-      "Authorization": m.signRequest("DELETE", requestPath)
+      "Authorization": `Bearer ${m.getInstance("adobeDCRToken")}`
     }
     params = {
       "deviceId": m.deviceId
@@ -192,6 +166,32 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
   ' getAuthorization
   '
   '
+  private function initiateDCR()
+    m.log.method("initiateDCR_")
+    requestPath = "/o/client/register"
+    params = {
+      "software_statement": m.softwareStatement
+    }
+    headers = {
+      "Accept": "application/json"
+      "Authorization": "application/json"
+    }
+    url = m.baseUrl + requestPath
+    m.log.info("url ", url, "headers", headers, "params", params)
+
+    request = m.getRequestUtil()
+    result = request.post(url, params, headers)
+
+    m.log.info("result is ", result)
+
+    if result <> invalid and result.code <> invalid and result.code <> ""
+      return m.createDCRResult(result)
+    end if
+
+    m.log.error("Error retrieving client credentials")
+    return m.createDCRResult(invalid)
+  end function
+
   private function createDCRResult(registerAppResponse as mc.types.assocarray)
     m.log.method("createDCRResult_")
     requestPath = "/o/client/token"
@@ -212,11 +212,11 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
     m.log.info("result is ", result)
 
     if result <> invalid and result.code <> invalid and result.code <> ""
-      return m.createAccessToken(result.code)
+      return result
     end if
 
     m.log.error("Error retrieving client credentials")
-    return m.createAccessToken(invalid)
+    return invalid
   end function
 
   private function getAuthorization()
