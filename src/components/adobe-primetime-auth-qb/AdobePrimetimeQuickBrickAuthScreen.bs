@@ -1,4 +1,4 @@
-import "pkg:/source/regcode_login_screen_roku/RegcodeLoginScreenVM.bs"
+import "pkg:/source/adobe-primetime-auth-qb/AdobePrimetimeQuickBrickAuthScreenVM.bs"
 import "pkg:/source/roku_modules/maestro/mx/VMTransformFunctions.brs"
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -6,7 +6,7 @@ import "pkg:/source/roku_modules/maestro/mx/VMTransformFunctions.brs"
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 function createVM()
-  vm = new RegcodeLoginScreenVM(m.top.riversJson)
+  vm = new AdobePrimetimeQuickBrickAuthScreenVM(m.top.riversJson)
   mv.setFocus(m.refreshButton)
   return vm
 end function
