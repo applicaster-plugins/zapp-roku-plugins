@@ -13,7 +13,7 @@ namespace zapp.video.analytics
 
     private eventFactory as zapp.video.analytics.BrightCoveEventsFactory
     private enabled = false
-    private eventURL = "https://track.applicaster.com/events/v1/"
+    private eventURL = "http://metrics.brightcove.com/tracker"
     private contentNode = invalid
     private requestParams = []
     private userIdStorageKey = ""
@@ -21,12 +21,14 @@ namespace zapp.video.analytics
     private maxEventCount = invalid
     private executionTimer = invalid
     private isActive = false
+    private videoPlayer = invalid
+    private videoNode = invalid
     private listOfEvents = {}
 
     @injectClass("zapp.URI")
     private uri
 
-    function new()
+    function new(contentNode as mc.types.node, videoPlayer as mc.types.node, videoNode as mc.types.node)
       super("BrightCoveAudienceEvents")
       pluginManager = new zapp.PluginManager()
       m.eventFactory = new zapp.video.analytics.BrightCoveEventsFactory()
@@ -36,7 +38,7 @@ namespace zapp.video.analytics
       m.userIdStorageKey = plugin.getStringValue("user_identity_storage_key", "quick-brick-login-flow.access-token")
       m.enabled = plugin.getBoolValue("enabled")
 
-      m.initialize()
+      m.initialize(contentNode, videoPlayer, videoNode)
 
       parts = m.userIdStorageKey.split(".")
       m.eventFactory.accountSection = asString(parts[0])
@@ -47,14 +49,41 @@ namespace zapp.video.analytics
     '++ Public Methods
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    function initialize()
+    function initialize(contentNode as mc.types.node, videoPlayer as mc.types.node, videoNode as mc.types.node)
       m.log.info("initialize eventFactory")
-      m.eventFactory.initialize()
+      m.eventFactory.initialize(contentNode, videoPlayer, videoNode)
+      m.contentNode = contentNode
+      m.videoNode = videoNode
+      m.videoPlayer = videoPlayer
+    end function
+
+    function sendPlayerLoadEvent()
+      m.log.info("sending sendPlayerLoadEvent")
+      event = m.eventFactory.createEvent("player_load")
+      m.sendBrightCoveAudienceEvents(event)
+    end function
+
+    function sendErrorEvent()
+      m.log.info("sending sendErrorEvent")
+      event = m.eventFactory.createEvent("error")
+      m.sendBrightCoveAudienceEvents(event)
     end function
 
     function sendPlayRequestEvent()
       m.log.info("sending sendPlayRequestEvent")
       event = m.eventFactory.createEvent("play_request")
+      m.sendBrightCoveAudienceEvents(event)
+    end function
+
+    function sendAdModeBeginEvent()
+      m.log.info("sending sendAdModeBeginEvent")
+      event = m.eventFactory.createEvent("ad_mode_begin")
+      m.sendBrightCoveAudienceEvents(event)
+    end function
+
+    function sendAdModeCompleteEvent()
+      m.log.info("sending sendAdModeCompleteEvent")
+      event = m.eventFactory.createEvent("ad_mode_complete")
       m.sendBrightCoveAudienceEvents(event)
     end function
 
@@ -64,15 +93,15 @@ namespace zapp.video.analytics
       m.sendBrightCoveAudienceEvents(event)
     end function
 
-    function sendVideoViewEvent(hook as mc.types.assocarray)
+    function sendVideoViewEvent()
       m.log.info("sending sendVideoViewEvent event")
-      event = m.eventFactory.createEvent("video_view", invalid, hook)
+      event = m.eventFactory.createEvent("video_view")
       m.sendBrightCoveAudienceEvents(event)
     end function
 
-    function sendVideoEngagementEvent(duration as integer, hook as mc.types.assocarray)
+    function sendVideoEngagementEvent()
       m.log.info("sending sendVideoEngagementEvent event")
-      event = m.eventFactory.createEvent("video_engagement", duration, hook)
+      event = m.eventFactory.createEvent("video_engagement")
       m.sendBrightCoveAudienceEvents(event)
     end function
 
@@ -82,39 +111,12 @@ namespace zapp.video.analytics
 
     private function sendBrightCoveAudienceEvents(event)
       m.log.info("sendBrightCoveAudienceEvents with id ", event.id)
-      m.requestParams.push(event.properties)
-      m.listOfEvents = {
-        "events": m.requestParams
-      }
-      m.sendEventByTimerOrMaxEventCount()
+      url = m.eventURL + "?" + m.uri.encodeParams(event.properties)
+      m.executeApiRequest("POST", invalid, invalid, invalid, url)
     end function
 
-    private function sendEventByTimerOrMaxEventCount()
-      if m.eventBatch = m.maxEventCount
-        m.executionEvents()
-        m.eventBatch = 0
-      else
-        if m.isActive = false
-          m.executionTimer = m.waitAFrame(m.executionEvents, 5)
-          m.isActive = true
-        end if
-      end if
-    end function
-
-    private function executionEvents()
-      m.log.info("sendBrightCoveAudienceEvents with quantiti of ", m.eventBatch)
-      m.createTask("NetworkTask", {
-        "url": m.eventURL,
-        "method": "POST",
-        "params": m.listOfEvents
-      })
-      m.defaultValueAfterExecute()
-    end function
-
-    private function defaultValueAfterExecute()
-      m.requestParams = []
-      m.listOfEvents = {}
-      m.isActive = false
+    private function executeApiRequest(method, endpoint, params = invalid, jwt = invalid, url = invalid)
+      return zapp.APIUtils.executeApiRequest(m, method, endpoint, params, true, jwt, url)
     end function
 
   end class
