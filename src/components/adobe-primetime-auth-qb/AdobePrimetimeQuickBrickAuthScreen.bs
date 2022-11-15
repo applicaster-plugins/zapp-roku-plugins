@@ -1,0 +1,18 @@
+import "pkg:/source/regcode_login_screen_roku/RegcodeLoginScreenVM.bs"
+import "pkg:/source/roku_modules/maestro/mx/VMTransformFunctions.brs"
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Overridden methods
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function createVM()
+  vm = new RegcodeLoginScreenVM(m.top.riversJson)
+  mv.setFocus(m.refreshButton)
+  return vm
+end function
+
+function onGainedFocus(isSelfFocused)
+  if isSelfFocused
+    mv.setFocus(m.refreshButton)
+  end if
+end function

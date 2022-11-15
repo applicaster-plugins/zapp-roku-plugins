@@ -1,0 +1,254 @@
+import "pkg:/source/UIBuilder/view/ScreenVM.bs"
+import "pkg:/source/lib/ViewUtils.bs"
+import "pkg:/source/plugin-support/BasePlugin.bs"
+import "pkg:/source/plugin-support/PluginManager.bs"
+
+class AdobePrimetimeQuickBrickAuthScreenVM extends zapp.uib.ScreenVM
+
+  'styles
+  public isContentGroupVisible = false
+  public codeText = ""
+  public isShowingLoadingIndicator = true
+  public pollTimerControl = "stop"
+  public isRefreshing = false
+  public refreshButtonOpacity = 1
+  public pollTimerDuration = 5
+  private isDebugOverrideSet = false
+
+  public title = ""
+  public text1 = ""
+  public text2 = ""
+  public text3 = ""
+  public text4 = ""
+  public text5 = ""
+  public text6 = ""
+
+  private authTask = invalid
+  private providerId = invalid
+  private isValid = false
+
+
+  @inject("analyticsManager")
+  private analyticsManager
+  protected fireScreenAnalyticsOnShow = false
+
+  public function new(riversJson)
+    super(riversJson, "AdobePrimetimeQuickBrickAuthScreenVM")
+
+    m.focusId = "refreshButton"
+
+    m.providerId = m.getAuthProviderId()
+
+    if m.providerId = invalid
+      m.isValid = false
+      m.log.error("No auth provider found. Make sure you have specified at least one auth provider")
+    end if
+
+    if not mc.getPath(riversJson, "styles.use_refresh_button", true)
+      m.refreshButtonOpacity = 0
+    end if
+    m.processStyles(riversJson.styles)
+  end function
+
+  function processStyles(styles)
+    for i = 1 to 6
+      key = "text" + i.toStr().trim()
+      text = m.localizations[key]
+      m.setField(key, text)
+    end for
+    m.title = m.localizations.title
+
+    m.isDebugOverrideSet = mc.getPath(styles, "force_authentication_on_all", "off") = "on"
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Overridden
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public override function createContent()
+    m.log.info("createContent is overridden in this screen")
+  end function
+
+  public override function load() as boolean
+    currentSelection = m.getInstance("currentSelection")
+
+    if m.isDisplayedInPrehook
+      m.log.info("displaying in prehook")
+
+      if m.shouldDisplayWithContent(currentSelection)
+        m.log.info("Selected content is locked need to login")
+        m.analyticsManager@.trackEvent("Waiting Page", "page_loaded", { "Provider": m.providerId })
+        m.refreshLogin()
+      else
+        m.log.info("This content is not locked, no need to display")
+        m.dismiss("success")
+      end if
+    else
+      m.log.info("not displaying in prehook")
+      m.analyticsManager@.trackEvent("Waiting Page", "page_loaded", { "Provider": m.providerId })
+      m.isContentGroupVisible = true
+      m.trackScreen()
+      m.loadCode()
+    end if
+
+    return true
+  end function
+
+  private function shouldDisplayWithContent(currentSelection)
+    if m.isDebugOverrideSet
+      m.log.warn("debug override for showing is set!!")
+      return true
+    else
+      entitlementsNode = m.getInstance("entitlements")
+      return entitlementsNode@.isLocked(mc.getPath(currentSelection, "currentItem"))
+    end if
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ refresh
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function refreshLogin()
+    m.log.info("calling authTask to refresh login")
+
+    m.authTask = m.createAuthTask("execLoad", m.providerId, m.onRefreshLoginComplete)
+
+    m.isContentGroupVisible = false
+  end function
+
+
+  private function onRefreshLoginComplete(result)
+    m.log.method("onRefreshLoginComplete", result)
+    m.isShowingLoadingIndicator = false
+
+    if m.getInstance("user").isLoggedIn
+      m.dismiss("success")
+    else
+      m.isContentGroupVisible = true
+      m.signalAppLaunchDialog(false)
+      m.trackScreen()
+      m.loadCode()
+    end if
+
+  end function
+
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ callbacks
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public function onRefreshButtonSelected(value)
+    m.log.method("onRefreshButtonSelected")
+    m.loadCode()
+  end function
+
+  public function onPollTimerFire(value)
+    m.log.method("onPollTimerFire")
+
+    m.cancelTask(m.authTask)
+    m.authTask = m.createAuthTask("execPoll", m.providerId, m.onPollComplete)
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Auth methods
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function loadCode()
+    m.log.method("loadCode")
+
+    m.togglePollTimer(false)
+    m.cancelTask(m.authTask)
+
+    m.authTask = m.createAuthTask("execRegcode", m.providerId, m.onLoadCodeComplete)
+
+    m.isRefreshing = true
+    m.isShowingLoadingIndicator = true
+  end function
+
+  private function onLoadCodeComplete(result)
+    m.log.method("onLoadCodeComplete")
+    m.isShowingLoadingIndicator = false
+    m.isRefreshing = false
+
+    if result <> invalid and result.regcode <> invalid
+      m.log.info("received code", result.regcode)
+      m.codeText = result.regcode
+
+      for i = 1 to 6
+        key = "text" + i.toStr().trim()
+        text = m.localizations[key]
+        if text = "{{url}}"
+          text = mc.getPath(result, "url", "")
+        end if
+        m.setField(key, text)
+      end for
+      m.title = m.localizations.title
+
+      if result.pollInterval <> invalid
+        m.pollTimerDuration = result.pollInterval
+      end if
+
+
+      m.togglePollTimer(true)
+    else
+      m.log.warn("received illegal code")
+      m.codeText = ""
+    end if
+
+  end function
+
+  private function togglePollTimer(isActive)
+    m.pollTimerControl = "stop"
+
+    if isActive
+      m.pollTimerControl = "start"
+    end if
+  end function
+
+  private function onPollComplete(result)
+    m.log.method("onPollComplete")
+
+    if result <> invalid and result.state = "valid"
+      m.analyticsManager@.trackEvent("Signed In", "page_loaded", { "provider": m.providerId })
+      m.signalAppLaunchDialog(true)
+      m.dismiss("success")
+    else
+      m.togglePollTimer(true)
+    end if
+
+  end function
+
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ launch support
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+  override function sendLaunchBeacon()
+    'we handle this manually
+  end function
+
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Key Handling
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public function isCapturingAnyKeyPress(key, press)
+    'don't let us escape if we're in a prehook
+    return m.getTopField("isDisplayedInPrehook")
+  end function
+
+  public function onKeyPressBack() as boolean
+    m.dismiss("cancel")
+    return true
+  end function
+
+  public override function onKeyPressUp() as boolean
+    return m.getTopField("isDisplayedInPrehook")
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ lifecycle
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+end class

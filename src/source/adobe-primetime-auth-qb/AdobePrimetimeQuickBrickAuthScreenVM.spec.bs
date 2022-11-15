@@ -1,0 +1,286 @@
+namespace zapp.tests
+  @tags("public", "auth", "vm")
+  @suite
+  class RegcodeLoginScreenVMTests extends tests.BaseTestSuite
+    private analyticsManager
+    private vm
+
+    protected override function beforeEach()
+      super.beforeEach()
+
+      riversJson = {
+        "id": "regcodeScreen"
+        styles: {
+        }
+        "localizations": {
+          "en": {}
+        }
+      }
+
+      m.vm = new RegcodeLoginScreenVM(riversJson)
+      m.analyticsManager = { "id": "analyticsManager" }
+      m.vm.analyticsManager = m.analyticsManager
+
+      m.vm.initialize()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("load")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("displayedInPrehook not showing")
+    function _()
+      currentSelection = { "id": "currentSelection" }
+      m.vm.providerId = "pid"
+      m.vm.isDisplayedInPrehook = true
+
+      m.expectOnce(m.vm, "getInstance", ["currentSelection"], currentSelection)
+      m.expectOnce(m.vm, "shouldDisplayWithContent", [currentSelection], false)
+      m.expectOnce(m.vm, "dismiss", ["success"])
+
+      m.vm.load()
+    end function
+
+    @it("displayedInPrehook showing")
+    function _()
+      currentSelection = { "id": "currentSelection" }
+      m.vm.providerId = "pid"
+      m.vm.isDisplayedInPrehook = true
+
+      m.expectOnce(m.vm, "getInstance", ["currentSelection"], currentSelection)
+      m.expectOnce(m.vm, "shouldDisplayWithContent", [currentSelection], true)
+      m.expectNone(m.vm, "dismiss")
+      m.expectOnce(m.analyticsManager, "callFunc", ["trackEvent", "Waiting Page", "page_loaded", { "Provider": "pid" }])
+
+      m.expectOnce(m.vm, "refreshLogin", [])
+
+      m.vm.load()
+    end function
+
+    @it("not displayedInPrehook")
+    function _()
+      m.vm.providerId = "pid"
+      m.vm.isDisplayedInPrehook = false
+
+      m.expectOnce(m.analyticsManager, "callFunc", ["trackEvent", "Waiting Page", "page_loaded", { "Provider": "pid" }])
+
+      m.expectOnce(m.vm, "trackScreen", [])
+      m.expectOnce(m.vm, "loadCode", [])
+
+      m.vm.load()
+
+      m.assertTrue(m.vm.isContentGroupVisible)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("shouldDisplayWithContent")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("shouldDisplayWithContent")
+    @params(true)
+    @params(false)
+    function _(expected)
+      currentItem = { "id": "currentItem" }
+      currentSelection = { "id": "currentSelection", "currentItem": currentItem }
+      entitlementsNode = { "id": "entitlements" }
+      m.expectOnce(m.vm, "getInstance", ["entitlements"], entitlementsNode)
+      m.expectOnce(entitlementsNode, "callFunc", ["isLocked", currentItem], expected)
+
+      m.assertEqual(m.vm.shouldDisplayWithContent(currentSelection), expected)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("refreshLogin")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("refreshLogin")
+    @params(invalid)
+    @params("id1")
+    @params("id2")
+    function _(providerId)
+      authTask = { "id": "authTask" }
+
+      m.expectOnce(m.vm, "createAuthTask", ["execLoad", providerId, m.vm.onRefreshLoginComplete], authTask)
+      m.vm.providerId = providerId
+
+      m.vm.refreshLogin()
+
+      m.assertEqual(m.vm.authTask, authTask)
+
+      m.assertFalse(m.vm.isContentGroupVisible)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onRefreshLoginComplete")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("dimsisses on success")
+    function _()
+      user = { "id": "user", isLoggedIn: true }
+      m.expectOnce(m.vm, "getInstance", ["user"], user)
+
+      m.expectOnce(m.vm, "dismiss", ["success"])
+      m.vm.onRefreshLoginComplete({})
+
+      m.assertFalse(m.vm.isShowingLoadingIndicator)
+
+    end function
+
+    @it("does not dismiss on failure")
+    function _()
+      user = { "id": "user", isLoggedIn: false }
+      m.expectOnce(m.vm, "getInstance", ["user"], user)
+      m.expectOnce(m.vm, "signalAppLaunchDialog", [false])
+      m.expectOnce(m.vm, "trackScreen")
+      m.expectOnce(m.vm, "loadCode", [])
+
+      m.vm.onRefreshLoginComplete({})
+
+      m.assertFalse(m.vm.isShowingLoadingIndicator)
+      m.assertTrue(m.vm.isContentGroupVisible)
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onRefreshButtonSelected")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("onRefreshButtonSelected")
+    function _()
+      m.expectCalled(m.vm.loadCode(), [])
+
+      m.vm.onRefreshButtonSelected(true)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onPollTimerFire")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("onTimerFire_true")
+    @params(invalid)
+    @params(true)
+    @params(false)
+    function _(value)
+      m.vm.authTask = { "id": "authtask" }
+      newAuthTask = { "id": "newAuthTask" }
+      m.vm.providerId = "pid"
+
+      m.expectOnce(m.vm, "cancelTask", [m.vm.authTask])
+      m.expectOnce(m.vm, "createAuthTask", ["execPoll", "pid", m.vm.onPollComplete], newAuthTask)
+
+      m.vm.onPollTimerFire(value)
+      m.assertEqual(m.vm.authTask, newAuthTask)
+    end function
+
+
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("loadCode")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("loadCode")
+    function _()
+      oldAuthTask = { "id": "authtask" }
+      m.vm.authTask = oldAuthTask
+      m.vm.providerId = "pid"
+      newAuthTask = { "id": "newAuthTask" }
+
+      m.expectOnce(m.vm, "cancelTask", [m.vm.authTask])
+      m.expectOnce(m.vm, "createAuthTask", ["execRegcode", "pid", m.vm.onLoadCodeComplete], newAuthTask)
+
+      m.vm.loadCode()
+
+      m.assertEqual(m.vm.authTask, newAuthTask)
+      m.assertTrue(m.vm.isRefreshing)
+      m.assertTrue(m.vm.isShowingLoadingIndicator)
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onLoadCodecomplete")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("success")
+    function _()
+      result = { "regcode": "reg" }
+      m.expectOnce(m.vm, "togglePollTimer", [true])
+
+      m.vm.onLoadCodeComplete(result)
+
+      m.assertEqual(m.vm.codeText, "reg")
+      m.assertFalse(m.vm.isShowingLoadingIndicator)
+      m.assertFalse(m.vm.isRefreshing)
+    end function
+
+    @it("fail")
+    @params(invalid)
+    @params({})
+    @params({ "codeText": invalid })
+    function _(result)
+      m.expectNone(m.vm, "togglePollTimer")
+
+      m.vm.onLoadCodeComplete(result)
+
+      m.assertEqual(m.vm.codeText, "")
+      m.assertFalse(m.vm.isShowingLoadingIndicator)
+      m.assertFalse(m.vm.isRefreshing)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("togglePollTimer")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("togglePollTimer")
+    @params(true, "start")
+    @params(false, "stop")
+    function _(isActive, expectedValue)
+      m.vm.togglePollTimer(isActive)
+      m.assertEqual(m.vm.pollTimerControl, expectedValue)
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onPollComplete")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("valid")
+    function _()
+      result = { "state": "valid" }
+      m.vm.providerId = "pid"
+
+      m.expectOnce(m.vm.analyticsManager, "callFunc", ["trackEvent", "Signed In", "page_loaded", { "provider": "pid" }])
+
+      m.expectOnce(m.vm, "signalAppLaunchDialog", [true])
+      m.expectOnce(m.vm, "dismiss", ["success"])
+
+      m.vm.onPollComplete(result)
+    end function
+
+    @it("fail")
+    @params(invalid)
+    @params({})
+    @params({ "state": "error" })
+    @params({ "state": "none" })
+    function _(result)
+      m.vm.providerId = "pid"
+      m.expectNone(m.vm.analyticsManager, "callFunc")
+      m.expectNone(m.vm, "dismiss")
+      m.expectOnce(m.vm, "togglePollTimer", [true])
+
+      m.vm.onPollComplete(result)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onKeyPressBack")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("cancels when pressing back")
+    function _()
+      m.expectOnce(m.vm, "dismiss", ["cancel"])
+      m.vm.onKeyPressBack()
+
+    end function
+
+    'TODO !!!
+  end class
+end namespace
