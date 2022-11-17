@@ -7,7 +7,7 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
 
   private resourceID = ""
   private requestorID = ""
-  private baseUrl = ""
+  private apiUrl = ""
   private softwareStatement = ""
   private pollResult as mc.types.assocarray
 
@@ -20,12 +20,15 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
   @injectClass("zapp.URI")
   private uri
 
+  @inject("buildConfig")
+  private buildConfig
+
   public function new(plugin)
     super("AdobePrimetime", plugin)
     m.isTokenUsableWithDSP = true
-    m.resourceID = plugin.getStringValue("resourceID", "")
-    m.requestorID = plugin.getStringValue("requestorID", "")
-    m.baseUrl = plugin.getStringValue("base_url", "https://api.auth.adobe.com")
+    m.resourceID = plugin.getStringValue("resource_id", "")
+    m.requestorID = plugin.getStringValue("requestor_id", "")
+    m.apiUrl = plugin.getStringValue("base_url", "https://api.auth.adobe.com")
     m.softwareStatement = plugin.getStringValue("software_statement")
   end function
 
@@ -65,10 +68,11 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
     requestPath = "/reggie/v1/" + m.requestorID + "/regcode"
     params = "deviceId=" + m.deviceId
     headers = {
+
       "Accept": "application/json"
       "Authorization": `Bearer ${m.getInstance("adobeDCRToken")}`
     }
-    url = m.baseUrl + requestPath
+    url = m.apiUrl + requestPath
     m.log.info("url ", url, "headers", headers, "params", params)
 
     request = m.getRequestUtil()
@@ -88,7 +92,6 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
 
   public override function _poll()
     m.log.method("poll_")
-    m.setInstance("adobeDCRToken", m.initiateDCR())
     ' <SP_FQDN>/api/v1/tokens/authn
     requestPath = "/api/v1/tokens/authn"
     headers = {
@@ -100,7 +103,7 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
       "deviceId": m.deviceId
     }
 
-    url = m.baseUrl + requestPath + "?" + m.uri.encodeParams(params)
+    url = m.apiUrl + requestPath + "?" + m.uri.encodeParams(params)
 
     request = m.getRequestUtil()
     result = request.getJsonSync(url, headers)
@@ -134,7 +137,6 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
 
   public override function _logOut()
     ' <SP_FQDN>/api/v1/logout
-    m.setInstance("adobeDCRToken", m.initiateDCR())
     requestPath = "/api/v1/logout"
 
     headers = {
@@ -147,7 +149,7 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
 
     request = m.getRequestUtil()
 
-    url = m.baseUrl + requestPath + "?" + m.uri.encodeParams(params)
+    url = m.apiUrl + requestPath + "?" + m.uri.encodeParams(params)
     request.delete(url, invalid, headers)
 
     return m.createAuthData()
@@ -169,10 +171,11 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
       "software_statement": m.softwareStatement
     }
     headers = {
-      "Accept": "application/json"
-      "Authorization": "application/json"
+      "Content-Type": "application/json"
+      "X-Device-Info": m.getInfoHeader()
+      "User-Agent": "Roku"
     }
-    url = m.baseUrl + requestPath
+    url = m.apiUrl + requestPath
     m.log.info("url ", url, "headers", headers, "params", params)
 
     request = m.getRequestUtil()
@@ -189,26 +192,20 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
   end function
 
   private function createDCRResult(registerAppResponse as mc.types.assocarray)
-    m.log.method("createDCRResult_")
-    requestPath = "/o/client/token"
+    m.log.method("createDCRResult")
     params = {
       "grant_type": "client_credentials",
       "client_id": registerAppResponse.client_id,
       "client_secret": registerAppResponse.client_secret,
     }
-    headers = {
-      "Content-Type": "application/x-www-form-urlencoded"
-    }
-    url = m.baseUrl + requestPath
     m.log.info("url ", url, "headers", headers, "params", params)
 
-    request = m.getRequestUtil()
-    result = request.post(url, params, headers)
+    result = m.executeAPIRequest("FORMPOST", "/o/client/token", params)
 
     m.log.info("result is ", result)
 
     if result <> invalid and result.access_token <> invalid and result.token_type <> ""
-      return result
+      return result.access_token
     end if
 
     m.log.error("Error retrieving client credentials")
@@ -232,7 +229,7 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
     }
 
     requestPath = "/api/v1/authorize"
-    url = m.baseUrl + requestPath + "?" + m.uri.encodeParams(params)
+    url = m.apiUrl + requestPath + "?" + m.uri.encodeParams(params)
 
     m.log.info("url is ", url)
 
@@ -276,7 +273,7 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
     isTemplateSupported = false
     if isTemplateSupported and selection <> invalid and selection.currentItem <> invalid
       content = selection.currentItem
-      template = ReadAsciiFile("pkg:/source/AdobeAccessEnabler/adobeAuthorizationTemplate.xml")
+      template = ReadAsciiFile("pkg:/source//AdobeAccessEnableradobeAuthorizationTemplate.xml")
       template = template.replace("{REQUESTOR_ID}", m.requestorID)
       template = template.replace("{ASSET_ID}", content.id)
       template = template.replace("{ASSET_NAME}", content.title)
@@ -286,8 +283,32 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
     end if
   end function
 
+  private function getInfoHeader() as string
+    deviceInfo = createObject("roDeviceInfo")
+    modelDetails = deviceInfo.getModelDetails()
+    displaySize = deviceInfo.getDisplaySize()
+    version = deviceInfo.getVersion()
+    connectionType = deviceInfo.getConnectionType()
+    deviceInfo = {
+      "model": "Roku"
+      "vendor": modelDetails.vendorName
+      "manufacturer": modelDetails.vendorName
+      "version": modelDetails.modelNumber
+      "osName": "Roku"
+      "osVersion": version
+    }
+    return m.base64Encoded(formatJson(deviceInfo))
+  end function
+
+  private function base64Encoded(value as string) as string
+    byteArray = createObject("roByteArray")
+    byteArray.fromAsciiString(value)
+    return byteArray.toBase64String()
+  end function
+
   protected override function updateStateWithResult(result)
     m.log.info("storing cleeng key with quick brick flow in session")
+    ?"resultresult " result
     account = m._getAccountInfo()
 
     m.setInstance("quick-brick-login-flow-account", account)

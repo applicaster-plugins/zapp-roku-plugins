@@ -24,7 +24,7 @@ class AdobePrimetimeQuickBrickAuthScreenVM extends zapp.uib.ScreenVM
   public text6 = ""
 
   private authTask = invalid
-  private providerId = invalid
+  private providerId = "adobe-primetime-auth-qb"
   private isValid = false
 
 
@@ -36,9 +36,6 @@ class AdobePrimetimeQuickBrickAuthScreenVM extends zapp.uib.ScreenVM
     super(riversJson, "AdobePrimetimeQuickBrickAuthScreenVM")
 
     m.focusId = "refreshButton"
-
-    'm.providerId = m.getAuthProviderId()
-    m.providerId = "adobe-primetime-auth-qb"
 
     if m.providerId = invalid
       m.isValid = false

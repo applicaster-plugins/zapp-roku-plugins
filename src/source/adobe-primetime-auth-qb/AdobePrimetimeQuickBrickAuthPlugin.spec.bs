@@ -338,7 +338,6 @@ namespace zapp.tests
       m.assertEqual(m.plugin.createDCRResult(registerAppResponse), expectedResponse)
     end function
 
-    @only
     @it("createDCRResult invalid result")
     @params(invalid)
     @params({})
@@ -476,6 +475,41 @@ namespace zapp.tests
       m.expectCalled(m.plugin.createErrorResult("Unknown error"), result)
 
       m.assertEqual(m.plugin.getAuthorization(), result)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @only
+    @describe("integration Tests")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @beforeEach
+    function integration_beforeEach()
+      m.beforeEach()
+      'these tests, store information in the session store
+      'so we need to make one
+      sessionStore = mc.createSGNode("ZSessionStore")
+      mioc.setInstance("zp_sessionStore", sessionStore)
+    end function
+
+    @it("test initiateDCR")
+    function _()
+      m.plugin.softwareStatement = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIyZTFkZGU4Mi05MDk3LTQ1YjYtOTRlMS0wOGVmODE2MDRjNDUiLCJuYmYiOjE2NjYyODcyMTksImlzcyI6ImF1dGguYWRvYmUuY29tIiwiaWF0IjoxNjY2Mjg3MjE5fQ.AYRUReMHeloopGW9a5vk1xNlmk8cQd2B_6Vo61pCb2ROPvMj7qFfbaxqvjNlR3gYro4MMc1FxISniAFL-DrBvx7n8sQ8z4z3ryWnz9kMVaM1WX7VddH5KXZFkhf4NFtIdquG1OrsG1DfLyIiRQ9BO6CmruWnoB3h1euUxr8JKcaiApgb3eP5oKhq-fwLxuPJopv5zGaCwW4EdHI6_l4Qa7XPMkOTAbFxQed5MR-s7XBQ2mGqpi1sEHoVDxnkeW5wdHoj2R51_eNHdB4ej-u6eHfJ9vX5T_Q5NmZqNtmyZOHLhyqEUN7_zioIbEbUNRAMics2-Yet9l08rJ0OhdX45Q"
+      m.plugin.buildConfig = { "app_family_id": "542" }
+
+      'm.plugin.baseUrl = "https://sp.auth.adobe.com/adobe-services"
+      m.plugin.apiUrl = "https://api.auth.adobe.com"
+      result = m.plugin.initiateDCR()
+    end function
+
+    @it("test regcode")
+    function _()
+      m.plugin.softwareStatement = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIyZTFkZGU4Mi05MDk3LTQ1YjYtOTRlMS0wOGVmODE2MDRjNDUiLCJuYmYiOjE2NjYyODcyMTksImlzcyI6ImF1dGguYWRvYmUuY29tIiwiaWF0IjoxNjY2Mjg3MjE5fQ.AYRUReMHeloopGW9a5vk1xNlmk8cQd2B_6Vo61pCb2ROPvMj7qFfbaxqvjNlR3gYro4MMc1FxISniAFL-DrBvx7n8sQ8z4z3ryWnz9kMVaM1WX7VddH5KXZFkhf4NFtIdquG1OrsG1DfLyIiRQ9BO6CmruWnoB3h1euUxr8JKcaiApgb3eP5oKhq-fwLxuPJopv5zGaCwW4EdHI6_l4Qa7XPMkOTAbFxQed5MR-s7XBQ2mGqpi1sEHoVDxnkeW5wdHoj2R51_eNHdB4ej-u6eHfJ9vX5T_Q5NmZqNtmyZOHLhyqEUN7_zioIbEbUNRAMics2-Yet9l08rJ0OhdX45Q"
+      m.plugin.buildConfig = { "app_family_id": "542" }
+      m.plugin.requestorID = "BEINSPORT"
+      m.plugin.deviceId = "6d7e67738fa8144f7d513dd90d3f4af820690526"
+      'm.plugin.baseUrl = "https://sp.auth.adobe.com/adobe-services"
+      m.plugin.apiUrl = "https://api.auth.adobe.com"
+      result = m.plugin._regcode()
     end function
 
   end class
