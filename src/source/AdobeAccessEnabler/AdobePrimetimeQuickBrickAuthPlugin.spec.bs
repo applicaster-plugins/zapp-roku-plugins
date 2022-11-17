@@ -36,8 +36,6 @@ namespace zapp.tests
       m.assertEqual(m.plugin.uri.__className, "zapp.URI")
       m.assertEqual(m.plugin.requestorID, "rqd")
       m.assertEqual(m.plugin.resourceID, "rod")
-      m.assertEqual(m.plugin.secret, "sec")
-      m.assertEqual(m.plugin.publicKey, "pub")
       m.assertEqual(m.plugin.baseUrl, "#url")
       m.assertEqual(m.plugin.deviceId, "did")
     end function
@@ -73,9 +71,9 @@ namespace zapp.tests
     function _()
       result = { "id": "result" }
 
-      m.expectOnce(m.plugin, "isAuthDataExpired", [], true)
-      m.expectNone(m.plugin, "getAuthorization", [])
-      m.expectOnce(m.plugin, "createErrorResult", ["Invalid token for verification"], result)
+      m.expectCalled(m.plugin.isAuthDataExpired(), true)
+      m.expectNotCalled(m.plugin.getAuthorization())
+      m.expectCalled(m.plugin.createErrorResult("Invalid token for verification"), result)
 
       m.assertEqual(m.plugin._verify(), result)
     end function
@@ -84,10 +82,10 @@ namespace zapp.tests
     function _()
       result = { "id": "result" }
 
-      m.expectOnce(m.plugin, "isAuthDataExpired", [], false)
-      m.expectOnce(m.plugin, "getAuthorization", [], result)
+      m.expectCalled(m.plugin.isAuthDataExpired(), false)
+      m.expectCalled(m.plugin.getAuthorization(), result)
 
-      m.expectNone(m.plugin, "createErrorResult")
+      m.expectNotCalled(m.plugin.createErrorResult)
 
       m.assertEqual(m.plugin._verify(), result)
 
@@ -99,28 +97,29 @@ namespace zapp.tests
 
     @it("valid")
     function _()
+      m.expectCalled(m.plugin.initiateDCR(), "aut")
+      m.expectCalled(m.plugin.setInstance("adobeDCRToken", "aut"))
+      m.expectCalled(m.plugin.getInstance("adobeDCRToken"), "aut")
 
       requestUtil = { "id": "requestUtil" }
-      m.expectOnce(m.plugin, "getRequestUtil", [], requestUtil)
-
+      m.expectCalled(m.plugin.getRequestUtil(), requestUtil)
 
       response = {
         "id": "0c0166e1-9596-4826-a6a4-85a19692d2f4"
         "code": "c"
       }
-      m.expectOnce(m.plugin, "signRequest", ["POST", "/reggie/v1/rqd/regcode"], "aut")
       expectedHeaders = {
         "Accept": "application/json"
-        "Authorization": "aut"
+        "Authorization": "Bearer aut"
       }
 
       url = "#url/reggie/v1/rqd/regcode"
-      m.expectOnce(requestUtil, "post", [url, "deviceId=did", expectedHeaders], response)
+      m.expectCalled(requestUtil.post(url, "deviceId=did", expectedHeaders), response)
 
       result = { "id": "result" }
-      m.expectOnce(m.plugin, "createRegCodeResult", ["c"], result)
+      m.expectCalled(m.plugin.createRegCodeResult("c"), result)
 
-      m.expectOnce(m.plugin, "setSessionStoreValue", [m.plugin.id, "regcode", "c"])
+      m.expectCalled(m.plugin.setSessionStoreValue(m.plugin.id, "regcode", "c"))
 
       m.assertEqual(m.plugin._regcode(), result)
     end function
@@ -131,22 +130,24 @@ namespace zapp.tests
     @params({ code: invalid })
     @params({ code: "" })
     function _(response)
-      m.expectOnce(m.plugin, "signRequest", ["POST", "/reggie/v1/rqd/regcode"], "aut")
+      m.expectCalled(m.plugin.initiateDCR(), "aut")
+      m.expectCalled(m.plugin.setInstance("adobeDCRToken", "aut"))
+      m.expectCalled(m.plugin.getInstance("adobeDCRToken"), "aut")
+
       expectedHeaders = {
         "Accept": "application/json"
-        "Authorization": "aut"
+        "Authorization": "Bearer aut"
       }
 
       requestUtil = { "id": "requestUtil" }
-      m.expectOnce(m.plugin, "getRequestUtil", [], requestUtil)
-
+      m.expectCalled(m.plugin.getRequestUtil(), requestUtil)
 
       url = "#url/reggie/v1/rqd/regcode"
-      m.expectOnce(requestUtil, "post", [url, "deviceId=did", expectedHeaders], response)
+      m.expectCalled(requestUtil.post(url, "deviceId=did", expectedHeaders), response)
 
       result = { "id": "result" }
-      m.expectOnce(m.plugin, "createRegCodeResult", [invalid, -1, "Unknown error"], result)
-      m.expectOnce(m.plugin, "setSessionStoreValue", [m.plugin.id, "regcode", invalid])
+      m.expectCalled(m.plugin.createRegCodeResult(invalid, -1, "Unknown error"), result)
+      m.expectCalled(m.plugin.setSessionStoreValue(m.plugin.id, "regcode", invalid))
 
       m.assertEqual(m.plugin._regcode(), result)
 
@@ -158,10 +159,12 @@ namespace zapp.tests
 
     @it("valid")
     function _()
-      m.expectCalled(m.plugin.signRequest("GET", "/api/v1/tokens/authn"), "aut")
+      m.expectCalled(m.plugin.initiateDCR(), "aut")
+      m.expectCalled(m.plugin.setInstance("adobeDCRToken", "aut"))
+      m.expectCalled(m.plugin.getInstance("adobeDCRToken"), "aut")
       expectedHeaders = {
         "Accept": "application/json"
-        "Authorization": "aut"
+        "Authorization": "Bearer aut"
       }
 
       url = "#url/api/v1/tokens/authn?deviceId=did&requestor=rqd"
@@ -184,23 +187,25 @@ namespace zapp.tests
     @params({ "userId": "" }, 404, "none")
     @params({ "otherField": "value" }, 410, "none")
     function _(response, responseCode, expectedState)
-      m.expectOnce(m.plugin, "signRequest", ["GET", "/api/v1/tokens/authn"], "aut")
+      m.expectCalled(m.plugin.initiateDCR(), "aut")
+      m.expectCalled(m.plugin.setInstance("adobeDCRToken", "aut"))
+      m.expectCalled(m.plugin.getInstance("adobeDCRToken"), "aut")
       expectedHeaders = {
         "Accept": "application/json"
-        "Authorization": "aut"
+        "Authorization": "Bearer aut"
       }
       requestUtil = {
         "id": "requestUtil"
         lastResponseCode: responseCode
       }
-      m.expectOnce(m.plugin, "getRequestUtil", [], requestUtil)
+      m.expectCalled(m.plugin.getRequestUtil(), requestUtil)
 
 
       url = "#url/api/v1/tokens/authn?deviceId=did&requestor=rqd"
-      m.expectOnce(requestUtil, "getJsonSync", [url, expectedHeaders], response)
+      m.expectCalled(requestUtil.getJsonSync(url, expectedHeaders), response)
 
       result = { "id": "result", "state": "error" }
-      m.expectOnce(m.plugin, "createErrorResult", ["Unknown error"], result)
+      m.expectCalled(m.plugin.createErrorResult("Unknown error"), result)
 
       m.assertEqual(m.plugin._poll(), result)
 
@@ -214,36 +219,156 @@ namespace zapp.tests
 
     @it("logout")
     function _()
-      m.expectOnce(m.plugin, "signRequest", ["DELETE", "/api/v1/logout"], "aut")
+      m.expectCalled(m.plugin.initiateDCR(), "aut")
+      m.expectCalled(m.plugin.setInstance("adobeDCRToken", "aut"))
+      m.expectCalled(m.plugin.getInstance("adobeDCRToken"), "aut")
       expectedHeaders = {
         "Accept": "application/json"
-        "Authorization": "aut"
+        "Authorization": "Bearer aut"
       }
 
       requestUtil = { "id": "requestUtil" }
-      m.expectOnce(m.plugin, "getRequestUtil", [], requestUtil)
+      m.expectCalled(m.plugin.getRequestUtil(), requestUtil)
 
       url = "#url/api/v1/logout?deviceId=did"
-      m.expectOnce(requestUtil, "delete", [url, invalid, expectedHeaders])
+      m.expectCalled(requestUtil.delete(url, invalid, expectedHeaders))
 
       result = { "id": "result" }
-      m.expectOnce(m.plugin, "createAuthData", [], result)
+      m.expectCalled(m.plugin.createAuthData(), result)
 
       m.assertEqual(m.plugin._logOut(), result)
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("signRequest")
+    @describe("initiateDCR")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @it("signRequest")
+    @it("initiateDCR")
     function _()
-      testTimestamp = 1531234280
-      testNonce = "8bab0b10-3cf6-4a95-94b6-0a0b14d19a33"
-      authHeader = m.plugin.signRequest("POST", "/path", testNonce, testTimestamp)
-      m.assertNotInvalid(authHeader)
-      m.assertEqual(authHeader, "POST requestor_id=rqd, nonce=8bab0b10-3cf6-4a95-94b6-0a0b14d19a33, signature_method=HMAC-SHA1, request_time=1531234280000, request_uri=/path, public_key=pub, signature=f2WXvZ00hPL81BL0L9J8xHxxZp0=")
+      expectedHeaders = {
+        "Accept": "application/json"
+        "Authorization": "application/json"
+      }
 
+      expectedParams = {
+        "software_statement": ""
+      }
+
+      response = {
+        "client_id": "s6BhdRkqt3",
+        "client_secret": "t7AkePiru4",
+        "client_id_issued_at": 2893256800,
+        "redirect_uris": [
+        "app://com.programmer.adobe#sdasdsadas"],
+        "grant_types": ["client_credentials"]
+      }
+
+      requestUtil = { "id": "requestUtil" }
+      m.expectCalled(m.plugin.getRequestUtil(), requestUtil)
+
+      url = "#url/o/client/register"
+      m.expectCalled(requestUtil.post(url, expectedParams, expectedHeaders), response)
+
+      result = { "id": "result" }
+      m.expectCalled(m.plugin.createDCRResult(response), result)
+
+      m.assertEqual(m.plugin.initiateDCR(), result)
+    end function
+
+    @it("invalid")
+    @params(invalid)
+    @params({})
+    @params({ code: invalid })
+    @params({ code: "" })
+    function _(response)
+      expectedHeaders = {
+        "Accept": "application/json"
+        "Authorization": "application/json"
+      }
+      expectedParams = {
+        "software_statement": ""
+      }
+
+      requestUtil = { "id": "requestUtil" }
+      m.expectCalled(m.plugin.getRequestUtil(), requestUtil)
+
+      url = "#url/o/client/register"
+      m.expectCalled(requestUtil.post(url, expectedParams, expectedHeaders), response)
+
+      m.expectCalled(m.plugin.createDCRResult(invalid), invalid)
+
+      m.assertInvalid(m.plugin.initiateDCR())
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("createDCRResult")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("createDCRResult valid")
+    function _()
+      registerAppResponse = {
+        "client_id": "s6BhdRkqt3",
+        "client_secret": "t7AkePiru4",
+        "client_id_issued_at": 2893256800,
+        "redirect_uris": [
+        "app://com.programmer.adobe#sdasdsadas"],
+        "grant_types": ["client_credentials"]
+      }
+      expectedHeaders = {
+        "Content-Type": "application/x-www-form-urlencoded"
+      }
+      expectedParams = {
+        "grant_type": "client_credentials",
+        "client_id": registerAppResponse.client_id,
+        "client_secret": registerAppResponse.client_secret,
+      }
+      expectedResponse = {
+        "access_token": "2YotnFZFEjr1zCsicMWpAA",
+        "token_type": "bearer",
+        "expires_in": 3600,
+        "created_at": 123456789
+      }
+
+      requestUtil = { "id": "requestUtil" }
+      m.expectCalled(m.plugin.getRequestUtil(), requestUtil)
+
+      url = "#url/o/client/token"
+      m.expectCalled(requestUtil.post(url, expectedParams, expectedHeaders), expectedResponse)
+
+      m.assertEqual(m.plugin.createDCRResult(registerAppResponse), expectedResponse)
+    end function
+
+    @only
+    @it("createDCRResult invalid result")
+    @params(invalid)
+    @params({})
+    @params({ code: invalid })
+    @params({ code: "" })
+    function _(response)
+      registerAppResponse = {
+        "client_id": "s6BhdRkqt3",
+        "client_secret": "t7AkePiru4",
+        "client_id_issued_at": 2893256800,
+        "redirect_uris": [
+        "app://com.programmer.adobe#sdasdsadas"],
+        "grant_types": ["client_credentials"]
+      }
+      expectedHeaders = {
+        "Content-Type": "application/x-www-form-urlencoded"
+      }
+      expectedParams = {
+        "grant_type": "client_credentials",
+        "client_id": registerAppResponse.client_id,
+        "client_secret": registerAppResponse.client_secret,
+      }
+
+      requestUtil = { "id": "requestUtil" }
+      m.expectCalled(m.plugin.getRequestUtil(), requestUtil)
+
+      url = "#url/o/client/token"
+      m.expectCalled(requestUtil.post(url, expectedParams, expectedHeaders), response)
+
+      m.assertInvalid(m.plugin.createDCRResult(registerAppResponse))
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -290,22 +415,25 @@ namespace zapp.tests
     @params(404, 404)
     @params(503, 503)
     function _(lastResponseCode, expectedCode)
+      m.expectCalled(m.plugin.initiateDCR(), "aut")
+      m.expectCalled(m.plugin.setInstance("adobeDCRToken", "aut"))
+      m.expectCalled(m.plugin.getInstance("adobeDCRToken"), "aut")
 
-      m.expectOnce(m.plugin, "signRequest", ["GET", "/api/v1/authorize"], "aut")
       expectedHeaders = {
         "Accept": "application/json"
-        "Authorization": "aut"
+        "Authorization": "Bearer aut"
       }
       url = "#url/api/v1/authorize?deviceId=did&requestor=rqd&resource=rod"
 
       requestUtil = { "id": "requestUtil"
         lastResponseCode: lastResponseCode
       }
-      m.expectCalled(m.plugin.getRequestUtil(), requestUtil)
 
       response = {
         "expires": "1589402085000"
       }
+      m.expectCalled(m.plugin.getResourceText(), "rod")
+      m.expectCalled(m.plugin.getRequestUtil(), requestUtil)
       m.expectCalled(requestUtil.getJsonSync(url, expectedHeaders), response)
       m.expectCalled(m.plugin.date.getSecondsUntil(mc.strToLong("1589402085000") / 1000), 9999)
       m.plugin.pollResult = { "id": "pollResult" }
@@ -327,22 +455,25 @@ namespace zapp.tests
     @params({ "expires": invalid })
     @params({ "expires": "" })
     function _(response)
+      m.expectCalled(m.plugin.initiateDCR(), "aut")
+      m.expectCalled(m.plugin.setInstance("adobeDCRToken", "aut"))
+      m.expectCalled(m.plugin.getInstance("adobeDCRToken"), "aut")
 
       requestUtil = { "id": "requestUtil" }
-      m.expectOnce(m.plugin, "getRequestUtil", [], requestUtil)
 
-      m.expectOnce(m.plugin, "signRequest", ["GET", "/api/v1/authorize"], "aut")
       expectedHeaders = {
         "Accept": "application/json"
-        "Authorization": "aut"
+        "Authorization": "Bearer aut"
       }
       url = "#url/api/v1/authorize?deviceId=did&requestor=rqd&resource=rod"
 
-      m.expectOnce(requestUtil, "getJsonSync", [url, expectedHeaders], response)
+      m.expectCalled(m.plugin.getResourceText(), "rod")
+      m.expectCalled(m.plugin.getRequestUtil(), requestUtil)
+      m.expectCalled(requestUtil.getJsonSync(url, expectedHeaders), response)
 
       result = { "id": "result" }
-      m.expectNone(m.plugin, "createAuthData")
-      m.expectOnce(m.plugin, "createErrorResult", ["Unknown error"], result)
+      m.expectNotCalled(m.plugin.createAuthData)
+      m.expectCalled(m.plugin.createErrorResult("Unknown error"), result)
 
       m.assertEqual(m.plugin.getAuthorization(), result)
     end function

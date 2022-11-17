@@ -1,7 +1,7 @@
 namespace zapp.tests
   @tags("public", "auth", "vm")
   @suite
-  class RegcodeLoginScreenVMTests extends tests.BaseTestSuite
+  class AdobePrimetimeQuickBrickAuthScreenVMTests extends tests.BaseTestSuite
     private analyticsManager
     private vm
 
@@ -17,7 +17,7 @@ namespace zapp.tests
         }
       }
 
-      m.vm = new RegcodeLoginScreenVM(riversJson)
+      m.vm = new AdobePrimetimeQuickBrickAuthScreenVM(riversJson)
       m.analyticsManager = { "id": "analyticsManager" }
       m.vm.analyticsManager = m.analyticsManager
 

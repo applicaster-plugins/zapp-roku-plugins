@@ -37,7 +37,8 @@ class AdobePrimetimeQuickBrickAuthScreenVM extends zapp.uib.ScreenVM
 
     m.focusId = "refreshButton"
 
-    m.providerId = m.getAuthProviderId()
+    'm.providerId = m.getAuthProviderId()
+    m.providerId = "adobe-primetime-auth-qb"
 
     if m.providerId = invalid
       m.isValid = false

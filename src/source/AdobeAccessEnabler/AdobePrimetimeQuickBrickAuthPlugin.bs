@@ -7,8 +7,6 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
 
   private resourceID = ""
   private requestorID = ""
-  private secret = ""
-  private publicKey = ""
   private baseUrl = ""
   private softwareStatement = ""
   private pollResult as mc.types.assocarray
@@ -27,8 +25,6 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
     m.isTokenUsableWithDSP = true
     m.resourceID = plugin.getStringValue("resourceID", "")
     m.requestorID = plugin.getStringValue("requestorID", "")
-    m.secret = plugin.getStringValue("secret", "")
-    m.publicKey = plugin.getStringValue("publicKey", "")
     m.baseUrl = plugin.getStringValue("base_url", "https://api.auth.adobe.com")
     m.softwareStatement = plugin.getStringValue("software_statement")
   end function
@@ -184,7 +180,7 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
 
     m.log.info("result is ", result)
 
-    if result <> invalid and result.code <> invalid and result.code <> ""
+    if result <> invalid and result.client_id <> invalid and result.client_secret <> ""
       return m.createDCRResult(result)
     end if
 
@@ -197,8 +193,8 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
     requestPath = "/o/client/token"
     params = {
       "grant_type": "client_credentials",
-      "client_id": registerAppResponse.data.client_id,
-      "client_secret": registerAppResponse.data.client_secret,
+      "client_id": registerAppResponse.client_id,
+      "client_secret": registerAppResponse.client_secret,
     }
     headers = {
       "Content-Type": "application/x-www-form-urlencoded"
@@ -211,7 +207,7 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
 
     m.log.info("result is ", result)
 
-    if result <> invalid and result.code <> invalid and result.code <> ""
+    if result <> invalid and result.access_token <> invalid and result.token_type <> ""
       return result
     end if
 
@@ -222,17 +218,20 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
   private function getAuthorization()
     m.log.method("getAuthorization")
     ' <SP_FQDN>/api/v1/authorize
-    requestPath = "/api/v1/authorize"
+    m.setInstance("adobeDCRToken", m.initiateDCR())
+
     headers = {
       "Accept": "application/json"
-      "Authorization": m.signRequest("GET", requestPath)
+      "Authorization": `Bearer ${m.getInstance("adobeDCRToken")}`
     }
+
     params = {
       "requestor": m.requestorID
       "deviceId": m.deviceId
       "resource": m.getResourceText()
     }
 
+    requestPath = "/api/v1/authorize"
     url = m.baseUrl + requestPath + "?" + m.uri.encodeParams(params)
 
     m.log.info("url is ", url)
@@ -270,38 +269,6 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
   'workaround for a bug where reusing the request get's the wrong response
   private function getRequestUtil()
     return new zapp.Request()
-  end function
-
-  private function signRequest(method, path, nonce = invalid, timestamp = 0)
-    di = CreateObject("roDeviceInfo")
-    if nonce = invalid
-      nonce = di.GetRandomUUID()
-    end if
-    if timestamp = 0
-      timestamp = CreateObject("roDateTime").AsSeconds()
-    end if
-    timeString = stri(timestamp, 10) + "000"
-    stringToSign = method
-    stringToSign += " requestor_id=" + m.requestorID
-    stringToSign += ", nonce=" + nonce
-    stringToSign += ", signature_method=HMAC-SHA1"
-    stringToSign += ", request_time=" + timeString
-    stringToSign += ", request_uri=" + path
-    byteArray = CreateObject("roByteArray")
-    byteArray.FromAsciiString(stringToSign)
-    digest = CreateObject("roHMAC")
-    privateKey = CreateObject("roByteArray")
-    privateKey.fromAsciiString(m.secret)
-    if digest.setup("sha1", privateKey) <> 0
-      m.log.error("signRequest: failed to set up HMAC digest")
-      return invalid
-    end if
-    signature = digest.process(byteArray)
-    signatureBase64 = signature.toBase64String()
-    header = stringToSign
-    header += ", public_key=" + m.publicKey
-    header += ", signature=" + signatureBase64
-    return header
   end function
 
   private function getResourceText()
