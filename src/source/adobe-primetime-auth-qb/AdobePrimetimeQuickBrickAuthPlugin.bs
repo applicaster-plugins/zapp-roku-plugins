@@ -308,7 +308,6 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
 
   protected override function updateStateWithResult(result)
     m.log.info("storing cleeng key with quick brick flow in session")
-    ?"resultresult " result
     account = m._getAccountInfo()
 
     m.setInstance("quick-brick-login-flow-account", account)
