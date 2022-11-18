@@ -49,9 +49,14 @@ class AdobePrimetimeQuickBrickAuthScreenVM extends zapp.uib.ScreenVM
   end function
 
   function processStyles(styles)
+    activationUrl = m.getInstance("activationUrl")
     for i = 1 to 6
       key = "text" + i.toStr().trim()
-      text = m.localizations[key]
+      if activationUrl <> invalid and key = "text2"
+        text = activationUrl
+      else
+        text = m.localizations[key]
+      end if
       m.setField(key, text)
     end for
     m.title = m.localizations.title
@@ -171,10 +176,15 @@ class AdobePrimetimeQuickBrickAuthScreenVM extends zapp.uib.ScreenVM
     if result <> invalid and result.regcode <> invalid
       m.log.info("received code", result.regcode)
       m.codeText = result.regcode
+      activationUrl = m.getInstance("activationUrl")
 
       for i = 1 to 6
         key = "text" + i.toStr().trim()
-        text = m.localizations[key]
+        if activationUrl <> invalid and key = "text2"
+          text = activationUrl
+        else
+          text = m.localizations[key]
+        end if
         if text = "{{url}}"
           text = mc.getPath(result, "url", "")
         end if
