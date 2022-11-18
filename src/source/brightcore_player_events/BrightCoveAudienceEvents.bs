@@ -93,9 +93,9 @@ namespace zapp.video.analytics
       m.sendBrightCoveAudienceEvents(event)
     end function
 
-    function sendVideoViewEvent()
+    function sendVideoViewEvent(duration)
       m.log.info("sending sendVideoViewEvent event")
-      event = m.eventFactory.createEvent("video_view")
+      event = m.eventFactory.createEvent("video_view", duration)
       m.sendBrightCoveAudienceEvents(event)
     end function
 
