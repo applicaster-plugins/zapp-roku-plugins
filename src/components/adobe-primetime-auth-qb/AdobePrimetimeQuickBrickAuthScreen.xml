@@ -1,0 +1,110 @@
+<?xml version='1.0' encoding='utf-8'?>
+<component
+    name='AdobePrimetimeQuickBrickAuthScreen'
+    extends='UIBScreen'
+    vm='AdobePrimetimeQuickBrickAuthScreenVM'>
+
+  <interface></interface>
+
+  <children>
+    <Timer
+        id='pollTimer'
+        duration='{{pollTimerDuration}}'
+        control='{{pollTimerControl}}'
+        fire='{(onPollTimerFire(value))}' />
+
+    <Group
+        id='backgroundGroup'
+        visible='{{isContentGroupVisible}}'>
+      <Rectangle
+          id='backgroundRect'
+          width='1920'
+          height='1080'
+          color='{{=zapp_viewUtils_UIBColor("background_color")}}' />
+
+      <mv_Poster
+          id='backgroundPoster'
+          width='1920'
+          height='1080'
+          style='{{=zapp_viewUtils_UIBPoster("background")}}' />
+
+      <mv_Poster
+          id='logoPoster'
+          style='{{=zapp_viewUtils_UIBPoster("logo")}}' />
+    </Group>
+
+    <Group
+        id='contentGroup'
+        visible='{{isContentGroupVisible}}'>
+      <mv_Label
+          id='titleLabel'
+          style='{{=zapp_viewUtils_UIBLabel("title", "", invalid)}}'
+          text='{{title}}' />
+      <LayoutGroup
+          id='labelsGroup'
+          layoutDirection='vert'
+          translation='{{=zapp_viewUtils_UIBPosition("text")}}'
+          itemSpacings='{{=zapp_viewUtils_UIBFloatArray("item_spacing")}}'>
+
+        <mv_Label
+            id='text1Label'
+            style='{{=zapp_viewUtils_UIBLabel("text1", "", invalid)}}'
+            text='{{text1}}' />
+
+        <mv_Label
+            id='text2Label'
+            style='{{=zapp_viewUtils_UIBLabel("text2", "", invalid)}}'
+            text='{{text2}}' />
+
+        <mv_Label
+            id='text3Label'
+            style='{{=zapp_viewUtils_UIBLabel("text3", "", invalid)}}'
+            text='{{text3}}' />
+
+        <mv_Label
+            id='text4Label'
+            style='{{=zapp_viewUtils_UIBLabel("text4", "", invalid)}}'
+            text='{{text4}}' />
+
+        <mv_Label
+            id='text5Label'
+            style='{{=zapp_viewUtils_UIBLabel("text5", "", invalid)}}'
+            text='{{text5}}' />
+
+        <mv_Label
+            id='text6Label'
+            style='{{=zapp_viewUtils_UIBLabel("text6", "", invalid)}}'
+            text='{{text6}}' />
+
+        <mv_Label
+            id='codeLabel'
+            style='{{=zapp_viewUtils_UIBLabel("code","")}}'
+            text='{{codeText}}' />
+        <mv_Label
+            id='supportLabel'
+            style='{{=zapp_viewUtils_UIBLabel("support")}}' />
+        <mv_Label
+            id='support2Label'
+            style='{{=zapp_viewUtils_UIBLabel("support2")}}' />
+
+      </LayoutGroup>
+
+      <ZActionButton
+          id='refreshButton'
+          style='{{=zapp_viewUtils_UIBButton("refresh_button")}}'
+          opacity='{{:refreshButtonOpacity}}'
+          visible='{{isRefreshing:transform=mx_transform_invertBoolean}}'
+          selected='{(onRefreshButtonSelected(value))}' />
+    </Group>
+
+    <LoadingIndicator
+        id='loadingIndicator'
+        width='1920'
+        height='1080'
+        translation='[0,0]'
+        isActive='{{isShowingLoadingIndicator}}'
+        backgroundVisible='false'
+        text='' />
+
+  </children>
+</component>
