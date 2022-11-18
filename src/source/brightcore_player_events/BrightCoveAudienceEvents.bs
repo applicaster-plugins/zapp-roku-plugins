@@ -15,15 +15,9 @@ namespace zapp.video.analytics
     private enabled = false
     private eventURL = "http://metrics.brightcove.com/tracker"
     private contentNode = invalid
-    private requestParams = []
     private userIdStorageKey = ""
-    private eventBatch = 0
-    private maxEventCount = invalid
-    private executionTimer = invalid
-    private isActive = false
     private videoPlayer = invalid
     private videoNode = invalid
-    private listOfEvents = {}
 
     @injectClass("zapp.URI")
     private uri
@@ -32,8 +26,6 @@ namespace zapp.video.analytics
       super("BrightCoveAudienceEvents")
       pluginManager = new zapp.PluginManager()
       m.eventFactory = new zapp.video.analytics.BrightCoveEventsFactory()
-      m.maxEventCount = m.eventFactory.eventsByKey.count()
-      'mioc.setInstance("eventBatch", 0)
       plugin = pluginManager.getPluginById("brightcove-player-events")
       m.userIdStorageKey = plugin.getStringValue("user_identity_storage_key", "quick-brick-login-flow.access-token")
       m.enabled = plugin.getBoolValue("enabled")
@@ -99,9 +91,9 @@ namespace zapp.video.analytics
       m.sendBrightCoveAudienceEvents(event)
     end function
 
-    function sendVideoEngagementEvent()
+    function sendVideoEngagementEvent(currentUpdate, lastUpdate)
       m.log.info("sending sendVideoEngagementEvent event")
-      event = m.eventFactory.createEvent("video_engagement")
+      event = m.eventFactory.createEvent("video_engagement", invalid, currentUpdate, lastUpdate)
       m.sendBrightCoveAudienceEvents(event)
     end function
 
