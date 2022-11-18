@@ -193,19 +193,21 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
 
   private function createDCRResult(registerAppResponse as mc.types.assocarray)
     m.log.method("createDCRResult")
-    params = {
-      "grant_type": "client_credentials",
-      "client_id": registerAppResponse.client_id,
-      "client_secret": registerAppResponse.client_secret,
-    }
-    m.log.info("url ", url, "headers", headers, "params", params)
+    if registerAppResponse <> invalid
+      params = {
+        "grant_type": "client_credentials",
+        "client_id": registerAppResponse.client_id,
+        "client_secret": registerAppResponse.client_secret,
+      }
+      m.log.info("url ", url, "headers", headers, "params", params)
 
-    result = m.executeAPIRequest("FORMPOST", "/o/client/token", params)
+      result = m.executeAPIRequest("FORMPOST", "/o/client/token", params)
 
-    m.log.info("result is ", result)
+      m.log.info("result is ", result)
 
-    if result <> invalid and result.access_token <> invalid and result.token_type <> ""
-      return result.access_token
+      if result <> invalid and result.access_token <> invalid and result.token_type <> ""
+        return result.access_token
+      end if
     end if
 
     m.log.error("Error retrieving client credentials")
