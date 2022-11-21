@@ -28,8 +28,15 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
     m.isTokenUsableWithDSP = true
     m.resourceID = plugin.getStringValue("resource_id", "")
     m.requestorID = plugin.getStringValue("requestor_id", "")
-    m.apiUrl = plugin.getStringValue("base_url", "https://api.auth.adobe.com")
+    m.apiUrl = plugin.getStringValue("base_url", "")
     m.softwareStatement = plugin.getStringValue("software_statement")
+    activationUrl = plugin.getStringValue("activation_url")
+    if activationUrl <> ""
+      m.setInstance("activationUrl", activationUrl)
+    end if
+    if m.apiUrl = ""
+      m.apiUrl = "https://api.auth.adobe.com"
+    end if
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

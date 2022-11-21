@@ -62,24 +62,15 @@
             text='{{text3}}' />
 
         <mv_Label
+            id='codeLabel'
+            style='{{=zapp_viewUtils_UIBLabel("code","")}}'
+            text='{{codeText}}' />
+
+        <mv_Label
             id='text4Label'
             style='{{=zapp_viewUtils_UIBLabel("text4", "", invalid)}}'
             text='{{text4}}' />
 
-        <mv_Label
-            id='text5Label'
-            style='{{=zapp_viewUtils_UIBLabel("text5", "", invalid)}}'
-            text='{{text5}}' />
-
-        <mv_Label
-            id='text6Label'
-            style='{{=zapp_viewUtils_UIBLabel("text6", "", invalid)}}'
-            text='{{text6}}' />
-
-        <mv_Label
-            id='codeLabel'
-            style='{{=zapp_viewUtils_UIBLabel("code","")}}'
-            text='{{codeText}}' />
         <mv_Label
             id='supportLabel'
             style='{{=zapp_viewUtils_UIBLabel("support")}}' />
