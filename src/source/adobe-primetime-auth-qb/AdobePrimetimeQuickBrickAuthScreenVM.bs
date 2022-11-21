@@ -20,8 +20,6 @@ class AdobePrimetimeQuickBrickAuthScreenVM extends zapp.uib.ScreenVM
   public text2 = ""
   public text3 = ""
   public text4 = ""
-  public text5 = ""
-  public text6 = ""
 
   private authTask = invalid
   private providerId = "adobe-primetime-auth-qb"
@@ -50,7 +48,7 @@ class AdobePrimetimeQuickBrickAuthScreenVM extends zapp.uib.ScreenVM
 
   function processStyles(styles)
     activationUrl = m.getInstance("activationUrl")
-    for i = 1 to 6
+    for i = 1 to 4
       key = "text" + i.toStr().trim()
       if activationUrl <> invalid and key = "text2"
         text = activationUrl
@@ -178,7 +176,7 @@ class AdobePrimetimeQuickBrickAuthScreenVM extends zapp.uib.ScreenVM
       m.codeText = result.regcode
       activationUrl = m.getInstance("activationUrl")
 
-      for i = 1 to 6
+      for i = 1 to 4
         key = "text" + i.toStr().trim()
         if activationUrl <> invalid and key = "text2"
           text = activationUrl
