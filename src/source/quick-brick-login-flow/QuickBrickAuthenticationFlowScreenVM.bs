@@ -55,7 +55,7 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
     else if currentItem = invalid
       return true
     end if
-    return asBoolean(currentSelection.json.extensions.requires_authentication, false)
+    return asBoolean(currentItem.json.extensions.requires_authentication, false)
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

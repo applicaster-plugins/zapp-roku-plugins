@@ -44,12 +44,12 @@ class AdobePrimetimeQuickBrickAuthScreenVM extends zapp.uib.ScreenVM
     if not mc.getPath(riversJson, "styles.use_refresh_button", true)
       m.refreshButtonOpacity = 0
     end if
-    m.skipTypes = asString(riversJson.styles.skip_types)
     m.processStyles(riversJson.styles)
   end function
 
   function processStyles(styles)
     activationUrl = m.getInstance("activationUrl")
+    m.skipTypes = asString(styles.skip_types)
     for i = 1 to 4
       key = "text" + i.toStr().trim()
       if activationUrl <> invalid and key = "text2"
