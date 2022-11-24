@@ -14,6 +14,7 @@ class AdobePrimetimeQuickBrickAuthScreenVM extends zapp.uib.ScreenVM
   public refreshButtonOpacity = 1
   public pollTimerDuration = 5
   private isDebugOverrideSet = false
+  private skipTypes = ""
 
   public title = ""
   public text1 = ""
@@ -48,6 +49,7 @@ class AdobePrimetimeQuickBrickAuthScreenVM extends zapp.uib.ScreenVM
 
   function processStyles(styles)
     activationUrl = m.getInstance("activationUrl")
+    m.skipTypes = asString(styles.skip_types)
     for i = 1 to 4
       key = "text" + i.toStr().trim()
       if activationUrl <> invalid and key = "text2"
@@ -73,7 +75,9 @@ class AdobePrimetimeQuickBrickAuthScreenVM extends zapp.uib.ScreenVM
   public override function load() as boolean
     currentSelection = m.getInstance("currentSelection")
 
-    if m.isDisplayedInPrehook
+    if currentSelection <> invalid and currentSelection@.getMatchesType(m.skipTypes) and zapp.mixin.getCurrentLocale() <> "US"
+      m.dismiss("success")
+    else if m.isDisplayedInPrehook
       m.log.info("displaying in prehook")
 
       if m.shouldDisplayWithContent(currentSelection)
@@ -103,6 +107,12 @@ class AdobePrimetimeQuickBrickAuthScreenVM extends zapp.uib.ScreenVM
       entitlementsNode = m.getInstance("entitlements")
       return entitlementsNode@.isLocked(mc.getPath(currentSelection, "currentItem"))
     end if
+  end function
+
+  private function getCurrentLocale()
+    di = createObject("roDeviceInfo")
+    countryCode = di.GetCountryCode()
+    return countryCode
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
