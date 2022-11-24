@@ -1,23 +1,23 @@
 import "pkg:/source/UIBuilder/view/ScreenVM.bs"
 import "pkg:/source/lib/ViewUtils.bs"
 import "pkg:/source/mixin/KeyboardDialogMixin.bs"
+import "pkg:/source/zapp/Mixin.bs"
 
 class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
 
   public currentScreen = invalid
 
-  private skipKey = ""
   private providerId = "quick-brick-login-flow"
   private isShowingRegisterScreenFirst = false
   private isSubScreenVisible = invalid
   private loginCompletionAction = ""
   private nameOfParentScreen = ""
   private authTask as mc.types.node
+  private skipTypes = ""
 
   public function new(riversJson)
     super(riversJson, "QuickBrickAuthenticationFlowScreenVM")
     m.focusId = "usernameInput"
-    m.skipKey = asString(m.riversJson.data.skip_login_if_key_exists)
     m.processStyles(m.riversJson)
   end function
 
@@ -36,9 +36,6 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
     if not m.isLoginRequired()
       m.log.info("no need to show in this case")
       m.dismiss("success")
-    else if m.isKeyToSkipSet()
-      m.log.info("skip key set")
-      m.dismiss("success")
     else if m.isLoggedIn()
       m.log.info("user is logged in, no need to show")
       m.dismiss("success")
@@ -51,24 +48,14 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
 
   private function isLoginRequired()
     currentItem = m.getInstance("currentSelection", "currentItem")
-    if currentItem = invalid
+    currentSelection = m.getInstance("currentSelection")
+    if currentSelection <> invalid and currentSelection@.getMatchesType(m.skipTypes)
+      m.log.info("type maches- skipping")
+      m.dismiss("success")
+    else if currentItem = invalid
       return true
     end if
-    return asBoolean(currentItem.json.extensions.requires_authentication, false)
-  end function
-
-  private function isKeyToSkipSet()
-    m.log.info("checking if this key is set", m.skipKey)
-    parts = m.skipKey.split(".")
-    if parts.count() = 2
-      value = m.getSessionStoreValue(parts[0], parts[1])
-      m.log.info("session store contained value:", value)
-      if value <> invalid
-        return true
-      end if
-    end if
-
-    return false
+    return asBoolean(currentSelection.json.extensions.requires_authentication, false)
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -76,6 +63,7 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   function processStyles(styles)
+    m.skipTypes = asString(styles.general.skip_types)
     m.isShowingRegisterScreenFirst = zapp.viewUtils.getUIBBool(m.riversJson, "general.show_register_screen_first")
     m.loginCompletionAction = zapp.viewUtils.getUIBBool(m.riversJson, "general.login_completion_action")
   end function
@@ -127,6 +115,7 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
   private function onSubScreenStateChange(state as string)
     ignoreCompletionAction = m.getTopField("ignoreCompletionAction")
     m.log.method("current screen state change", state, "m.isShowingRegisterScreenFirst", m.isShowingRegisterScreenFirst, "ignoreCompletionAction", ignoreCompletionAction)
+    currentSelection = m.getInstance("currentSelection")
     if m.nameOfParentScreen = "tabChildNavController" and state = "cancel"
       m.navigateToHomeScreen()
     else if ignoreCompletionAction = true and (state = "success" or state = "cancel")

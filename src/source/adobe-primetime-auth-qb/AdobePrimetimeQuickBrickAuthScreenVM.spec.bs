@@ -25,6 +25,19 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("checkIfTypeMatch")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("is matched")
+    @params("type1,type2,type3")
+    function _(types)
+
+      result = m.vm.checkIfTypeMatch(types)
+
+      m.assertEqual(result, true)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("load")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 

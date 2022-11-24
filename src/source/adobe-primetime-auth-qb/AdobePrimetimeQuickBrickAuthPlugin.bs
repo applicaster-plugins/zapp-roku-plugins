@@ -158,7 +158,7 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
 
     url = m.apiUrl + requestPath + "?" + m.uri.encodeParams(params)
     request.delete(url, invalid, headers)
-
+    m.setInstance("adobeDCRToken", invalid)
     return m.createAuthData()
   end function
 
@@ -206,7 +206,7 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
         "client_id": registerAppResponse.client_id,
         "client_secret": registerAppResponse.client_secret,
       }
-      m.log.info("url ", url, "headers", headers, "params", params)
+      m.log.info("url ", m.apiUrl + "/o/client/token", "params", params)
 
       result = m.executeAPIRequest("FORMPOST", "/o/client/token", params)
 
