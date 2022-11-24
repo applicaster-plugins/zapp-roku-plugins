@@ -56,7 +56,12 @@ class LogoutScreenVM extends zapp.uib.ScreenVM
     m.textPosition = zapp.viewUtils.makeUIBPosition(styles, "text", 0, 310)
     m.buttonPosition = zapp.viewUtils.makeUIBPosition(styles, "button", 400, 600)
     m.textWidth = zapp.viewUtils.getUIBInt(styles, "text_w", 1920)
-    m.providerId = mc.getPath(styles, "provider_id", invalid)
+
+    if m.getTopField("forcedProviderId") <> invalid
+      m.providerId = m.getTopField("forcedProviderId")
+    else
+      m.providerId = mc.getPath(styles, "provider_id", invalid)
+    end if
   end function
 
   private function configureText(styles as mc.types.assocarray)
