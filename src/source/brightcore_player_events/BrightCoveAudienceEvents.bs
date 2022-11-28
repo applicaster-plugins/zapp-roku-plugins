@@ -16,6 +16,7 @@ namespace zapp.video.analytics
     private eventURL = "http://metrics.brightcove.com/tracker"
     private contentNode = invalid
     private userIdStorageKey = ""
+    private accountId = ""
     private videoPlayer = invalid
     private videoNode = invalid
 
@@ -26,11 +27,12 @@ namespace zapp.video.analytics
       super("BrightCoveAudienceEvents")
       pluginManager = new zapp.PluginManager()
       m.eventFactory = new zapp.video.analytics.BrightCoveEventsFactory()
-      plugin = pluginManager.getPluginById("brightcove-player-events")
+      plugin = pluginManager.getPluginById("zapp-analytics-plugin-brightcove")
       m.userIdStorageKey = plugin.getStringValue("user_identity_storage_key", "quick-brick-login-flow.access-token")
+      m.accountId = plugin.getStringValue("account_id")
       m.enabled = plugin.getBoolValue("enabled")
 
-      m.initialize(contentNode, videoPlayer, videoNode)
+      m.initialize(contentNode, videoPlayer, videoNode, m.accountId)
 
       parts = m.userIdStorageKey.split(".")
       m.eventFactory.accountSection = asString(parts[0])
@@ -41,9 +43,9 @@ namespace zapp.video.analytics
     '++ Public Methods
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    function initialize(contentNode as mc.types.node, videoPlayer as mc.types.node, videoNode as mc.types.node)
+    function initialize(contentNode as mc.types.node, videoPlayer as mc.types.node, videoNode as mc.types.node, accountId as string)
       m.log.info("initialize eventFactory")
-      m.eventFactory.initialize(contentNode, videoPlayer, videoNode)
+      m.eventFactory.initialize(contentNode, videoPlayer, videoNode, accountId)
       m.contentNode = contentNode
       m.videoNode = videoNode
       m.videoPlayer = videoPlayer
