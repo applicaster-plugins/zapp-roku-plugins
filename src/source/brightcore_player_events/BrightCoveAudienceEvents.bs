@@ -1,0 +1,117 @@
+import "pkg:/source/video/analytics/BrightCoveEventsFactory.bs"
+import "pkg:/source/plugin-support/BasePlugin.bs"
+import "pkg:/source/plugin-support/PluginManager.bs"
+import "pkg:/source/video/analytics/AnalyticsEventInfo.bs"
+import "pkg:/source/lib/APIUtils.bs"
+import "pkg:/source/authorization/BaseAuthPlugin.bs"
+import "pkg:/source/lib/URI.bs"
+import "pkg:/source/video/Quantile.bs"
+
+namespace zapp.video.analytics
+
+  class BrightCoveAudienceEvents extends zapp.BaseClass
+
+    private eventFactory as zapp.video.analytics.BrightCoveEventsFactory
+    private enabled = false
+    private eventURL = "http://metrics.brightcove.com/tracker"
+    private contentNode = invalid
+    private userIdStorageKey = ""
+    private accountId = ""
+    private videoPlayer = invalid
+    private videoNode = invalid
+
+    @injectClass("zapp.URI")
+    private uri
+
+    function new(contentNode as mc.types.node, videoPlayer as mc.types.node, videoNode as mc.types.node)
+      super("BrightCoveAudienceEvents")
+      pluginManager = new zapp.PluginManager()
+      m.eventFactory = new zapp.video.analytics.BrightCoveEventsFactory()
+      plugin = pluginManager.getPluginById("zapp-analytics-plugin-brightcove")
+      m.userIdStorageKey = plugin.getStringValue("user_identity_storage_key", "quick-brick-login-flow.access-token")
+      m.accountId = plugin.getStringValue("account_id")
+      m.enabled = plugin.getBoolValue("enabled")
+
+      m.initialize(contentNode, videoPlayer, videoNode, m.accountId)
+
+      parts = m.userIdStorageKey.split(".")
+      m.eventFactory.accountSection = asString(parts[0])
+      m.eventFactory.accountKey = asString(parts[1])
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '++ Public Methods
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    function initialize(contentNode as mc.types.node, videoPlayer as mc.types.node, videoNode as mc.types.node, accountId as string)
+      m.log.info("initialize eventFactory")
+      m.eventFactory.initialize(contentNode, videoPlayer, videoNode, accountId)
+      m.contentNode = contentNode
+      m.videoNode = videoNode
+      m.videoPlayer = videoPlayer
+    end function
+
+    function sendPlayerLoadEvent()
+      m.log.info("sending sendPlayerLoadEvent")
+      event = m.eventFactory.createEvent("player_load")
+      m.sendBrightCoveAudienceEvents(event)
+    end function
+
+    function sendErrorEvent()
+      m.log.info("sending sendErrorEvent")
+      event = m.eventFactory.createEvent("error")
+      m.sendBrightCoveAudienceEvents(event)
+    end function
+
+    function sendPlayRequestEvent()
+      m.log.info("sending sendPlayRequestEvent")
+      event = m.eventFactory.createEvent("play_request")
+      m.sendBrightCoveAudienceEvents(event)
+    end function
+
+    function sendAdModeBeginEvent()
+      m.log.info("sending sendAdModeBeginEvent")
+      event = m.eventFactory.createEvent("ad_mode_begin")
+      m.sendBrightCoveAudienceEvents(event)
+    end function
+
+    function sendAdModeCompleteEvent()
+      m.log.info("sending sendAdModeCompleteEvent")
+      event = m.eventFactory.createEvent("ad_mode_complete")
+      m.sendBrightCoveAudienceEvents(event)
+    end function
+
+    function sendVideoImpressionEvent(duration as integer)
+      m.log.info("sending sendVideoImpressionEvent event")
+      event = m.eventFactory.createEvent("video_impression", duration)
+      m.sendBrightCoveAudienceEvents(event)
+    end function
+
+    function sendVideoViewEvent(duration)
+      m.log.info("sending sendVideoViewEvent event")
+      event = m.eventFactory.createEvent("video_view", duration)
+      m.sendBrightCoveAudienceEvents(event)
+    end function
+
+    function sendVideoEngagementEvent(currentUpdate, lastUpdate)
+      m.log.info("sending sendVideoEngagementEvent event")
+      event = m.eventFactory.createEvent("video_engagement", invalid, currentUpdate, lastUpdate)
+      m.sendBrightCoveAudienceEvents(event)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '++ Private Methods
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    private function sendBrightCoveAudienceEvents(event)
+      m.log.info("sendBrightCoveAudienceEvents with id ", event.id)
+      url = m.eventURL + "?" + m.uri.encodeParams(event.properties)
+      m.executeApiRequest("POST", invalid, invalid, invalid, url)
+    end function
+
+    private function executeApiRequest(method, endpoint, params = invalid, jwt = invalid, url = invalid)
+      return zapp.APIUtils.executeApiRequest(m, method, endpoint, params, true, jwt, url)
+    end function
+
+  end class
+end namespace

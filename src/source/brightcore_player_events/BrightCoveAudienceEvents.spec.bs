@@ -1,0 +1,124 @@
+namespace zapp.tests
+  @tags("public", "anaytics")
+  @suite("BrightCoveAudienceEventsTests")
+  class BrightCoveAudienceEventsTests extends tests.BaseTestSuite
+
+    private plugin
+    private pluginData
+    private buildConfig = {
+      "app_family_id": "afi"
+      "app_name": "usp"
+      "data_source_providers_url": "dspu"
+    }
+    private constants = {
+      "deviceInfo": {
+        "modelName": "mn"
+        "model": "md"
+        "version": "ver"
+        "userAgent": "ua"
+      }
+      "applicasterDeviceId": "adid"
+    }
+
+    protected override function beforeEach()
+      super.beforeEach()
+      config = {
+        "tracking_id": "#t"
+        "user_identity_storage_key": "user_identity_storage_key"
+        "token": "token"
+      }
+      contentNode = { "id": "contentNode" }
+      videoPlayer = { "id": "videoPlayer" }
+      videoNode = { "id": "videoNode" }
+
+      m.pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "brightcove-player-events" })
+      m.plugin = new zapp.video.analytics.BrightCoveAudienceEvents(contentNode, videoPlayer, videoNode)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("constructor")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("constructor")
+    function _()
+      config = {
+        "user_identity_storage_key": "quick-brick-login-flow.access-token"
+        "token": "token"
+      }
+      contentNode = { "id": "contentNode" }
+      videoPlayer = { "id": "videoPlayer" }
+      videoNode = { "id": "videoNode" }
+
+
+      m.pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "brightcove-player-events" })
+      pluginManager = new zapp.PluginManager()
+
+      m.plugin.token = config.token
+      m.plugin.userIdStorageKey = config.user_identity_storage_key
+
+      m.plugin = new zapp.video.analytics.BrightCoveAudienceEvents(contentNode, videoPlayer, videoNode)
+      m.plugin.eventFactory = new zapp.video.analytics.BrightCoveEventsFactory()
+
+      m.assertEqual(m.plugin.userIdStorageKey, "quick-brick-login-flow.access-token")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("sendPlayerLoadEvent")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("sending sendPlayerLoadEvent")
+    function _()
+      event = { "id": "event" }
+
+      m.expectCalled(m.plugin.eventFactory.createEvent("player_load"), event)
+      m.expectCalled(m.plugin.sendBrightCoveAudienceEvents(event))
+
+      m.plugin.sendPlayerLoadEvent()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("sendErrorEvent")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("sending sendErrorEvent")
+    function _()
+      event = { "id": "event" }
+
+      m.expectCalled(m.plugin.eventFactory.createEvent("error"), event)
+      m.expectCalled(m.plugin.sendBrightCoveAudienceEvents(event))
+
+      m.plugin.sendErrorEvent()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("sendPlayRequestEvent")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("sending sendPlayRequestEvent")
+    function _()
+      event = { "id": "event" }
+
+      m.expectCalled(m.plugin.eventFactory.createEvent("play_request"), event)
+      m.expectCalled(m.plugin.sendBrightCoveAudienceEvents(event))
+
+      m.plugin.sendPlayRequestEvent()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("sendBrightCoveAudienceEvents")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("send Analytics Event ")
+    function _()
+      event = { "id": "s", "properties": "props" }
+      url = "http://metrics.brightcove.com/tracker?account=618ebf8a2033ed00085b27cb&country=United%20States&country_name=US&destination=&device_os=other&device_os_version=11.5&device_type=tv&domain=videocloud&event=play_request&session=7b0b4431-7bd8-4a0c-acf5-60370c38770c&source=https%3A%2F%2Fbitdash-a.akamaihd.net%2Fcontent%2Fsintel%2Fhls%2Fplaylist.m3u8&time=1668788700.57&user="
+      m.plugin.eventURL = "http://metrics.brightcove.com/tracker"
+
+      m.expectCalled(m.plugin.uri.encodeParams(event.properties), "account=618ebf8a2033ed00085b27cb&country=United%20States&country_name=US&destination=&device_os=other&device_os_version=11.5&device_type=tv&domain=videocloud&event=play_request&session=7b0b4431-7bd8-4a0c-acf5-60370c38770c&source=https%3A%2F%2Fbitdash-a.akamaihd.net%2Fcontent%2Fsintel%2Fhls%2Fplaylist.m3u8&time=1668788700.57&user=")
+      m.expectCalled(m.plugin.executeAPIRequest("POST", invalid, invalid, invalid, url))
+
+      m.plugin.sendBrightCoveAudienceEvents(event)
+    end function
+
+  end class
+end namespace
