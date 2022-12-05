@@ -51,7 +51,7 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
     currentSelection = m.getInstance("currentSelection")
     if currentSelection <> invalid and currentSelection@.getMatchesType(m.skipTypes)
       m.log.info("type maches- skipping")
-      m.dismiss("success")
+      return false
     else if currentItem = invalid
       return true
     end if
