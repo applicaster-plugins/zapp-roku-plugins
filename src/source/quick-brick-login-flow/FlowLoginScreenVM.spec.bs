@@ -244,13 +244,15 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @only
     @describe("onKeyPressBack")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("does not dismiss if subscreen is visible")
     function _()
       m.vm.isSubScreenVisible = true
-      m.expectNone(m.vm, "dismiss")
+
+      m.expectNotCalled(m.vm.dismiss)
 
       m.assertTrue(m.vm.onKeyPressBack())
 
@@ -261,9 +263,10 @@ namespace zapp.tests
     function _()
       m.vm.isSubScreenVisible = false
       m.vm.focusId = "usernameInput"
-      m.expectOnce(m.vm, "getTopField", ["isDismissable"], false)
+      m.riversJson.general.is_screen_dismissable = false
 
-      m.expectOnce(m.vm, "exitApp", [invalid, true])
+      m.expectCalled(m.vm.getTopField("isDismissable"), false)
+      m.expectCalled(m.vm.exitApp(invalid, true))
 
       m.assertTrue(m.vm.onKeyPressBack())
 
@@ -274,16 +277,32 @@ namespace zapp.tests
     function _()
       m.vm.isSubScreenVisible = false
       m.vm.focusId = "usernameInput"
-      m.expectOnce(m.vm, "getTopField", ["isDismissable"], true)
+      m.riversJson.general.is_screen_dismissable = true
 
-      m.expectOnce(m.vm, "dismiss", ["none"])
-      m.expectOnce(m.vm, "dismiss", ["cancel"])
+      m.expectCalled(m.vm.getTopField("isDismissable"), true)
+
+      m.expectCalled(m.vm.dismiss("none"))
+      m.expectCalled(m.vm.dismiss("cancel"))
 
       m.assertTrue(m.vm.onKeyPressBack())
 
       m.assertEqual(m.vm.focusId, "usernameInput")
     end function
 
+    @it("exits app if general is_screen_dismissable = false")
+    function _()
+      m.vm.isSubScreenVisible = false
+      m.vm.focusId = "usernameInput"
+      m.riversJson.general.is_screen_dismissable = false
+
+      m.expectCalled(m.vm.getTopField("isDismissable"), true)
+
+      m.expectCalled(m.vm.exitApp(invalid, true))
+
+      m.assertTrue(m.vm.onKeyPressBack())
+
+      m.assertEqual(m.vm.focusId, "usernameInput")
+    end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("checkCredsValid")
