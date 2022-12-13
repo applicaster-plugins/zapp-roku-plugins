@@ -17,9 +17,19 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
   public searchText = ""
 
   private searchDelayTask = invalid
+  private loadNextOffset = 2
+  private isPaginationSupported = true
+  private isMoreAvailable = false
+  private loadMoreTask = invalid
+  private numItems = 0
+  private numRows = 0
+  private numCols = 4
+  private nextUrl = invalid
   private minCharacters = 3
   private searchQueryName = "q"
   private isShowingContent = false
+  private direction = 1
+  private lastRowIndex = -1
   private rowTarget = invalid
 
   public function new(riversJson)
@@ -40,6 +50,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
   function processStyles(styles)
     m.loadDepth = zapp.viewUtils.getUIBInt(styles, "data_depth", 0)
     m.gridStyle = m.getGridStyle(styles, m.style)
+    m.loadNextOffset = zapp.viewUtils.getUIBInt(styles, "load_next_offset", 2)
 
     m.keyboardStyle = {
       translation: zapp.viewUtils.makeUIBPosition(styles, "keyboard", 300, 500)
@@ -60,6 +71,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
       style.itemSize = style.rowItemSize
       style.itemSpacing = zapp.viewUtils.makeUIBSize(styles, "grid_spacing", 44, 20)
       style["numColumns"] = zapp.viewUtils.getUIBInt(styles, "number_of_cols", 2)
+      m.numCols = style["numColumns"]
     else
       style = {}
     end if
@@ -95,6 +107,23 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
       m.log.warn("selected non-selectable item")
     end if
 
+  end function
+
+  public function onFocusRow(index)
+    m.log.info("onFocusRow", index)
+
+    if index < m.lastRowIndex
+      m.direction = -1
+    else if index > m.lastRowIndex
+      m.direction = 1
+    end if
+
+    m.lastRowIndex = index
+
+    if m.canLoadMore()
+      m.log.info("loading more")
+      m.loadMore()
+    end if
   end function
 
   public function onSearchTextChange(text)
@@ -142,6 +171,11 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     results = result.data
     if result.isOk and results <> invalid
       m.setContentStyle(results)
+      m.nextUrl = zapp.collectionRowUtils.getNextUrl(result.data.json)
+      m.numItems = result.data.getChildCount()
+      m.numRows = m.numItems / m.numCols
+      m.feed = result.data
+      m.isMoreAvailable = m.nextUrl <> invalid and m.nextUrl <> ""
     else
       results = createObject("roSGNode", "ZPEntry")
     end if
@@ -182,6 +216,35 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
 
   end function
 
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Private Methods
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  'TODO - pagination should move to a utility class
+  private function loadMore()
+    m.log.method("loadMore")
+    m.state = "loading"
+
+    m.loadMoreTask = m.executeloadTaskWithUrl(m.feed.id, m.onLoadMoreResponse, m.nextUrl, 0)
+  end function
+
+  private function onLoadMoreResponse(result)
+    m.log.method("onLoadMoreResponse")
+
+    if result.isOk
+      m.setContentStyle(result.data)
+      m.nextUrl = zapp.collectionRowUtils.getNextUrl(result.data.json)
+      m.isMoreAvailable = m.nextUrl <> invalid and m.nextUrl <> ""
+      m.numItems += result.data.getChildCount()
+      m.numRows = m.numItems / m.numCols
+      m.results.appendChildren(result.data.getChildren(-1, 0))
+    end if
+    m.state = "ready"
+  end function
+
+  private function canLoadMore()
+    return m.results <> invalid and m.isPaginationSupported and m.direction = 1 and m.isMoreAvailable and m.state <> "loading" and m.lastRowIndex > m.numRows - m.loadNextOffset
+  end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ keyboard

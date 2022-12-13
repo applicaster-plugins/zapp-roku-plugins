@@ -29,6 +29,7 @@
         style='{{gridStyle}}'
         jumpToItem='{{jumpToItem}}'
         itemSelected='{(onSelectItem(value))}'
+        currFocusRow='{(onFocusRow(value))}'
         numRows='{{=zapp_viewUtils_UIBInt("number_of_rows", 3)}}'
         itemComponentName='ZPowerCell' />
 
