@@ -75,7 +75,7 @@ class AdobePrimetimeQuickBrickAuthScreenVM extends zapp.uib.ScreenVM
   public override function load() as boolean
     currentSelection = m.getInstance("currentSelection")
 
-    if currentSelection <> invalid and currentSelection@.getMatchesType(m.skipTypes) and zapp.mixin.getCurrentLocale() <> "US"
+    if currentSelection <> invalid and m.getMatchesTypeForItem(currentSelection) and m.getCurrentLocaleValue() <> "US"
       m.dismiss("success")
     else if m.isDisplayedInPrehook
       m.log.info("displaying in prehook")
@@ -97,6 +97,14 @@ class AdobePrimetimeQuickBrickAuthScreenVM extends zapp.uib.ScreenVM
     end if
 
     return true
+  end function
+
+  private function getMatchesTypeForItem(currentSelection)
+    return currentSelection@.getMatchesType(m.skipTypes)
+  end function
+
+  private function getCurrentLocaleValue()
+    return zapp.mixin.getCurrentLocale()
   end function
 
   private function shouldDisplayWithContent(currentSelection)

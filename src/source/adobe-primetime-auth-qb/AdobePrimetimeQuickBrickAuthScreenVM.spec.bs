@@ -25,19 +25,6 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("checkIfTypeMatch")
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    @it("is matched")
-    @params("type1,type2,type3")
-    function _(types)
-
-      result = m.vm.checkIfTypeMatch(types)
-
-      m.assertEqual(result, true)
-    end function
-
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("load")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -47,9 +34,10 @@ namespace zapp.tests
       m.vm.providerId = "pid"
       m.vm.isDisplayedInPrehook = true
 
-      m.expectOnce(m.vm, "getInstance", ["currentSelection"], currentSelection)
-      m.expectOnce(m.vm, "shouldDisplayWithContent", [currentSelection], false)
-      m.expectOnce(m.vm, "dismiss", ["success"])
+      m.expectCalled(m.vm.getMatchesTypeForItem(currentSelection), false)
+      m.expectCalled(m.vm.getInstance("currentSelection"), currentSelection)
+      m.expectCalled(m.vm.shouldDisplayWithContent(currentSelection), false)
+      m.expectCalled(m.vm.dismiss("success"))
 
       m.vm.load()
     end function
@@ -60,12 +48,14 @@ namespace zapp.tests
       m.vm.providerId = "pid"
       m.vm.isDisplayedInPrehook = true
 
-      m.expectOnce(m.vm, "getInstance", ["currentSelection"], currentSelection)
-      m.expectOnce(m.vm, "shouldDisplayWithContent", [currentSelection], true)
-      m.expectNone(m.vm, "dismiss")
-      m.expectOnce(m.analyticsManager, "callFunc", ["trackEvent", "Waiting Page", "page_loaded", { "Provider": "pid" }])
+      m.expectCalled(m.vm.getInstance("currentSelection"), currentSelection)
+      m.expectCalled(m.vm.getMatchesTypeForItem(currentSelection), true)
+      m.expectCalled(m.vm.getCurrentLocaleValue(), "US")
+      m.expectCalled(m.vm.shouldDisplayWithContent(currentSelection), true)
+      m.expectNotCalled(m.vm.dismiss)
+      m.expectCalled(m.analyticsManager.callFunc("trackEvent", "Waiting Page", "page_loaded", { "Provider": "pid" }))
 
-      m.expectOnce(m.vm, "refreshLogin", [])
+      m.expectCalled(m.vm.refreshLogin())
 
       m.vm.load()
     end function
@@ -75,6 +65,7 @@ namespace zapp.tests
       m.vm.providerId = "pid"
       m.vm.isDisplayedInPrehook = false
 
+      m.expectCalled(m.vm.getInstance("currentSelection"), invalid)
       m.expectOnce(m.analyticsManager, "callFunc", ["trackEvent", "Waiting Page", "page_loaded", { "Provider": "pid" }])
 
       m.expectOnce(m.vm, "trackScreen", [])

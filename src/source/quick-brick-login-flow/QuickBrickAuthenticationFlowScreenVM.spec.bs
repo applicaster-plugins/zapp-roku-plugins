@@ -95,21 +95,9 @@ namespace zapp.tests
       m.vm.load()
     end function
 
-    @it("dismisses if skip condition is met")
-    function _()
-      m.expectCalled(m.vm.isLoginRequired(), true)
-      m.expectCalled(m.vm.isKeyToSkipSet(), true)
-      m.expectCalled(m.vm.dismiss("success"))
-
-      m.expectNotCalled(m.vm.refreshLogin)
-
-      m.vm.load()
-    end function
-
     @it("otherwise refreshes")
     function _()
       m.expectCalled(m.vm.isLoginRequired(), true)
-      m.expectCalled(m.vm.isKeyToSkipSet(), false)
       m.expectCalled(m.vm.isLoggedIn(), false)
       m.expectCalled(m.vm.refreshLogin())
 
@@ -119,38 +107,34 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("isKeyToSkipSet")
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    @it("returns false for invalid keys")
-    @params("")
-    @params("key")
-    function _(key)
-      m.vm.skipKey = key
-      m.assertFalse(m.vm.isKeyToSkipSet())
-    end function
-
-    @it("returns true if the key is set on session store")
-    @params("key.a", "a", invalid, false)
-    @params("key.b", "b", "set", true)
-    function _(key, keyPart, value, isSkipped)
-      m.vm.skipKey = key
-      m.expectCalled(m.vm.getSessionStoreValue("key", keyPart), value)
-      m.assertEqual(m.vm.isKeyToSkipSet(), isSkipped)
-    end function
-
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("isLoginRequired")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("returns expected value")
-    @params(invalid, true)
-    @params({ json: invalid }, false)
-    @params({ json: { extensions: invalid } }, false)
-    @params({ json: { extensions: { requires_authentication: true } } }, true)
-    @params({ json: { extensions: { requires_authentication: false } } }, false)
-    function _(item, isLoginRequired)
+    @params(invalid, { id: "currentItem" }, false, true)
+    @params({ json: invalid }, { id: "currentItem" }, false, false)
+    @params({ json: { extensions: invalid } }, { id: "currentItem" }, false, false)
+    @params({ json: { extensions: { requires_authentication: true } } }, { id: "currentItem" }, false, true)
+    @params({ json: { extensions: { requires_authentication: false } } }, { id: "currentItem" }, false, false)
+    @params({ json: { extensions: { requires_authentication: false } } }, { id: "currentItem" }, true, false)
+    function _(item, currentSelection, getMatchesTypeForItem, isLoginRequired)
+      currentItem = { "id": "currentItem" }
+
       m.expectCalled(m.vm.getInstance("currentSelection", "currentItem"), item)
+      m.expectCalled(m.vm.getInstance("currentSelection"), currentSelection)
+      m.expectCalled(m.vm.getMatchesTypeForItem(currentItem), getMatchesTypeForItem)
+
+      m.assertEqual(m.vm.isLoginRequired(), isLoginRequired)
+    end function
+
+    @it("returns false if currentSelection invalid")
+    @params(invalid, invalid, false, true)
+    function _(item, currentSelection, getMatchesTypeForItem, isLoginRequired)
+      currentItem = { "id": "currentItem" }
+
+      m.expectCalled(m.vm.getInstance("currentSelection", "currentItem"), item)
+      m.expectCalled(m.vm.getInstance("currentSelection"), currentSelection)
+      m.expectNotCalled(m.vm.getMatchesTypeForItem)
 
       m.assertEqual(m.vm.isLoginRequired(), isLoginRequired)
     end function
