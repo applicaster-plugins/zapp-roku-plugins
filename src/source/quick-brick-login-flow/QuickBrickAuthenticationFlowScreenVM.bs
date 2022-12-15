@@ -49,7 +49,7 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
   private function isLoginRequired()
     currentItem = m.getInstance("currentSelection", "currentItem")
     currentSelection = m.getInstance("currentSelection")
-    if currentSelection <> invalid and currentSelection@.getMatchesType(m.skipTypes)
+    if currentSelection <> invalid and m.getMatchesTypeForItem(currentSelection)
       m.log.info("type maches- skipping")
       return false
     else if currentItem = invalid
@@ -190,6 +190,10 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ Private
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function getMatchesTypeForItem(currentSelection)
+    return currentSelection@.getMatchesType(m.skipTypes)
+  end function
 
   public function isCapturingAnyKeyPress(key, press)
     'do not anyone escape this screen!
