@@ -12,9 +12,11 @@ namespace zapp.tests
         "configuration_json": {
           publicKey: "pub"
           secret: "sec"
-          requestorID: "rqd"
-          resourceID: "rod"
+          requestor_id: "rqd"
+          resource_id: "rod"
           base_url: "#url"
+          software_statement: "ss"
+          activation_url: "actUrl"
         }
       }
 
@@ -36,7 +38,7 @@ namespace zapp.tests
       m.assertEqual(m.plugin.uri.__className, "zapp.URI")
       m.assertEqual(m.plugin.requestorID, "rqd")
       m.assertEqual(m.plugin.resourceID, "rod")
-      m.assertEqual(m.plugin.baseUrl, "#url")
+      m.assertEqual(m.plugin.apiUrl, "#url")
       m.assertEqual(m.plugin.deviceId, "did")
     end function
 
@@ -159,8 +161,6 @@ namespace zapp.tests
 
     @it("valid")
     function _()
-      m.expectCalled(m.plugin.initiateDCR(), "aut")
-      m.expectCalled(m.plugin.setInstance("adobeDCRToken", "aut"))
       m.expectCalled(m.plugin.getInstance("adobeDCRToken"), "aut")
       expectedHeaders = {
         "Accept": "application/json"
@@ -187,8 +187,6 @@ namespace zapp.tests
     @params({ "userId": "" }, 404, "none")
     @params({ "otherField": "value" }, 410, "none")
     function _(response, responseCode, expectedState)
-      m.expectCalled(m.plugin.initiateDCR(), "aut")
-      m.expectCalled(m.plugin.setInstance("adobeDCRToken", "aut"))
       m.expectCalled(m.plugin.getInstance("adobeDCRToken"), "aut")
       expectedHeaders = {
         "Accept": "application/json"
@@ -219,8 +217,6 @@ namespace zapp.tests
 
     @it("logout")
     function _()
-      m.expectCalled(m.plugin.initiateDCR(), "aut")
-      m.expectCalled(m.plugin.setInstance("adobeDCRToken", "aut"))
       m.expectCalled(m.plugin.getInstance("adobeDCRToken"), "aut")
       expectedHeaders = {
         "Accept": "application/json"
@@ -246,12 +242,13 @@ namespace zapp.tests
     @it("initiateDCR")
     function _()
       expectedHeaders = {
-        "Accept": "application/json"
-        "Authorization": "application/json"
+        "Content-Type": "application/json"
+        "X-Device-Info": "eyJtYW51ZmFjdHVyZXIiOiJSb2t1IiwibW9kZWwiOiJSb2t1Iiwib3NOYW1lIjoiUm9rdSIsIm9zVmVyc2lvbiI6Ijk5OS45OUU5OTk5OUEiLCJ2ZW5kb3IiOiJSb2t1IiwidmVyc2lvbiI6IjM4MTBYIn0="
+        "User-Agent": "Roku"
       }
 
       expectedParams = {
-        "software_statement": ""
+        "software_statement": "ss"
       }
 
       response = {
@@ -282,11 +279,12 @@ namespace zapp.tests
     @params({ code: "" })
     function _(response)
       expectedHeaders = {
-        "Accept": "application/json"
-        "Authorization": "application/json"
+        "Content-Type": "application/json"
+        "X-Device-Info": "eyJtYW51ZmFjdHVyZXIiOiJSb2t1IiwibW9kZWwiOiJSb2t1Iiwib3NOYW1lIjoiUm9rdSIsIm9zVmVyc2lvbiI6Ijk5OS45OUU5OTk5OUEiLCJ2ZW5kb3IiOiJSb2t1IiwidmVyc2lvbiI6IjM4MTBYIn0="
+        "User-Agent": "Roku"
       }
       expectedParams = {
-        "software_statement": ""
+        "software_statement": "ss"
       }
 
       requestUtil = { "id": "requestUtil" }
@@ -314,9 +312,6 @@ namespace zapp.tests
         "app://com.programmer.adobe#sdasdsadas"],
         "grant_types": ["client_credentials"]
       }
-      expectedHeaders = {
-        "Content-Type": "application/x-www-form-urlencoded"
-      }
       expectedParams = {
         "grant_type": "client_credentials",
         "client_id": registerAppResponse.client_id,
@@ -329,13 +324,9 @@ namespace zapp.tests
         "created_at": 123456789
       }
 
-      requestUtil = { "id": "requestUtil" }
-      m.expectCalled(m.plugin.getRequestUtil(), requestUtil)
+      m.expectCalled(m.plugin.executeAPIRequest("FORMPOST", "/o/client/token", expectedParams), expectedResponse)
 
-      url = "#url/o/client/token"
-      m.expectCalled(requestUtil.post(url, expectedParams, expectedHeaders), expectedResponse)
-
-      m.assertEqual(m.plugin.createDCRResult(registerAppResponse), expectedResponse)
+      m.assertEqual(m.plugin.createDCRResult(registerAppResponse), expectedResponse.access_token)
     end function
 
     @it("createDCRResult invalid result")
@@ -352,20 +343,13 @@ namespace zapp.tests
         "app://com.programmer.adobe#sdasdsadas"],
         "grant_types": ["client_credentials"]
       }
-      expectedHeaders = {
-        "Content-Type": "application/x-www-form-urlencoded"
-      }
       expectedParams = {
         "grant_type": "client_credentials",
         "client_id": registerAppResponse.client_id,
         "client_secret": registerAppResponse.client_secret,
       }
 
-      requestUtil = { "id": "requestUtil" }
-      m.expectCalled(m.plugin.getRequestUtil(), requestUtil)
-
-      url = "#url/o/client/token"
-      m.expectCalled(requestUtil.post(url, expectedParams, expectedHeaders), response)
+      m.expectCalled(m.plugin.executeAPIRequest("FORMPOST", "/o/client/token", expectedParams), response)
 
       m.assertInvalid(m.plugin.createDCRResult(registerAppResponse))
     end function
