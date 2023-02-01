@@ -111,7 +111,7 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
     if not m.isLoading and m.isCredsValid
       m.processLogin()
     else if not m.isCredsValid
-      m.errorText = "Please enter your email address and password"
+      m.errorText = asString(m.localizations.error_text, "Please enter your email address and password")
       m.isErrorShowing = true
       m.setFocus(m.getMField("top"))
     else
