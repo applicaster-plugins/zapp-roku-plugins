@@ -55,7 +55,7 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
     else if currentItem = invalid
       return true
     end if
-    return asBoolean(currentItem.json.extensions.requires_authentication, false)
+    return m.checkIfCurrentItemRequiresAuthentication(currentItem.json)
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -193,6 +193,14 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
 
   private function getMatchesTypeForItem(currentSelection)
     return currentSelection@.getMatchesType(m.skipTypes)
+  end function
+
+  private function checkIfCurrentItemRequiresAuthentication(currentItemJson as mc.types.node)
+    extensions = asAA(currentItemJson.extensions)
+    if asBoolean(extensions.requires_authentication) or asString(extensions.requires_authentication) = "true"
+      return true
+    end if
+    return false
   end function
 
   public function isCapturingAnyKeyPress(key, press)
