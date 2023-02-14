@@ -294,9 +294,9 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
 
   private function getInfoHeader() as string
     deviceInfo = createObject("roDeviceInfo")
+    osVersion = deviceInfo.getOsVersion()
     modelDetails = deviceInfo.getModelDetails()
     displaySize = deviceInfo.getDisplaySize()
-    version = deviceInfo.getVersion()
     connectionType = deviceInfo.getConnectionType()
     deviceInfo = {
       "model": "Roku"
@@ -304,7 +304,7 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
       "manufacturer": modelDetails.vendorName
       "version": modelDetails.modelNumber
       "osName": "Roku"
-      "osVersion": version
+      "osVersion": osVersion.major + "." + osVersion.minor + "." + osVersion.build
     }
     return m.base64Encoded(formatJson(deviceInfo))
   end function
