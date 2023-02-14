@@ -19,6 +19,9 @@ function SegmentAnalytics(config as object, port as object) as object
     config.retryLimit = 1
   end if
 
+  di = createObject("roDeviceInfo")
+  osVersion = di.getOsVersion()
+
   return {
     'public functions
     identify: _SegmentAnalytics_identify
@@ -49,7 +52,7 @@ function SegmentAnalytics(config as object, port as object) as object
     _apiUrl: "https://api.segment.io/v1/batch"
     _device: CreateObject("roDeviceInfo")
     _libraryName: "analytics-roku"
-    _libraryVersion: CreateObject("roAppInfo").getVersion()
+    _libraryVersion: osVersion.major + "." + osVersion.minor + "." + osVersion.build
     _queueSize: config.queueSize
     _messageQueue: []
     _maxBatchByteSize: 500000
@@ -530,7 +533,7 @@ function _SegmentAnalytics_Request(options as object, port as object, config as 
     else
       errorReason = message.getFailureReason()
       error = { url: m._url, reason: errorReason, response: rawResponse, responseCode: responseCode }
-      
+
       for each handler in m._errorHandlers
         'bs:disable-next-line
         handler(error, m)

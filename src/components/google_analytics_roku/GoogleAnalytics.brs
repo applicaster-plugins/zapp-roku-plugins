@@ -1,257 +1,258 @@
 ' Implementation based on https://gist.github.com/IjzerenHein/df3f65093038dd70ad871f926be6f45e
 
 sub Init()
-    m.endpoint = "https://analytics.google.com/g/collect"
-    m.config = invalid
-    m.options = invalid
-    m.codedUserProperties = {}
-    m.userId = invalid
-    m.screenName = invalid
-    m.lastEventTime = invalid
-    m.sessionHitsCount = 0
-    m.top.functionName = "startTask"
-    m.userEngagementIntervalSeconds = 30
+  m.endpoint = "https://analytics.google.com/g/collect"
+  m.config = invalid
+  m.options = invalid
+  m.codedUserProperties = {}
+  m.userId = invalid
+  m.screenName = invalid
+  m.lastEventTime = invalid
+  m.sessionHitsCount = 0
+  m.top.functionName = "startTask"
+  m.userEngagementIntervalSeconds = 30
 
-    m.timer = CreateObject("roSgnode", "Timer")
-    m.timer.observeField("fire","logUserEngagement")
-    m.timer.duration = m.userEngagementIntervalSeconds
-    m.timer.repeat = true
-    ' start later
+  m.timer = CreateObject("roSgnode", "Timer")
+  m.timer.observeField("fire", "logUserEngagement")
+  m.timer.duration = m.userEngagementIntervalSeconds
+  m.timer.repeat = true
+  ' start later
 end sub
 
 function initialize(params as object)
-    ' Analytics stuff
-    appInfo = CreateObject("roAppInfo")
-    deviceInfo = CreateObject("roDeviceInfo")
-    displaySize = deviceInfo.GetDisplaySize()
-    screenRes = invalid
+  ' Analytics stuff
+  appInfo = CreateObject("roAppInfo")
+  deviceInfo = CreateObject("roDeviceInfo")
+  osVersion = deviceInfo.getOsVersion()
+  displaySize = deviceInfo.GetDisplaySize()
+  screenRes = invalid
 
-    if displaySize <> invalid and displaySize.w <> invalid and displaySize.h <> invalid
-        screenRes = Str(displaySize.w).Trim() + "x" + Str(displaySize.h).Trim()
-    end if
+  if displaySize <> invalid and displaySize.w <> invalid and displaySize.h <> invalid
+    screenRes = Str(displaySize.w).Trim() + "x" + Str(displaySize.h).Trim()
+  end if
 
-    setConfig({
-        measurementId: params.measurementId
-    })
+  setConfig({
+    measurementId: params.measurementId
+  })
 
-    setOptions({
-        appName: params.appName
-        appVersion: appInfo.GetVersion()
-        screenRes: screenRes
-        clientId: deviceInfo.GetChannelClientId()
-        docLocation: params.docLocation
-        userLanguage: deviceInfo.GetCurrentLocale()
-        customArgs: params.customArgs
-        isFirstOpen: params.isFirstOpen
-    })
+  setOptions({
+    appName: params.appName
+    appVersion: osVersion.major + "." + osVersion.minor + "." + osVersion.build
+    screenRes: screenRes
+    clientId: deviceInfo.GetChannelClientId()
+    docLocation: params.docLocation
+    userLanguage: deviceInfo.GetCurrentLocale()
+    customArgs: params.customArgs
+    isFirstOpen: params.isFirstOpen
+  })
 
-    if params.userId <> invalid
-      setUserId(params.userId)
-    end if
+  if params.userId <> invalid
+    setUserId(params.userId)
+  end if
 
-    if params.userProperties <> invalid
-      setUserProperties(params.userProperties)
-    end if
+  if params.userProperties <> invalid
+    setUserProperties(params.userProperties)
+  end if
 end function
 
 function setConfig(config as object)
-    ' Config Properties
-    ' - measurementId
-    m.config = config
+  ' Config Properties
+  ' - measurementId
+  m.config = config
 end function
 
 sub setOptions(options as object)
-    ' Options Properties
-    ' - clientId
-    ' - docTitle
-    ' - docLocation
-    ' - screenRes
-    ' - appName
-    ' - appVersion
-    ' - userLanguage
-    ' - origin
-    ' - customArgs
-    if options.customArgs = invalid
-        options.customArgs = {}
-    end if
+  ' Options Properties
+  ' - clientId
+  ' - docTitle
+  ' - docLocation
+  ' - screenRes
+  ' - appName
+  ' - appVersion
+  ' - userLanguage
+  ' - origin
+  ' - customArgs
+  if options.customArgs = invalid
+    options.customArgs = {}
+  end if
 
-    m.options = options
+  m.options = options
 end sub
 
 sub startTask()
-    ' The only async method is "sendHttpRequest"
-    ? "ANALYTICS: The only async method is sendHttpRequest"
+  ' The only async method is "sendHttpRequest"
+  ? "ANALYTICS: The only async method is sendHttpRequest"
 end sub
 
 function start()
-    customArgs = m.options.customArgs
-    
-    gaSessionId = getGaSessionId()
-    gaSessionNumber = getGaSessionNumber()
+  customArgs = m.options.customArgs
 
-    customArgs["sid"] = gaSessionId
-    customArgs["sct"] = gaSessionNumber
+  gaSessionId = getGaSessionId()
+  gaSessionNumber = getGaSessionNumber()
 
-    options = m.options
-    options.customArgs = customArgs
+  customArgs["sid"] = gaSessionId
+  customArgs["sct"] = gaSessionNumber
 
-    m.options = options
+  options = m.options
+  options.customArgs = customArgs
 
-    m.pendingSessionStart = true
-    m.pendingFirstVisit = false
+  m.options = options
 
-    if isFirstOpen()
-        m.pendingFirstVisit = true
-    end if
+  m.pendingSessionStart = true
+  m.pendingFirstVisit = false
 
-    logEvent("page_view", {})
+  if isFirstOpen()
+    m.pendingFirstVisit = true
+  end if
 
-    m.timer.control = "start"
+  logEvent("page_view", {})
+
+  m.timer.control = "start"
 end function
 
 function getGaSessionId() as integer
-    return CreateObject("roDateTime").AsSeconds()
+  return CreateObject("roDateTime").AsSeconds()
 end function
 
 function getGaSessionNumber() as integer
-    registry = getRegistry()
+  registry = getRegistry()
 
-    lastSessionNumber = registry.read("lastSessionNumber")
+  lastSessionNumber = registry.read("lastSessionNumber")
 
-    newSessionNumber = 1
+  newSessionNumber = 1
 
-    if lastSessionNumber <> invalid and lastSessionNumber <> ""
-        newSessionNumber = lastSessionNumber.toInt() + 1
-    end if
+  if lastSessionNumber <> invalid and lastSessionNumber <> ""
+    newSessionNumber = lastSessionNumber.toInt() + 1
+  end if
 
-    registry.write("lastSessionNumber", newSessionNumber.toStr())
+  registry.write("lastSessionNumber", newSessionNumber.toStr())
 
-    return newSessionNumber
+  return newSessionNumber
 end function
 
 function getFirstOpenTimeSeconds() as integer
-    registry = getRegistry()
+  registry = getRegistry()
 
-    firstOpenTimeSeconds = registry.read("firstOpenTimeSeconds")
+  firstOpenTimeSeconds = registry.read("firstOpenTimeSeconds")
 
-    if firstOpenTimeSeconds <> "" and firstOpenTimeSeconds <> invalid
-        return firstOpenTimeSeconds.toInt()
-    end if
+  if firstOpenTimeSeconds <> "" and firstOpenTimeSeconds <> invalid
+    return firstOpenTimeSeconds.toInt()
+  end if
 
-    firstOpenTimeSeconds = CreateObject("roDateTime").AsSeconds()
+  firstOpenTimeSeconds = CreateObject("roDateTime").AsSeconds()
 
-    registry.write("firstOpenTimeSeconds", firstOpenTimeSeconds.toStr())
+  registry.write("firstOpenTimeSeconds", firstOpenTimeSeconds.toStr())
 
-    return firstOpenTimeSeconds
+  return firstOpenTimeSeconds
 end function
 
 function isFirstOpen() as boolean
-    if m.options.isFirstOpen <> invalid
-        return m.options.isFirstOpen
-    end if
+  if m.options.isFirstOpen <> invalid
+    return m.options.isFirstOpen
+  end if
 
-    registry = getRegistry()
+  registry = getRegistry()
 
-    if registry.exists("firstOpenMark")
-        return false
-    else
-        registry.write("firstOpenMark", "ok")
-        return true
-    end if
+  if registry.exists("firstOpenMark")
+    return false
+  else
+    registry.write("firstOpenMark", "ok")
+    return true
+  end if
 end function
 
 function getRegistry() as object
-    return CreateObject("roRegistrySection", "googleanalytics")
+  return CreateObject("roRegistrySection", "googleanalytics")
 end function
 
 sub logUserEngagement()
-    logEvent("user_engagement", {
-        _et: m.userEngagementIntervalSeconds * 1000
-    })
+  logEvent("user_engagement", {
+    _et: m.userEngagementIntervalSeconds * 1000
+  })
 
-    logEvent("app_time", {
-        time_difference: m.userEngagementIntervalSeconds * 1000
-    })
+  logEvent("app_time", {
+    time_difference: m.userEngagementIntervalSeconds * 1000
+  })
 end sub
 
-function send(codedEvent as Object)
-    nowTime = CreateObject("roDateTime")
+function send(codedEvent as object)
+  nowTime = CreateObject("roDateTime")
 
-    queryArgs = {}
-    
-    if m.options.customArgs <> invalid
-        for each key in m.options.customArgs
-            queryArgs[key] = m.options.customArgs[key]
-        end for
-    end if
+  queryArgs = {}
 
-    m.sessionHitsCount = m.sessionHitsCount + 1
-
-    queryArgs.v = 2
-    queryArgs.tid = m.config.measurementId
-    queryArgs.cid = m.options.clientId
-    queryArgs._p = Rnd(CreateObject("roDateTime").AsSeconds())
-    queryArgs._s = m.sessionHitsCount
-
-    if m.options.userLanguage <> invalid
-        queryArgs.ul = LCase(m.options.userLanguage)
-    end if
-
-    if m.options.appName <> invalid
-        queryArgs.an = m.options.appName
-    end if
-
-    if m.options.appVersion <> invalid
-        queryArgs.av = m.options.appVersion
-    end if
-
-    if m.options.docTitle <> invalid
-        queryArgs.dt = m.options.docTitle
-    end if
-
-    if m.options.docLocation <> invalid
-        queryArgs.dl = m.options.docLocation
-    end if
-
-    if m.options.screenRes <> invalid
-        queryArgs.sr = m.options.screenRes
-    end if
-
-    if codedEvent.en = "page_view"
-        queryArgs.seg = 0
-
-        if m.pendingFirstVisit = true
-            queryArgs._fv = 2
-            m.pendingFirstVisit = false
-        end if
-    
-        if m.pendingSessionStart = true
-            queryArgs._ss = 2
-            m.pendingSessionStart = false
-        end if
-    else
-        queryArgs.seg = 1
-    end if
-
-    for each key in codedEvent
-        queryArgs[key] = codedEvent[key]
+  if m.options.customArgs <> invalid
+    for each key in m.options.customArgs
+      queryArgs[key] = m.options.customArgs[key]
     end for
+  end if
 
-    queryParts = []
+  m.sessionHitsCount = m.sessionHitsCount + 1
 
-    for each key in queryArgs
-        queryParts.Push(key.EncodeUriComponent() + "=" + convertToString(queryArgs[key]).EncodeUriComponent())
-    end for
+  queryArgs.v = 2
+  queryArgs.tid = m.config.measurementId
+  queryArgs.cid = m.options.clientId
+  queryArgs._p = Rnd(CreateObject("roDateTime").AsSeconds())
+  queryArgs._s = m.sessionHitsCount
 
-    queryString = queryParts.Join("&")
+  if m.options.userLanguage <> invalid
+    queryArgs.ul = LCase(m.options.userLanguage)
+  end if
 
-    m.lastEventTime = nowTime
+  if m.options.appName <> invalid
+    queryArgs.an = m.options.appName
+  end if
 
-    request = CreateObject("roSGNode", "GoogleAnalytics")
-    request.functionName = "sendHttpRequest"
-    request.httpMethod = "POST"
-    request.httpUrl = m.endpoint + "?" + queryString
-    request.control = "RUN"
+  if m.options.appVersion <> invalid
+    queryArgs.av = m.options.appVersion
+  end if
+
+  if m.options.docTitle <> invalid
+    queryArgs.dt = m.options.docTitle
+  end if
+
+  if m.options.docLocation <> invalid
+    queryArgs.dl = m.options.docLocation
+  end if
+
+  if m.options.screenRes <> invalid
+    queryArgs.sr = m.options.screenRes
+  end if
+
+  if codedEvent.en = "page_view"
+    queryArgs.seg = 0
+
+    if m.pendingFirstVisit = true
+      queryArgs._fv = 2
+      m.pendingFirstVisit = false
+    end if
+
+    if m.pendingSessionStart = true
+      queryArgs._ss = 2
+      m.pendingSessionStart = false
+    end if
+  else
+    queryArgs.seg = 1
+  end if
+
+  for each key in codedEvent
+    queryArgs[key] = codedEvent[key]
+  end for
+
+  queryParts = []
+
+  for each key in queryArgs
+    queryParts.Push(key.EncodeUriComponent() + "=" + convertToString(queryArgs[key]).EncodeUriComponent())
+  end for
+
+  queryString = queryParts.Join("&")
+
+  m.lastEventTime = nowTime
+
+  request = CreateObject("roSGNode", "GoogleAnalytics")
+  request.functionName = "sendHttpRequest"
+  request.httpMethod = "POST"
+  request.httpUrl = m.endpoint + "?" + queryString
+  request.control = "RUN"
 end function
 
 function sendHttpRequest()
@@ -283,164 +284,164 @@ function sendHttpRequest()
   end if
 end function
 
-function parseEvent(eventName as String, eventParams as Object) as object
-    codedEvent = {
-        en: eventName.Replace(" ", "_")
-    }
+function parseEvent(eventName as string, eventParams as object) as object
+  codedEvent = {
+    en: eventName.Replace(" ", "_")
+  }
 
-    if m.options.origin <> invalid
-        codedEvent["ep.origin"] = m.options.origin
-    end if
+  if m.options.origin <> invalid
+    codedEvent["ep.origin"] = m.options.origin
+  end if
 
-    for each key in eventParams
-        value = eventParams[key]
+  for each key in eventParams
+    value = eventParams[key]
 
-        if value <> invalid
-            codedKey = "ep." + key
-            codedValue = value
+    if value <> invalid
+      codedKey = "ep." + key
+      codedValue = value
 
-            if GetInterface(value, "ifInt") <> invalid or GetInterface(value, "ifFloat") <> invalid or GetInterface(value, "ifDouble") <> invalid
-                codedKey = "epn." + key
-            end if
+      if GetInterface(value, "ifInt") <> invalid or GetInterface(value, "ifFloat") <> invalid or GetInterface(value, "ifDouble") <> invalid
+        codedKey = "epn." + key
+      end if
 
-            if Type(codedValue) = "roInt" Or Type(codedValue) = "roInteger"
-                if key.Instr("_") = -1
-                    ' convert integers to double (for custom parameters only)
-                    codedValue = Cdbl(codedValue)
-                end if
-            end if
-
-            if key = "ec" or key = "_et"
-                codedKey = key
-            end if
-
-            if key = "currency"
-                codedKey = "cu"
-            end if
-
-            codedEvent[codedKey] = codedValue
+      if Type(codedValue) = "roInt" or Type(codedValue) = "roInteger"
+        if key.Instr("_") = -1
+          ' convert integers to double (for custom parameters only)
+          codedValue = Cdbl(codedValue)
         end if
-    end for
+      end if
 
-    return codedEvent
+      if key = "ec" or key = "_et"
+        codedKey = key
+      end if
+
+      if key = "currency"
+        codedKey = "cu"
+      end if
+
+      codedEvent[codedKey] = codedValue
+    end if
+  end for
+
+  return codedEvent
 end function
 
-sub logEvent(eventName as String, eventParams as Object)
-    codedEvent = parseEvent(eventName, eventParams)
+sub logEvent(eventName as string, eventParams as object)
+  codedEvent = parseEvent(eventName, eventParams)
 
-    if m.userId <> invalid and m.userId <> ""
-        codedEvent.uid = m.userId
-    end if
+  if m.userId <> invalid and m.userId <> ""
+    codedEvent.uid = m.userId
+  end if
 
-    if m.screenName <> invalid and m.screenName <> ""
-        codedEvent["ep.screen_name"] = m.screenName
-    end if
+  if m.screenName <> invalid and m.screenName <> ""
+    codedEvent["ep.screen_name"] = m.screenName
+  end if
 
-    if m.codedUserProperties <> invalid
-        for each key in m.codedUserProperties
-            codedEvent[key] = m.codedUserProperties[key]
-        end for
-    end if
-
-    send(codedEvent)
-end sub
-
-sub logScreenView(screenName as String)
-    params = {
-        firebase_screen: screenName
-    }
-
-    if m.screenName <> invalid and m.screenName <> ""
-        params.firebase_previous_screen = m.screenName
-    end if
-
-    if m.screenName <> screenName
-        setCurrentScreen(screenName)
-        logEvent("screen_view", params)
-    end if
-end sub
-
-function parseUserProperties(userProperties as Object) as Object
-    codedUserProperties = {}
-
-    for each key in userProperties
-        value = userProperties[key]
-        if value <> invalid
-            if key.Instr("up.") = 0 or key.Instr("upn.") = 0
-                ' already coded
-                codedKey = key
-            else
-                codedKey = "up." + key
-
-                if GetInterface(value, "ifInt") <> invalid or GetInterface(value, "ifFloat") <> invalid or GetInterface(value, "ifDouble") <> invalid
-                    codedKey = "upn." + key
-                end if
-            end if
-
-            codedUserProperties[codedKey] = value
-        end if
+  if m.codedUserProperties <> invalid
+    for each key in m.codedUserProperties
+      codedEvent[key] = m.codedUserProperties[key]
     end for
+  end if
 
-    return codedUserProperties
+  send(codedEvent)
+end sub
+
+sub logScreenView(screenName as string)
+  params = {
+    firebase_screen: screenName
+  }
+
+  if m.screenName <> invalid and m.screenName <> ""
+    params.firebase_previous_screen = m.screenName
+  end if
+
+  if m.screenName <> screenName
+    setCurrentScreen(screenName)
+    logEvent("screen_view", params)
+  end if
+end sub
+
+function parseUserProperties(userProperties as object) as object
+  codedUserProperties = {}
+
+  for each key in userProperties
+    value = userProperties[key]
+    if value <> invalid
+      if key.Instr("up.") = 0 or key.Instr("upn.") = 0
+        ' already coded
+        codedKey = key
+      else
+        codedKey = "up." + key
+
+        if GetInterface(value, "ifInt") <> invalid or GetInterface(value, "ifFloat") <> invalid or GetInterface(value, "ifDouble") <> invalid
+          codedKey = "upn." + key
+        end if
+      end if
+
+      codedUserProperties[codedKey] = value
+    end if
+  end for
+
+  return codedUserProperties
 end function
 
-sub setUserProperties(userProperties as Object)
-    m.codedUserProperties = parseUserProperties(userProperties)
+sub setUserProperties(userProperties as object)
+  m.codedUserProperties = parseUserProperties(userProperties)
 
-    firstOpenTimeSeconds = getFirstOpenTimeSeconds()
+  firstOpenTimeSeconds = getFirstOpenTimeSeconds()
 
-    m.codedUserProperties["up.id"] = m.userId
-    m.codedUserProperties["upn.first_open_time"] = (roundFloatToInteger(firstOpenTimeSeconds / 3600) * 3600).ToStr() + "000"
+  m.codedUserProperties["up.id"] = m.userId
+  m.codedUserProperties["upn.first_open_time"] = (roundFloatToInteger(firstOpenTimeSeconds / 3600) * 3600).ToStr() + "000"
 end sub
 
 sub setUserId(userId)
-    m.userId = userId
+  m.userId = userId
 end sub
 
-sub setCurrentScreen(screenName as String)
-    m.screenName = screenName
+sub setCurrentScreen(screenName as string)
+  m.screenName = screenName
 end sub
 
 sub resetAnalyticsData ()
-    m.screenName = invalid
-    m.userId = invalid
-    m.codedUserProperties = invalid
+  m.screenName = invalid
+  m.userId = invalid
+  m.codedUserProperties = invalid
 end sub
 
-function convertToString(variable As Dynamic) As String
-    if GetInterface(variable, "ifIntOps") <> invalid then
-        return variable.ToStr()
-    else if Type(variable) = "roInt" Or Type(variable) = "roInteger" Then
-        return Str(variable).Trim()
-    else if Type(variable) = "roFloat" Or Type(variable) = "Float" Then
-        strValue = Str(variable).Trim()
-  
-        if strValue.Instr(".") = -1
-          strValue = strValue + ".0"
-        end if
-  
-        return strValue
-    else if Type(variable) = "roBoolean" Or Type(variable) = "Boolean" Then
-        if variable = True Then
-            return "true"
-        end If
-        return "false"
-    else if Type(variable) = "roString" Or Type(variable) = "String" Then
-        Return variable
-    else if variable = invalid then
-        return ""
-    else
-        return Type(variable)
+function convertToString(variable as dynamic) as string
+  if GetInterface(variable, "ifIntOps") <> invalid then
+    return variable.ToStr()
+  else if Type(variable) = "roInt" or Type(variable) = "roInteger" then
+    return Str(variable).Trim()
+  else if Type(variable) = "roFloat" or Type(variable) = "Float" then
+    strValue = Str(variable).Trim()
+
+    if strValue.Instr(".") = -1
+      strValue = strValue + ".0"
     end if
+
+    return strValue
+  else if Type(variable) = "roBoolean" or Type(variable) = "Boolean" then
+    if variable = True then
+      return "true"
+    end if
+    return "false"
+  else if Type(variable) = "roString" or Type(variable) = "String" then
+    return variable
+  else if variable = invalid then
+    return ""
+  else
+    return Type(variable)
+  end if
 end function
 
-function roundFloatToInteger(number as Float) as Integer
-    truncateValue = Fix(number)
-    decimalValue = number - truncateValue
-  
-    if decimalValue > 0.5
-      return truncateValue + 1
-    else
-      return truncateValue
-    end if  
-  end function
+function roundFloatToInteger(number as float) as integer
+  truncateValue = Fix(number)
+  decimalValue = number - truncateValue
+
+  if decimalValue > 0.5
+    return truncateValue + 1
+  else
+    return truncateValue
+  end if
+end function
