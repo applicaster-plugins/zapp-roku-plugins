@@ -1,0 +1,19 @@
+import "pkg:/source/quick-brick-login-flow/QuickBrickAuthenticationFlowScreenVM.bs"
+import "pkg:/source/roku_modules/maestro/mx/VMTransformFunctions.brs"
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Initialization
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function init()
+  initializeView(m.top.findNode("screenContainer"))
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Overridden methods
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function createVM()
+  vm = new QuickBrickAuthenticationFlowScreenVM(m.top.riversJson)
+  return vm
+end function

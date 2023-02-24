@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='utf-8'?>
+<component
+    name='QuickBrickEpgScreen'
+    extends='UIBScreen'
+    vm='QuickBrickEpgScreenVM'>
+
+  <interface>
+
+  </interface>
+
+  <children>
+    <Rectangle
+        id='backgroundRectangle'
+        width='1920'
+        height='1080'
+        color='{{=zapp_viewUtils_UIBColor("background_color")}}' />
+    <mv_Poster
+        id='backgroundPoster'
+        style='{{=zapp_viewUtils_UIBBackgroundPoster("background")}}' />
+    <mv_Poster
+        id='logoPoster'
+        style='{{=zapp_viewUtils_UIBPoster("logo")}}' />
+
+    <TimeGrid
+        id='TimeGrid'
+        channelInfoComponentName='channelItemComponent' />
+
+    <LoadingIndicator
+        id='loadingIndicator'
+        width='100'
+        height='100'
+        translation='[1000,500]'
+        isActive='{{isLoading}}'
+        backgroundVisible='false'
+        text='' />
+
+  </children>
+</component>

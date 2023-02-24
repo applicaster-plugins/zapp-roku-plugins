@@ -1,0 +1,21 @@
+'/* cspell:disable */
+namespace zapp.plugins.tests
+  @tags("core", "auth", "cleeng")
+  @suite
+  class QuickBrickEpgScreenVMTests extends tests.BaseTestSuite
+
+    private plugin
+    private validJWT
+    private credentials
+
+    protected override function beforeEach()
+      super.beforeEach()
+
+      plugin = new zapp.BasePlugin(tests.utils.createPluginJson("1", {
+      }))
+      m.plugin = new QuickBrickEpgScreenVM(plugin)
+    end function
+
+  end class
+
+end namespace

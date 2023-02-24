@@ -1,0 +1,231 @@
+import "pkg:/source/authorization/BaseAuthPlugin.bs"
+import "pkg:/source/authorization/JWTUtil.bs"
+import "pkg:/source/lib/APIUtils.bs"
+
+' namespace zapp.auth
+class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
+
+  public content = m.createSGNode("CollectionRow")
+  public gridStyle = {}
+
+  private jwtUtil = new zapp.JWTUtil()
+  private timeout = invalid
+
+
+  @inject("constants")
+  private constants
+
+  ' /**
+  '  * @module QuickBrickEpgScreenVM
+  '  * @description
+  ' **/
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Overridden Methods
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public function new(riversJson)
+    super(riversJson, "QuickBrickEpgScreenVM")
+    m.processStyles(riversJson.styles)
+    m.setEpgStyle()
+    m.focusId = ""
+  end function
+
+  function processStyles(styles)
+
+  end function
+
+  public function onSelectItem(index)
+    m.log.method("OnItemSelected")
+    if m.content <> invalid and index <> -1
+      selectedContent = m.content.getChild(index)
+
+      if selectedContent <> invalid
+        'topField = m.getMField("top")
+        'm.setInstance("selectedId", topField.id)
+        'm.selection = m.createSelectionFromContent(selectedContent, m.content)
+        'm.selection.target = mc.getPath(m.riversJson, "data.target")
+        'm.sendAnalyticsEvent(zapp.analytics.EventType.tapCell, invalid, m.getScreenProperties(), m.getComponentProperties(), m.getCellProperties(m.selection, index))
+        'm.executeContentSelection(m.selection)
+      end if
+    end if
+    m.isStyleUpdateRequired = true
+  end function
+
+  public function onFocusRow(index)
+
+  end function
+
+  private function onLoadResponse(result)
+    m.log.method("onLoadResponse")
+
+    if result.isOk
+      m.content.appendChildren(result.data.getChildren(-1, 0))
+    end if
+    m.state = "ready"
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ style support
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public override function resetStyles(riversJson)
+    m.log.method("resetStyles")
+    super.resetStyles(riversJson)
+    m.processStyles(riversJson.styles)
+    m.setContentStyle(m.feed)
+
+    m.feed = m.feed
+    ' m.waitAFrame(m.onReloadStyle, 5)
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ feed processing
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public override function onFeedResult(result)
+    m.log.method("onFeedResult")
+    m.toggleLoadingDataTask(false)
+
+    if result.isOk
+      m.isFirstLoadComplete = true
+      m.setContentStyle(result.data)
+      m.feed = result.data
+      m.restoreSelection()
+      m.state = "ready"
+      m.content.json = m.feed.json
+      m.content.title = m.feed.title
+      m.content.id = m.feed.id
+      m.setContentStyle(m.content)
+      m.content@.receiveRowData(m.feed.getChildren(-1, 0), true)
+    else
+      m.onFeedError(invalid)
+      m.content@.receiveRowData([])
+    end if
+
+  end function
+
+  private function setContentStyle(content)
+    m.log.method("setContentStyle")
+
+    if m.style <> invalid
+      cellStyle = m.style.cell
+      cellStyle.dataMap = m.style.dataMap
+      cellStyle.delete("translation")
+      mc.setOrAddNodeField(content, "_style", cellStyle)
+      mc.setOrAddNodeField(content, "_styleId", m.style.id)
+    end if
+
+  end function
+
+  function setEpgStyle()
+    if m.style <> invalid
+      m.gridStyle = zapp.collectionRowUtils.getRowListStyle(m.riversJson.styles, m.style.cell.normal)
+      m.gridStyle.numRows = mc.getPath(m.riversJson.styles, "num_rows", 3)
+      m.gridStyle.itemSize = m.gridStyle.rowItemSize
+      m.gridStyle.itemSpacing = zapp.viewUtils.makeUIBPosition(m.riversJson.styles, "spacing", 0, 0)
+    end if
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Private Methods
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function toggleUpdateTimer(active as boolean)
+    m.log.info("toggleUpdateTimer is active ", active)
+    if active
+      m.timeout = m.waitAFrame(m.loadChangedContentOnTimeReason, 60)
+    else
+      m.cancelWaitTimer(m.timeout)
+    end if
+  end function
+
+  private function loadChangedContentOnTimeReason()
+    m.loadChangedContent("showOnTimer")
+    m.toggleUpdateTimer(true)
+  end function
+
+  private function loadChangedContent(reason as string) as boolean
+    if m.content@.isReloadRequired(reason)
+      m.load()
+      m.content@.receiveRowData(m.feed.getChildren(-1, 0), true)
+      return true
+    else
+      return false
+    end if
+  end function
+
+  private function removingGridGap()
+    topFields = m.getMField("top")
+    topParant = topFields.getParent()
+    for each child in topParant.getChildren(-1, 0)
+      if child.id = m.getInstance("selectedId")
+        childTranslationY = child.translation[1]
+        gridTranslation = zapp.viewUtils.makeUIBPosition(m.riversJson.styles, "grid", 20, 20)
+        if gridTranslation[1] <> 20 and childTranslationY > gridTranslation[1]
+          child.translation = [m.gridStyle.translation[0], childTranslationY - gridTranslation[1]]
+        end if
+      end if
+    end for
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ lifecycle
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  protected override function onShow() as void
+    m.log.method("onShow", m.state)
+    if m.state = "ready" or m.state = "initialized" or m.state = "error"
+      if m.isFirstLoadComplete
+        m.log.info("grid already loaded; code to manage reloadKey expiration is not yet implemented")
+
+        if m.loadChangedContent("showScreen")
+          m.log.info("updating grid content")
+          m.toggleUpdateTimer(true)
+        end if
+        m.removingGridGap()
+      else
+        m.log.info("this zapp.view has never loaded - trying now")
+        m.load()
+      end if
+    end if
+    m.restoreSelection()
+  end function
+
+  function restoreSelection()
+    if m.selection <> invalid and m.content <> invalid and m.content.count() > 0
+      m.log.info("Restoring selection to match selection", mc.dv(m.selection.currentItem))
+      if m.feed <> invalid
+        itemIndex = zapp.collectionRowUtils.restoreDeeplinkSelection(m.selection, m.feed)
+      else
+        itemIndex = zapp.collectionRowUtils.restoreDeeplinkSelection(m.selection, m.content)
+      end if
+      m.log.info("selection equates to itemIndex ", itemIndex)
+
+      if itemIndex <> -1
+
+      else
+        m.log.warn("invalid indexes - ignoring")
+      end if
+    end if
+  end function
+
+  public override function cancelLoad()
+    m.log.method("cancelLoad")
+
+    super.cancelLoad()
+
+    'if m.loadMoreTask <> invalid
+    '  m.cancelTask(m.loadMoreTask)
+    '  m.loadMoreTask = invalid
+    '  m.state = "ready"
+    'end if
+
+    m.isShowingLoadingSpinner = false
+  end function
+
+  protected override function onHide()
+    m.toggleUpdateTimer(false)
+  end function
+
+
+end class
