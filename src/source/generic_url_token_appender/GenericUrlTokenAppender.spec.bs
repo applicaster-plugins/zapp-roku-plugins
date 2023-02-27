@@ -54,10 +54,10 @@ namespace zapp.tests
     @params("url2", "p2", "t", "t2", "url2?t=t2")
     @params("url3?withField=true", "p2", "t", "t2", "url3?withField=true&t=t2")
     @params("url3?withField=true", "p2", "x", "t2", "url3?withField=true&x=t2")
-    function _(url, providerId, tokenKey, token, expected)
+    function _(url, namespaceName, tokenKey, token, expected)
       currentSelection = { "id": "currentSelection" }
       m.appender.tokenKey = tokenKey
-      m.appender.providerId = providerId
+      m.appender.namespaceName = namespaceName
       item = {
         id: "item"
         url: url
@@ -65,7 +65,7 @@ namespace zapp.tests
       }
       currentSelection.currentItem = item
       m.expectOnce(m.appender, "getInstance", ["currentSelection"], currentSelection)
-      m.expectOnce(m.appender, "getSessionStoreValue", [providerId, "token"], token)
+      m.expectOnce(m.appender, "getSessionStoreValue", [namespaceName, "token"], token)
 
       m.assertEqual(m.appender.execute(), "success")
       m.assertEqual(item.url, expected)

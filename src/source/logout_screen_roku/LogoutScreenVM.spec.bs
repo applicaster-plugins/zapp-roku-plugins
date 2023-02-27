@@ -73,7 +73,7 @@ namespace zapp.tests
       analyticsManager = { "id": "analyticsManager" }
       m.expectOnce(analyticsManager, "callFunc", ["trackEvent", "Signed Out", "page_loaded", { "provider": "AdobeAccessEnabler" }])
 
-      m.expectOnce(m.vm, "getSessionStoreValue", ["all_zapp_pipes_providers", "default_auth_plugin_id"], "AdobeAccessEnabler")
+      m.expectOnce(m.vm, "getSessionStoreValue", ["applicaster.v2", "default_auth_plugin_id"], "AdobeAccessEnabler")
 
       m.expectOnce(m.vm, "getInstance", ["analyticsManager"], analyticsManager)
 
