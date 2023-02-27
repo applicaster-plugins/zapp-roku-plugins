@@ -1,4 +1,4 @@
-import "pkg:/source/quick-brick-login-flow/QuickBrickAuthenticationFlowScreenVM.bs"
+import "pkg:/source/quick-brick-epg-screen/QuickBrickEpgScreenVM.bs"
 import "pkg:/source/roku_modules/maestro/mx/VMTransformFunctions.brs"
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -14,6 +14,6 @@ end function
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 function createVM()
-  vm = new QuickBrickAuthenticationFlowScreenVM(m.top.riversJson)
+  vm = new QuickBrickEpgScreenVM(m.top.riversJson)
   return vm
 end function

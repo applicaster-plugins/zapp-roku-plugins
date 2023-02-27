@@ -1,15 +1,23 @@
 import "pkg:/source/authorization/BaseAuthPlugin.bs"
 import "pkg:/source/authorization/JWTUtil.bs"
+import "pkg:/source/lib/BaseClass.bs"
 import "pkg:/source/lib/APIUtils.bs"
+import "pkg:/source/UIBuilder/view/Component.bs"
+import "pkg:/source/zapp-pipes/EntryLoader.bs"
 
 ' namespace zapp.auth
 class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
 
   public content = m.createSGNode("CollectionRow")
   public gridStyle = {}
+  public results = invalid
 
   private jwtUtil = new zapp.JWTUtil()
   private timeout = invalid
+  private loadChannelTask = invalid
+  private loadProgramTask = invalid
+  private focusRectangle = invalid
+  private contentLoader = new zapp.pipes.EntryLoader()
 
 
   @inject("constants")
@@ -25,13 +33,109 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
 
   public function new(riversJson)
     super(riversJson, "QuickBrickEpgScreenVM")
-    m.processStyles(riversJson.styles)
-    m.setEpgStyle()
+    m.setEpgStyle(riversJson.styles)
+    m.setEpgContent(riversJson.data)
+    m.removingGridGap()
+
     m.focusId = ""
   end function
+  '
+  'grid_item_future_background_color: "#1E1E1E"
+  'grid_item_future_focused_background_color: "#1E1E1E"
+  'grid_item_live_asset: "image"
+  'grid_item_live_asset_height: 16
+  'grid_item_live_asset_padding_right: 2
+  'grid_item_live_asset_width: 16
 
-  function processStyles(styles)
 
+  function setEpgStyle(styles)
+    if styles <> invalid
+      m.stylingChannelItemComponent(styles)
+      m.stylingDayLabelComponent(styles)
+      m.stylingDayTabsLabelComponent(styles)
+      m.stylingGridComponent(styles)
+    end if
+  end function
+
+  private function stylingChannelItemComponent(styles)
+    channelPoster = invalid
+    channelPoster.height = styles.channel_asset_height
+    channelPoster.height = styles.channel_asset_height
+    channelPoster.backgroundColor = zapp.viewUtils.transposeUIBColor(styles["channel_background_color"])
+    translation = [abs(styles.channel_padding_left - styles.channel_padding_right), abs(styles.channel_padding_top - styles.channel_padding_bottom)]
+    channelPoster.translation = translation
+  end function
+
+  private function stylingDayLabelComponent(styles)
+    dayLabel = invalid
+    dayLabel.text = zapp.viewUtils.textToTextTransformFormat(dayLabel.text, styles.days_label_text_transform)
+    dayLabel = zapp.viewUtils.makeUIBTextStyle(styles, "days_label")
+    dayLabelSelected = zapp.viewUtils.makeUIBTextStyle(styles, "days_label_selected")
+    dayLabelFocused = zapp.viewUtils.makeUIBTextStyle(styles, "days_label_focused")
+  end function
+
+  private function stylingDayTabsLabelComponent(styles)
+    dayTabs = invalid
+    dayTabs.backgroundColor = zapp.viewUtils.transposeUIBColor(styles["days_tabs_background_color"])
+    translation = [abs(styles.days_tabs_padding_left - styles.days_tabs_padding_right), abs(styles.days_tabs_padding_top - styles.days_tabs_padding_bottom)]
+    dayTabs.translation = translation
+    dayTabs.itemSpacings = [zapp.viewUtils.getUIBInt(styles, "days_tabs_horizontal_gutter", 15)]
+  end function
+
+  private function stylingGridComponent(styles)
+    grid = invalid
+    grid.backgroundColor = zapp.viewUtils.transposeUIBColor(styles["days_tabs_background_color"])
+    translation = [abs(styles.days_tabs_padding_left - styles.days_tabs_padding_right), abs(styles.days_tabs_padding_top - styles.days_tabs_padding_bottom)]
+    grid.translation = translation
+    grid.itemSpacings = [zapp.viewUtils.getUIBInt(styles, "grid_horizontal_gutter", 15)]
+  end function
+
+
+  function setEpgContent(data)
+    if asString(data.channels_source.source) <> ""
+      m.state = "loading"
+      m.loadChannelTask = m.executeloadTaskWithUrl("1", m.onLoadMoreResponse, data.channels_source.source, 0)
+    end if
+  end function
+
+  private function loadMore()
+    m.log.method("loadMore")
+    m.state = "loading"
+
+  end function
+
+  private function onLoadMoreResponse(result)
+    m.log.method("onLoadMoreResponse")
+
+    if result.isOk
+
+    end if
+    m.state = "ready"
+
+
+    timeGridContent = CreateObject("roSGNode", "ContentNode")
+    programItem = timeGridContent.createChild("ContentNode")
+
+    for each channelData in result.getChildren(-1, 0)
+      channelNode = programItem.createChild("ContentNode")
+      channelNode.PLAYSTART = channelData.extensions.start_time
+      channelNode.PLAYDURATION = channelData.extensions.end_time
+      m.loadProgramTask = m.executeloadTaskWithUrl("1", m.onLoadMoreResponse, m.riversJson.data.channels_source.source, 0)
+    end for
+  end function
+
+  private function onLoadPrograms(result)
+    m.log.method("onLoadPrograms")
+
+    if result.isOk
+      for each item in result.programs
+        'channelNode.TITLE = item.title
+        'channelNode.id = item.id
+        'channelNode.shortDescriptionLine1 = item.summary
+        'channelNode.description = item.summary
+      end for
+    end if
+    'TimeGrid.content = timeGridContent
   end function
 
   public function onSelectItem(index)
@@ -64,6 +168,32 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
     m.state = "ready"
   end function
 
+  private function applyDataMap(feed as mc.types.node, style as mc.types.assocarray) as void
+
+    if style <> invalid
+
+      if feed <> invalid
+        dataSource = feed.getChild(0)
+      else
+        dataSource = invalid
+      end if
+
+      'm.applyDataMapToControls(style.dataMap, dataSource)
+    end if
+
+    if m.isFocused
+      m.onGainedFocus(true)
+    else
+      m.focusRectangle.visible = false
+    end if
+
+    'generalScreen = m.top.getParent().getParent().getParent().getParent()
+    'if generalScreen <> invalid
+    '  generalScreen.getChild(1).visible = true
+    '  generalScreen.getChild(2).visible = true
+    'end if
+  end function
+
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ style support
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -71,7 +201,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
   public override function resetStyles(riversJson)
     m.log.method("resetStyles")
     super.resetStyles(riversJson)
-    m.processStyles(riversJson.styles)
+    m.setEpgStyle(riversJson.styles)
     m.setContentStyle(m.feed)
 
     m.feed = m.feed
@@ -115,15 +245,6 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
       mc.setOrAddNodeField(content, "_styleId", m.style.id)
     end if
 
-  end function
-
-  function setEpgStyle()
-    if m.style <> invalid
-      m.gridStyle = zapp.collectionRowUtils.getRowListStyle(m.riversJson.styles, m.style.cell.normal)
-      m.gridStyle.numRows = mc.getPath(m.riversJson.styles, "num_rows", 3)
-      m.gridStyle.itemSize = m.gridStyle.rowItemSize
-      m.gridStyle.itemSpacing = zapp.viewUtils.makeUIBPosition(m.riversJson.styles, "spacing", 0, 0)
-    end if
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -193,19 +314,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
 
   function restoreSelection()
     if m.selection <> invalid and m.content <> invalid and m.content.count() > 0
-      m.log.info("Restoring selection to match selection", mc.dv(m.selection.currentItem))
-      if m.feed <> invalid
-        itemIndex = zapp.collectionRowUtils.restoreDeeplinkSelection(m.selection, m.feed)
-      else
-        itemIndex = zapp.collectionRowUtils.restoreDeeplinkSelection(m.selection, m.content)
-      end if
-      m.log.info("selection equates to itemIndex ", itemIndex)
 
-      if itemIndex <> -1
-
-      else
-        m.log.warn("invalid indexes - ignoring")
-      end if
     end if
   end function
 

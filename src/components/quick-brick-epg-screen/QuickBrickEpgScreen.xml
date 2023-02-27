@@ -5,7 +5,9 @@
     vm='QuickBrickEpgScreenVM'>
 
   <interface>
-
+    <field
+        id='screenState'
+        type='node' />
   </interface>
 
   <children>
@@ -13,16 +15,17 @@
         id='backgroundRectangle'
         width='1920'
         height='1080'
-        color='{{=zapp_viewUtils_UIBColor("background_color")}}' />
+        color='{{=zapp_viewUtils_UIBColor("screen_background_color")}}' />
     <mv_Poster
         id='backgroundPoster'
-        style='{{=zapp_viewUtils_UIBBackgroundPoster("background")}}' />
+        style='{{=zapp_viewUtils_UIBBackgroundPoster("screen_background_color")}}' />
     <mv_Poster
         id='logoPoster'
         style='{{=zapp_viewUtils_UIBPoster("logo")}}' />
 
     <TimeGrid
         id='TimeGrid'
+        content='{{results}}'
         channelInfoComponentName='channelItemComponent' />
 
     <LoadingIndicator
