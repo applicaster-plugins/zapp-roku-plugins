@@ -262,6 +262,7 @@ namespace zapp.tests
 
       requestUtil = { "id": "requestUtil" }
       m.expectCalled(m.plugin.getRequestUtil(), requestUtil)
+      m.expectCalled(m.plugin.getInfoHeader(), expectedHeaders["X-Device-Info"])
 
       url = "#url/o/client/register"
       m.expectCalled(requestUtil.post(url, expectedParams, expectedHeaders), response)
@@ -289,6 +290,7 @@ namespace zapp.tests
 
       requestUtil = { "id": "requestUtil" }
       m.expectCalled(m.plugin.getRequestUtil(), requestUtil)
+      m.expectCalled(m.plugin.getInfoHeader(), expectedHeaders["X-Device-Info"])
 
       url = "#url/o/client/register"
       m.expectCalled(requestUtil.post(url, expectedParams, expectedHeaders), response)

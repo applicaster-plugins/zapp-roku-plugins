@@ -1,6 +1,8 @@
 import "pkg:/source/plugin-support/PluginManager.bs"
 import "pkg:/source/lib/BaseClass.bs"
 import "pkg:/source/roku_modules/maestro/core/Utils.brs"
+import "pkg:/source/zapp/Reference.bs"
+
 
 ' /**
 '  * @module GenericUrlTokenAppender
@@ -8,7 +10,7 @@ import "pkg:/source/roku_modules/maestro/core/Utils.brs"
 '  */
 class GenericUrlTokenAppender extends zapp.BaseClass
 
-  private providerId = ""
+  private namespaceName = ""
   private tokenKey = ""
   private isValid
 
@@ -20,13 +22,13 @@ class GenericUrlTokenAppender extends zapp.BaseClass
     plugin = m.plugins.getPluginById("generic_url_token_appender")
 
     if plugin.isValid
-      m.providerId = plugin.getStringValue("provider_id", "all_zapp_pipes_providers")
+      m.namespaceName = plugin.getStringValue("provider_id", zapp.pipes.Namespaces.default)
       m.tokenKey = lcase(plugin.getStringValue("token_key", "token"))
     else
       m.log.error("There was no plugin config!")
     end if
 
-    m.isValid = m.providerId <> "" and m.tokenKey <> ""
+    m.isValid = m.namespaceName <> "" and m.tokenKey <> ""
 
   end function
 
@@ -40,7 +42,7 @@ class GenericUrlTokenAppender extends zapp.BaseClass
     end if
 
     item = currentSelection.currentItem
-    token = m.getSessionStoreValue(m.providerId, "token")
+    token = m.getSessionStoreValue(m.namespaceName, "token")
 
     if item.url.instr("?") = -1
       sep = "?"
