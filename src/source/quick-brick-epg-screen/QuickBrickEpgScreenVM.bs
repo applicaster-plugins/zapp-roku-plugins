@@ -17,6 +17,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
   private loadChannelTask = invalid
   private loadProgramTask = invalid
   private focusRectangle = invalid
+  private channelItem = invalid
+  private timeGridContent = invalid
   private contentLoader = new zapp.pipes.EntryLoader()
 
 
@@ -50,10 +52,10 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
 
   function setEpgStyle(styles)
     if styles <> invalid
-      m.stylingChannelItemComponent(styles)
-      m.stylingDayLabelComponent(styles)
-      m.stylingDayTabsLabelComponent(styles)
-      m.stylingGridComponent(styles)
+      'm.stylingChannelItemComponent(styles)
+      'm.stylingDayLabelComponent(styles)
+      'm.stylingDayTabsLabelComponent(styles)
+      'm.stylingGridComponent(styles)
     end if
   end function
 
@@ -113,29 +115,75 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
     m.state = "ready"
 
 
-    timeGridContent = CreateObject("roSGNode", "ContentNode")
-    programItem = timeGridContent.createChild("ContentNode")
+    m.timeGridContent = CreateObject("roSGNode", "ContentNode")
 
-    for each channelData in result.getChildren(-1, 0)
-      channelNode = programItem.createChild("ContentNode")
-      channelNode.PLAYSTART = channelData.extensions.start_time
-      channelNode.PLAYDURATION = channelData.extensions.end_time
-      m.loadProgramTask = m.executeloadTaskWithUrl("1", m.onLoadMoreResponse, m.riversJson.data.channels_source.source, 0)
+    channelsData = result.data
+    programUrl = m.riversJson.data.programs_source.source
+
+    for each channelData in channelsData.getChildren(-1, 0)
+      m.channelItem = m.timeGridContent.createChild("ContentNode")
+      m.channelItem.title = channelData.title
+      m.channelItem.HDSMALLICONURL = channelData.json.images.image_base
+      actuallUrl = m.substituteIdInUrl(programUrl, channelData.id)
+      m.loadProgramTask = m.executeloadTaskWithUrl("1", m.onLoadProgramsResponse, actuallUrl, 0)
     end for
+    m.state = "ready"
   end function
 
-  private function onLoadPrograms(result)
-    m.log.method("onLoadPrograms")
+  function substituteIdInUrl(url as string, id as integer) as string
+    return url.replace("{{id}}", id)
+  end function
+
+
+  private function onLoadProgramsResponse(result)
+    m.log.method("onLoadProgramsResponse")
 
     if result.isOk
-      for each item in result.programs
-        'channelNode.TITLE = item.title
-        'channelNode.id = item.id
-        'channelNode.shortDescriptionLine1 = item.summary
-        'channelNode.description = item.summary
+      programsData = result.data
+      for each programData in programsData.getChildren(-1, 0)
+        programItem = m.channelItem.createChild("ContentNode")
+        programItem.PLAYSTART = m.parseDateStringToSeconds(programData.json.extensions.start_time)
+        programItem.PLAYDURATION = m.parseDateStringToSeconds(programData.json.extensions.end_time) - m.parseDateStringToSeconds(programData.json.extensions.start_time)
+        programItem.TITLE = programData.title
+        programItem.id = programData.id
+        programItem.shortDescriptionLine1 = programData.json.summary
+        programItem.HDSMALLICONURL = programData.json.images.image_base
       end for
     end if
-    'TimeGrid.content = timeGridContent
+    'aaa = m.getMField("top")
+    'TimeGrid = aaa.getChild(3)
+    'TimeGrid.content = m.timeGridContent
+  end function
+
+  private function parseDateStringToSeconds(dateString)
+    if type(dateString) <> "roString" and type(dateString) <> "String"
+      m.log.error("parseDateStringToSeconds: not a valid string")
+      return 0
+    end if
+    if len(dateString) <> 24
+      m.log.error("parseDateStringToSeconds: dateString is not in the expected format 'YYYY/MM/DD HH:MM:SS +zzzz'")
+      return 0
+    end if
+
+    'Change to YYYY-MM-DD HH:MM:SS
+    iso8601 = Left(dateString, 19)
+    iso8601.replace("/", "-")
+    zoneOffset = Right(dateString, 4)
+    zoneOffsetHH = Left(zoneOffset, 2)
+    zoneOffsetMM = Right(zoneOffset, 2)
+    zoneOffsetSign = 1
+
+    if dateString.instr(20, "+") > 0
+      zoneOffsetSign = -1
+    end if
+
+    parsedDate = CreateObject("roDateTime")
+    parsedDate.FromISO8601String(iso8601)
+    parsedSeconds = parsedDate.AsSeconds()
+
+    ' return integer seconds in GMT
+    result = parsedSeconds + zoneOffsetSign * ((zoneOffsetHH.ToInt() * 3600) + (zoneOffsetMM.ToInt() * 60))
+    return result
   end function
 
   public function onSelectItem(index)
