@@ -167,9 +167,23 @@ class SegmentAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
       properties.append(m.defaultProperties)
 
       m.log.info("TRACK OPTIONS ", options)
-      m.library.track(eventName, properties, options)
+
+      event = {
+        "name": eventName,
+        "properties": properties,
+        "options": options
+      }
+      m.processAnalyticsEvent(event)
     end if
 
+  end function
+  '//TODO remove legacy track event
+
+  protected override function _processAnalyticsEvent(event as zapp.analytics.AnalyticsEvent)
+    eventName = event.name
+    properties = event.properties
+    options = event.options
+    m.library.track(eventName, properties, options)
   end function
 
   protected override function _trackVideoEvent(event as zapp.video.VideoAnalyticsEvent) as void

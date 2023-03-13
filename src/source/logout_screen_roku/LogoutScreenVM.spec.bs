@@ -1,6 +1,7 @@
 namespace zapp.tests
   @tags("public", "auth", "vm")
   @suite
+
   class LogoutScreenVmTests extends tests.BaseTestSuite
     private riversJson
     private vm
@@ -73,7 +74,7 @@ namespace zapp.tests
       analyticsManager = { "id": "analyticsManager" }
       m.expectOnce(analyticsManager, "callFunc", ["trackEvent", "Signed Out", "page_loaded", { "provider": "AdobeAccessEnabler" }])
 
-      m.expectOnce(m.vm, "getSessionStoreValue", ["all_zapp_pipes_providers", "default_auth_plugin_id"], "AdobeAccessEnabler")
+      m.expectOnce(m.vm, "getSessionStoreValue", [zapp.pipes.Namespaces.default, "default_auth_plugin_id"], "AdobeAccessEnabler")
 
       m.expectOnce(m.vm, "getInstance", ["analyticsManager"], analyticsManager)
 
