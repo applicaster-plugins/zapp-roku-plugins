@@ -5,10 +5,9 @@ import "pkg:/source/lib/APIUtils.bs"
 import "pkg:/source/UIBuilder/view/Component.bs"
 import "pkg:/source/zapp-pipes/EntryLoader.bs"
 
-' namespace zapp.auth
 class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
 
-  public content = m.createSGNode("CollectionRow")
+  'public content = m.createSGNode("CollectionRow")
   public gridStyle = {}
   public results = invalid
 
@@ -20,7 +19,16 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
   private channelItem = invalid
   private timeGridContent = invalid
   private contentLoader = new zapp.pipes.EntryLoader()
+  public channelIndex = -1
+  public programIndex = -1
+  public channelFocused = 0
 
+  private riversJsonData = invalid
+  private contentDepth = 1
+  private taskCount = invalid
+  private programsData = []
+  private channelCount = invalid
+  public content = invalid
 
   @inject("constants")
   private constants
@@ -35,29 +43,174 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
 
   public function new(riversJson)
     super(riversJson, "QuickBrickEpgScreenVM")
-    m.setEpgStyle(riversJson.styles)
-    m.setEpgContent(riversJson.data)
-    m.removingGridGap()
-
+    'm.setEpgStyle(riversJson.styles)
+    'm.makeEPGData(riversJson.data)
+    'm.removingGridGap()
+    m.riversJsonData = riversJson
     m.focusId = ""
   end function
-  '
-  'grid_item_future_background_color: "#1E1E1E"
-  'grid_item_future_focused_background_color: "#1E1E1E"
-  'grid_item_live_asset: "image"
-  'grid_item_live_asset_height: 16
-  'grid_item_live_asset_padding_right: 2
-  'grid_item_live_asset_width: 16
+
+  public override function load()
+    m.makeEPGData(m.riversJsonData)
+    return true
+  end function
+
+  public override function resetStyles(riversJson)
+    m.log.method("resetStyles")
+    super.resetStyles(riversJson)
+    m.setEpgStyle(riversJson.styles)
+    m.setContentStyle(m.feed)
+
+    m.feed = m.feed
+    ' m.waitAFrame(m.onReloadStyle, 5)
+  end function
 
 
-  function setEpgStyle(styles)
-    if styles <> invalid
-      'm.stylingChannelItemComponent(styles)
-      'm.stylingDayLabelComponent(styles)
-      'm.stylingDayTabsLabelComponent(styles)
-      'm.stylingGridComponent(styles)
+  private function applyDataMap(feed as mc.types.node, style as mc.types.assocarray) as void
+
+    if style <> invalid
+
+      if feed <> invalid
+        dataSource = feed.getChild(0)
+      else
+        dataSource = invalid
+      end if
+
+      'm.applyDataMapToControls(style.dataMap, dataSource)
+    end if
+
+    if m.isFocused
+      m.onGainedFocus(true)
+    else
+      m.focusRectangle.visible = false
+    end if
+
+    'generalScreen = m.top.getParent().getParent().getParent().getParent()
+    'if generalScreen <> invalid
+    '  generalScreen.getChild(1).visible = true
+    '  generalScreen.getChild(2).visible = true
+    'end if
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Content creating
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function setEpgContent(data)
+    if asString(data.channels_source.source) <> ""
+      m.state = "loading"
+      m.loadChannelTask = m.executeloadTaskWithUrl("1", m.onLoadMoreResponse, data.channels_source.source, 0)
     end if
   end function
+
+  private function loadMore()
+    m.log.method("loadMore")
+    m.state = "loading"
+  end function
+
+  private function onLoadMoreResponse(result)
+    m.log.method("onLoadMoreResponse")
+
+    m.state = "ready"
+
+    m.timeGridContent = CreateObject("roSGNode", "ContentNode")
+    m.taskCount = 0
+    m.channelCount = -1
+    channelsData = result.data
+    programUrl = m.riversJsonData.data.programs_source.source
+
+    for each channelData in channelsData.getChildren(-1, 0)
+      m.channelItem = m.timeGridContent.createChild("ContentNode")
+      m.channelItem.title = channelData.title
+      m.channelItem.HDSMALLICONURL = channelData.json.images.image_base
+      actuallUrl = m.substituteIdInUrl(programUrl, channelData.id)
+      m.taskCount++
+      m.loadProgramTask = m.executeloadTaskWithUrl("1", m.onLoadProgramsResponse, actuallUrl, 0)
+    end for
+  end function
+
+  private function onLoadProgramsResponse(result)
+    m.log.method("onLoadProgramsResponse")
+    m.programsData = []
+    if result.isOk
+      m.channelCount++
+      programsData = result.data
+      for each programData in programsData.getChildren(-1, 0)
+        programItem = m.channelItem.createChild("ContentNode")
+        programItem.PLAYSTART = m.parseDateStringToSeconds(programData.json.extensions.start_time)
+        programItem.PLAYDURATION = m.parseDateStringToSeconds(programData.json.extensions.end_time) - m.parseDateStringToSeconds(programData.json.extensions.start_time)
+        programItem.TITLE = programData.title
+        programItem.id = programData.id
+        programItem.shortDescriptionLine1 = programData.json.summary
+        programItem.HDSMALLICONURL = programData.json.images.image_base
+        m.programsData.push(programItem)
+      end for
+    end if
+    m.programsData.SortBy("PLAYSTART")
+    m.timeGridContent.getChild(m.channelCount).appendChildren(m.programsData)
+    m.taskCount--
+    if m.taskCount = 0
+      aaa = m.getMField("top")
+      TimeGrid = aaa.getChild(3)
+      TimeGrid.content = m.timeGridContent
+      m.state = "ready"
+    end if
+  end function
+
+  private function onLoadResponse(result)
+    m.log.method("onLoadResponse")
+
+    if result.isOk
+      m.content.appendChildren(result.data.getChildren(-1, 0))
+    end if
+    m.state = "ready"
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Public Method
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public function onFocusRow(index)
+
+  end function
+
+  public function onSelectItem(index)
+    m.log.method("OnItemSelected")
+    if m.content <> invalid and index <> -1
+      selectedContent = m.content.getChild(index)
+
+      if selectedContent <> invalid
+        'topField = m.getMField("top")
+        'm.setInstance("selectedId", topField.id)
+        'm.selection = m.createSelectionFromContent(selectedContent, m.content)
+        'm.selection.target = mc.getPath(m.riversJsonData, "data.target")
+        'm.sendAnalyticsEvent(zapp.analytics.EventType.tapCell, invalid, m.getScreenProperties(), m.getComponentProperties(), m.getCellProperties(m.selection, index))
+        'm.executeContentSelection(m.selection)
+      end if
+    end if
+    m.isStyleUpdateRequired = true
+  end function
+
+  public function onProgramSelected(programIndex)
+    if m.channelIndex <> -1
+      m.log.info("onProgramSelected", programIndex)
+      content = m.content.getChild(m.channelIndex)
+      if content <> invalid
+        program = m.content.getChild(m.programIndex)
+        selection = m.createSelectionFromContent(program)
+        m.playSelection(selection)
+      end if
+    end if
+  end function
+
+  public function onChannelFocused(channelIndex)
+    m.log.info("onChannelFocused", channelIndex)
+    m.channelFocused = channelIndex
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ style support
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   private function stylingChannelItemComponent(styles)
     channelPoster = invalid
@@ -92,67 +245,92 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
     grid.itemSpacings = [zapp.viewUtils.getUIBInt(styles, "grid_horizontal_gutter", 15)]
   end function
 
+  private function setContentStyle(content)
+    m.log.method("setContentStyle")
 
-  function setEpgContent(data)
-    if asString(data.channels_source.source) <> ""
-      m.state = "loading"
-      m.loadChannelTask = m.executeloadTaskWithUrl("1", m.onLoadMoreResponse, data.channels_source.source, 0)
+    if m.style <> invalid
+      cellStyle = m.style.cell
+      cellStyle.dataMap = m.style.dataMap
+      cellStyle.delete("translation")
+      mc.setOrAddNodeField(content, "_style", cellStyle)
+      mc.setOrAddNodeField(content, "_styleId", m.style.id)
     end if
-  end function
-
-  private function loadMore()
-    m.log.method("loadMore")
-    m.state = "loading"
 
   end function
 
-  private function onLoadMoreResponse(result)
-    m.log.method("onLoadMoreResponse")
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ feed processing
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public override function onFeedResult(result)
+    m.log.method("onFeedResult")
+    m.toggleLoadingDataTask(false)
 
     if result.isOk
-
+      m.isFirstLoadComplete = true
+      m.setContentStyle(result.data)
+      m.feed = result.data
+      m.restoreSelection()
+      m.state = "ready"
+      m.content.json = m.feed.json
+      m.content.title = m.feed.title
+      m.content.id = m.feed.id
+      m.setContentStyle(m.content)
+      m.content@.receiveRowData(m.feed.getChildren(-1, 0), true)
+    else
+      m.onFeedError(invalid)
+      m.content@.receiveRowData([])
     end if
-    m.state = "ready"
 
-
-    m.timeGridContent = CreateObject("roSGNode", "ContentNode")
-
-    channelsData = result.data
-    programUrl = m.riversJson.data.programs_source.source
-
-    for each channelData in channelsData.getChildren(-1, 0)
-      m.channelItem = m.timeGridContent.createChild("ContentNode")
-      m.channelItem.title = channelData.title
-      m.channelItem.HDSMALLICONURL = channelData.json.images.image_base
-      actuallUrl = m.substituteIdInUrl(programUrl, channelData.id)
-      m.loadProgramTask = m.executeloadTaskWithUrl("1", m.onLoadProgramsResponse, actuallUrl, 0)
-    end for
-    m.state = "ready"
   end function
 
-  function substituteIdInUrl(url as string, id as integer) as string
-    return url.replace("{{id}}", id)
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Private Methods
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function makeEPGData(riversJsonData)
+    'channels = m.loadChannels()
+    channels = m.setEpgContent(riversJsonData.data)
+    'm.setField("content", channels)
+    m.log.info("content for Epg", channels)
+    aa = m.getMField("top")
+    b = aa.getParent()
+    aa.getChild(3).content = channels
+    m.isFirstLoadComplete = true
+    return true
   end function
 
-
-  private function onLoadProgramsResponse(result)
-    m.log.method("onLoadProgramsResponse")
-
-    if result.isOk
-      programsData = result.data
-      for each programData in programsData.getChildren(-1, 0)
-        programItem = m.channelItem.createChild("ContentNode")
-        programItem.PLAYSTART = m.parseDateStringToSeconds(programData.json.extensions.start_time)
-        programItem.PLAYDURATION = m.parseDateStringToSeconds(programData.json.extensions.end_time) - m.parseDateStringToSeconds(programData.json.extensions.start_time)
-        programItem.TITLE = programData.title
-        programItem.id = programData.id
-        programItem.shortDescriptionLine1 = programData.json.summary
-        programItem.HDSMALLICONURL = programData.json.images.image_base
-      end for
+  private function setEpgStyle(styles)
+    if styles <> invalid
+      'm.stylingChannelItemComponent(styles)
+      'm.stylingDayLabelComponent(styles)
+      'm.stylingDayTabsLabelComponent(styles)
+      'm.stylingGridComponent(styles)
     end if
-    'aaa = m.getMField("top")
-    'TimeGrid = aaa.getChild(3)
-    'TimeGrid.content = m.timeGridContent
+  end function
+
+  private function toggleUpdateTimer(active as boolean)
+    m.log.info("toggleUpdateTimer is active ", active)
+    if active
+      m.timeout = m.waitAFrame(m.loadChangedContentOnTimeReason, 60)
+    else
+      m.cancelWaitTimer(m.timeout)
+    end if
+  end function
+
+  private function loadChangedContentOnTimeReason()
+    m.loadChangedContent("showOnTimer")
+    m.toggleUpdateTimer(true)
+  end function
+
+  private function loadChangedContent(reason as string) as boolean
+    if m.content@.isReloadRequired(reason)
+      m.load()
+      m.content@.receiveRowData(m.feed.getChildren(-1, 0), true)
+      return true
+    else
+      return false
+    end if
   end function
 
   private function parseDateStringToSeconds(dateString)
@@ -186,141 +364,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
     return result
   end function
 
-  public function onSelectItem(index)
-    m.log.method("OnItemSelected")
-    if m.content <> invalid and index <> -1
-      selectedContent = m.content.getChild(index)
-
-      if selectedContent <> invalid
-        'topField = m.getMField("top")
-        'm.setInstance("selectedId", topField.id)
-        'm.selection = m.createSelectionFromContent(selectedContent, m.content)
-        'm.selection.target = mc.getPath(m.riversJson, "data.target")
-        'm.sendAnalyticsEvent(zapp.analytics.EventType.tapCell, invalid, m.getScreenProperties(), m.getComponentProperties(), m.getCellProperties(m.selection, index))
-        'm.executeContentSelection(m.selection)
-      end if
-    end if
-    m.isStyleUpdateRequired = true
-  end function
-
-  public function onFocusRow(index)
-
-  end function
-
-  private function onLoadResponse(result)
-    m.log.method("onLoadResponse")
-
-    if result.isOk
-      m.content.appendChildren(result.data.getChildren(-1, 0))
-    end if
-    m.state = "ready"
-  end function
-
-  private function applyDataMap(feed as mc.types.node, style as mc.types.assocarray) as void
-
-    if style <> invalid
-
-      if feed <> invalid
-        dataSource = feed.getChild(0)
-      else
-        dataSource = invalid
-      end if
-
-      'm.applyDataMapToControls(style.dataMap, dataSource)
-    end if
-
-    if m.isFocused
-      m.onGainedFocus(true)
-    else
-      m.focusRectangle.visible = false
-    end if
-
-    'generalScreen = m.top.getParent().getParent().getParent().getParent()
-    'if generalScreen <> invalid
-    '  generalScreen.getChild(1).visible = true
-    '  generalScreen.getChild(2).visible = true
-    'end if
-  end function
-
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '++ style support
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-  public override function resetStyles(riversJson)
-    m.log.method("resetStyles")
-    super.resetStyles(riversJson)
-    m.setEpgStyle(riversJson.styles)
-    m.setContentStyle(m.feed)
-
-    m.feed = m.feed
-    ' m.waitAFrame(m.onReloadStyle, 5)
-  end function
-
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '++ feed processing
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-  public override function onFeedResult(result)
-    m.log.method("onFeedResult")
-    m.toggleLoadingDataTask(false)
-
-    if result.isOk
-      m.isFirstLoadComplete = true
-      m.setContentStyle(result.data)
-      m.feed = result.data
-      m.restoreSelection()
-      m.state = "ready"
-      m.content.json = m.feed.json
-      m.content.title = m.feed.title
-      m.content.id = m.feed.id
-      m.setContentStyle(m.content)
-      m.content@.receiveRowData(m.feed.getChildren(-1, 0), true)
-    else
-      m.onFeedError(invalid)
-      m.content@.receiveRowData([])
-    end if
-
-  end function
-
-  private function setContentStyle(content)
-    m.log.method("setContentStyle")
-
-    if m.style <> invalid
-      cellStyle = m.style.cell
-      cellStyle.dataMap = m.style.dataMap
-      cellStyle.delete("translation")
-      mc.setOrAddNodeField(content, "_style", cellStyle)
-      mc.setOrAddNodeField(content, "_styleId", m.style.id)
-    end if
-
-  end function
-
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '++ Private Methods
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-  private function toggleUpdateTimer(active as boolean)
-    m.log.info("toggleUpdateTimer is active ", active)
-    if active
-      m.timeout = m.waitAFrame(m.loadChangedContentOnTimeReason, 60)
-    else
-      m.cancelWaitTimer(m.timeout)
-    end if
-  end function
-
-  private function loadChangedContentOnTimeReason()
-    m.loadChangedContent("showOnTimer")
-    m.toggleUpdateTimer(true)
-  end function
-
-  private function loadChangedContent(reason as string) as boolean
-    if m.content@.isReloadRequired(reason)
-      m.load()
-      m.content@.receiveRowData(m.feed.getChildren(-1, 0), true)
-      return true
-    else
-      return false
-    end if
+  private function substituteIdInUrl(url as string, id as integer) as string
+    return url.replace("{{id}}", id)
   end function
 
   private function removingGridGap()
@@ -329,12 +374,89 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
     for each child in topParant.getChildren(-1, 0)
       if child.id = m.getInstance("selectedId")
         childTranslationY = child.translation[1]
-        gridTranslation = zapp.viewUtils.makeUIBPosition(m.riversJson.styles, "grid", 20, 20)
+        gridTranslation = zapp.viewUtils.makeUIBPosition(m.riversJsonData.styles, "grid", 20, 20)
         if gridTranslation[1] <> 20 and childTranslationY > gridTranslation[1]
           child.translation = [m.gridStyle.translation[0], childTranslationY - gridTranslation[1]]
         end if
       end if
     end for
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Hardcoded data
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function loadChannels()
+    content = createObject("roSGNode", "ContentNode")
+
+    ' make an API call to get the list of channels
+    raw = readASCIIFile("pkg:/source/quick-brick-epg-screen/api/1_channels.json")
+    json = parseJSON(raw)
+    children = []
+    ' channels array
+    for each channel in json
+      raw = readASCIIFile("pkg:/source/quick-brick-epg-screen/api/" + channel + ".json")
+      channelJSON = parseJSON(raw)
+
+      channel = createObject("roSGNode", "ContentNode")
+      channel.title = channelJSON.channel.call_sign
+
+      if channelJSON.channel.major <> invalid
+        channel.title += " " + channelJSON.channel.major.toStr()
+      end if
+
+      if channelJSON.channel.minor <> invalid
+        channel.title += "." + channelJSON.channel.minor.toStr()
+      end if
+
+      channel.id = channelJSON.object_id.toStr()
+      channel.appendChildren(m.loadPrograms(channel))
+      children.push(channel)
+    end for
+
+    content.appendChildren(children)
+    return content
+  end function
+
+  function loadPrograms(channel)
+    ' the id was set in the root handler
+    id = channel.id
+
+    ' we'll fake the timestamps for demo purposes so that there Is
+    ' always content displayed for the current time
+    dt = createObject("roDateTime")
+    now = dt.AsSeconds()
+    playStart = now - (now mod 1800) - 3600
+
+    raw = readASCIIFile("pkg:/source/quick-brick-epg-screen/api/3_guide_" + id + ".json")
+    json = parseJSON(raw)
+
+    programs = []
+
+    for each programa in json
+      program = createObject("roSGnode", "ContentNode")
+
+      if programa.title <> invalid and programa.title <> ""
+        program.title = programa.title
+      else if programa.airing_details.show_title <> invalid and programa.airing_details.show_title <> ""
+        program.title = programa.airing_details.show_title
+      else
+        program.title = "---"
+      end if
+
+      if programa.season_number <> invalid and programa.episode_number <> invalid
+        program.description = "S" + programa.season_number.toStr() + " E" + programa.episode_number.toStr()
+      end if
+
+      program.playStart = playStart
+      program.playDuration = programa.airing_details.duration
+
+      programs.push(program)
+
+      playstart += program.playDuration
+    end for
+
+    return programs
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -347,11 +469,11 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
       if m.isFirstLoadComplete
         m.log.info("grid already loaded; code to manage reloadKey expiration is not yet implemented")
 
-        if m.loadChangedContent("showScreen")
-          m.log.info("updating grid content")
-          m.toggleUpdateTimer(true)
-        end if
-        m.removingGridGap()
+        'if m.loadChangedContent("showScreen")
+        '  m.log.info("updating grid content")
+        '  m.toggleUpdateTimer(true)
+        'end if
+        'm.removingGridGap()
       else
         m.log.info("this zapp.view has never loaded - trying now")
         m.load()

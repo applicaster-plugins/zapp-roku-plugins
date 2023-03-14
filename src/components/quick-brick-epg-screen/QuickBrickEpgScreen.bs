@@ -2,18 +2,17 @@ import "pkg:/source/quick-brick-epg-screen/QuickBrickEpgScreenVM.bs"
 import "pkg:/source/roku_modules/maestro/mx/VMTransformFunctions.brs"
 
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-'++ Initialization
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-function init()
-  initializeView(m.top.findNode("screenContainer"))
-end function
-
-'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 '++ Overridden methods
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 function createVM()
   vm = new QuickBrickEpgScreenVM(m.top.riversJson)
+
+  if m.top.originEntry <> invalid
+    m.log.info("we have an origin entry set")
+
+    vm.originEntry = m.top.originEntry
+  end if
+
   return vm
 end function

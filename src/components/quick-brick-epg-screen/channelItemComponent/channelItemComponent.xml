@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<component
+    name='channelItemComponent'
+    extends='Group'>
+
+  <interface>
+    <field
+        id='width'
+        type='float'
+        onChange='updateMaskSize' />
+    <field
+        id='height'
+        type='float'
+        onChange='updateMaskSize' />
+
+    <field
+        id='content'
+        type='node'
+        onChange='OnContentChangeForChannel' />
+    <field
+        id='channelInfoBackgroundBitmapUri'
+        type='uri' />
+
+  </interface>
+
+  <script
+      type='text/brightscript'
+      uri='channelItemComponent.brs' />
+
+  <children>
+    <MaskGroup
+        id='photoRectangle'
+        maskuri='pkg:/images/$$RES$$/SearchMenu/SearchRowMask.png'>
+      <Poster
+          id='programFrame'
+          loadDisplayMode='scaleToFill'
+          loadWidth='188'
+          loadHeight='101'
+          uri='pkg:/images/fhd/SearchMenu/frameForRow.png'
+          blendColor='0x000000' />
+      <Poster
+          id='channelPoster'
+          opacity='1'
+          loadDisplayMode='scaleToFit' />
+    </MaskGroup>
+
+  </children>
+
+</component>

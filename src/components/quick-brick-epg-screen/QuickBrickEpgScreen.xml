@@ -25,7 +25,9 @@
 
     <TimeGrid
         id='TimeGrid'
-        content='{{results}}'
+        content='{{content}}'
+        channelFocused='{(onChannelFocused(value))}'
+        programSelected='{(onProgramSelected(value))}'
         channelInfoComponentName='channelItemComponent' />
 
     <LoadingIndicator
