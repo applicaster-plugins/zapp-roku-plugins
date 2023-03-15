@@ -20,7 +20,7 @@ namespace zapp.video.analytics
     private accountId = ""
     private videoPlayer = invalid
     private videoNode = invalid
-    private analyticsMapper = invalid
+    private analyticsMapper as zapp.analytics.AnalyticsEventMapper
 
     @injectClass("zapp.URI")
     private uri
@@ -121,7 +121,7 @@ namespace zapp.video.analytics
       return zapp.APIUtils.executeApiRequest(m, method, endpoint, params, true, jwt, url)
     end function
 
-    private function createMapper(plugin)
+    private function createMapper(plugin) as zapp.analytics.AnalyticsEventMapper
       return new zapp.analytics.AnalyticsEventMapper(asAny(plugin.json.configuration_json.events_mapper))
     end function
 

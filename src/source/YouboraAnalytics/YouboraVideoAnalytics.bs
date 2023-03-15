@@ -50,7 +50,7 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
   ' "device.code" : "DEVICE_ID"
   ' }
 
-  private analyticsMapper = invalid
+  private analyticsMapper as zapp.analytics.AnalyticsEventMapper
   private youboraTask = invalid
   private config = {}
   private taskName = "YBPluginRokuVideo"
@@ -161,7 +161,7 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
   '++ Private Methods
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  private function createMapper(plugin)
+  private function createMapper(plugin) as zapp.analytics.AnalyticsEventMapper
     return new zapp.analytics.AnalyticsEventMapper(asAny(plugin.json.configuration_json.events_mapper))
   end function
 
