@@ -3,13 +3,31 @@ import "pkg:/source/authorization/JWTUtil.bs"
 import "pkg:/source/lib/BaseClass.bs"
 import "pkg:/source/lib/APIUtils.bs"
 import "pkg:/source/UIBuilder/view/Component.bs"
+import "pkg:/source/zapp-controls/BaseCollectionRowVM.bs"
+import "pkg:/source/lib/ViewUtils.bs"
 import "pkg:/source/zapp-pipes/EntryLoader.bs"
 
 class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
 
+  'styling
+  public menuButtons = []
+  public titleTextStyle = {}
+  public menuStyle = {}
+  public menuPosition = [960, 584]
+  public buttonSize = [700, 100]
+  public buttonSpacing = 5
+  public jumpToIndex = -1
+
   'public content = m.createSGNode("CollectionRow")
   public gridStyle = {}
   public results = invalid
+  public channelIndex = -1
+  public programIndex = -1
+  public channelFocused = 0
+  public content = invalid
+  public listContent = invalid
+  public listStyle = {}
+  public contentStartTime = {}
 
   private jwtUtil = new zapp.JWTUtil()
   private timeout = invalid
@@ -19,16 +37,13 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
   private channelItem = invalid
   private timeGridContent = invalid
   private contentLoader = new zapp.pipes.EntryLoader()
-  public channelIndex = -1
-  public programIndex = -1
-  public channelFocused = 0
 
   private riversJsonData = invalid
   private contentDepth = 1
   private taskCount = invalid
   private programsData = []
   private channelCount = invalid
-  public content = invalid
+  private focusIndex = 0
 
   @inject("constants")
   private constants
@@ -47,7 +62,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
     'm.makeEPGData(riversJson.data)
     'm.removingGridGap()
     m.riversJsonData = riversJson
-    m.focusId = ""
+    m.focusId = "timeGrid"
+    m.contentDepth = zapp.viewUtils.getUIBInt(riversJson.styles, "data_depth", 1)
   end function
 
   public override function load()
@@ -85,11 +101,6 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
       m.focusRectangle.visible = false
     end if
 
-    'generalScreen = m.top.getParent().getParent().getParent().getParent()
-    'if generalScreen <> invalid
-    '  generalScreen.getChild(1).visible = true
-    '  generalScreen.getChild(2).visible = true
-    'end if
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -142,7 +153,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
         programItem.TITLE = programData.title
         programItem.id = programData.id
         programItem.shortDescriptionLine1 = programData.json.summary
-        programItem.HDSMALLICONURL = programData.json.images.image_base
+        'programItem.HDSMALLICONURL = programData.json.images.image_base
         m.programsData.push(programItem)
       end for
     end if
@@ -150,9 +161,14 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
     m.timeGridContent.getChild(m.channelCount).appendChildren(m.programsData)
     m.taskCount--
     if m.taskCount = 0
-      aaa = m.getMField("top")
-      TimeGrid = aaa.getChild(3)
-      TimeGrid.content = m.timeGridContent
+      'aaa = m.getMField("top")
+      'TimeGrid = aaa.getChild(3)
+      'TimeGrid.content = m.timeGridContent
+      m.setField("content", m.timeGridContent)
+      currentTime = CreateObject("roDateTime").asSeconds()
+      m.contentStartTime = currentTime
+      m.content = m.timeGridContent
+      m.log.info("content for Epg", m.timeGridContent)
       m.state = "ready"
     end if
   end function
@@ -169,6 +185,26 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ Public Method
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public function onSelectedIndexChange(index)
+    m.log.info("selected index", index)
+    item = m.menuButtons[index]
+
+    if item <> invalid
+
+      screen = m.getScreen(item.target)
+
+      if screen <> invalid
+        m.setInstance("currentSelection", invalid)
+        m.log.info("found screen for button, displaying it")
+        m.focusIndex = index
+        m.push(screen)
+        m.setFocus(screen)
+      else
+        m.log.error("could not get the screen for", item.target)
+      end if
+    end if
+  end function
 
   public function onFocusRow(index)
 
@@ -222,19 +258,17 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
   end function
 
   private function stylingDayLabelComponent(styles)
-    dayLabel = invalid
-    dayLabel.text = zapp.viewUtils.textToTextTransformFormat(dayLabel.text, styles.days_label_text_transform)
-    dayLabel = zapp.viewUtils.makeUIBTextStyle(styles, "days_label")
+    dayLabelText = zapp.viewUtils.textToTextTransformFormat(dayLabelText, styles.days_label_text_transform)
+    dayLabelFont = zapp.viewUtils.makeUIBTextStyle(styles, "days_label")
     dayLabelSelected = zapp.viewUtils.makeUIBTextStyle(styles, "days_label_selected")
-    dayLabelFocused = zapp.viewUtils.makeUIBTextStyle(styles, "days_label_focused")
-  end function
-
-  private function stylingDayTabsLabelComponent(styles)
-    dayTabs = invalid
-    dayTabs.backgroundColor = zapp.viewUtils.transposeUIBColor(styles["days_tabs_background_color"])
-    translation = [abs(styles.days_tabs_padding_left - styles.days_tabs_padding_right), abs(styles.days_tabs_padding_top - styles.days_tabs_padding_bottom)]
-    dayTabs.translation = translation
-    dayTabs.itemSpacings = [zapp.viewUtils.getUIBInt(styles, "days_tabs_horizontal_gutter", 15)]
+    m.listStyle = {
+      translation: [abs(styles.days_tabs_padding_left - styles.days_tabs_padding_right), abs(styles.days_tabs_padding_top - styles.days_tabs_padding_bottom)]
+      itemSpacing: [zapp.viewUtils.getUIBInt(styles, "days_tabs_horizontal_gutter", 15)]
+      itemSize: zapp.viewUtils.makeUIBSize(styles, "item", 680, 80)
+      vertFocusAnimationStyle: ""
+      focusBitmapBlendColor: zapp.viewUtils.makeUIBTextStyle(styles, "days_label_focused")
+      focusBitmapUri: zapp.viewUtils.transposeUIBColor(styles["days_tabs_background_color"])
+    }
   end function
 
   private function stylingGridComponent(styles)
@@ -291,11 +325,6 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
   private function makeEPGData(riversJsonData)
     'channels = m.loadChannels()
     channels = m.setEpgContent(riversJsonData.data)
-    'm.setField("content", channels)
-    m.log.info("content for Epg", channels)
-    aa = m.getMField("top")
-    b = aa.getParent()
-    aa.getChild(3).content = channels
     m.isFirstLoadComplete = true
     return true
   end function
@@ -304,7 +333,6 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
     if styles <> invalid
       'm.stylingChannelItemComponent(styles)
       'm.stylingDayLabelComponent(styles)
-      'm.stylingDayTabsLabelComponent(styles)
       'm.stylingGridComponent(styles)
     end if
   end function
@@ -455,7 +483,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
 
       playstart += program.playDuration
     end for
-
+    programs.SortBy("PLAYSTART")
     return programs
   end function
 

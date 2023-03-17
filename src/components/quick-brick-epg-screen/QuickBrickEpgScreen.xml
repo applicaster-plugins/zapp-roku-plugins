@@ -26,9 +26,40 @@
     <TimeGrid
         id='TimeGrid'
         content='{{content}}'
+        contentStartTime='{{contentStartTime}}'
         channelFocused='{(onChannelFocused(value))}'
         programSelected='{(onProgramSelected(value))}'
         channelInfoComponentName='channelItemComponent' />
+    <LayoutGroup
+        id='layoutGroup'
+        layoutDirection='vert'
+        horizAlignment='center'
+        vertAlignment='center'
+        translation='{{:menuPosition}}'>
+      <Menu
+          id='menu'
+          buttons='{{menubuttons}}'
+          style='{{:menuStyle}}'
+          selectedIndex='{(onSelectedIndexChange(value))}'
+          jumpToIndex='{{jumpToIndex}}'
+          buttonSize='{{:buttonSize}}'
+          buttonSpacing='{{:buttonSpacing}}' />
+    </LayoutGroup>
+
+    <Rectangle
+        id='backgroundRectangle'
+        width='600'
+        height='1080'
+        color='{{=zapp_viewUtils_UIBColor("background_color")}}'>
+      <mv_MarkupList
+          id='list'
+          style='{{listStyle}}'
+          content='{{listContent}}'
+          itemComponentName='ZPowerCell'
+          numColumns='1'
+          numRows='6'
+          itemSelected='{(onSelectItem(value))}' />
+    </Rectangle>
 
     <LoadingIndicator
         id='loadingIndicator'
