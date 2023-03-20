@@ -59,9 +59,9 @@ namespace zapp.video.analytics
       m.sendXrayAudienceEvents(event)
     end function
 
-    function sendAppHomePresented(duration as integer)
-      m.log.info("sending AppHomePresented event")
-      event = m.eventFactory.createEvent("app_home_presented", duration)
+    function sendAppHomeLoaded(duration as integer)
+      m.log.info("sending AppHomeLoaded event")
+      event = m.eventFactory.createEvent("app_home_loaded", duration)
       m.eventBatch = m.eventBatch + 1
       m.sendXrayAudienceEvents(event)
     end function
