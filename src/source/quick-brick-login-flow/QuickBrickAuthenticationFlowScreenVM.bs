@@ -14,6 +14,7 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
   private nameOfParentScreen = ""
   private authTask as mc.types.node
   private skipTypes = ""
+  private skipKey = ""
 
   public function new(riversJson)
     super(riversJson, "QuickBrickAuthenticationFlowScreenVM")
@@ -35,6 +36,9 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
     m.state = "loading"
     if not m.isLoginRequired()
       m.log.info("no need to show in this case")
+      m.dismiss("success")
+    else if m.isKeyToSkipSet()
+      m.log.info("skip key set")
       m.dismiss("success")
     else if m.isLoggedIn()
       m.log.info("user is logged in, no need to show")
@@ -64,6 +68,7 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
 
   function processStyles(styles)
     m.skipTypes = asString(styles.general.skip_types)
+    m.skipKey = asString(styles.general.skip_login_if_key_exists)
     m.isShowingRegisterScreenFirst = zapp.viewUtils.getUIBBool(m.riversJson, "general.show_register_screen_first")
     m.loginCompletionAction = zapp.viewUtils.getUIBBool(m.riversJson, "general.login_completion_action")
   end function
@@ -190,6 +195,20 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ Private
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function isKeyToSkipSet()
+    m.log.info("checking if this key is set", m.skipKey)
+    parts = m.skipKey.split(".")
+    if parts.count() = 2
+      value = m.getSessionStoreValue(parts[0], parts[1])
+      m.log.info("session store contained value:", value)
+      if value <> invalid
+        return true
+      end if
+    end if
+
+    return false
+  end function
 
   private function getMatchesTypeForItem(currentSelection)
     return currentSelection@.getMatchesType(m.skipTypes)
