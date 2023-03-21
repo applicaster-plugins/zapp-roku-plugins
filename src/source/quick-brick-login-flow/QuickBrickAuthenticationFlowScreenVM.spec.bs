@@ -71,6 +71,7 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @only
     @describe("load")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -79,6 +80,7 @@ namespace zapp.tests
       m.expectCalled(m.vm.isLoginRequired(), false)
       m.expectCalled(m.vm.dismiss("success"))
 
+      m.expectNotCalled(m.vm.isKeyToSkipSet)
       m.expectNotCalled(m.vm.refreshLogin)
 
       m.vm.load()
@@ -87,6 +89,7 @@ namespace zapp.tests
     @it("dismisses if logged in")
     function _()
       m.expectCalled(m.vm.isLoginRequired(), true)
+      m.expectCalled(m.vm.isKeyToSkipSet(), false)
       m.expectCalled(m.vm.isLoggedIn(), true)
       m.expectCalled(m.vm.dismiss("success"))
 
@@ -95,9 +98,22 @@ namespace zapp.tests
       m.vm.load()
     end function
 
+    @it("dismisses if isKeyToSkipSet")
+    function _()
+      m.expectCalled(m.vm.isLoginRequired(), true)
+      m.expectCalled(m.vm.isKeyToSkipSet(), true)
+      m.expectCalled(m.vm.dismiss("success"))
+
+      m.expectNotCalled(m.vm.isLoggedIn)
+      m.expectNotCalled(m.vm.refreshLogin)
+
+      m.vm.load()
+    end function
+
     @it("otherwise refreshes")
     function _()
       m.expectCalled(m.vm.isLoginRequired(), true)
+      m.expectCalled(m.vm.isKeyToSkipSet(), false)
       m.expectCalled(m.vm.isLoggedIn(), false)
       m.expectCalled(m.vm.refreshLogin())
 
