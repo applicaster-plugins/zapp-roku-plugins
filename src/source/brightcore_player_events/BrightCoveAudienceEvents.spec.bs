@@ -114,8 +114,20 @@ namespace zapp.tests
       url = "http://metrics.brightcove.com/tracker?account=618ebf8a2033ed00085b27cb&country=United%20States&country_name=US&destination=&device_os=other&device_os_version=11.5&device_type=tv&domain=videocloud&event=play_request&session=7b0b4431-7bd8-4a0c-acf5-60370c38770c&source=https%3A%2F%2Fbitdash-a.akamaihd.net%2Fcontent%2Fsintel%2Fhls%2Fplaylist.m3u8&time=1668788700.57&user="
       m.plugin.eventURL = "http://metrics.brightcove.com/tracker"
 
+      m.expectCalled(m.plugin.analyticsMapper.map(event), event)
       m.expectCalled(m.plugin.uri.encodeParams(event.properties), "account=618ebf8a2033ed00085b27cb&country=United%20States&country_name=US&destination=&device_os=other&device_os_version=11.5&device_type=tv&domain=videocloud&event=play_request&session=7b0b4431-7bd8-4a0c-acf5-60370c38770c&source=https%3A%2F%2Fbitdash-a.akamaihd.net%2Fcontent%2Fsintel%2Fhls%2Fplaylist.m3u8&time=1668788700.57&user=")
       m.expectCalled(m.plugin.executeAPIRequest("POST", invalid, invalid, invalid, url))
+
+      m.plugin.sendBrightCoveAudienceEvents(event)
+    end function
+
+    @it("do not send Analytics Event if mappedAnalyticEvent is invalid ")
+    function _()
+      event = { "id": "s", "properties": "props" }
+
+      m.expectCalled(m.plugin.analyticsMapper.map(event), invalid)
+      m.expectNotCalled(m.plugin.uri.encodeParams)
+      m.expectNotCalled(m.plugin.executeAPIRequest)
 
       m.plugin.sendBrightCoveAudienceEvents(event)
     end function
