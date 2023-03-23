@@ -322,6 +322,7 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
     m.setInstance("quick-brick-login-flow-account", account)
 
     m.log.info("saved user account as quick-brick-login-flow-account", formatJson(account))
+    m.setSessionStoreValue("adobe-primetime-auth-qb", "adobeMediaToken", m.deviceid)
     m.setSessionStoreValue("AdobePrimetime", "token", result.jwt)
     m.setSessionStoreValue("quick-brick-login-flow", "token", result.jwt)
     m.setSessionStoreValue("quick-brick-login-flow", "account", account)

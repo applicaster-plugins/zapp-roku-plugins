@@ -6,6 +6,7 @@ import "pkg:/source/lib/APIUtils.bs"
 import "pkg:/source/authorization/BaseAuthPlugin.bs"
 import "pkg:/source/lib/URI.bs"
 import "pkg:/source/video/Quantile.bs"
+import "pkg:/source/analytics/AnalyticsEventMapper.bs"
 
 namespace zapp.video.analytics
 
@@ -19,6 +20,7 @@ namespace zapp.video.analytics
     private accountId = ""
     private videoPlayer = invalid
     private videoNode = invalid
+    private analyticsMapper as zapp.analytics.AnalyticsEventMapper
 
     @injectClass("zapp.URI")
     private uri
@@ -28,6 +30,8 @@ namespace zapp.video.analytics
       pluginManager = new zapp.PluginManager()
       m.eventFactory = new zapp.video.analytics.BrightCoveEventsFactory()
       plugin = pluginManager.getPluginById("zapp-analytics-plugin-brightcove")
+      m.analyticsMapper = m.createMapper(plugin)
+
       m.userIdStorageKey = plugin.getStringValue("user_identity_storage_key", "quick-brick-login-flow.access-token")
       m.accountId = plugin.getStringValue("account_id")
       m.enabled = plugin.getBoolValue("enabled")
@@ -105,12 +109,20 @@ namespace zapp.video.analytics
 
     private function sendBrightCoveAudienceEvents(event)
       m.log.info("sendBrightCoveAudienceEvents with id ", event.id)
-      url = m.eventURL + "?" + m.uri.encodeParams(event.properties)
-      m.executeApiRequest("POST", invalid, invalid, invalid, url)
+      mappedAnalyticEvent = m.analyticsMapper.map(event)
+
+      if mappedAnalyticEvent <> invalid
+        url = m.eventURL + "?" + m.uri.encodeParams(event.properties)
+        m.executeApiRequest("POST", invalid, invalid, invalid, url)
+      end if
     end function
 
     private function executeApiRequest(method, endpoint, params = invalid, jwt = invalid, url = invalid)
       return zapp.APIUtils.executeApiRequest(m, method, endpoint, params, true, jwt, url)
+    end function
+
+    private function createMapper(plugin) as zapp.analytics.AnalyticsEventMapper
+      return new zapp.analytics.AnalyticsEventMapper(asAny(plugin.json.configuration_json.events_mapper))
     end function
 
   end class
