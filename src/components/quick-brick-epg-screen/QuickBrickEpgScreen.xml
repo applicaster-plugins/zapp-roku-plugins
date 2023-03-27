@@ -29,28 +29,35 @@
         contentStartTime='{{contentStartTime}}'
         channelFocused='{(onChannelFocused(value))}'
         programSelected='{(onProgramSelected(value))}'
+        vertFocusAnimationStyle='floatingFocus'
+        translation='[0, 500]'
         channelInfoComponentName='channelItemComponent' />
-    <LayoutGroup
-        id='layoutGroup'
-        layoutDirection='vert'
-        horizAlignment='center'
-        vertAlignment='center'
-        translation='{{:menuPosition}}'>
-      <Menu
-          id='menu'
-          buttons='{{menubuttons}}'
-          style='{{:menuStyle}}'
-          selectedIndex='{(onSelectedIndexChange(value))}'
-          jumpToIndex='{{jumpToIndex}}'
-          buttonSize='{{:buttonSize}}'
-          buttonSpacing='{{:buttonSpacing}}' />
-    </LayoutGroup>
+
+    <mv_LayoutGroup
+        id='controlsGroup'
+        _type='mv_ControlsGroup'
+        translation='[200, 150]'
+        layoutMode='horiz'
+        keyDirection='horiz'
+        itemSpacings='[10]'
+        _initializeAfterCreatingChildren='true'
+        visible='true'>
+      <ZActionButton
+          id='button1'
+          _type='mv_Button'
+          text='Days' />
+      <ZActionButton
+          id='button2'
+          _type='mv_Button'
+          text='Filter' />
+    </mv_LayoutGroup>
 
     <Rectangle
-        id='backgroundRectangle'
+        id='backgroundDayRectangle'
         width='600'
         height='1080'
-        color='{{=zapp_viewUtils_UIBColor("background_color")}}'>
+        color='{{=zapp_viewUtils_UIBColor("days_tabs_background_color")}}'
+        visible='false'>
       <mv_MarkupList
           id='list'
           style='{{listStyle}}'

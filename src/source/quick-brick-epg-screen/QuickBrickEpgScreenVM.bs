@@ -7,6 +7,12 @@ import "pkg:/source/zapp-controls/BaseCollectionRowVM.bs"
 import "pkg:/source/lib/ViewUtils.bs"
 import "pkg:/source/zapp-pipes/EntryLoader.bs"
 
+enum ButtonAction
+  play = "play"
+  info = "info"
+  favorite = "favorite"
+end enum
+
 class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
 
   'styling
@@ -44,9 +50,22 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
   private programsData = []
   private channelCount = invalid
   private focusIndex = 0
+  private localizations = invalid
+  private isUsingButtons = true
+  private cellStyle
+  private controlsGroup as mc.types.node
+  private button1 as mc.types.node
+  private button2 as mc.types.node
+  private buttonActionMap = {
+    open_day_tab_action: ButtonAction.play
+    open_channel_filter_tab: ButtonAction.favorite
+  }
 
   @inject("constants")
   private constants
+
+  @injectClass("zapp.PluginManager")
+  private plugins
 
   ' /**
   '  * @module QuickBrickEpgScreenVM
@@ -58,16 +77,21 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
 
   public function new(riversJson)
     super(riversJson, "QuickBrickEpgScreenVM")
-    'm.setEpgStyle(riversJson.styles)
+    m.setEpgStyle(riversJson.styles)
     'm.makeEPGData(riversJson.data)
     'm.removingGridGap()
+    'm.updateButtons(riversJson.styles)
+    m.style = m.getChildCellStyle(riversJson)
     m.riversJsonData = riversJson
-    m.focusId = "timeGrid"
+    m.focusId = "controlsGroup"
     m.contentDepth = zapp.viewUtils.getUIBInt(riversJson.styles, "data_depth", 1)
   end function
 
   public override function load()
     m.makeEPGData(m.riversJsonData)
+    items = [{ id: 1, title: "Monday" }, { id: 2, title: "Tuesday" }]
+    content = m.createContentFromItems(items)
+    m.listContent = content
     return true
   end function
 
@@ -106,6 +130,27 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ Content creating
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function createContentFromItems(items)
+    if not mc.isArray(items)
+      return invalid
+    end if
+
+    entryWraper = createObject("roSGNode", "ZPEntry")
+
+    for i = 0 to items.count() - 1
+      entry = m.createSGNode("ZPEntry", entryWraper, items[i], {
+        title: items[i].title
+        json: {
+          title: items[i].title
+          selected: true
+        }
+      })
+      mc.setOrAddNodeField(entry, "isSelected", true)
+    end for
+    m.setRowStyle(entryWraper)
+    return entryWraper
+  end function
 
   private function setEpgContent(data)
     if asString(data.channels_source.source) <> ""
@@ -161,9 +206,6 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
     m.timeGridContent.getChild(m.channelCount).appendChildren(m.programsData)
     m.taskCount--
     if m.taskCount = 0
-      'aaa = m.getMField("top")
-      'TimeGrid = aaa.getChild(3)
-      'TimeGrid.content = m.timeGridContent
       m.setField("content", m.timeGridContent)
       currentTime = CreateObject("roDateTime").asSeconds()
       m.contentStartTime = currentTime
@@ -228,13 +270,15 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
   end function
 
   public function onProgramSelected(programIndex)
-    if m.channelIndex <> -1
+    if m.channelFocused <> -1
       m.log.info("onProgramSelected", programIndex)
-      content = m.content.getChild(m.channelIndex)
+      content = m.content.getChild(m.channelFocused)
       if content <> invalid
-        program = m.content.getChild(m.programIndex)
+        program = content.getChild(programIndex)
         selection = m.createSelectionFromContent(program)
-        m.playSelection(selection)
+        selection.playMode = "default"
+        mc.setOrAddNodeField(selection.initialItem, "itemType", "video")
+        m.executeContentSelection(selection)
       end if
     end if
   end function
@@ -248,6 +292,32 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
   '++ style support
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+  private function getChildCellStyle(componentJson as mc.types.assocarray)
+    cellStyles = m.getInstance("cellStyles")
+    key = componentJson.styles.cell_style_key
+    if cellStyles.styleIdsByKey.doesExist(key)
+      cellKey = cellStyles.styleIdsByKey[key]
+      return cellStyles[cellKey]
+    end if
+    return invalid
+  end function
+
+  private function setRowStyle(content)
+    m.log.method("setRowStyle")
+
+    if m.style <> invalid
+      cellStyle = m.style.cell
+      cellStyle.dataMap = m.style.dataMap
+      cellStyle.delete("translation")
+      listStyle = zapp.collectionRowUtils.getRowListStyle(m.riversJson.styles, cellStyle.normal)
+      listStyle.itemSize = listStyle.rowItemSize
+      m.listStyle = listStyle
+      mc.setOrAddNodeField(content, "_style", cellStyle)
+      mc.setOrAddNodeField(content, "_styleId", m.style.id)
+    end if
+
+  end function
+
   private function stylingChannelItemComponent(styles)
     channelPoster = invalid
     channelPoster.height = styles.channel_asset_height
@@ -258,7 +328,9 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
   end function
 
   private function stylingDayLabelComponent(styles)
-    dayLabelText = zapp.viewUtils.textToTextTransformFormat(dayLabelText, styles.days_label_text_transform)
+    localizedText = "aaaa"'zapp.viewUtils.getLocalizedText(control, localization)
+
+    dayLabelText = zapp.viewUtils.textToTextTransformFormat(localizedText, styles.days_label_text_transform)
     dayLabelFont = zapp.viewUtils.makeUIBTextStyle(styles, "days_label")
     dayLabelSelected = zapp.viewUtils.makeUIBTextStyle(styles, "days_label_selected")
     m.listStyle = {
@@ -322,9 +394,83 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
   '++ Private Methods
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+  private function updateButtons(styles as mc.types.assocarray)
+    m.ascertainUsedButtons(styles)
+    m.getLocalization()
+    m.setButtonStyles(styles)
+    m.setButtonsActions(styles)
+  end function
+
+  private function ascertainUsedButtons(styles)
+    m.isUsingButtons = zapp.viewUtils.getUIBBool(styles, "tv_buttons_container_buttons_enabled")
+    m.controlsGroup.visible = m.isUsingButtons
+
+    if m.isUsingButtons
+      marginStyle = zapp.viewUtils.makeUIBMargin(styles, "tv_buttons_container")
+      controlsGroupAligment = asString(styles.tv_buttons_container_align)
+      controlsGroupPosition = asString(styles.tv_buttons_container_position)
+      m.controlsGroup.itemSpacings = [zapp.viewUtils.getUIBInt(styles, "tv_buttons_container_horizontal_gutter", 15)]
+      m.controlsGroup.translation = [abs(marginStyle.marginLeft - marginStyle.marginRight), abs(marginStyle.marginTop - marginStyle.marginBottom)]
+    end if
+
+    if m.isUsingButtons
+      m.button1.visible = zapp.viewUtils.getUIBBool(styles, "tv_buttons_button_1_button_enabled")
+      m.button2.visible = zapp.viewUtils.getUIBBool(styles, "tv_buttons_button_2_button_enabled")
+    end if
+  end function
+
+  private function getLocalization()
+    plugin = m.plugins.getPluginById("quick-brick-epg-screen")
+    localization = asAA(plugin.json.configuration_json.localizations)
+    language = m.getInstance("languageCode") ?? "en"
+    m.localizations = localization[language]
+  end function
+
+  private function setButtonsActions(styles)
+    mc.setOrAddNodeField(m.button1, "action", m.buttonActionMap[asString(styles.actionbuttonjson.tv_buttons_button_1_assign_action)])
+    mc.setOrAddNodeField(m.button2, "action", m.buttonActionMap[asString(styles.actionbuttonjson.tv_buttons_button_2_assign_action)])
+  end function
+
+  private function setButtonStyles(styles)
+    if m.checkIfIndependentStylesNeeded(styles)
+      m.button1.style = zapp.viewUtils.applyActionButtonStyle(m.button1, styles.actionbuttonjson, "tv_buttons_button_1", m.localizations)
+      m.button2.style = zapp.viewUtils.applyActionButtonStyle(m.button2, styles.actionbuttonjson, "tv_buttons_button_2", m.localizations)
+    else
+      m.setGeneralStyleForAllButtons(styles)
+    end if
+  end function
+
+  private function checkIfIndependentStylesNeeded(styles)
+    independentStyles = zapp.viewUtils.getUIBBool(styles.actionbuttonjson, "tv_buttons_container_independent_styles")
+    if independentStyles
+      return true
+    end if
+    return false
+  end function
+
+  private function setGeneralStyleForAllButtons(styles)
+    for i = 0 to m.controlsGroup.getChildCount() - 1
+      if m.controlsGroup.getChild(i).visible
+        for each item in m.controlsGroup.getChildren(-1, 0)
+          prefix = m.convertItemIdToPrefix(m.controlsGroup.getChild(i).id)
+          item.style = zapp.viewUtils.applyActionButtonStyle(item, styles.actionbuttonjson, prefix, m.localizations)
+        end for
+        exit for
+      end if
+    end for
+  end function
+
+  private function convertItemIdToPrefix(id as string)
+    if id = "button1"
+      return "tv_buttons_button_1"
+    else
+      return "tv_buttons_button_2"
+    end if
+  end function
+
+
   private function makeEPGData(riversJsonData)
-    'channels = m.loadChannels()
-    channels = m.setEpgContent(riversJsonData.data)
+    m.setEpgContent(riversJsonData.data)
     m.isFirstLoadComplete = true
     return true
   end function
@@ -332,7 +478,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
   private function setEpgStyle(styles)
     if styles <> invalid
       'm.stylingChannelItemComponent(styles)
-      'm.stylingDayLabelComponent(styles)
+      m.stylingDayLabelComponent(styles)
       'm.stylingGridComponent(styles)
     end if
   end function
@@ -411,80 +557,26 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '++ Hardcoded data
+  '++ Key Presses
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  private function loadChannels()
-    content = createObject("roSGNode", "ContentNode")
-
-    ' make an API call to get the list of channels
-    raw = readASCIIFile("pkg:/source/quick-brick-epg-screen/api/1_channels.json")
-    json = parseJSON(raw)
-    children = []
-    ' channels array
-    for each channel in json
-      raw = readASCIIFile("pkg:/source/quick-brick-epg-screen/api/" + channel + ".json")
-      channelJSON = parseJSON(raw)
-
-      channel = createObject("roSGNode", "ContentNode")
-      channel.title = channelJSON.channel.call_sign
-
-      if channelJSON.channel.major <> invalid
-        channel.title += " " + channelJSON.channel.major.toStr()
-      end if
-
-      if channelJSON.channel.minor <> invalid
-        channel.title += "." + channelJSON.channel.minor.toStr()
-      end if
-
-      channel.id = channelJSON.object_id.toStr()
-      channel.appendChildren(m.loadPrograms(channel))
-      children.push(channel)
-    end for
-
-    content.appendChildren(children)
-    return content
+  override function onKeyPressUp() as boolean
+    m.log.info("on Keypress up. focusId", m.focusId)
+    if m.focusId = "timeGrid"
+      m.log.info("was focused on terms button")
+      m.setFocusId("controlsGroup")
+      return true
+    end if
+    return false
   end function
 
-  function loadPrograms(channel)
-    ' the id was set in the root handler
-    id = channel.id
-
-    ' we'll fake the timestamps for demo purposes so that there Is
-    ' always content displayed for the current time
-    dt = createObject("roDateTime")
-    now = dt.AsSeconds()
-    playStart = now - (now mod 1800) - 3600
-
-    raw = readASCIIFile("pkg:/source/quick-brick-epg-screen/api/3_guide_" + id + ".json")
-    json = parseJSON(raw)
-
-    programs = []
-
-    for each programa in json
-      program = createObject("roSGnode", "ContentNode")
-
-      if programa.title <> invalid and programa.title <> ""
-        program.title = programa.title
-      else if programa.airing_details.show_title <> invalid and programa.airing_details.show_title <> ""
-        program.title = programa.airing_details.show_title
-      else
-        program.title = "---"
-      end if
-
-      if programa.season_number <> invalid and programa.episode_number <> invalid
-        program.description = "S" + programa.season_number.toStr() + " E" + programa.episode_number.toStr()
-      end if
-
-      program.playStart = playStart
-      program.playDuration = programa.airing_details.duration
-
-      programs.push(program)
-
-      playstart += program.playDuration
-    end for
-    programs.SortBy("PLAYSTART")
-    return programs
+  override function onKeyPressDown() as boolean
+    m.log.info("onKeyPressDown", m.focusId)
+    if m.focusId = "controlsGroup"
+      m.log.info("focusing on button")
+      m.setFocusId("timeGrid")
+    end if
+    return true
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
