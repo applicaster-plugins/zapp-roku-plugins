@@ -44,10 +44,14 @@
         visible='true'>
       <ZActionButton
           id='button1'
+          style='{{:dayButtonStyle}}'
+          selected='{(onDayButtonSelected())}'
           _type='mv_Button'
           text='Days' />
       <ZActionButton
           id='button2'
+          style='{{:filterButtonStyle}}'
+          selected='{(onFilterButtonSelected())}'
           _type='mv_Button'
           text='Filter' />
     </mv_LayoutGroup>
@@ -56,8 +60,9 @@
         id='backgroundDayRectangle'
         width='600'
         height='1080'
+        translation='[700, 0]'
         color='{{=zapp_viewUtils_UIBColor("days_tabs_background_color")}}'
-        visible='false'>
+        visible='{{itemList}}'>
       <mv_MarkupList
           id='list'
           style='{{listStyle}}'

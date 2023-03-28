@@ -23,6 +23,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
   public buttonSize = [700, 100]
   public buttonSpacing = 5
   public jumpToIndex = -1
+  public dayButtonStyle = invalid
+  public filterButtonStyle = invalid
 
   'public content = m.createSGNode("CollectionRow")
   public gridStyle = {}
@@ -33,6 +35,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
   public content = invalid
   public listContent = invalid
   public listStyle = {}
+  public itemList = false
   public contentStartTime = {}
 
   private jwtUtil = new zapp.JWTUtil()
@@ -44,6 +47,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
   private timeGridContent = invalid
   private contentLoader = new zapp.pipes.EntryLoader()
 
+  private focusIds = ["button1", "button2"]
   private riversJsonData = invalid
   private contentDepth = 1
   private taskCount = invalid
@@ -82,16 +86,16 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
     'm.removingGridGap()
     'm.updateButtons(riversJson.styles)
     m.style = m.getChildCellStyle(riversJson)
+    m.updateFocusControls()
     m.riversJsonData = riversJson
-    m.focusId = "controlsGroup"
+    m.focusId = "button1"
     m.contentDepth = zapp.viewUtils.getUIBInt(riversJson.styles, "data_depth", 1)
   end function
 
   public override function load()
     m.makeEPGData(m.riversJsonData)
-    items = [{ id: 1, title: "Monday" }, { id: 2, title: "Tuesday" }]
-    content = m.createContentFromItems(items)
-    m.listContent = content
+    m.epgHardcodedStyle(m.riversJsonData.styles)
+    'm.updateButtons(m.riversJsonData.styles)
     return true
   end function
 
@@ -103,6 +107,25 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
 
     m.feed = m.feed
     ' m.waitAFrame(m.onReloadStyle, 5)
+  end function
+
+  public function onDayButtonSelected()
+    m.log.info("onDayButtonSelected")
+    m.getLocalization()
+    items = []
+    for each item in m.localizations
+      listItem = {
+        "title": item
+      }
+      items.push(listItem)
+    end for
+    content = m.createContentFromItems(items)
+    m.itemList = true
+    m.listContent = content
+    m.setFocusId("list")
+  end function
+
+  public function onFilterButtonSelected()
   end function
 
 
@@ -130,6 +153,31 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ Content creating
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function epgHardcodedStyle(style)
+    aaa = m.getMField("top")
+    TimeGrid = aaa.getChild(3)
+    TimeGrid.programBackgroundBitmapUri = "pkg:/images/TimeGridBackground.9.png"
+    TimeGrid.timeBarBitmapUri = ":"
+    TimeGrid.channelInfoBackgroundBitmapUri = "pkg:/images/TimeGridBackground.9.png"
+    TimeGrid.nowBarBlendColor = "#FF5247"
+    TimeGrid.programNowNextTimeFocusedColor = "#FF5247"
+    TimeGrid.programTitleColor = "#FFFFFF"
+    TimeGrid.programTitleFocusedColor = "#FFFFFF"
+    TimeGrid.timeLabelColor = "#FFFFFF"
+    TimeGrid.pastTimeScreenBlendColor = "#3D80FF"
+    TimeGrid.focusBitmapUri = "pkg:/images/SearchFocusBackground2.9.png"
+    TimeGrid.duration = 12600
+    TimeGrid.timebarHeight = 120
+    TimeGrid.sectionDividerTopOffset = 30
+    TimeGrid.numRows = 6
+    TimeGrid.channelInfoWidth = 245
+    TimeGrid.scrollSpeed = 100
+    TimeGrid.overlayBitmapUri = ""
+    TimeGrid.nowBarWidth = 60
+
+    TimeGrid.vertFocusAnimationStyle = "floatingFocus"
+  end function
 
   private function createContentFromItems(items)
     if not mc.isArray(items)
@@ -255,16 +303,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
   public function onSelectItem(index)
     m.log.method("OnItemSelected")
     if m.content <> invalid and index <> -1
-      selectedContent = m.content.getChild(index)
-
-      if selectedContent <> invalid
-        'topField = m.getMField("top")
-        'm.setInstance("selectedId", topField.id)
-        'm.selection = m.createSelectionFromContent(selectedContent, m.content)
-        'm.selection.target = mc.getPath(m.riversJsonData, "data.target")
-        'm.sendAnalyticsEvent(zapp.analytics.EventType.tapCell, invalid, m.getScreenProperties(), m.getComponentProperties(), m.getCellProperties(m.selection, index))
-        'm.executeContentSelection(m.selection)
-      end if
+      currentTime = CreateObject("roDateTime").asSeconds()
+      m.contentStartTime = currentTime + (86400 * index)
     end if
     m.isStyleUpdateRequired = true
   end function
@@ -294,7 +334,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
 
   private function getChildCellStyle(componentJson as mc.types.assocarray)
     cellStyles = m.getInstance("cellStyles")
-    key = componentJson.styles.cell_style_key
+    key = asString(componentJson.styles.cell_style_key)
     if cellStyles.styleIdsByKey.doesExist(key)
       cellKey = cellStyles.styleIdsByKey[key]
       return cellStyles[cellKey]
@@ -394,28 +434,40 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
   '++ Private Methods
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+  private function updateFocusControls()
+    m.focusIds = []
+    'if m.button1.visible = true
+    '  m.focusIds.push("button1")
+    'end if
+    'if m.button2.visible = true
+    '  m.focusIds.push("button2")
+    'end if
+  end function
+
   private function updateButtons(styles as mc.types.assocarray)
-    m.ascertainUsedButtons(styles)
     m.getLocalization()
+    m.ascertainUsedButtons(styles)
     m.setButtonStyles(styles)
     m.setButtonsActions(styles)
   end function
 
   private function ascertainUsedButtons(styles)
     m.isUsingButtons = zapp.viewUtils.getUIBBool(styles, "tv_buttons_container_buttons_enabled")
-    m.controlsGroup.visible = m.isUsingButtons
-
-    if m.isUsingButtons
-      marginStyle = zapp.viewUtils.makeUIBMargin(styles, "tv_buttons_container")
-      controlsGroupAligment = asString(styles.tv_buttons_container_align)
-      controlsGroupPosition = asString(styles.tv_buttons_container_position)
-      m.controlsGroup.itemSpacings = [zapp.viewUtils.getUIBInt(styles, "tv_buttons_container_horizontal_gutter", 15)]
-      m.controlsGroup.translation = [abs(marginStyle.marginLeft - marginStyle.marginRight), abs(marginStyle.marginTop - marginStyle.marginBottom)]
-    end if
+    'm.controlsGroup.visible = m.isUsingButtons
+    aaa = m.getMField("top")
+    m.button1 = aaa.getChild(4).getChild(0)
+    'm.dayButtonStyle = zapp.viewUtils.applyActionButtonStyle(m.button1, styles, "tv_buttons_button_1", m.localizations)
+    'if m.isUsingButtons
+    '  marginStyle = zapp.viewUtils.makeUIBMargin(styles, "tv_buttons_container")
+    '  controlsGroupAligment = asString(styles.tv_buttons_container_align)
+    '  controlsGroupPosition = asString(styles.tv_buttons_container_position)
+    '  m.controlsGroup.itemSpacings = [zapp.viewUtils.getUIBInt(styles, "tv_buttons_container_horizontal_gutter", 15)]
+    '  m.controlsGroup.translation = [abs(marginStyle.marginLeft - marginStyle.marginRight), abs(marginStyle.marginTop - marginStyle.marginBottom)]
+    'end if
 
     if m.isUsingButtons
       m.button1.visible = zapp.viewUtils.getUIBBool(styles, "tv_buttons_button_1_button_enabled")
-      m.button2.visible = zapp.viewUtils.getUIBBool(styles, "tv_buttons_button_2_button_enabled")
+      'm.button2.visible = zapp.viewUtils.getUIBBool(styles, "tv_buttons_button_2_button_enabled")
     end if
   end function
 
@@ -433,8 +485,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
 
   private function setButtonStyles(styles)
     if m.checkIfIndependentStylesNeeded(styles)
-      m.button1.style = zapp.viewUtils.applyActionButtonStyle(m.button1, styles.actionbuttonjson, "tv_buttons_button_1", m.localizations)
-      m.button2.style = zapp.viewUtils.applyActionButtonStyle(m.button2, styles.actionbuttonjson, "tv_buttons_button_2", m.localizations)
+      m.dayButtonStyle = zapp.viewUtils.applyActionButtonStyle(m.button1, styles, "tv_buttons_button_1", m.localizations)
+      m.filterButtonStyle = zapp.viewUtils.applyActionButtonStyle(m.button2, styles, "tv_buttons_button_2", m.localizations)
     else
       m.setGeneralStyleForAllButtons(styles)
     end if
@@ -449,11 +501,14 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
   end function
 
   private function setGeneralStyleForAllButtons(styles)
+    aaa = m.getMField("top")
+    m.controlsGroup = aaa.getChild(4)
     for i = 0 to m.controlsGroup.getChildCount() - 1
       if m.controlsGroup.getChild(i).visible
         for each item in m.controlsGroup.getChildren(-1, 0)
           prefix = m.convertItemIdToPrefix(m.controlsGroup.getChild(i).id)
-          item.style = zapp.viewUtils.applyActionButtonStyle(item, styles.actionbuttonjson, prefix, m.localizations)
+          item.style = zapp.viewUtils.applyActionButtonStyle(item, styles, prefix, m.localizations)
+          item.text = "aaaaaaaaaa"
         end for
         exit for
       end if
