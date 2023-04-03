@@ -37,6 +37,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
   public listStyle = {}
   public itemList = false
   public contentStartTime = {}
+  public leftEdgeTargetTime = 0
 
   private jwtUtil = new zapp.JWTUtil()
   private timeout = invalid
@@ -304,7 +305,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
     m.log.method("OnItemSelected")
     if m.content <> invalid and index <> -1
       currentTime = CreateObject("roDateTime").asSeconds()
-      m.contentStartTime = currentTime + (86400 * index)
+      m.leftEdgeTargetTime = currentTime + (86400 * index)
+      m.content = m.timeGridContent
     end if
     m.isStyleUpdateRequired = true
   end function
@@ -630,6 +632,15 @@ class QuickBrickEpgScreenVM extends zapp.uib.ComponentVM
     if m.focusId = "controlsGroup"
       m.log.info("focusing on button")
       m.setFocusId("timeGrid")
+    end if
+    return true
+  end function
+
+  override function onKeyPressBack() as boolean
+    m.log.info("onKeyPressBack", m.focusId)
+    if m.focusId = "list"
+      m.log.info("focusing on button")
+      m.setFocusId("button1")
     end if
     return true
   end function
