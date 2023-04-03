@@ -32,6 +32,7 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
 
   public override function load() as boolean
     m.sendHttpLogsNow()
+    m.sendXrayLogsNow()
 
     m.state = "loading"
     if not m.isLoginRequired()
