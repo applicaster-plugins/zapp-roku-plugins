@@ -145,7 +145,7 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
     if not m.isLoading and m.isCredsValid
       m.register()
     else if not m.isCredsValid
-      m.errorText = "Please enter your email address and password"
+      m.errorText = asString(m.localizations.register_error_text, "Please enter your email address and password")
       m.isErrorShowing = true
     else
       m.log.warn("ignoring register button, while loading")
