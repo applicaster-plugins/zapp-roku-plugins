@@ -38,7 +38,7 @@
         id='controlsGroup'
         _type='mv_ControlsGroup'
         translation='[200, 150]'
-        layoutMode='horiz'
+        layoutDirection='horiz'
         keyDirection='horiz'
         itemSpacings='[10]'
         _initializeAfterCreatingChildren='true'
@@ -47,12 +47,14 @@
           id='button1'
           style='{{:dayButtonStyle}}'
           selected='{(onDayButtonSelected())}'
+          visible='{{dayButtonVisible}}'
           _type='mv_Button'
           text='Days' />
       <ZActionButton
           id='button2'
           style='{{:filterButtonStyle}}'
           selected='{(onFilterButtonSelected())}'
+          visible='{{filterButtonVisible}}'
           _type='mv_Button'
           text='Filter' />
     </mv_LayoutGroup>
@@ -63,7 +65,7 @@
         height='1080'
         translation='[700, 0]'
         color='{{=zapp_viewUtils_UIBColor("days_tabs_background_color")}}'
-        visible='{{itemList}}'>
+        visible='{{itemListVisible}}'>
       <mv_MarkupList
           id='list'
           style='{{listStyle}}'
