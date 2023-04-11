@@ -296,8 +296,6 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
     deviceInfo = createObject("roDeviceInfo")
     osVersion = deviceInfo.getOsVersion()
     modelDetails = deviceInfo.getModelDetails()
-    displaySize = deviceInfo.getDisplaySize()
-    connectionType = deviceInfo.getConnectionType()
     deviceInfo = {
       "model": "Roku"
       "vendor": modelDetails.vendorName

@@ -484,7 +484,7 @@ namespace zapp.tests
 
       'm.plugin.baseUrl = "https://sp.auth.adobe.com/adobe-services"
       m.plugin.apiUrl = "https://api.auth.adobe.com"
-      result = m.plugin.initiateDCR()
+      m.plugin.initiateDCR()
     end function
 
     @it("test regcode")
@@ -495,7 +495,7 @@ namespace zapp.tests
       m.plugin.deviceId = "6d7e67738fa8144f7d513dd90d3f4af820690526"
       'm.plugin.baseUrl = "https://sp.auth.adobe.com/adobe-services"
       m.plugin.apiUrl = "https://api.auth.adobe.com"
-      result = m.plugin._regcode()
+      m.plugin._regcode()
     end function
 
   end class

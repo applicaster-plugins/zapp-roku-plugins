@@ -51,7 +51,6 @@ namespace zapp.tests
 
 
       m.pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "brightcove-player-events" })
-      pluginManager = new zapp.PluginManager()
 
       m.plugin.token = config.token
       m.plugin.userIdStorageKey = config.user_identity_storage_key
