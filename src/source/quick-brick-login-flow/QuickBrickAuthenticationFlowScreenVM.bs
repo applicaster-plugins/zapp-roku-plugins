@@ -121,7 +121,7 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
   private function onSubScreenStateChange(state as string)
     ignoreCompletionAction = m.getTopField("ignoreCompletionAction")
     m.log.method("current screen state change", state, "m.isShowingRegisterScreenFirst", m.isShowingRegisterScreenFirst, "ignoreCompletionAction", ignoreCompletionAction)
-    currentSelection = m.getInstance("currentSelection")
+
     if m.nameOfParentScreen = "tabChildNavController" and state = "cancel"
       m.navigateToHomeScreen()
     else if ignoreCompletionAction = true and (state = "success" or state = "cancel")

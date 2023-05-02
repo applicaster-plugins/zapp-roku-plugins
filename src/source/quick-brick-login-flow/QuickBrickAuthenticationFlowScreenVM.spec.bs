@@ -145,7 +145,6 @@ namespace zapp.tests
     @it("returns false if currentSelection invalid")
     @params(invalid, invalid, false, true)
     function _(item, currentSelection, getMatchesTypeForItem, isLoginRequired)
-      currentItem = { "id": "currentItem" }
 
       m.expectCalled(m.vm.getInstance("currentSelection", "currentItem"), item)
       m.expectCalled(m.vm.getInstance("currentSelection"), currentSelection)
