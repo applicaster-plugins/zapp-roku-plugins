@@ -43,14 +43,14 @@ namespace zapp.video.analytics
       m.eventFactory.accountKey = asString(parts[1])
     end function
 
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    '++ Public Methods
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    function initialize()
+    protected override function initialize()
       m.log.info("initialize eventFactory")
       m.eventFactory.initialize()
     end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    '++ Public Methods
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     function sendAppLaunchedEvent()
       m.log.info("sending appLaunchedEvent")
