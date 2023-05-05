@@ -14,16 +14,10 @@
     <field
         id='code'
         type='string' />
-    <field
-        id='prefix'
-        type='string' />
     <!-- <field id = "view" type = "integer" value = "-1" /> -->
     <field
         id='pingTime'
         type='integer' />
-    <field
-        id='balancerEnabled'
-        type='string' />
     <field
         id='requestHost'
         type='string'
@@ -43,6 +37,12 @@
         id='removePreloader'
         type='string' />
     <field
+        id='invalidFastDataResponse'
+        type='boolean' />
+    <field
+        id='close'
+        type='boolean' />
+    <field
         id='nextView'
         type='assocarray' />
 
@@ -57,5 +57,8 @@
   <script
       type='text/brightscript'
       uri='Request.brs' />
+  <script
+      type='text/brightscript'
+      uri='YBConstants.brs' />
 
 </component>
