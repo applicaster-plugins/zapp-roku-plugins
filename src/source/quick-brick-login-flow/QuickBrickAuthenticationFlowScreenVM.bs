@@ -132,6 +132,7 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
       m.performNextAction()
     else if state = "cancel"
       m.toggleSubScreen(invalid)
+      m.toggleNavMenuVisible(true, true)
       m.dismiss("cancel")
     end if
   end function
