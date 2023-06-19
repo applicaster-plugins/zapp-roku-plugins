@@ -579,13 +579,15 @@ namespace zapp.tests
 
     @it("no network calls")
     @params(invalid, invalid, invalid)
-    @params(invalid, { json: { extensions: { "inplayer_asset_id": invalid } } }, invalid)
-    @params(invalid, { json: { extensions: { "inplayer_asset_id": "123" } } }, "123")
+    @params(invalid, { json: { extensions: { "inplayer_asset_id": invalid } } }, { extensions: { "inplayer_asset_id": invalid } })
+    @params(invalid, { json: { extensions: { "inplayer_asset_id": "123" } } }, { extensions: { "inplayer_asset_id": "123" } })
     @params("extensions.custom_id", invalid, invalid)
     @params("extensions.custom_id", { json: { extensions: { "custom_id": "cid", "inplayer_asset_id": "123" } } }, "cid")
     function _(pluginKey, item, expected)
       m.plugin.pluginInplayerAssetkey = pluginKey
-      m.assertEqual(m.plugin.getInplayerId(item), expected)
+      result = m.plugin.getInplayerId(item)
+
+      m.assertEqual(result, expected)
     end function
 
     @it("network calls")
@@ -595,6 +597,8 @@ namespace zapp.tests
     @params({ id: "2a", json: { extensions: { "inplayer_asset_type": "vimeo" } } }, "items/assets/external/vimeo/2a", { id: "111" }, "111")
     @params({ id: "2a", json: { extensions: { "inplayer_asset_type": "vimeo" } } }, "items/assets/external/vimeo/2a", invalid, invalid)
     function _(item, endpoint, result, expected)
+
+      m.plugin.pluginInplayerAssetKey = "id"
 
       m.expectCalled(m.plugin.execute("GET", endpoint), result)
       m.assertEqual(m.plugin.getInplayerId(item), expected)
