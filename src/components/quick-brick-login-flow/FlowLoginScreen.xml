@@ -106,7 +106,8 @@
         <mv_Label
             id='errorText'
             style='{{=zapp_viewUtils_UIBLabel("error", "")}}'
-            text='{{errorText}}' />
+            text='{{errorText}}'
+            wrap='true' />
       </Group>
     </Group>
 
