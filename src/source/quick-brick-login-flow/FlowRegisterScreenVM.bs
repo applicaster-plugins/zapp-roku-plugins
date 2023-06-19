@@ -326,7 +326,7 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
     elements = str.split(",")
 
     ' Convert each element to an integer
-    for i = 0 to elements.Count() - 1
+    for i = 0 to elements.count() - 1
       elements[i] = val(elements[i])
     end for
 
@@ -365,8 +365,8 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
       m.setTextFromKeyboard("username", mc.getPath(data, "email", ""))
       firstName = mc.getPath(data, "firstname", "")
       lastName = mc.getPath(data, "lastname", "")
-      sep = firstName <> "" and lastName <> "" ? " " : ""
-      m.setTextFromKeyboard("firstName", firstName + sep + lastName)
+      'sep = firstName <> "" and lastName <> "" ? " " : ""
+      m.setTextFromKeyboard("firstName", firstName)
       m.setTextFromKeyboard("lastname", lastName)
       m.focusId = "passwordInput"
     end if
