@@ -536,6 +536,7 @@ namespace zapp.tests
       }
       m.expectOnce(m.vm, "setTextFromKeyboard", ["username", email])
       m.expectOnce(m.vm, "setTextFromKeyboard", ["firstName", expectedFullname])
+      m.expectOnce(m.vm, "setTextFromKeyboard", ["lastname", lastname])
 
       parent = { "id": "parent" }
       m.expect(m.vm.channelStore, "getParent", 3, [], parent)
