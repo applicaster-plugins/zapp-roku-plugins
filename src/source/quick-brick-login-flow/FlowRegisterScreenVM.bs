@@ -5,7 +5,7 @@ import "pkg:/source/roku_modules/maestro/core/Utils.brs"
 
 class FlowRegisterScreenVM extends zapp.uib.ScreenVM
   'styles
-  public itemSpacings = [10, 10, 10]
+  public itemSpacings = [10, 45, 52]
   public inputStyle = invalid
   public loginButtonStyle = invalid
   public registerButtonStyle = invalid
@@ -81,7 +81,7 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   function processStyles(styles)
-    m.itemSpacings = m.stringToArray("15,10,52")
+    m.itemSpacings = zapp.viewUtils.stringToArray(asString(m.riversJson.styles.input_spacing, "10,45,52"))
     m.usernameText = m.localizations.register_username_placeholder_text
     m.usernamePlaceholderText = m.usernameText
 
@@ -320,18 +320,6 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ Private Methods
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-  private function stringToArray(str as string)
-    ' Split the string into individual elements
-    elements = str.split(",")
-
-    ' Convert each element to an integer
-    for i = 0 to elements.count() - 1
-      elements[i] = val(elements[i])
-    end for
-
-    return elements
-  end function
 
   function updateFocusControls()
     m.focusIds = ["usernameInput", "firstNameInput", "lastNameInput", "passwordInput", "registerButton"]
