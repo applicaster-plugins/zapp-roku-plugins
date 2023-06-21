@@ -1,0 +1,41 @@
+import "pkg:/source/plugin-support/PluginManager.bs"
+import "pkg:/source/lib/BaseClass.bs"
+import "pkg:/source/lib/Request.bs"
+import "pkg:/source/roku_modules/maestro/core/Utils.brs"
+import "pkg:/source/lib/APIUtils.bs"
+import "pkg:/source/zapp-pipes/EntryLoader.bs"
+import "pkg:/source/zapp/Reference.bs"
+import "pkg:/source/roku_modules/maestro/core/Registry.brs"
+import "pkg:/source/roku_modules/maestro/core/Result.brs"
+
+
+class APAnalyticsProviderAppsFlyer extends zapp.BaseClass
+
+  private isPluginEnabled = false
+  private anonymizeUser = false
+  private devKey = ""
+
+  public function new()
+    super("APAnalyticsProviderAppsFlyer")
+    pluginProvider = new zapp.PluginManager()
+    plugin = pluginProvider.getPluginById("AppsFlyer")
+
+    m.isPluginEnabled = plugin.getBoolValue("enabled")
+    m.devKey = plugin.getStringValue("appsflyer_key")
+    m.anonymizeUser = plugin.getBoolValue("anonymize_user")
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Public Methods
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public function getdevKey()
+    return m.devKey
+  end function
+
+  public function getAppIdKey()
+    constants = mioc.getInstance("constants")
+    return asString(constants.id)
+  end function
+
+end class
