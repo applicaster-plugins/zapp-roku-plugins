@@ -1,0 +1,219 @@
+import "pkg:/source/analytics/BaseAnalyticsPlugin.bs"
+import "pkg:/source/video/analytics/VideoAnalyticsEvent.bs"
+import "pkg:/source/video/analytics/AnalyticsEvent.bs"
+import "pkg:/source/video/analytics/AppsFlyerEventsFactory.bs"
+import "pkg:/source/roku_modules/maestro/core/Result.brs"
+
+
+class AppsFlyerAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
+
+  private isPluginEnabled = false
+  private anonymizeUser = false
+  private dataFlyerFeed = ""
+  private eventIds = ""
+  private devKey = ""
+  private userId = ""
+  private eventURL = "https://events.appsflyer.com/v1.0/s2s/"
+  private eventFactory as zapp.video.analytics.AppsFlyerEventsFactory
+
+  @inject("buildConfig")
+  private buildConfig as mc.types.assocarray
+
+  @inject("constants")
+  private constants as mc.types.assocarray
+
+  public function new(plugin = invalid)
+    super("AppsFlyerAnalyticsPlugin", m.getPlugin(plugin))
+
+    m.isPluginEnabled = m.plugin.getBoolValue("enabled")
+    m.devKey = m.plugin.getStringValue("appsflyer_key")
+    m.anonymizeUser = m.plugin.getBoolValue("anonymize_user")
+    m.dataFlyerFeed = m.plugin.getStringValue("data_flyer_feed")
+    m.eventFactory = new zapp.video.analytics.AppsFlyerEventsFactory(m.devKey)
+    m.eventIds = ["first_open", "session", "in_app"]
+
+    m.setInstance("AppsFlyerDevKey", m.devKey)
+    'm.initialize()
+  end function
+
+  private function getPlugin(plugin = invalid)
+    if plugin = invalid
+      pluginManager = new zapp.PluginManager()
+      plugin = pluginManager.getPluginById("AppsFlyer")
+    end if
+
+    return plugin
+  end function
+
+  protected override function initialize()
+    m.log.info("initialize eventFactory")
+    m.eventFactory.initialize()
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Public Methods
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public function getdevKey()
+    return m.devKey
+  end function
+
+  public function getAppIdKey()
+    constants = mioc.getInstance("constants")
+    return asString(constants.id)
+  end function
+
+  function sendFirstOpenEvent()
+    m.log.info("sending appLaunchedEvent")
+    event = m.eventFactory.createEvent("first_open")
+    m.executionEvents(event)
+  end function
+
+  function sendSessionEvent(duration as integer)
+    m.log.info("sending AppHomeLoaded event")
+    event = m.eventFactory.createEvent("session", duration)
+    m.executionEvents(event)
+  end function
+
+  function sendInAppEvent(duration as integer)
+    m.log.info("sending appPresented event")
+    event = m.eventFactory.createEvent("in_app", duration)
+    m.executionEvents(event)
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ overridden methods
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public override function onVideoAnalyticsEvent(event as zapp.analytics.AnalyticsEvent) as void
+    m.log.info("this plugin does not have a google analtyics task, using the shared instance")
+
+    m.processAnalyticsEvent(event)
+  end function
+
+  protected override function _identify(pluginId, traits = {}, options = {}, isFromLogout = false) as boolean
+    m.log.info("identify", pluginId)
+
+    if m.isEnabled
+
+      if m.anonymizeUser <> true
+        m.log.info("tracking user is not allowed skip isIdentified")
+        return true
+      end if
+
+      if pluginId <> invalid
+        accountInfo = m.getSessionStoreValue(pluginId, "account", true)
+      else
+        accountInfo = invalid
+      end if
+
+      m.log.info("identify accountInfo", accountInfo)
+
+      if accountInfo <> invalid
+        if accountInfo.id <> invalid and accountInfo.id.trim() <> ""
+          m.log.info("identifying analytics with the userId", accountInfo.id, "for plugin:", pluginId)
+          m.log.info("recrating GoogleAnalyticsTask with the userId", accountInfo.id, "for plugin:", pluginId)
+          m.setUserId(accountInfo.id)
+        else
+          m.log.error("identify called; but there id was empty!")
+          m.identifyAsAnonymous()
+        end if
+      else
+        m.log.warn("identify called; but there is no logged in user; point to unidentify, to get anonymous analytics")
+        m.identifyAsAnonymous()
+      end if
+    end if
+
+    return true
+  end function
+
+  private function identifyAsAnonymous()
+    m.log.info("identifying as anonymous user")
+    m.setUserId(invalid)
+  end function
+
+  protected override function _trackVideoEvent(event as zapp.video.VideoAnalyticsEvent)
+    m.processAnalyticsEvent(event)
+  end function
+
+  protected override function _processAnalyticsEvent(event as zapp.analytics.AnalyticsEvent)
+    m.log.info("processAnalyticsEvent")
+    if m.isPluginEnabled and m.isEventId(event.id)
+      m.executionEvents(event)
+    end if
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Private Methods
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  function isEventId(idOfEvent as string) as boolean
+    for each eventId in m.eventIds
+      if eventId = idOfEvent
+        return true
+      end if
+    end for
+    return false
+  end function
+
+  private function executionEvents(event)
+    m.log.info("executionEvents with of ")
+    m.eventURL = `https://events.appsflyer.com/v1.0/s2s/${event.id}/app/${event.pathProperties.platform}/${event.pathProperties.app_id}`
+    definitionJson = {
+      source: asString(m.eventURL)
+    }
+    componentValues = {
+      "method": "POST",
+      params: event.properties
+    }
+    m.executeLoadDataTask(definitionJson, componentValues, m.onListContentResult, 0)
+    'm.createTask("NetworkTask", {
+    '  "url": m.eventURL,
+    '  "method": "POST",
+    '  "params": event.properties
+    '})
+  end function
+
+  private function executeLoadDataTask(definitionJson, componentValues, callback, depth = 1, sendMode = "value")
+    m.log.debug("executeLoadDataTask", "callback", callback, "depth", depth)
+    args = {
+      "data": m.createData(definitionJson, componentValues, depth)
+    }
+    task = m.createTask("LoadDataTask", args, callback, true, sendMode)
+    return task
+  end function
+
+  private function createData(definitionJson, componentValues, depth = 1)
+    data = createObject("roSGNode", "ZPData")
+    data.definition = definitionJson
+    data.depth = depth
+    data.componentValues = componentValues
+
+    return data
+  end function
+
+  private function onListContentResult(result as mc.Result)
+    m.log.info("received result for List", result)
+  end function
+
+  private function checkIfTrackingUserIdAllowed(userIdString, versionId)
+    prefix = "allow-tracking-user-id-for-app-family-"
+    suffix = versionId
+    s = userIdString
+
+    if mc.isString(s) and mc.isString(prefix) and mc.isString(suffix)
+      if prefix + suffix = s
+        return true
+      end if
+    end if
+
+    return false
+  end function
+
+  private function setUserId(userId)
+    if mc.isString(userId) and userId <> ""
+      m.userId = userId
+    end if
+  end function
+
+end class
