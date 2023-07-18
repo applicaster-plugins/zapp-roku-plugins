@@ -116,7 +116,9 @@ class GoogleAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
   end function
 
   protected override function _processAnalyticsEvent(event as zapp.analytics.AnalyticsEvent)
-    m.task@.logEvent(event.id, event.properties)
+    if m.task <> invalid
+      m.task@.logEvent(event.id, event.properties)
+    end if
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

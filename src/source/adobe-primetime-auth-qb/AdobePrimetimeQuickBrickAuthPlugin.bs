@@ -56,6 +56,8 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
 
 
   public override function _verify()
+    m.log.info("verify/refreshing with AdobePrimetimeQuickBrickAuthPlugin")
+
     ' We don't need the token for the AuthZ calls, but we
     ' do a simple local verification just to make sure AuthN completed
 

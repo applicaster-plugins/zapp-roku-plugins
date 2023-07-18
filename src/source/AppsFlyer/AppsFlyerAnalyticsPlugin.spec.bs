@@ -1,0 +1,172 @@
+namespace zapp.tests
+  @tags("public", "anaytics")
+  @suite("AppsFlyerAnalyticsPluginTests")
+  class AppsFlyerAnalyticsPluginTests extends tests.BaseTestSuite
+
+    private plugin
+    private pluginData
+    private buildConfig = {
+      "app_family_id": "afi"
+      "app_name": "usp"
+      "data_source_providers_url": "dspu"
+    }
+    private constants = {
+      "deviceInfo": {
+        "modelName": "mn"
+        "model": "md"
+        "version": "ver"
+        "userAgent": "ua"
+      }
+      "applicasterDeviceId": "adid"
+    }
+
+    protected override function beforeEach()
+      super.beforeEach()
+      config = {
+        "enabled": true
+        "appsflyer_key": "appId"
+        "anonymize_user": "auser",
+        "data_flyer_feed": "dataUrl"
+      }
+
+      mioc.setInstance("constants", m.constants)
+      mioc.setInstance("buildConfig", m.buildConfig)
+      m.pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "AppsFlyer" })
+      m.plugin = new AppsFlyerAnalyticsPlugin(m.pluginData)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("constructor")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("constructor")
+    function _()
+      config = {
+        "enabled": true
+        "appsflyer_key": "appId"
+        "anonymize_user": "auser",
+        "data_flyer_feed": "dataUrl"
+      }
+      mioc.setInstance("buildConfig", m.buildConfig)
+      mioc.setInstance("constants", m.constants)
+
+      m.plugin.isPluginEnabled = false
+      m.plugin.appId = "appId"
+      m.plugin.dataFlyerFeed = "dataUrl"
+
+      m.pluginData = new zapp.BasePlugin({ "configuration_json": config, "identifier": "google_analytics_4" })
+      m.plugin = new AppsFlyerAnalyticsPlugin(m.pluginData)
+
+      m.assertEqual(m.plugin.isPluginEnabled, true)
+      m.assertEqual(m.plugin.appId, "appId")
+      m.assertEqual(m.plugin.dataFlyerFeed, "dataUrl")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("identifyAsAnonymous")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("identifies as Anonymous")
+    function _()
+      m.expectCalled(m.plugin.setUserId(invalid))
+
+      m.plugin.identifyAsAnonymous()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("_trackVideoEvent")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("track video event ")
+    function _()
+      event = { "id": "event", "properties": "props" }
+
+      m.expectCalled(m.plugin.processAnalyticsEvent(event))
+
+      m.plugin._trackVideoEvent(event)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("_processAnalyticsEvent")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("proceed Analytics Event")
+    function _()
+      event = { "id": "event", "properties": "props" }
+
+      m.plugin.isPluginEnabled = true
+
+      m.expectCalled(m.plugin.isEventId(event.id), true)
+      m.expectCalled(m.plugin.executionEvents(event))
+
+      m.plugin._processAnalyticsEvent(event)
+    end function
+
+    @it("do not proceed Analytics if plugin is disabled")
+    function _()
+      event = { "id": "event", "properties": "props" }
+
+      m.plugin.isPluginEnabled = false
+
+      m.expectNotCalled(m.plugin.isEventId)
+      m.expectNotCalled(m.plugin.executionEvents)
+
+      m.plugin._processAnalyticsEvent(event)
+    end function
+
+    @it("do not proceed Analytics if isEventId not match id")
+    function _()
+      event = { "id": "event", "properties": "props" }
+
+      m.plugin.isPluginEnabled = true
+
+      m.expectCalled(m.plugin.isEventId(event.id), false)
+      m.expectNotCalled(m.plugin.executionEvents)
+
+      m.plugin._processAnalyticsEvent(event)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("executionEvents")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("execute event")
+    function _()
+      event = { "id": "event", "properties": "props" }
+      m.plugin.dataFlyerFeed = "dataFeed"
+      definitionJson = { "source": "dataFeed" }
+      componentValues = { "method": "POST", params: "props" }
+
+      m.expectCalled(m.plugin.executeLoadDataTask(definitionJson, componentValues, m.plugin.onListContentResult, 0))
+
+      m.plugin.executionEvents(event)
+    end function
+
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("setUserId")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("valid")
+    @params("user123")
+    @params("user 123")
+    function _(userID)
+      m.plugin.setUserId(userID)
+
+      m.assertEqual(m.plugin.userId, userID)
+    end function
+
+    @it("return invalid")
+    @params(invalid)
+    @params({})
+    @params(123)
+    function _(userID)
+      m.plugin.task = {}
+
+      m.plugin.setUserId(userID)
+
+      m.assertEqual(m.plugin.userId, m.plugin.userId)
+    end function
+
+  end class
+end namespace

@@ -10,7 +10,7 @@ class AppsFlyerAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
   private anonymizeUser = false
   private dataFlyerFeed = ""
   private eventIds = ""
-  private devKey = ""
+  private appId = ""
   private userId = ""
   private eventURL = "https://events.appsflyer.com/v1.0/s2s/"
 
@@ -24,12 +24,11 @@ class AppsFlyerAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
     super("AppsFlyerAnalyticsPlugin", m.getPlugin(plugin))
 
     m.isPluginEnabled = m.plugin.getBoolValue("enabled")
-    m.devKey = m.plugin.getStringValue("appsflyer_key")
+    m.appId = m.plugin.getStringValue("appsflyer_key")
     m.anonymizeUser = m.plugin.getBoolValue("anonymize_user")
     m.dataFlyerFeed = m.plugin.getStringValue("data_flyer_feed")
     m.eventIds = ["first_open", "session", "in_app"]
-
-    m.setInstance("AppsFlyerDevKey", m.devKey)
+    m.setInstance("AppsFlyerAppId", m.appId)
   end function
 
   private function getPlugin(plugin = invalid)
@@ -39,19 +38,6 @@ class AppsFlyerAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
     end if
 
     return plugin
-  end function
-
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '++ Public Methods
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-  public function getdevKey()
-    return m.devKey
-  end function
-
-  public function getAppIdKey()
-    constants = mioc.getInstance("constants")
-    return asString(constants.id)
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -131,20 +117,14 @@ class AppsFlyerAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
 
   private function executionEvents(event)
     m.log.info("executionEvents with of ")
-    m.eventURL = `https://events.appsflyer.com/v1.0/s2s/${event.id}/app/${event.pathProperties.platform}/${event.pathProperties.app_id}`
     definitionJson = {
-      source: asString(m.eventURL)
+      source: asString(m.dataFlyerFeed)
     }
     componentValues = {
       "method": "POST",
       params: event.properties
     }
     m.executeLoadDataTask(definitionJson, componentValues, m.onListContentResult, 0)
-    'm.createTask("NetworkTask", {
-    '  "url": m.eventURL,
-    '  "method": "POST",
-    '  "params": event.properties
-    '})
   end function
 
   private function executeLoadDataTask(definitionJson, componentValues, callback, depth = 1, sendMode = "value")
@@ -167,20 +147,6 @@ class AppsFlyerAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
 
   private function onListContentResult(result as mc.Result)
     m.log.info("received result for List", result)
-  end function
-
-  private function checkIfTrackingUserIdAllowed(userIdString, versionId)
-    prefix = "allow-tracking-user-id-for-app-family-"
-    suffix = versionId
-    s = userIdString
-
-    if mc.isString(s) and mc.isString(prefix) and mc.isString(suffix)
-      if prefix + suffix = s
-        return true
-      end if
-    end if
-
-    return false
   end function
 
   private function setUserId(userId)
