@@ -20,6 +20,9 @@ class AppsFlyerAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
   @inject("constants")
   private constants as mc.types.assocarray
 
+  @injectClass("zapp.Registry")
+  private registry
+
   public function new(plugin = invalid)
     super("AppsFlyerAnalyticsPlugin", m.getPlugin(plugin))
 
@@ -98,7 +101,12 @@ class AppsFlyerAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
   protected override function _processAnalyticsEvent(event as zapp.analytics.AnalyticsEvent)
     m.log.info("processAnalyticsEvent")
     if m.isPluginEnabled and m.isEventId(event.id)
-      m.executionEvents(event)
+      if event.id = "first_open" and m.registry.read("AppsFlyer", "sessionCounter") = invalid
+        m.executionEvents(event)
+        m.registry.write("AppsFlyer", "sessionCounter", "1")
+      else if event.id <> "first_open"
+        m.executionEvents(event)
+      end if
     end if
   end function
 
