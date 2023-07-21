@@ -126,6 +126,32 @@ namespace zapp.tests
       m.plugin._processAnalyticsEvent(event)
     end function
 
+    @it("send first open event")
+    function _()
+      event = { "id": "first_open", "properties": "props" }
+      m.plugin.isPluginEnabled = true
+
+      m.expectCalled(m.plugin.isEventId(event.id), true)
+      m.expectCalled(m.plugin.registry.read("AppsFlyer", "sessionCounter"), invalid)
+      m.expectCalled(m.plugin.executionEvents(event))
+      m.expectCalled(m.plugin.registry.write("AppsFlyer", "sessionCounter", "1"))
+
+      m.plugin._processAnalyticsEvent(event)
+    end function
+
+    @it("do not send first open event")
+    function _()
+      event = { "id": "first_open", "properties": "props" }
+      m.plugin.isPluginEnabled = true
+
+      m.expectCalled(m.plugin.isEventId(event.id), true)
+      m.expectCalled(m.plugin.registry.read("AppsFlyer", "sessionCounter"), "1")
+      m.expectNotCalled(m.plugin.executionEvents)
+      m.expectNotCalled(m.plugin.registry.write)
+
+      m.plugin._processAnalyticsEvent(event)
+    end function
+
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("executionEvents")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
