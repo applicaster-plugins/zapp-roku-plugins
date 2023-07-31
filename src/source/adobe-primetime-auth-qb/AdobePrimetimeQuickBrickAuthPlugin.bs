@@ -62,9 +62,10 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
     ' do a simple local verification just to make sure AuthN completed
 
     if not m.isAuthDataExpired()
+      m.setInstance("isAuthAdobePrimetimeQuickBrickDataAuthorized", true)
       return m.getAuthorization()
     end if
-
+    m.setInstance("isAuthAdobePrimetimeQuickBrickDataAuthorized", false)
     return m.createErrorResult("Invalid token for verification")
   end function
 
