@@ -66,6 +66,7 @@ namespace zapp.tests
       m.vm.isDisplayedInPrehook = false
 
       m.expectCalled(m.vm.getInstance("currentSelection"), invalid)
+      m.expectCalled(m.vm.getInstance("isAuthAdobePrimetimeQuickBrickDataAuthorized"), false)
       m.expectOnce(m.analyticsManager, "callFunc", ["trackEvent", "Waiting Page", "page_loaded", { "Provider": "pid" }])
 
       m.expectOnce(m.vm, "trackScreen", [])
