@@ -92,6 +92,7 @@ class AdobePrimetimeQuickBrickAuthScreenVM extends zapp.uib.ScreenVM
       m.log.info("not displaying in prehook")
       m.analyticsManager@.trackEvent("Waiting Page", "page_loaded", { "Provider": m.providerId })
       m.isContentGroupVisible = true
+      m.hideScreenIfUserAuthorized(m.getInstance("isAuthAdobePrimetimeQuickBrickDataAuthorized"))
       m.trackScreen()
       m.loadCode()
     end if
@@ -168,6 +169,16 @@ class AdobePrimetimeQuickBrickAuthScreenVM extends zapp.uib.ScreenVM
     m.authTask = m.createAuthTask("execPoll", m.providerId, m.onPollComplete)
   end function
 
+
+  private function hideScreenIfUserAuthorized(authorized)
+    m.log.info("received hideScreenIfUserAuthorized notification")
+    if authorized <> invalid and authorized
+      m.isContentGroupVisible = false
+      m.focusId = ""
+      m.isShowingLoadingIndicator = true
+    end if
+  end function
+
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ Auth methods
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -188,6 +199,7 @@ class AdobePrimetimeQuickBrickAuthScreenVM extends zapp.uib.ScreenVM
     m.log.method("onLoadCodeComplete")
     m.isShowingLoadingIndicator = false
     m.isRefreshing = false
+    m.hideScreenIfUserAuthorized(m.getInstance("isAuthAdobePrimetimeQuickBrickDataAuthorized"))
 
     if result <> invalid and result.regcode <> invalid
       m.log.info("received code", result.regcode)

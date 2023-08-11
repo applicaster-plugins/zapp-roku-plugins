@@ -1,62 +1,62 @@
-function Chrono() As Object
+function Chrono() as object
 
-	this  = CreateObject("roAssociativeArray")
+  this = CreateObject("roAssociativeArray")
 
-	this.date = CreateObject("roDateTime")
+  this.date = CreateObject("roDateTime")
 
-	this.startTime = Invalid
-	this.stopTime = Invalid	
+  this.startTime = invalid
+  this.stopTime = invalid
 
-	this.start = function() as Void
-		m.startTime = m.currentMillis()
-		m.stopTime = Invalid
-	end function
+  this.start = function() as void
+    m.startTime = m.currentMillis()
+    m.stopTime = invalid
+  end function
 
-	this.stop = function() as 	Integer
-		m.stopTime = m.currentMillis()
-		return m.getDeltaTime()
-	end function
+  this.stop = function() as integer
+    m.stopTime = m.currentMillis()
+    return m.getDeltaTime()
+  end function
 
-	this.getDeltaTime = function(stopIfNeeded = Invalid) as Integer
+  this.getDeltaTime = function(stopIfNeeded = invalid) as integer
 
-		if m.startTime = Invalid
-			return -1
-		endif
+    if m.startTime = invalid
+      return -1
+    end if
 
-		if m.stopTime = Invalid
-			if stopIfNeeded = true
-				return m.stop()
-			else 
-				return m.currentMillis() - m.startTime
-			endif
-		else
-			return m.stopTime - m.startTime
-		endif
-	end function
+    if m.stopTime = invalid
+      if stopIfNeeded = true
+        return m.stop()
+      else
+        return m.currentMillis() - m.startTime
+      end if
+    else
+      return m.stopTime - m.startTime
+    end if
+  end function
 
-	'Return the current timestamp in millis
-	this.currentMillis = function() as LongInteger
-		m.date.Mark() 'Read time
+  'Return the current timestamp in millis
+  this.currentMillis = function() as longinteger
+    m.date.Mark() 'Read time
 
-		seconds& = m.date.AsSeconds() 'seconds# is long
-		seconds& = seconds& * 1000
+    seconds& = m.date.AsSeconds() 'seconds# is long
+    seconds& = seconds& * 1000
 
-		millis& = m.date.GetMilliseconds()
-		return seconds& + millis&
-	end function
-	
-	this.getStartTime = function() as LongInteger
-       return m.startTime
-    end function
-    
-    this.setStartTime = function(newStartTime as LongInteger) as Void
-       m.startTime = newStartTime
-    end function
+    millis& = m.date.GetMilliseconds()
+    return seconds& + millis&
+  end function
 
-	this.reset = function() as Void
-		m.startTime = Invalid
-		m.stopTime = Invalid	
-	end function
+  this.getStartTime = function() as longinteger
+    return m.startTime
+  end function
 
-	return this
+  this.setStartTime = function(newStartTime as longinteger) as void
+    m.startTime = newStartTime
+  end function
+
+  this.reset = function() as void
+    m.startTime = invalid
+    m.stopTime = invalid
+  end function
+
+  return this
 end function

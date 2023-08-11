@@ -5,6 +5,7 @@ import "pkg:/source/roku_modules/maestro/core/Utils.brs"
 
 class FlowRegisterScreenVM extends zapp.uib.ScreenVM
   'styles
+  public itemSpacings = [10, 45, 52]
   public inputStyle = invalid
   public loginButtonStyle = invalid
   public registerButtonStyle = invalid
@@ -80,6 +81,7 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   function processStyles(styles)
+    m.itemSpacings = zapp.viewUtils.stringToArray(asString(m.riversJson.styles.input_spacing, "10,45,52"))
     m.usernameText = m.localizations.register_username_placeholder_text
     m.usernamePlaceholderText = m.usernameText
 
@@ -145,7 +147,9 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
     if not m.isLoading and m.isCredsValid
       m.register()
     else if not m.isCredsValid
-      m.errorText = "Please enter your email address and password"
+      if asString(m.localizations.register_error_text, "") = ""
+        m.errorText = "Please enter your email address and password"
+      end if
       m.isErrorShowing = true
     else
       m.log.warn("ignoring register button, while loading")
@@ -349,8 +353,9 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
       m.setTextFromKeyboard("username", mc.getPath(data, "email", ""))
       firstName = mc.getPath(data, "firstname", "")
       lastName = mc.getPath(data, "lastname", "")
-      sep = firstName <> "" and lastName <> "" ? " " : ""
-      m.setTextFromKeyboard("firstName", firstName + sep + lastName)
+      'sep = firstName <> "" and lastName <> "" ? " " : ""
+      m.setTextFromKeyboard("firstName", firstName)
+      m.setTextFromKeyboard("lastname", lastName)
       m.focusId = "passwordInput"
     end if
 

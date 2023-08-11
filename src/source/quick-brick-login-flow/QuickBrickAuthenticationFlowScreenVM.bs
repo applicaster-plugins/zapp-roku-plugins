@@ -32,6 +32,7 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
 
   public override function load() as boolean
     m.sendHttpLogsNow()
+    m.sendXrayLogsNow()
 
     m.state = "loading"
     if not m.isLoginRequired()
@@ -120,7 +121,7 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
   private function onSubScreenStateChange(state as string)
     ignoreCompletionAction = m.getTopField("ignoreCompletionAction")
     m.log.method("current screen state change", state, "m.isShowingRegisterScreenFirst", m.isShowingRegisterScreenFirst, "ignoreCompletionAction", ignoreCompletionAction)
-    currentSelection = m.getInstance("currentSelection")
+
     if m.nameOfParentScreen = "tabChildNavController" and state = "cancel"
       m.navigateToHomeScreen()
     else if ignoreCompletionAction = true and (state = "success" or state = "cancel")
@@ -131,6 +132,7 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
       m.performNextAction()
     else if state = "cancel"
       m.toggleSubScreen(invalid)
+      m.toggleNavMenuVisible(true, true)
       m.dismiss("cancel")
     end if
   end function

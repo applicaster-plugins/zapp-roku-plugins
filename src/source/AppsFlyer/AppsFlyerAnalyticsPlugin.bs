@@ -1,15 +1,18 @@
 import "pkg:/source/analytics/BaseAnalyticsPlugin.bs"
 import "pkg:/source/video/analytics/VideoAnalyticsEvent.bs"
 import "pkg:/source/video/analytics/AnalyticsEvent.bs"
+import "pkg:/source/roku_modules/maestro/core/Result.brs"
 
 
-class GoogleAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
+class AppsFlyerAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
 
-  private eventFactory = invalid
-  private isTrackingUserIdEnabled = false
-  private measurementId = ""
+  private isPluginEnabled = false
+  private anonymizeUser = false
+  private dataFlyerFeed = ""
+  private eventIds = ""
+  private appId = ""
   private userId = ""
-  private task as mc.types.node
+  private eventURL = "https://events.appsflyer.com/v1.0/s2s/"
 
   @inject("buildConfig")
   private buildConfig as mc.types.assocarray
@@ -17,21 +20,24 @@ class GoogleAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
   @inject("constants")
   private constants as mc.types.assocarray
 
+  @injectClass("zapp.Registry")
+  private registry
 
   public function new(plugin = invalid)
-    super("GoogleAnalyticsPlugin", m.getPlugin(plugin))
-    m.measurementId = m.plugin.getStringValue("measurement_id")
-    m.userId = m.plugin.getStringValue("user_id")
+    super("AppsFlyerAnalyticsPlugin", m.getPlugin(plugin))
 
-    versionId = m.buildConfig.app_family_id
-    userIdString = m.plugin.getStringValue("user_id")
-    m.isTrackingUserIdEnabled = m.checkIfTrackingUserIdAllowed(userIdString, versionId)
+    m.isPluginEnabled = m.plugin.getBoolValue("enabled")
+    m.appId = m.plugin.getStringValue("appsflyer_key")
+    m.anonymizeUser = m.plugin.getBoolValue("anonymize_user")
+    m.dataFlyerFeed = m.plugin.getStringValue("data_flyer_feed")
+    m.eventIds = ["first_open", "session", "in_app"]
+    m.setInstance("AppsFlyerAppId", m.appId)
   end function
 
   private function getPlugin(plugin = invalid)
     if plugin = invalid
       pluginManager = new zapp.PluginManager()
-      plugin = pluginManager.getPluginById("google_analytics_4")
+      plugin = pluginManager.getPluginById("AppsFlyer")
     end if
 
     return plugin
@@ -41,32 +47,9 @@ class GoogleAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
   '++ overridden methods
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  public override function start()
-    'FIXME TEST ME IVAN
-    m.log.info("start")
-
-    m.task = m.createInstance("GoogleAnalytics", invalid, "googleAnalyticsTask")
-    '/* cspell:disable *\
-    m.task@.initialize({
-      measurementId: m.measurementId
-      appName: m.buildConfig.app_name
-      docLocation: m.buildConfig.data_source_providers_url
-      isFirstOpen: true
-      userId: m.userId
-    })
-    '/* cspell:enable *\
-    m.task@.start()
-
-    m.setInstance("googleAnalyticsTask", m.task)
-  end function
-
   public override function onVideoAnalyticsEvent(event as zapp.analytics.AnalyticsEvent) as void
     m.log.info("this plugin does not have a google analtyics task, using the shared instance")
-    m.task = m.getInstance("googleAnalyticsTask")
-    if m.task = invalid
-      m.log.error("google analtyics task is invalid")
-      return
-    end if
+
     m.processAnalyticsEvent(event)
   end function
 
@@ -75,7 +58,7 @@ class GoogleAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
 
     if m.isEnabled
 
-      if m.isTrackingUserIdEnabled <> true
+      if m.anonymizeUser <> true
         m.log.info("tracking user is not allowed skip isIdentified")
         return true
       end if
@@ -116,8 +99,14 @@ class GoogleAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
   end function
 
   protected override function _processAnalyticsEvent(event as zapp.analytics.AnalyticsEvent)
-    if m.task <> invalid
-      m.task@.logEvent(event.id, event.properties)
+    m.log.info("processAnalyticsEvent")
+    if m.isPluginEnabled and m.isEventId(event.id)
+      if event.id = "first_open" and m.registry.read("AppsFlyer", "sessionCounter") = invalid
+        m.executionEvents(event)
+        m.registry.write("AppsFlyer", "sessionCounter", "1")
+      else if event.id <> "first_open"
+        m.executionEvents(event)
+      end if
     end if
   end function
 
@@ -125,18 +114,47 @@ class GoogleAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
   '++ Private Methods
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  private function checkIfTrackingUserIdAllowed(userIdString, versionId)
-    prefix = "allow-tracking-user-id-for-app-family-"
-    suffix = versionId
-    s = userIdString
-
-    if mc.isString(s) and mc.isString(prefix) and mc.isString(suffix)
-      if prefix + suffix = s
+  function isEventId(idOfEvent as string) as boolean
+    for each eventId in m.eventIds
+      if eventId = idOfEvent
         return true
       end if
-    end if
-
+    end for
     return false
+  end function
+
+  private function executionEvents(event)
+    m.log.info("executionEvents with of ")
+    definitionJson = {
+      source: asString(m.dataFlyerFeed)
+    }
+    componentValues = {
+      "method": "POST",
+      params: event.properties
+    }
+    m.executeLoadDataTask(definitionJson, componentValues, m.onListContentResult, 0)
+  end function
+
+  private function executeLoadDataTask(definitionJson, componentValues, callback, depth = 1, sendMode = "value")
+    m.log.debug("executeLoadDataTask", "callback", callback, "depth", depth)
+    args = {
+      "data": m.createData(definitionJson, componentValues, depth)
+    }
+    task = m.createTask("LoadDataTask", args, callback, true, sendMode)
+    return task
+  end function
+
+  private function createData(definitionJson, componentValues, depth = 1)
+    data = createObject("roSGNode", "ZPData")
+    data.definition = definitionJson
+    data.depth = depth
+    data.componentValues = componentValues
+
+    return data
+  end function
+
+  private function onListContentResult(result as mc.Result)
+    m.log.info("received result for List", result)
   end function
 
   private function setUserId(userId)

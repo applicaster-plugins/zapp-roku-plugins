@@ -52,7 +52,7 @@
       <mv_LayoutGroup
           id='controlsGroup'
           translation='{{=zapp_viewUtils_UIBPosition("controls",1040,300)}}'
-          itemSpacings='[10, 10, 10]'>
+          itemSpacings='{{itemLoginSpacings}}'>
         <ZActionButton
             id='usernameInput'
             style='{{:inputStyle}}'
@@ -106,7 +106,8 @@
         <mv_Label
             id='errorText'
             style='{{=zapp_viewUtils_UIBLabel("error", "")}}'
-            text='{{errorText}}' />
+            text='{{errorText}}'
+            wrap='true' />
       </Group>
     </Group>
 

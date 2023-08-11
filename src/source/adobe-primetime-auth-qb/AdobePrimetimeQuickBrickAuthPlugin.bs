@@ -56,13 +56,16 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
 
 
   public override function _verify()
+    m.log.info("verify/refreshing with AdobePrimetimeQuickBrickAuthPlugin")
+
     ' We don't need the token for the AuthZ calls, but we
     ' do a simple local verification just to make sure AuthN completed
 
     if not m.isAuthDataExpired()
+      m.setInstance("isAuthAdobePrimetimeQuickBrickDataAuthorized", true)
       return m.getAuthorization()
     end if
-
+    m.setInstance("isAuthAdobePrimetimeQuickBrickDataAuthorized", false)
     return m.createErrorResult("Invalid token for verification")
   end function
 
@@ -296,8 +299,6 @@ class AdobePrimetimeQuickBrickAuthPlugin extends zapp.auth.BaseAuthPlugin
     deviceInfo = createObject("roDeviceInfo")
     osVersion = deviceInfo.getOsVersion()
     modelDetails = deviceInfo.getModelDetails()
-    displaySize = deviceInfo.getDisplaySize()
-    connectionType = deviceInfo.getConnectionType()
     deviceInfo = {
       "model": "Roku"
       "vendor": modelDetails.vendorName

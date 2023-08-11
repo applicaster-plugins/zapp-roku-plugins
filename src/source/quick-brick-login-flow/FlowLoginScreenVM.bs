@@ -5,6 +5,7 @@ import "pkg:/source/mixin/KeyboardDialogMixin.bs"
 class FlowLoginScreenVM extends zapp.uib.ScreenVM
 
   'styles
+  public itemLoginSpacings = [10, 10, 10]
   public inputStyle = invalid
   public loginButtonStyle = invalid
   public registerButtonStyle = invalid
@@ -77,6 +78,7 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   function processStyles(styles)
+    m.itemLoginSpacings = zapp.viewUtils.stringToArray(asString(m.riversJson.styles.input_login_spacing, "10,10,10"))
     m.usernameText = m.localizations.login_username_placeholder_text
     m.usernamePlaceholderText = m.usernameText
 
