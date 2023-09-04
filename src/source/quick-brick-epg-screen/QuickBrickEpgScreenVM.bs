@@ -17,6 +17,7 @@ end enum
 class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
 
   'styling
+  public filterLabelText = ""
   public menuButtons = []
   public titleTextStyle = {}
   public menuStyle = {}
@@ -52,6 +53,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   private categoriesList = []
   private contentLoader = new zapp.pipes.EntryLoader()
 
+  private oldSelectedCategory = ""
+  private selectedIndexLabel = ""
   private focusIds = []
   private riversJsonData = invalid
   private contentDepth = 1
@@ -130,7 +133,28 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       }
       items.push(listItem)
     end for
-    content = m.createContentFromItems(items)
+    customOrder = [
+      "now_label",
+      "today",
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+      "friday",
+      "saturday",
+      "sunday"
+    ]
+    sortedData = []
+    for each orderItem in customOrder
+      for each dataItem in items
+        if lcase(dataItem.title) = lcase(orderItem)
+          sortedData.Push(dataItem)
+          exit for ' Exit the inner loop after finding a match
+        end if
+      end for
+    next
+
+    content = m.createContentFromItems(sortedData)
     m.itemListVisible = true
     m.dayIsSelected = true
     m.listContent = content
@@ -211,16 +235,15 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     end if
 
     entryWraper = createObject("roSGNode", "ZPEntry")
-
     for i = 0 to items.count() - 1
       entry = m.createSGNode("ZPEntry", entryWraper, items[i], {
         title: items[i].title
         json: {
           title: items[i].title
-          selected: true
+          selected: lCase(items[i].title) = lCase(m.selectedIndexLabel)
         }
       })
-      mc.setOrAddNodeField(entry, "isSelected", true)
+      mc.setOrAddNodeField(entry, "isSelected", lCase(items[i].title) = lCase(m.selectedIndexLabel))
     end for
     m.setListStyle(entryWraper)
     return entryWraper
@@ -328,15 +351,32 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
 
   public function onSelectItem(index)
     m.log.method("OnItemSelected")
+
+    currentTime = CreateObject("roDateTime")
+    currentDayIndex = currentTime.getDayOfWeek()
+    m.selectedIndexLabel = m.listContent.getChild(index).title
+
     if m.content <> invalid and index <> -1 and m.dayIsSelected
-      currentTime = CreateObject("roDateTime").asSeconds()
-      m.leftEdgeTargetTime = currentTime + (86400 * index)
+      if index > 1
+        index = index - 1
+      end if
+
+      dayDifference = index - currentDayIndex
+      if dayDifference < 0
+        dayDifference = 0
+      end if
+
+      targetTime = currentTime.asSeconds() + (86400 * dayDifference)
+
+      m.leftEdgeTargetTime = targetTime
       m.content = m.timeGridContent
     else if m.content <> invalid and index <> -1 and m.filterIsSelected
       m.content = m.filterContentByCategories(m.categoriesList[index])
     end if
+
     m.isStyleUpdateRequired = true
   end function
+
 
   public function onProgramSelected(programIndex)
     if m.channelFocused <> -1
@@ -399,11 +439,20 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   private function stylingDayLabelComponent(styles)
     localizedText = "aaaa"'zapp.viewUtils.getLocalizedText(control, localization)
 
+    m.filterLabelText = "Filter Days"
     dayLabelText = zapp.viewUtils.textToTextTransformFormat(localizedText, styles.days_label_text_transform)
     dayLabelFont = zapp.viewUtils.makeUIBTextStyle(styles, "days_label")
     dayLabelSelected = zapp.viewUtils.makeUIBTextStyle(styles, "days_label_selected")
+
+    marginStyle = zapp.viewUtils.makeUIBMargin(styles, "tv_buttons_container")
+
+    marginTop = zapp.viewUtils.getUIBInt(styles, "days_tabs_padding_top")
+    marginRight = zapp.viewUtils.getUIBInt(styles, "days_tabs_padding_right")
+    marginBottom = zapp.viewUtils.getUIBInt(styles, "days_tabs_padding_bottom")
+    marginLeft = zapp.viewUtils.getUIBInt(styles, "days_tabs_padding_left")
+
     m.listStyle = {
-      translation: [abs(styles.days_tabs_padding_left - styles.days_tabs_padding_right), abs(styles.days_tabs_padding_top - styles.days_tabs_padding_bottom)]
+      translation: [abs(marginLeft - marginRight), abs(marginTop - marginBottom)]
       itemSpacing: [zapp.viewUtils.getUIBInt(styles, "days_tabs_horizontal_gutter", 15)]
       itemSize: zapp.viewUtils.makeUIBSize(styles, "item", 680, 80)
       vertFocusAnimationStyle: ""
@@ -464,19 +513,23 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   private function filterContentByCategories(catagory as string)
-    content = m.timeGridContent.clone(true)
-    for each channel in content.getChildren(-1, 0)
-      for each program in channel.getChildren(-1, 0)
-        if asString(program.genre) <> catagory
-          channel.removeChild(program)
+    if catagory <> m.oldSelectedCategory
+      content = m.timeGridContent.clone(true)
+      for each channel in content.getChildren(-1, 0)
+        for each program in channel.getChildren(-1, 0)
+          if asString(program.genre) <> catagory
+            channel.removeChild(program)
+          end if
+        end for
+        if channel.getChildCount() = 0
+          content.removeChild(channel)
         end if
       end for
-      if channel.getChildCount() = 0
-        content.removeChild(channel)
-      end if
-    end for
-
-    return content
+      m.oldSelectedCategory = catagory
+      return content
+    end if
+    m.oldSelectedCategory = ""
+    return m.timeGridContent
   end function
 
   private function updateFocusControls()

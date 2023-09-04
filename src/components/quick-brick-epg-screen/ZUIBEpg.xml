@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <component
-    name='QuickBrickEpgScreen'
+    name='ZUIBEpg'
     extends='UIBScreen'
     vm='QuickBrickEpgScreenVM'>
 
@@ -63,14 +63,32 @@
         id='backgroundDayRectangle'
         width='600'
         height='1080'
-        translation='[700, 0]'
+        translation='[0, 0]'
         color='{{=zapp_viewUtils_UIBColor("days_tabs_background_color")}}'
         visible='{{itemListVisible}}'>
+      <Poster
+          id='filterGradient'
+          width='{{=zapp_viewUtils_UIBInt("gradient_w", 1920)}}'
+          height='{{=zapp_viewUtils_UIBInt("gradient_h", 1080)}}'
+          uri='{{=zapp_viewUtils_UIBAssetUri("gradient_url", "pkg:/images/$$RES$$/tab-bar-gradient.9.png")}}'
+          translation='[0,0]' />
+      <mv_Label
+          id='filterLabel'
+          width='290'
+          height='32'
+          horizAlign='center'
+          vertAlign='center'
+          maxLines='2'
+          text='{{filterLabelText}}'
+          wrap='true'
+          fontKey='medium,20'
+          translation='[0,250]' />
       <mv_MarkupList
           id='list'
           style='{{listStyle}}'
           content='{{listContent}}'
           itemComponentName='ZPowerCell'
+          translation='[0, 300]'
           numColumns='1'
           numRows='6'
           itemSelected='{(onSelectItem(value))}' />
