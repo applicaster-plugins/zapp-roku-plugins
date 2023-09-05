@@ -87,6 +87,7 @@
           id='list'
           style='{{listStyle}}'
           content='{{listContent}}'
+          jumpToItem='{{jumpToItem}}'
           itemComponentName='ZPowerCell'
           translation='[0, 300]'
           numColumns='1'

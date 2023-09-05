@@ -39,6 +39,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   public content = invalid
   public listContent = invalid
   public listStyle = {}
+  public jumpToItem = 0
   public itemListVisible = false
   public contentStartTime = {}
   public leftEdgeTargetTime = 0
@@ -54,7 +55,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   private contentLoader = new zapp.pipes.EntryLoader()
 
   private oldSelectedCategory = ""
-  private selectedIndexLabel = ""
+  private selectedIndexLabel = "now_label"
   private focusIds = []
   private riversJsonData = invalid
   private contentDepth = 1
@@ -214,6 +215,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     TimeGrid.programNowNextTimeFocusedColor = "#FF5247"
     TimeGrid.programTitleColor = "#FFFFFF"
     TimeGrid.programTitleFocusedColor = "#FFFFFF"
+    'TimeGrid.itemSize = [1920, 150]
     TimeGrid.timeLabelColor = "#FFFFFF"
     TimeGrid.pastTimeScreenBlendColor = "#3D80FF"
     TimeGrid.focusBitmapUri = "pkg:/images/SearchFocusBackground2.9.png"
@@ -292,7 +294,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
         programItem = m.channelItem.createChild("ContentNode")
         programItem.PLAYSTART = m.parseDateStringToSeconds(programData.json.extensions.start_time)
         programItem.PLAYDURATION = m.parseDateStringToSeconds(programData.json.extensions.end_time) - m.parseDateStringToSeconds(programData.json.extensions.start_time)
-        programItem.TITLE = programData.title
+        programItem.TITLE = `app Version: ${"appVersion"}` + chr(10) + `sdkVersion:sdkVersion\n`
         programItem.id = programData.id
         programItem.shortDescriptionLine1 = programData.json.summary
         'programItem.HDSMALLICONURL = programData.json.images.image_base
@@ -357,11 +359,12 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     m.selectedIndexLabel = m.listContent.getChild(index).title
 
     if m.content <> invalid and index <> -1 and m.dayIsSelected
+      newIndex = index
       if index > 1
-        index = index - 1
+        newIndex = index - 1
       end if
 
-      dayDifference = index - currentDayIndex
+      dayDifference = newIndex - currentDayIndex
       if dayDifference < 0
         dayDifference = 0
       end if
@@ -370,8 +373,12 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
 
       m.leftEdgeTargetTime = targetTime
       m.content = m.timeGridContent
+      m.onDayButtonSelected()
+      m.jumpToItem = index
     else if m.content <> invalid and index <> -1 and m.filterIsSelected
       m.content = m.filterContentByCategories(m.categoriesList[index])
+      m.onFilterButtonSelected()
+      m.jumpToItem = index
     end if
 
     m.isStyleUpdateRequired = true
