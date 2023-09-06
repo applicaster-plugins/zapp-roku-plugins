@@ -29,6 +29,12 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   public filterButtonStyle = invalid
   public dayButtonVisible = false
   public filterButtonVisible = false
+  public isHeaderShown = false
+  public isHeaderImageVisible = false
+  public isHeaderImageVideoPlayback = false
+  public isDetailsVisible = false
+  public headerItem = invalid
+  public headerStyle = invalid
 
   'public content = m.createSGNode("CollectionRow")
   public gridStyle = {}
@@ -36,15 +42,19 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   public channelIndex = -1
   public programIndex = -1
   public channelFocused = 0
+  public programFocused = 0
   public content = invalid
   public listContent = invalid
   public listStyle = {}
   public jumpToItem = 0
   public itemListVisible = false
+  public listTranslation = [0, 400]
   public contentStartTime = {}
   public leftEdgeTargetTime = 0
 
   private jwtUtil = new zapp.JWTUtil()
+  private canShowHeader = false
+  private isHeaderUpdatingOnFocus = false
   private timeout = invalid
   private loadChannelTask = invalid
   private loadProgramTask = invalid
@@ -69,12 +79,15 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   private filterIsSelected = false
   private cellStyle
   private controlsGroup as mc.types.node
+  private backgroundDayRectangle
   private button1 as mc.types.node
   private button2 as mc.types.node
   private buttonActionMap = {
     open_day_tab_action: ButtonAction.play
     open_channel_filter_tab: ButtonAction.favorite
   }
+  private showAnim
+  private hideAnim
 
   @inject("constants")
   private constants
@@ -99,19 +112,38 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     m.focusId = "TimeGrid"
     m.style = m.getChildCellStyle(riversJson)
     m.riversJsonData = riversJson
-    topFields = m.getMField("top")
-    m.controlsGroup = topFields.getChild(4)
-    m.button1 = topFields.getChild(4).getChild(0)
-    m.button2 = topFields.getChild(4).getChild(1)
+    m.controlsGroup = m.getMField("controlsGroup")
+    m.button1 = m.getMField("button1")
+    m.button2 = m.getMField("button2")
+    m.backgroundDayRectangle = m.getMField("backgroundDayRectangle")
     m.contentDepth = zapp.viewUtils.getUIBInt(riversJson.styles, "data_depth", 1)
+    m.listTranslation = [0, 400]
+    m.createAnimations()
   end function
 
   public override function load()
     m.makeEPGData(m.riversJsonData)
     m.epgHardcodedStyle(m.riversJsonData.styles)
     m.updateButtons(m.riversJsonData.styles)
+    m.updateHeaderStyle(m.riversJsonData.styles)
     m.updateFocusControls()
+    m.state = "ready"
+    if m.isHeaderUpdatingOnFocus
+      m.headerItem = invalid
+      'm.observeNodeField(m.screenState, "focusedEntry", m.onFocusEntry)
+    else
+      m.headerItem = m.screenState.originEntry
+      m.isHeaderShown = m.canShowHeader
+    end if
     return true
+  end function
+
+  public override function onFocusEntry(entry) as void
+
+    if m.isHeaderUpdatingOnFocus = true
+      m.headerItem = entry
+    end if
+    m.isHeaderShown = m.canShowHeader
   end function
 
   public override function resetStyles(riversJson)
@@ -156,6 +188,10 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     next
 
     content = m.createContentFromItems(sortedData)
+    if not m.dayIsSelected
+      m.onShowHideAnimation(m.showAnim, true, true)
+      m.sendNotification("isTopNavBarShowing", false)
+    end if
     m.itemListVisible = true
     m.dayIsSelected = true
     m.listContent = content
@@ -173,12 +209,23 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       items.push(listItem)
     end for
     content = m.createContentFromItems(items)
+    if not m.filterIsSelected
+      m.onShowHideAnimation(m.showAnim, true, true)
+      m.sendNotification("isTopNavBarShowing", false)
+    end if
     m.itemListVisible = true
     m.filterIsSelected = true
     m.listContent = content
     m.setFocusId("list")
   end function
 
+  private function onShowHideAnimation(anim as mv.animations.AnimationBase, visible as boolean, animated as boolean)
+    if animated
+      anim.start()
+    else
+      anim.jumpToEnd()
+    end if
+  end function
 
   private function applyDataMap(feed as mc.types.node, style as mc.types.assocarray) as void
 
@@ -205,9 +252,14 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   '++ Content creating
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+  private function createAnimations()
+    m.showAnim = new mv.animations.Move(m.backgroundDayRectangle, 0.1, [-700, 0], [0, 0])
+    m.hideAnim = new mv.animations.Move(m.backgroundDayRectangle, 0.3, [0, 0], [-700, 0])
+  end function
+
+
   private function epgHardcodedStyle(style)
-    topFields = m.getMField("top")
-    TimeGrid = topFields.getChild(3)
+    TimeGrid = m.getMField("TimeGrid")
     TimeGrid.programBackgroundBitmapUri = "pkg:/images/TimeGridBackground.9.png"
     TimeGrid.timeBarBitmapUri = ":"
     TimeGrid.channelInfoBackgroundBitmapUri = "pkg:/images/TimeGridBackground.9.png"
@@ -294,8 +346,9 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
         programItem = m.channelItem.createChild("ContentNode")
         programItem.PLAYSTART = m.parseDateStringToSeconds(programData.json.extensions.start_time)
         programItem.PLAYDURATION = m.parseDateStringToSeconds(programData.json.extensions.end_time) - m.parseDateStringToSeconds(programData.json.extensions.start_time)
-        programItem.TITLE = `app Version: ${"appVersion"}` + chr(10) + `sdkVersion:sdkVersion\n`
+        programItem.TITLE = programData.title
         programItem.id = programData.id
+        programItem.genre = programData.json.genre
         programItem.shortDescriptionLine1 = programData.json.summary
         'programItem.HDSMALLICONURL = programData.json.images.image_base
         m.programsData.push(programItem)
@@ -386,17 +439,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
 
 
   public function onProgramSelected(programIndex)
-    if m.channelFocused <> -1
-      m.log.info("onProgramSelected", programIndex)
-      content = m.content.getChild(m.channelFocused)
-      if content <> invalid
-        program = content.getChild(programIndex)
-        selection = m.createSelectionFromContent(program)
-        selection.playMode = "default"
-        mc.setOrAddNodeField(selection.initialItem, "itemType", "video")
-        m.executeContentSelection(selection)
-      end if
-    end if
+    m.selectProgram(programIndex)
   end function
 
   public function onChannelFocused(channelIndex)
@@ -404,9 +447,44 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     m.channelFocused = channelIndex
   end function
 
+  public function onProgramFocused(programIndex)
+    m.log.info("onProgramFocused", programIndex)
+    m.programFocused = programIndex
+    m.selectProgram(programIndex)
+  end function
+
+  private function selectProgram(programIndex)
+    if m.channelFocused <> -1
+      m.log.info("onProgramSelected", programIndex)
+      content = m.content.getChild(m.channelFocused)
+      if content <> invalid
+        program = content.getChild(programIndex)
+        m.onFocusEntry(program)
+        'selection = m.createSelectionFromContent(program)
+        'selection.playMode = "default"
+        'mc.setOrAddNodeField(selection.initialItem, "itemType", "video")
+        'm.executeContentSelection(selection)
+      end if
+    end if
+  end function
+
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ style support
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function updateHeaderStyle(styles)
+    m.log.info("setHeroStyle")
+    m.isHeaderShown = false
+    m.canShowHeader = mc.getPath(styles, "header_is_shown", true)
+    m.isHeaderUpdatingOnFocus = mc.getPath(styles, "header_update_on_focus", true)
+    m.isDetailsVisible = m.canShowHeader and mc.getPath(styles, "header_text_is_shown", false)
+    m.isHeaderImageVisible = m.canShowHeader and mc.getPath(styles, "header_image_is_shown", false)
+    m.isHeaderImageVideoPlayback = mc.getPath(styles, "header_image_is_video_preview", true)
+    'if m.isHeaderImageVideoPlayback
+    '  m.getMField("contentGroup").videoTarget = m.getMField("headerControl").findNode("fadingBackgroundImage")
+    'end if
+    m.headerStyle = styles
+  end function
 
   private function getChildCellStyle(componentJson as mc.types.assocarray)
     cellStyles = m.getInstance("cellStyles")
@@ -792,6 +870,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
         m.setFocusId("button2")
       end if
       m.log.info("focusing on button")
+      m.onShowHideAnimation(m.hideAnim, false, true)
+      m.sendNotification("isTopNavBarShowing", true)
       m.itemListVisible = false
       m.dayIsSelected = false
       m.filterIsSelected = false
@@ -845,6 +925,5 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   protected override function onHide()
     m.toggleUpdateTimer(false)
   end function
-
 
 end class

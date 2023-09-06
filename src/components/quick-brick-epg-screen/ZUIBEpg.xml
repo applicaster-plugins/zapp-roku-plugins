@@ -23,12 +23,22 @@
         id='logoPoster'
         style='{{=zapp_viewUtils_UIBPoster("logo")}}' />
 
+    <HeaderControl
+        id='headerControl'
+        style='{{:riversJson.styles}}'
+        entry='{{headerItem}}'
+        visible='{{isHeaderShown}}'
+        isImageVisible='{{isHeaderImageVisible}}'
+        isImageVideoPlayback='{{isHeaderImageVideoPlayback}}'
+        isDetailsVisible='{{isDetailsVisible}}' />
+
     <TimeGrid
         id='TimeGrid'
         content='{{content}}'
         contentStartTime='{{contentStartTime}}'
         leftEdgeTargetTime='{{leftEdgeTargetTime}}'
         channelFocused='{(onChannelFocused(value))}'
+        programFocused='{(onProgramFocused(value))}'
         programSelected='{(onProgramSelected(value))}'
         vertFocusAnimationStyle='floatingFocus'
         translation='[0, 500]'
@@ -68,7 +78,7 @@
         visible='{{itemListVisible}}'>
       <Poster
           id='filterGradient'
-          width='{{=zapp_viewUtils_UIBInt("gradient_w", 1920)}}'
+          width='{{=zapp_viewUtils_UIBInt("gradient_w", 2700)}}'
           height='{{=zapp_viewUtils_UIBInt("gradient_h", 1080)}}'
           uri='{{=zapp_viewUtils_UIBAssetUri("gradient_url", "pkg:/images/$$RES$$/tab-bar-gradient.9.png")}}'
           translation='[0,0]' />
@@ -89,7 +99,7 @@
           content='{{listContent}}'
           jumpToItem='{{jumpToItem}}'
           itemComponentName='ZPowerCell'
-          translation='[0, 300]'
+          translation='{{listTranslation}}'
           numColumns='1'
           numRows='6'
           itemSelected='{(onSelectItem(value))}' />
