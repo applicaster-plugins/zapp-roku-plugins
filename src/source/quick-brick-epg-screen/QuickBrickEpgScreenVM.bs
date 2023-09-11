@@ -89,6 +89,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   private showAnim
   private hideAnim
 
+  private plugin
+
   @inject("constants")
   private constants
 
@@ -122,7 +124,11 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   end function
 
   public override function load()
+    m.log.info("load epg screen")
+
     m.makeEPGData(m.riversJsonData)
+    m.plugin = m.plugins.getPluginById("quick-brick-epg-screen")
+
     m.epgHardcodedStyle(m.riversJsonData.styles)
     m.updateButtons(m.riversJsonData.styles)
     m.updateHeaderStyle(m.riversJsonData.styles)
@@ -138,7 +144,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     return true
   end function
 
-  public override function onFocusEntry(entry) as void
+  public override function onFocusEEntry(entry) as void
+    m.log.info("onFocusEEntry epg screen")
 
     if m.isHeaderUpdatingOnFocus = true
       m.headerItem = entry
@@ -220,6 +227,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   end function
 
   private function onShowHideAnimation(anim as mv.animations.AnimationBase, visible as boolean, animated as boolean)
+    m.log.info("onShowHideAnimation epg screen")
+
     if animated
       anim.start()
     else
@@ -228,6 +237,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   end function
 
   private function applyDataMap(feed as mc.types.node, style as mc.types.assocarray) as void
+    m.log.info("applyDataMap epg screen")
 
     if style <> invalid
 
@@ -259,31 +269,71 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
 
 
   private function epgHardcodedStyle(style)
-    TimeGrid = m.getMField("TimeGrid")
-    TimeGrid.programBackgroundBitmapUri = "pkg:/images/TimeGridBackground.9.png"
-    TimeGrid.timeBarBitmapUri = ":"
-    TimeGrid.channelInfoBackgroundBitmapUri = "pkg:/images/TimeGridBackground.9.png"
-    TimeGrid.nowBarBlendColor = "#FF5247"
-    TimeGrid.programNowNextTimeFocusedColor = "#FF5247"
-    TimeGrid.programTitleColor = "#FFFFFF"
-    TimeGrid.programTitleFocusedColor = "#FFFFFF"
-    'TimeGrid.itemSize = [1920, 150]
-    TimeGrid.timeLabelColor = "#FFFFFF"
-    TimeGrid.pastTimeScreenBlendColor = "#3D80FF"
-    TimeGrid.focusBitmapUri = "pkg:/images/SearchFocusBackground2.9.png"
-    TimeGrid.duration = 12600
-    TimeGrid.timebarHeight = 120
-    TimeGrid.sectionDividerTopOffset = 30
-    TimeGrid.numRows = 6
-    TimeGrid.channelInfoWidth = 245
-    TimeGrid.scrollSpeed = 100
-    TimeGrid.overlayBitmapUri = ""
-    TimeGrid.nowBarWidth = 60
+    m.log.info("set timeGrid style")
 
-    TimeGrid.vertFocusAnimationStyle = "floatingFocus"
+    plugin = m.plugin
+    timeGrid = m.getMField("TimeGrid")
+
+    yPosition = plugin.getIntValue("time_grid_position_y", 500)
+    xPosition = plugin.getIntValue("time_grid_margin_left", 0)
+
+    timeGridHeight = plugin.getIntValue("time_grid_item_size", 125)
+    timeGrid.clippingRect = [0, -50, 1920, 1920]
+    timeGrid.translation = [xPosition, yPosition]
+    timeGrid.numRows = plugin.getIntValue("time_grid_visible_row", 6)
+    timeGrid.itemSize = [1920, timeGridHeight]
+    timeGrid.focusBitmapUri = "pkg:/images/SearchFocusBackground2.9.png"
+
+    programFontName = mc.getString(style, "label1_font_name", "medium")
+    programFontSize = plugin.getIntValue("label1_font_size", 12)
+    programRightPadding = plugin.getIntValue("grid_item_padding_right", 12)
+    programLeftPadding = plugin.getIntValue("grid_item_padding_left", 12)
+
+    timeGrid.programBackgroundBitmapUri = asString(style.guide_item_asset_background_uri, "pkg:/images/timeGridBackground.9.png")
+    timeGrid.programTitleFont = zapp.viewUtils.resolveUIBFont(programFontName, programFontSize)
+    timeGrid.programTitleColor = zapp.viewUtils.transposeUIBColor(style.label1_live_font_color, "#FFFFFF")
+    timeGrid.programTitleFocusedColor = zapp.viewUtils.transposeUIBColor(style.label1_live_focused_font_color, "#FFFFFF")
+    timeGrid.programHorizMargin = programLeftPadding + programRightPadding
+
+    timeBarTopPadding = plugin.getIntValue("time_bar_padding_top", 60)
+    timeBarBottomPadding = plugin.getIntValue("time_bar_padding_bottom", 60)
+    timebarFontSize = plugin.getIntValue("time_bar_label_font_size", 12)
+    timebarFontName = mc.getString(style, "time_bar_label_font_name", "medium")
+
+    timeGrid.pastTimeScreenBlendColor = "#3D80FF"
+    timeGrid.timeBarBitmapUri = ":"
+    timeGrid.timeBarHeight = timeBarBottomPadding + timeBarTopPadding
+    timeGrid.timeLabelColor = zapp.viewUtils.transposeUIBColor(style.time_bar_label_font_color, "#FFFFFF")
+    timeGrid.timeLabelFont = zapp.viewUtils.resolveUIBFont(timebarFontName, timebarFontSize)
+
+    timeGrid.channelInfoBackgroundBitmapUri = asString(style.channel_background_item_uri, "pkg:/images/timeGridBackground.9.png")
+    timeGrid.channelInfoWidth = plugin.getIntValue("channel_list_width", 245)
+
+    timeGrid.nowBarWidth = plugin.getIntValue("time_bar_badge_width", 10)
+    timeGrid.nowBarBitmapUri = asString(style.time_bar_badge_item_uri)
+    timeGrid.nowBarBlendColor = zapp.viewUtils.transposeUIBColor(style.time_bar_badge_background_color, "")
+    timeGrid.nowBarOffset = plugin.getIntValue("time_bar_badge_padding_left", 0)
+
+
+    timeGrid.nowNextMode = asBoolean(style.grid_item_show)
+    timeGrid.nowBackgroundBitmapUri = asString(style.grid_item_live_background_color, "pkg:/images/timeGridBackground.9.png")
+    timeGrid.nextBackgroundBitmapUri = asString(style.grid_item_future_background_color, "pkg:/images/timeGridBackground.9.png")
+    timeGrid.programNowNextTimeColor = zapp.viewUtils.transposeUIBColor(style.grid_item_future_background_color, "#FFFFFF")
+    timeGrid.programNowNextTimeFocusedColor = zapp.viewUtils.transposeUIBColor(style.grid_item_future_focused_background_color, "#FFFFFF")
+    'timeGrid.programNowNextHorizMargin =
+    'timeGrid.programNowNextTimeTitleGap =
+    '
+    timeGrid.duration = 12600
+    'timeGrid.sectionDividerTopOffset = 30
+    'timeGrid.timeBarTwoLineLayout = true
+    'timeGrid.scrollSpeed = 100
+    'timeGrid.overlayBitmapUri = ""
+    timeGrid.vertFocusAnimationStyle = "floatingFocus"
   end function
 
   private function createContentFromItems(items)
+    m.log.info("createContentFromItems")
+
     if not mc.isArray(items)
       return invalid
     end if
@@ -304,6 +354,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   end function
 
   private function setEpgContent(data)
+    m.log.info("setEpgContent")
+
     if asString(data.channels_source.source) <> ""
       m.state = "loading"
       m.loadChannelTask = m.executeloadTaskWithUrl("1", m.onLoadMoreResponse, data.channels_source.source, 0)
@@ -439,6 +491,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
 
 
   public function onProgramSelected(programIndex)
+    m.log.info("onProgramSelected", programIndex)
     m.selectProgram(programIndex)
   end function
 
@@ -450,7 +503,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   public function onProgramFocused(programIndex)
     m.log.info("onProgramFocused", programIndex)
     m.programFocused = programIndex
-    m.selectProgram(programIndex)
+    'm.selectProgram(programIndex)
   end function
 
   private function selectProgram(programIndex)
@@ -459,7 +512,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       content = m.content.getChild(m.channelFocused)
       if content <> invalid
         program = content.getChild(programIndex)
-        m.onFocusEntry(program)
+        'm.onFocusEntry(program)
         'selection = m.createSelectionFromContent(program)
         'selection.playMode = "default"
         'mc.setOrAddNodeField(selection.initialItem, "itemType", "video")
@@ -487,6 +540,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   end function
 
   private function getChildCellStyle(componentJson as mc.types.assocarray)
+    m.log.info("getChildCellStyle")
+
     cellStyles = m.getInstance("cellStyles")
     key = asString(componentJson.styles.cell_style_key)
     if cellStyles.styleIdsByKey.doesExist(key)
@@ -662,8 +717,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   end function
 
   private function getLocalization()
-    plugin = m.plugins.getPluginById("quick-brick-epg-screen")
-    localization = asAA(plugin.json.configuration_json.localizations)
+    localization = asAA(m.plugin.json.configuration_json.localizations)
     language = m.getInstance("languageCode") ?? "en"
     m.localizations = localization[language]
   end function
