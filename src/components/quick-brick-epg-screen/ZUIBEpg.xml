@@ -8,6 +8,10 @@
     <field
         id='screenState'
         type='node' />
+    <field
+        id='leftEdgeTargetTime'
+        type='time'
+        alias='TimeGrid.leftEdgeTargetTime' />
   </interface>
 
   <children>
@@ -32,78 +36,51 @@
         isImageVideoPlayback='{{isHeaderImageVideoPlayback}}'
         isDetailsVisible='{{isDetailsVisible}}' />
 
-    <TimeGrid
-        id='TimeGrid'
-        content='{{content}}'
-        contentStartTime='{{contentStartTime}}'
-        leftEdgeTargetTime='{{leftEdgeTargetTime}}'
-        channelFocused='{(onChannelFocused(value))}'
-        programFocused='{(onProgramFocused(value))}'
-        programSelected='{(onProgramSelected(value))}'
-        vertFocusAnimationStyle='floatingFocus'
-        translation='[0, 500]'
-        channelInfoComponentName='channelItemComponent' />
-
-    <mv_LayoutGroup
-        id='controlsGroup'
-        _type='mv_ControlsGroup'
-        translation='[200, 150]'
-        layoutDirection='horiz'
-        keyDirection='horiz'
-        itemSpacings='[10]'
-        _initializeAfterCreatingChildren='true'
-        visible='true'>
-      <ZActionButton
-          id='button1'
-          style='{{:dayButtonStyle}}'
-          selected='{(onDayButtonSelected())}'
-          visible='{{dayButtonVisible}}'
-          _type='mv_Button'
-          text='Days' />
-      <ZActionButton
-          id='button2'
-          style='{{:filterButtonStyle}}'
-          selected='{(onFilterButtonSelected())}'
-          visible='{{filterButtonVisible}}'
-          _type='mv_Button'
-          text='Filter' />
-    </mv_LayoutGroup>
-
-    <Rectangle
-        id='backgroundDayRectangle'
-        width='600'
-        height='1080'
-        translation='[0, 0]'
-        color='{{=zapp_viewUtils_UIBColor("days_tabs_background_color")}}'
-        visible='{{itemListVisible}}'>
-      <Poster
-          id='filterGradient'
-          width='{{=zapp_viewUtils_UIBInt("gradient_w", 2700)}}'
-          height='{{=zapp_viewUtils_UIBInt("gradient_h", 1080)}}'
-          uri='{{=zapp_viewUtils_UIBAssetUri("gradient_url", "pkg:/images/$$RES$$/tab-bar-gradient.9.png")}}'
-          translation='[0,0]' />
+    <Group
+        id='TimeGridGroup'
+        translation='[0,500]'>
+      <TimeGrid
+          id='TimeGrid'
+          content='{{content}}'
+          contentStartTime='{{contentStartTime}}'
+          leftEdgeTargetTime='{{leftEdgeTargetTime}}'
+          channelFocused='{(onChannelFocused(value))}'
+          programFocused='{(onProgramFocused(value))}'
+          leftEdgeTargetTime='{(onLeftEdgeTargetTime())}'
+          programSelected='{(onProgramSelected(value))}'
+          vertFocusAnimationStyle='floatingFocus'
+          translation='[0, 0]'
+          channelInfoComponentName='channelItemComponent' />
       <mv_Label
-          id='filterLabel'
-          width='290'
-          height='32'
-          horizAlign='center'
-          vertAlign='center'
-          maxLines='2'
-          text='{{filterLabelText}}'
+          id='titleLabel'
+          color='0xFFFFFFFF'
+          width='230'
+          height='56'
           wrap='true'
-          fontKey='medium,20'
-          translation='[0,250]' />
-      <mv_MarkupList
-          id='list'
-          style='{{listStyle}}'
-          content='{{listContent}}'
-          jumpToItem='{{jumpToItem}}'
-          itemComponentName='ZPowerCell'
-          translation='{{listTranslation}}'
-          numColumns='1'
-          numRows='6'
-          itemSelected='{(onSelectItem(value))}' />
-    </Rectangle>
+          text='{{timeGridDayText}}'
+          translation='[37,-68]'
+          horizAlign='left'
+          vertAlign='center'
+          font='font:MediumSystemFont' />
+    </Group>
+
+
+    <LayoutGroup
+        id='layoutGroup'
+        layoutDirection='vert'
+        horizAlignment='left'
+        vertAlignment='center'
+        translation='{{:menuPosition}}'>
+      <Menu
+          id='menu'
+          buttons='{{menubuttons}}'
+          style='{{:menuStyle}}'
+          selectedIndex='{(onSelectedIndexChangeMenu(value))}'
+          jumpToIndex='{{jumpToIndex}}'
+          buttonSize='{{:buttonSize}}'
+          layoutDirection='horiz'
+          buttonSpacing='{{:buttonSpacing}}' />
+    </LayoutGroup>
 
     <LoadingIndicator
         id='loadingIndicator'

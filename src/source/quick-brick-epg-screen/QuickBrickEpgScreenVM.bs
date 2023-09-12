@@ -17,6 +17,7 @@ end enum
 class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
 
   'styling
+  public timeGridDayText = "Today"
   public filterLabelText = ""
   public menuButtons = []
   public titleTextStyle = {}
@@ -25,10 +26,6 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   public buttonSize = [700, 100]
   public buttonSpacing = 5
   public jumpToIndex = -1
-  public dayButtonStyle = invalid
-  public filterButtonStyle = invalid
-  public dayButtonVisible = false
-  public filterButtonVisible = false
   public isHeaderShown = false
   public isHeaderImageVisible = false
   public isHeaderImageVideoPlayback = false
@@ -37,18 +34,12 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   public headerStyle = invalid
 
   'public content = m.createSGNode("CollectionRow")
-  public gridStyle = {}
-  public results = invalid
   public channelIndex = -1
   public programIndex = -1
   public channelFocused = 0
   public programFocused = 0
   public content = invalid
-  public listContent = invalid
   public listStyle = {}
-  public jumpToItem = 0
-  public itemListVisible = false
-  public listTranslation = [0, 400]
   public contentStartTime = {}
   public leftEdgeTargetTime = 0
 
@@ -61,10 +52,9 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   private focusRectangle = invalid
   private channelItem = invalid
   private timeGridContent = invalid
-  private categoriesList = []
+  private timeGrid = invalid
   private contentLoader = new zapp.pipes.EntryLoader()
 
-  private oldSelectedCategory = ""
   private selectedIndexLabel = "now_label"
   private focusIds = []
   private riversJsonData = invalid
@@ -72,20 +62,12 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   private taskCount = invalid
   private programsData = []
   private channelCount = invalid
+  private programPlayStart = 0
   private focusIndex = 0
   private localizations = invalid
   private isUsingButtons = true
-  private dayIsSelected = false
-  private filterIsSelected = false
   private cellStyle
-  private controlsGroup as mc.types.node
-  private backgroundDayRectangle
-  private button1 as mc.types.node
-  private button2 as mc.types.node
-  private buttonActionMap = {
-    open_day_tab_action: ButtonAction.play
-    open_channel_filter_tab: ButtonAction.favorite
-  }
+
   private showAnim
   private hideAnim
 
@@ -96,6 +78,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
 
   @injectClass("zapp.PluginManager")
   private plugins
+
+  private customItems = []
 
   ' /**
   '  * @module QuickBrickEpgScreenVM
@@ -108,19 +92,41 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   public function new(riversJson)
     super(riversJson, "QuickBrickEpgScreenVM")
     m.setEpgStyle(riversJson.styles)
-    'm.makeEPGData(riversJson.data)
-    'm.removingGridGap()
-    'm.updateButtons(riversJson.styles)
     m.focusId = "TimeGrid"
+    m.timeGrid = m.getMField("TimeGrid")
+
     m.style = m.getChildCellStyle(riversJson)
     m.riversJsonData = riversJson
-    m.controlsGroup = m.getMField("controlsGroup")
-    m.button1 = m.getMField("button1")
-    m.button2 = m.getMField("button2")
-    m.backgroundDayRectangle = m.getMField("backgroundDayRectangle")
     m.contentDepth = zapp.viewUtils.getUIBInt(riversJson.styles, "data_depth", 1)
-    m.listTranslation = [0, 400]
     m.createAnimations()
+    m.getLocalization()
+    m.updateButtons(riversJson.styles)
+  end function
+
+  public function onSelectedIndexChangeMenu(index)
+    m.log.info("selected index", index)
+    item = m.menuButtons[index]
+    currentTime = CreateObject("roDateTime")
+    currentDayIndex = currentTime.getDayOfWeek()
+
+    if item <> invalid
+
+      newIndex = item.index
+      if index = 0
+        dayDifference = 0
+      else
+        dayDifference = newIndex - currentDayIndex
+      end if
+
+      if dayDifference < 0
+        dayDifference = abs(index - 7)
+      end if
+
+      targetTime = currentTime.asSeconds() + (86400 * dayDifference)
+
+      m.leftEdgeTargetTime = targetTime
+      m.content = m.timeGridContent
+    end if
   end function
 
   public override function load()
@@ -130,7 +136,6 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     m.plugin = m.plugins.getPluginById("quick-brick-epg-screen")
 
     m.epgHardcodedStyle(m.riversJsonData.styles)
-    m.updateButtons(m.riversJsonData.styles)
     m.updateHeaderStyle(m.riversJsonData.styles)
     m.updateFocusControls()
     m.state = "ready"
@@ -144,15 +149,6 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     return true
   end function
 
-  public override function onFocusEEntry(entry) as void
-    m.log.info("onFocusEEntry epg screen")
-
-    if m.isHeaderUpdatingOnFocus = true
-      m.headerItem = entry
-    end if
-    m.isHeaderShown = m.canShowHeader
-  end function
-
   public override function resetStyles(riversJson)
     m.log.method("resetStyles")
     super.resetStyles(riversJson)
@@ -163,67 +159,13 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     ' m.waitAFrame(m.onReloadStyle, 5)
   end function
 
-  public function onDayButtonSelected()
-    m.log.info("onDayButtonSelected")
-    m.getLocalization()
-    items = []
-    for each item in m.localizations
-      listItem = {
-        "title": item
-      }
-      items.push(listItem)
-    end for
-    customOrder = [
-      "now_label",
-      "today",
-      "monday",
-      "tuesday",
-      "wednesday",
-      "thursday",
-      "friday",
-      "saturday",
-      "sunday"
-    ]
-    sortedData = []
-    for each orderItem in customOrder
-      for each dataItem in items
-        if lcase(dataItem.title) = lcase(orderItem)
-          sortedData.Push(dataItem)
-          exit for ' Exit the inner loop after finding a match
-        end if
-      end for
-    next
+  public override function onFocusEntry(entry) as void
+    m.log.info("onFocusEntry epg screen")
 
-    content = m.createContentFromItems(sortedData)
-    if not m.dayIsSelected
-      m.onShowHideAnimation(m.showAnim, true, true)
-      m.sendNotification("isTopNavBarShowing", false)
+    if m.isHeaderUpdatingOnFocus = true
+      m.headerItem = entry
     end if
-    m.itemListVisible = true
-    m.dayIsSelected = true
-    m.listContent = content
-    m.setFocusId("list")
-  end function
-
-  public function onFilterButtonSelected()
-    m.log.info("onFilterButtonSelected")
-    items = []
-    m.categoriesList = ["Comedy", "Sport", "Drama"]
-    for i = 0 to m.categoriesList.count() - 1
-      listItem = {
-        "title": m.categoriesList[i]
-      }
-      items.push(listItem)
-    end for
-    content = m.createContentFromItems(items)
-    if not m.filterIsSelected
-      m.onShowHideAnimation(m.showAnim, true, true)
-      m.sendNotification("isTopNavBarShowing", false)
-    end if
-    m.itemListVisible = true
-    m.filterIsSelected = true
-    m.listContent = content
-    m.setFocusId("list")
+    m.isHeaderShown = m.canShowHeader
   end function
 
   private function onShowHideAnimation(anim as mv.animations.AnimationBase, visible as boolean, animated as boolean)
@@ -263,8 +205,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   private function createAnimations()
-    m.showAnim = new mv.animations.Move(m.backgroundDayRectangle, 0.1, [-700, 0], [0, 0])
-    m.hideAnim = new mv.animations.Move(m.backgroundDayRectangle, 0.3, [0, 0], [-700, 0])
+    'm.showAnim = new mv.animations.Move(m.backgroundDayRectangle, 0.1, [-700, 0], [0, 0])
+    'm.hideAnim = new mv.animations.Move(m.backgroundDayRectangle, 0.3, [0, 0], [-700, 0])
   end function
 
 
@@ -272,14 +214,16 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     m.log.info("set timeGrid style")
 
     plugin = m.plugin
-    timeGrid = m.getMField("TimeGrid")
+    timeGrid = m.timeGrid
+    timeGridGroup = m.getMField("TimeGridGroup")
+    timeGrid.timeBarTwoLineLayout = true
 
     yPosition = plugin.getIntValue("time_grid_position_y", 500)
     xPosition = plugin.getIntValue("time_grid_margin_left", 0)
 
     timeGridHeight = plugin.getIntValue("time_grid_item_size", 125)
     timeGrid.clippingRect = [0, -50, 1920, 1920]
-    timeGrid.translation = [xPosition, yPosition]
+    timeGridGroup.translation = [xPosition, yPosition]
     timeGrid.numRows = plugin.getIntValue("time_grid_visible_row", 6)
     timeGrid.itemSize = [1920, timeGridHeight]
     timeGrid.focusBitmapUri = "pkg:/images/SearchFocusBackground2.9.png"
@@ -290,7 +234,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     programLeftPadding = plugin.getIntValue("grid_item_padding_left", 12)
 
     timeGrid.programBackgroundBitmapUri = asString(style.guide_item_asset_background_uri, "pkg:/images/timeGridBackground.9.png")
-    timeGrid.programTitleFont = zapp.viewUtils.resolveUIBFont(programFontName, programFontSize)
+    'timeGrid.programTitleFont = zapp.viewUtils.resolveUIBFont(programFontName, programFontSize)
     timeGrid.programTitleColor = zapp.viewUtils.transposeUIBColor(style.label1_live_font_color, "#FFFFFF")
     timeGrid.programTitleFocusedColor = zapp.viewUtils.transposeUIBColor(style.label1_live_focused_font_color, "#FFFFFF")
     timeGrid.programHorizMargin = programLeftPadding + programRightPadding
@@ -304,7 +248,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     timeGrid.timeBarBitmapUri = ":"
     timeGrid.timeBarHeight = timeBarBottomPadding + timeBarTopPadding
     timeGrid.timeLabelColor = zapp.viewUtils.transposeUIBColor(style.time_bar_label_font_color, "#FFFFFF")
-    timeGrid.timeLabelFont = zapp.viewUtils.resolveUIBFont(timebarFontName, timebarFontSize)
+    'timeGrid.timeLabelFont = zapp.viewUtils.resolveUIBFont(timebarFontName, timebarFontSize)
 
     timeGrid.channelInfoBackgroundBitmapUri = asString(style.channel_background_item_uri, "pkg:/images/timeGridBackground.9.png")
     timeGrid.channelInfoWidth = plugin.getIntValue("channel_list_width", 245)
@@ -324,10 +268,9 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     'timeGrid.programNowNextTimeTitleGap =
     '
     timeGrid.duration = 12600
-    'timeGrid.sectionDividerTopOffset = 30
-    'timeGrid.timeBarTwoLineLayout = true
-    'timeGrid.scrollSpeed = 100
-    'timeGrid.overlayBitmapUri = ""
+    timeGrid.sectionDividerTopOffset = 30
+    timeGrid.scrollSpeed = 100
+    timeGrid.overlayBitmapUri = ""
     timeGrid.vertFocusAnimationStyle = "floatingFocus"
   end function
 
@@ -351,6 +294,20 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     end for
     m.setListStyle(entryWraper)
     return entryWraper
+  end function
+
+
+  function onLeftEdgeTargetTime()
+    dt = CreateObject("roDateTime")
+    nowTime = dt.AsSeconds()
+    dayInSecond = 86400
+    startDay = nowTime - (dt.GetHours() * 60 + dt.getMinutes() - dt.GetTimeZoneOffset()) * 60
+    endDay = startDay + dayInSecond
+    dt.FromSeconds(m.TimeGrid.leftEdgeTargetTime - (dt.GetTimeZoneOffset() * 60))
+    m.timeGridDayText = dt.GetWeekday()
+    if m.TimeGrid.leftEdgeTargetTime < endDay
+      m.timeGridDayText = "Today"
+    end if
   end function
 
   private function setEpgContent(data)
@@ -394,6 +351,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     if result.isOk
       m.channelCount++
       programsData = result.data
+      programsCount = programsData.getChildCount() - 1
       for each programData in programsData.getChildren(-1, 0)
         programItem = m.channelItem.createChild("ContentNode")
         programItem.PLAYSTART = m.parseDateStringToSeconds(programData.json.extensions.start_time)
@@ -405,6 +363,9 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
         'programItem.HDSMALLICONURL = programData.json.images.image_base
         m.programsData.push(programItem)
       end for
+      if m.channelCount = 0
+        m.programPlayStart = m.programsData.[programsCount].PLAYSTART
+      end if
     end if
     m.programsData.SortBy("PLAYSTART")
     m.timeGridContent.getChild(m.channelCount).appendChildren(m.programsData)
@@ -417,6 +378,9 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       m.log.info("content for Epg", m.timeGridContent)
       m.state = "ready"
     end if
+
+    m.createCustomItems()
+    m.updateMenuItems()
   end function
 
   private function onLoadResponse(result)
@@ -428,67 +392,34 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     m.state = "ready"
   end function
 
+  function calculateDaysDifference(currentTimestamp as integer, targetTimestamp as integer) as integer
+    timestampDifference = targetTimestamp - currentTimestamp
+    daysDifference = timestampDifference / 86400
+    daysDifference = m.customRoundUp(daysDifference)
+
+    if daysDifference >= 8
+      return daysDifference
+    end if
+
+    return daysDifference + 1
+  end function
+
+  function customRoundUp(value as float) as integer
+    integerPart = Int(value)
+
+    if value - integerPart > 0
+      roundedValue = integerPart + 1
+    else
+      roundedValue = integerPart
+    end if
+
+    return roundedValue
+  end function
+
+
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ Public Method
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-  public function onSelectedIndexChange(index)
-    m.log.info("selected index", index)
-    item = m.menuButtons[index]
-
-    if item <> invalid
-
-      screen = m.getScreen(item.target)
-
-      if screen <> invalid
-        m.setInstance("currentSelection", invalid)
-        m.log.info("found screen for button, displaying it")
-        m.focusIndex = index
-        m.push(screen)
-        m.setFocus(screen)
-      else
-        m.log.error("could not get the screen for", item.target)
-      end if
-    end if
-  end function
-
-  public function onFocusRow(index)
-
-  end function
-
-  public function onSelectItem(index)
-    m.log.method("OnItemSelected")
-
-    currentTime = CreateObject("roDateTime")
-    currentDayIndex = currentTime.getDayOfWeek()
-    m.selectedIndexLabel = m.listContent.getChild(index).title
-
-    if m.content <> invalid and index <> -1 and m.dayIsSelected
-      newIndex = index
-      if index > 1
-        newIndex = index - 1
-      end if
-
-      dayDifference = newIndex - currentDayIndex
-      if dayDifference < 0
-        dayDifference = 0
-      end if
-
-      targetTime = currentTime.asSeconds() + (86400 * dayDifference)
-
-      m.leftEdgeTargetTime = targetTime
-      m.content = m.timeGridContent
-      m.onDayButtonSelected()
-      m.jumpToItem = index
-    else if m.content <> invalid and index <> -1 and m.filterIsSelected
-      m.content = m.filterContentByCategories(m.categoriesList[index])
-      m.onFilterButtonSelected()
-      m.jumpToItem = index
-    end if
-
-    m.isStyleUpdateRequired = true
-  end function
-
 
   public function onProgramSelected(programIndex)
     m.log.info("onProgramSelected", programIndex)
@@ -577,7 +508,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   end function
 
   private function stylingDayLabelComponent(styles)
-    localizedText = "aaaa"'zapp.viewUtils.getLocalizedText(control, localization)
+    '// Will need to be implemented in the future scope
+    localizedText = zapp.viewUtils.getLocalizedText("control", "localization")
 
     m.filterLabelText = "Filter Days"
     dayLabelText = zapp.viewUtils.textToTextTransformFormat(localizedText, styles.days_label_text_transform)
@@ -619,7 +551,6 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       mc.setOrAddNodeField(content, "_style", cellStyle)
       mc.setOrAddNodeField(content, "_styleId", m.style.id)
     end if
-
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -652,123 +583,91 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   '++ Private Methods
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  private function filterContentByCategories(catagory as string)
-    if catagory <> m.oldSelectedCategory
-      content = m.timeGridContent.clone(true)
-      for each channel in content.getChildren(-1, 0)
-        for each program in channel.getChildren(-1, 0)
-          if asString(program.genre) <> catagory
-            channel.removeChild(program)
-          end if
-        end for
-        if channel.getChildCount() = 0
-          content.removeChild(channel)
-        end if
-      end for
-      m.oldSelectedCategory = catagory
-      return content
-    end if
-    m.oldSelectedCategory = ""
-    return m.timeGridContent
-  end function
-
   private function updateFocusControls()
     itemGroup = []
     if m.isUsingButtons
-      buttonGroup = []
-      if m.dayButtonVisible
-        buttonGroup.push("button1")
-      end if
-      if m.filterButtonVisible
-        buttonGroup.push("button2")
-      end if
-      m.focusIds.push(buttonGroup)
+      itemGroup.push("menu")
     end if
     itemGroup.push("TimeGrid")
     m.focusIds.push(itemGroup)
-
   end function
 
   private function updateButtons(styles as mc.types.assocarray)
     m.getLocalization()
-    m.ascertainUsedButtons(styles)
     m.setButtonStyles(styles)
-    m.setButtonsActions(styles)
-  end function
-
-  private function ascertainUsedButtons(styles)
-    m.isUsingButtons = zapp.viewUtils.getUIBBool(styles, "tv_buttons_container_buttons_enabled")
-    'm.dayButtonStyle = zapp.viewUtils.applyActionButtonStyle(m.button1, styles, "tv_buttons_button_1", m.localizations)
-    'if m.isUsingButtons
-    '  marginStyle = zapp.viewUtils.makeUIBMargin(styles, "tv_buttons_container")
-    '  controlsGroupAligment = asString(styles.tv_buttons_container_align)
-    '  controlsGroupPosition = asString(styles.tv_buttons_container_position)
-    '  m.controlsGroup.itemSpacings = [zapp.viewUtils.getUIBInt(styles, "tv_buttons_container_horizontal_gutter", 15)]
-    '  m.controlsGroup.translation = [abs(marginStyle.marginLeft - marginStyle.marginRight), abs(marginStyle.marginTop - marginStyle.marginBottom)]
-    'end if
-
-    if m.isUsingButtons
-      m.dayButtonVisible = zapp.viewUtils.getUIBBool(styles, "tv_buttons_button_1_button_enabled")
-      m.filterButtonVisible = zapp.viewUtils.getUIBBool(styles, "tv_buttons_button_2_button_enabled")
-      if not m.dayButtonVisible and not m.filterButtonVisible
-        m.isUsingButtons = false
-      end if
-    end if
   end function
 
   private function getLocalization()
+    m.plugin = m.plugins.getPluginById("quick-brick-epg-screen")
+
     localization = asAA(m.plugin.json.configuration_json.localizations)
     language = m.getInstance("languageCode") ?? "en"
     m.localizations = localization[language]
   end function
 
-  private function setButtonsActions(styles)
-    mc.setOrAddNodeField(m.button1, "action", m.buttonActionMap[asString(styles.tv_buttons_button_1_assign_action)])
-    mc.setOrAddNodeField(m.button2, "action", m.buttonActionMap[asString(styles.tv_buttons_button_2_assign_action)])
-  end function
-
   private function setButtonStyles(styles)
-    bundle = m.styleManager@.loadBundle("pkg:/source/quick-brick-epg-screen/QuickBrickEpgScreenVM.json")
-    buttonStyle = m.styleManager@.getStyle("pkg:/source/quick-brick-epg-screen/QuickBrickEpgScreenVM.buttons.rectangle_subtext")
-    if m.checkIfIndependentStylesNeeded(styles)
-      'm.dayButtonStyle = zapp.viewUtils.applyActionButtonStyle(m.button1, styles, "tv_buttons_button_1", m.localizations)
-      'm.filterButtonStyle = zapp.viewUtils.applyActionButtonStyle(m.button2, styles, "tv_buttons_button_2", m.localizations)
-      m.button1.style = zapp.viewUtils.applyActionButtonStyle(m.button1, styles, "tv_buttons_button_1", m.localizations)
-      m.button2.style = zapp.viewUtils.applyActionButtonStyle(m.button2, styles, "tv_buttons_button_2", m.localizations)
-    else
-      m.setGeneralStyleForAllButtons(styles)
-    end if
+    m.isUsingButtons = zapp.viewUtils.getUIBBool(styles, "epg_filter_button_enable")
+    m.menuStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "epg_filter_button", "custom", "")
+    m.menuStyle.normal.delete("text")
+    m.menuPosition = zapp.viewUtils.makeUIBPosition(styles, "epg_filter_button", 960, 200)
+    m.buttonSize = zapp.viewUtils.makeUIBSize(styles, "epg_filter_button", 100, 100)
+    m.buttonSpacing = zapp.viewUtils.getUIBInt(styles, "epg_filter_button_spacing", 5)
+    mc.setOrAddNodeField(m.menuStyle, "layoutDirection", "horiz")
+    m.titleTextStyle = zapp.viewUtils.makeUIBTextStyle(styles, "title")
   end function
 
-  private function checkIfIndependentStylesNeeded(styles)
-    independentStyles = zapp.viewUtils.getUIBBool(styles, "tv_buttons_container_independent_styles")
-    if independentStyles
-      return true
+  private function createCustomItems()
+    m.customItems = []
+    dataTime = CreateObject("roDateTime")
+    nowTime = dataTime.asSeconds()
+    currentDayIndex = dataTime.getDayOfWeek()
+    '//Today Item
+    item = m.createButton("button_1", 0)
+    if item <> invalid
+      m.customItems.push(item)
     end if
-    return false
-  end function
 
-  private function setGeneralStyleForAllButtons(styles)
-    for i = 0 to m.controlsGroup.getChildCount() - 1
-      if m.controlsGroup.getChild(i).visible
-        for each item in m.controlsGroup.getChildren(-1, 0)
-          prefix = m.convertItemIdToPrefix(m.controlsGroup.getChild(i).id)
-          item.style = zapp.viewUtils.applyActionButtonStyle(item, styles, prefix, m.localizations)
-          item.text = "aaaaaaaaaa"
-        end for
-        exit for
+    days = m.calculateDaysDifference(nowTime, m.programPlayStart)
+
+    for i = currentDayIndex + 1 to days + currentDayIndex
+      numberText = str(i).trim()
+      item = m.createButton("button_" + numberText, i - 1)
+      if item <> invalid
+        m.customItems.push(item)
       end if
     end for
   end function
 
-  private function convertItemIdToPrefix(id as string)
-    if id = "button1"
-      return "tv_buttons_button_1"
-    else
-      return "tv_buttons_button_2"
+  private function createButton(prefix, index)
+    text = m.getLocalizeButtonText(prefix + "_title")
+    text = zapp.viewUtils.textToTextTransformFormat(text, m.riversJsonData.styles.epg_filter_button_text_transform)
+    'width = text.localBoundingRect().width
+    if text <> invalid and text.trim() <> ""
+      return {
+        title: text
+        index: index
+      }
     end if
+
+    return invalid
   end function
 
+  private function getLocalizeButtonText(prefix as string)
+    text = m.localizations[prefix]
+    if text = invalid or text.trim() = ""
+      text = m.riversJson.styles[prefix]
+    end if
+    return text
+  end function
+
+  private function updateMenuItems()
+    m.log.info("updateMenuItems")
+
+    items = []
+    items.append(m.customItems)
+    m.menuButtons = items
+    m.jumpToIndex = 0
+  end function
 
   private function makeEPGData(riversJsonData)
     m.setEpgContent(riversJsonData.data)
@@ -779,7 +678,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   private function setEpgStyle(styles)
     if styles <> invalid
       'm.stylingChannelItemComponent(styles)
-      m.stylingDayLabelComponent(styles)
+      'm.stylingDayLabelComponent(styles)
       'm.stylingGridComponent(styles)
     end if
   end function
@@ -843,31 +742,17 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     return url.replace("{{id}}", id)
   end function
 
-  private function removingGridGap()
-    topFields = m.getMField("top")
-    topParent = topFields.getParent()
-    for each child in topParent.getChildren(-1, 0)
-      if child.id = m.getInstance("selectedId")
-        childTranslationY = child.translation[1]
-        gridTranslation = zapp.viewUtils.makeUIBPosition(m.riversJsonData.styles, "grid", 20, 20)
-        if gridTranslation[1] <> 20 and childTranslationY > gridTranslation[1]
-          child.translation = [m.gridStyle.translation[0], childTranslationY - gridTranslation[1]]
-        end if
-      end if
-    end for
-  end function
-
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ Key Presses
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   override function onKeyPressUp() as boolean
     m.log.info("on Keypress up. focusId", m.focusId)
-    if m.isButtonsInFocus(m.focusId)
+    if m.isDayMenuInFocus(m.focusId)
       zapp.appService.toggleNavMenuFocus(true)
     end if
 
-    if m.isFocusOnList(m.focusId) and not m.isButtonsInFocus(m.focusId)
+    if not m.isDayMenuInFocus(m.focusId)
       m.setFocusId(m.focusIds[0][0])
     end if
     return true
@@ -875,9 +760,9 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
 
   public function onKeyPressDown() as boolean
     m.log.info("onKeyPressDown", m.focusId)
-    if m.isFocusOnList(m.focusId) and m.isButtonsInFocus(m.focusId)
+    if m.isDayMenuInFocus(m.focusId)
       if m.isUsingButtons
-        m.setFocusId(m.focusIds[1][0])
+        m.setFocusId(m.focusIds[0][1])
       else
         m.setFocusId(m.focusIds[0][0])
       end if
@@ -886,51 +771,13 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     return true
   end function
 
-  private function isButtonsInFocus(focusId)
+  private function isDayMenuInFocus(focusId)
     for i = 0 to m.focusIds[0].count() - 1
-      if focusId = m.focusIds[0][i]
+      if focusId = m.focusIds[0][0]
         return true
       end if
     end for
     return false
-  end function
-
-  private function isFocusOnList(focusId)
-    return focusId <> "list"
-  end function
-
-  public function onKeyPressLeft() as boolean
-    m.log.info("onKeyPressLeft", m.focusId)
-    if m.isFocusOnList(m.focusId)
-      m.setFocusId(mc.collections.getItemAtOffset(m.focusIds[0], m.focusId, -1))
-    end if
-    return true
-  end function
-
-  private function onKeyPressRight() as boolean
-    m.log.info("onKeyPressRight", m.focusId)
-    if m.isFocusOnList(m.focusId)
-      m.setFocusId(mc.collections.getItemAtOffset(m.focusIds[0], m.focusId, 1))
-    end if
-    return true
-  end function
-
-  override function onKeyPressBack() as boolean
-    m.log.info("onKeyPressBack", m.focusId)
-    if m.focusId = "list"
-      if m.dayIsSelected
-        m.setFocusId("button1")
-      else if m.filterIsSelected
-        m.setFocusId("button2")
-      end if
-      m.log.info("focusing on button")
-      m.onShowHideAnimation(m.hideAnim, false, true)
-      m.sendNotification("isTopNavBarShowing", true)
-      m.itemListVisible = false
-      m.dayIsSelected = false
-      m.filterIsSelected = false
-    end if
-    return true
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
