@@ -1,3 +1,4 @@
+
 function init()
   initfunctionview()
 end function
@@ -10,12 +11,17 @@ function initfunctionview()
 end function
 
 function updateMaskSize()
+  channelGuideSettings = mioc.getInstance("channelGuideItem").channelGuideSettings
+
+  yPadding = channelGuideSettings.channelPaddingTop + channelGuideSettings.channelPaddingBottom
+  xPadding = channelGuideSettings.channelPaddingRight + channelGuideSettings.channelPaddingLeft
+
   m.photoRectangle.maskSize = [m.top.width - 120, m.top.height - 10]
   m.programFrame.width = m.top.width - 120
-  m.channelPoster.width = m.top.width - 120
+  m.channelPoster.width = m.top.width - 10
   m.programFrame.height = m.top.height - 10
-  m.channelPoster.height = m.top.height - 10
-  m.photoRectangle.translation = [100, 5]
+  m.channelPoster.height = channelGuideSettings.channelAssetHeight
+  m.photoRectangle.translation = [xPadding, yPadding]
 end function
 
 function OnContentChangeForChannel()

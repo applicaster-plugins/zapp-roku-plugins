@@ -44,6 +44,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   public leftEdgeTargetTime = 0
 
   private jwtUtil = new zapp.JWTUtil()
+  private dayInSeconds = 86400
   private canShowHeader = false
   private isHeaderUpdatingOnFocus = false
   private timeout = invalid
@@ -55,11 +56,10 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   private timeGrid = invalid
   private contentLoader = new zapp.pipes.EntryLoader()
 
-  private selectedIndexLabel = "now_label"
   private focusIds = []
   private riversJsonData = invalid
   private contentDepth = 1
-  private taskCount = invalid
+  private taskCount = 0
   private programsData = []
   private channelCount = invalid
   private programPlayStart = 0
@@ -72,6 +72,9 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   private hideAnim
 
   private plugin
+
+  @inject("channelGuideItem")
+  private channelGuideItem
 
   @inject("constants")
   private constants
@@ -91,7 +94,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
 
   public function new(riversJson)
     super(riversJson, "QuickBrickEpgScreenVM")
-    m.setEpgStyle(riversJson.styles)
+    m.plugin = m.plugins.getPluginById("quick-brick-epg-screen")
+
     m.focusId = "TimeGrid"
     m.timeGrid = m.getMField("TimeGrid")
 
@@ -103,42 +107,14 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     m.updateButtons(riversJson.styles)
   end function
 
-  public function onSelectedIndexChangeMenu(index)
-    m.log.info("selected index", index)
-    item = m.menuButtons[index]
-    currentTime = CreateObject("roDateTime")
-    currentDayIndex = currentTime.getDayOfWeek()
-
-    if item <> invalid
-
-      newIndex = item.index
-      if index = 0
-        dayDifference = 0
-      else
-        dayDifference = newIndex - currentDayIndex
-      end if
-
-      if dayDifference < 0
-        dayDifference = abs(index - 7)
-      end if
-
-      targetTime = currentTime.asSeconds() + (86400 * dayDifference)
-
-      m.leftEdgeTargetTime = targetTime
-      m.content = m.timeGridContent
-    end if
-  end function
-
   public override function load()
     m.log.info("load epg screen")
 
     m.makeEPGData(m.riversJsonData)
-    m.plugin = m.plugins.getPluginById("quick-brick-epg-screen")
-
     m.epgHardcodedStyle(m.riversJsonData.styles)
     m.updateHeaderStyle(m.riversJsonData.styles)
     m.updateFocusControls()
-    m.state = "ready"
+
     if m.isHeaderUpdatingOnFocus
       m.headerItem = invalid
       'm.observeNodeField(m.screenState, "focusedEntry", m.onFocusEntry)
@@ -152,7 +128,6 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   public override function resetStyles(riversJson)
     m.log.method("resetStyles")
     super.resetStyles(riversJson)
-    m.setEpgStyle(riversJson.styles)
     m.setContentStyle(m.feed)
 
     m.feed = m.feed
@@ -168,14 +143,14 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     m.isHeaderShown = m.canShowHeader
   end function
 
-  private function onShowHideAnimation(anim as mv.animations.AnimationBase, visible as boolean, animated as boolean)
-    m.log.info("onShowHideAnimation epg screen")
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Content creating
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    if animated
-      anim.start()
-    else
-      anim.jumpToEnd()
-    end if
+  private function makeEPGData(riversJsonData)
+    m.setEpgContent(riversJsonData.data)
+    m.isFirstLoadComplete = true
+    return true
   end function
 
   private function applyDataMap(feed as mc.types.node, style as mc.types.assocarray) as void
@@ -200,116 +175,6 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
 
   end function
 
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '++ Content creating
-  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-  private function createAnimations()
-    'm.showAnim = new mv.animations.Move(m.backgroundDayRectangle, 0.1, [-700, 0], [0, 0])
-    'm.hideAnim = new mv.animations.Move(m.backgroundDayRectangle, 0.3, [0, 0], [-700, 0])
-  end function
-
-
-  private function epgHardcodedStyle(style)
-    m.log.info("set timeGrid style")
-
-    plugin = m.plugin
-    timeGrid = m.timeGrid
-    timeGridGroup = m.getMField("TimeGridGroup")
-    timeGrid.timeBarTwoLineLayout = true
-
-    yPosition = plugin.getIntValue("time_grid_position_y", 500)
-    xPosition = plugin.getIntValue("time_grid_margin_left", 0)
-
-    timeGridHeight = plugin.getIntValue("time_grid_item_size", 125)
-    timeGrid.clippingRect = [0, -50, 1920, 1920]
-    timeGridGroup.translation = [xPosition, yPosition]
-    timeGrid.numRows = plugin.getIntValue("time_grid_visible_row", 6)
-    timeGrid.itemSize = [1920, timeGridHeight]
-    timeGrid.focusBitmapUri = "pkg:/images/SearchFocusBackground2.9.png"
-
-    programFontName = mc.getString(style, "label1_font_name", "medium")
-    programFontSize = plugin.getIntValue("label1_font_size", 12)
-    programRightPadding = plugin.getIntValue("grid_item_padding_right", 12)
-    programLeftPadding = plugin.getIntValue("grid_item_padding_left", 12)
-
-    timeGrid.programBackgroundBitmapUri = asString(style.guide_item_asset_background_uri, "pkg:/images/timeGridBackground.9.png")
-    'timeGrid.programTitleFont = zapp.viewUtils.resolveUIBFont(programFontName, programFontSize)
-    timeGrid.programTitleColor = zapp.viewUtils.transposeUIBColor(style.label1_live_font_color, "#FFFFFF")
-    timeGrid.programTitleFocusedColor = zapp.viewUtils.transposeUIBColor(style.label1_live_focused_font_color, "#FFFFFF")
-    timeGrid.programHorizMargin = programLeftPadding + programRightPadding
-
-    timeBarTopPadding = plugin.getIntValue("time_bar_padding_top", 60)
-    timeBarBottomPadding = plugin.getIntValue("time_bar_padding_bottom", 60)
-    timebarFontSize = plugin.getIntValue("time_bar_label_font_size", 12)
-    timebarFontName = mc.getString(style, "time_bar_label_font_name", "medium")
-
-    timeGrid.pastTimeScreenBlendColor = "#3D80FF"
-    timeGrid.timeBarBitmapUri = ":"
-    timeGrid.timeBarHeight = timeBarBottomPadding + timeBarTopPadding
-    timeGrid.timeLabelColor = zapp.viewUtils.transposeUIBColor(style.time_bar_label_font_color, "#FFFFFF")
-    'timeGrid.timeLabelFont = zapp.viewUtils.resolveUIBFont(timebarFontName, timebarFontSize)
-
-    timeGrid.channelInfoBackgroundBitmapUri = asString(style.channel_background_item_uri, "pkg:/images/timeGridBackground.9.png")
-    timeGrid.channelInfoWidth = plugin.getIntValue("channel_list_width", 245)
-
-    timeGrid.nowBarWidth = plugin.getIntValue("time_bar_badge_width", 10)
-    timeGrid.nowBarBitmapUri = asString(style.time_bar_badge_item_uri)
-    timeGrid.nowBarBlendColor = zapp.viewUtils.transposeUIBColor(style.time_bar_badge_background_color, "")
-    timeGrid.nowBarOffset = plugin.getIntValue("time_bar_badge_padding_left", 0)
-
-
-    timeGrid.nowNextMode = asBoolean(style.grid_item_show)
-    timeGrid.nowBackgroundBitmapUri = asString(style.grid_item_live_background_color, "pkg:/images/timeGridBackground.9.png")
-    timeGrid.nextBackgroundBitmapUri = asString(style.grid_item_future_background_color, "pkg:/images/timeGridBackground.9.png")
-    timeGrid.programNowNextTimeColor = zapp.viewUtils.transposeUIBColor(style.grid_item_future_background_color, "#FFFFFF")
-    timeGrid.programNowNextTimeFocusedColor = zapp.viewUtils.transposeUIBColor(style.grid_item_future_focused_background_color, "#FFFFFF")
-    'timeGrid.programNowNextHorizMargin =
-    'timeGrid.programNowNextTimeTitleGap =
-    '
-    timeGrid.duration = 12600
-    timeGrid.sectionDividerTopOffset = 30
-    timeGrid.scrollSpeed = 100
-    timeGrid.overlayBitmapUri = ""
-    timeGrid.vertFocusAnimationStyle = "floatingFocus"
-  end function
-
-  private function createContentFromItems(items)
-    m.log.info("createContentFromItems")
-
-    if not mc.isArray(items)
-      return invalid
-    end if
-
-    entryWraper = createObject("roSGNode", "ZPEntry")
-    for i = 0 to items.count() - 1
-      entry = m.createSGNode("ZPEntry", entryWraper, items[i], {
-        title: items[i].title
-        json: {
-          title: items[i].title
-          selected: lCase(items[i].title) = lCase(m.selectedIndexLabel)
-        }
-      })
-      mc.setOrAddNodeField(entry, "isSelected", lCase(items[i].title) = lCase(m.selectedIndexLabel))
-    end for
-    m.setListStyle(entryWraper)
-    return entryWraper
-  end function
-
-
-  function onLeftEdgeTargetTime()
-    dt = CreateObject("roDateTime")
-    nowTime = dt.AsSeconds()
-    dayInSecond = 86400
-    startDay = nowTime - (dt.GetHours() * 60 + dt.getMinutes() - dt.GetTimeZoneOffset()) * 60
-    endDay = startDay + dayInSecond
-    dt.FromSeconds(m.TimeGrid.leftEdgeTargetTime - (dt.GetTimeZoneOffset() * 60))
-    m.timeGridDayText = dt.GetWeekday()
-    if m.TimeGrid.leftEdgeTargetTime < endDay
-      m.timeGridDayText = "Today"
-    end if
-  end function
-
   private function setEpgContent(data)
     m.log.info("setEpgContent")
 
@@ -327,49 +192,56 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   private function onLoadMoreResponse(result)
     m.log.method("onLoadMoreResponse")
 
-    m.state = "ready"
+    if asBoolean(result.isOk)
+      m.state = "ready"
 
-    m.timeGridContent = CreateObject("roSGNode", "ContentNode")
-    m.taskCount = 0
-    m.channelCount = -1
-    channelsData = result.data
-    programUrl = m.riversJsonData.data.programs_source.source
-
-    for each channelData in channelsData.getChildren(-1, 0)
-      m.channelItem = m.timeGridContent.createChild("ContentNode")
-      m.channelItem.title = channelData.title
-      m.channelItem.HDSMALLICONURL = channelData.json.images.image_base
-      actuallUrl = m.substituteIdInUrl(programUrl, channelData.id)
-      m.taskCount++
-      m.loadProgramTask = m.executeloadTaskWithUrl("1", m.onLoadProgramsResponse, actuallUrl, 0)
-    end for
+      m.timeGridContent = CreateObject("roSGNode", "ContentNode")
+      m.taskCount = 0
+      m.channelCount = -1
+      channelsData = result.data
+      programUrl = asString(m.riversJsonData.data.programs_source.source)
+      if channelsData <> invalid
+        for each channelData in channelsData.getChildren(-1, 0)
+          m.channelItem = m.timeGridContent.createChild("ContentNode")
+          m.channelItem.title = channelData.title
+          m.channelItem.HDSMALLICONURL = channelData.json.images.image_base
+          actuallUrl = m.substituteIdInUrl(programUrl, channelData.id)
+          m.taskCount++
+          m.loadProgramTask = m.executeloadTaskWithUrl("1", m.onLoadProgramsResponse, actuallUrl, 0)
+        end for
+      end if
+    else
+      m.log.error("Failed to load channels data")
+      m.state = "error"
+    end if
   end function
 
   private function onLoadProgramsResponse(result)
     m.log.method("onLoadProgramsResponse")
     m.programsData = []
-    if result.isOk
+    if asBoolean(result.isOk)
       m.channelCount++
       programsData = result.data
       programsCount = programsData.getChildCount() - 1
       for each programData in programsData.getChildren(-1, 0)
         programItem = m.channelItem.createChild("ContentNode")
-        programItem.PLAYSTART = m.parseDateStringToSeconds(programData.json.extensions.start_time)
-        programItem.PLAYDURATION = m.parseDateStringToSeconds(programData.json.extensions.end_time) - m.parseDateStringToSeconds(programData.json.extensions.start_time)
+        programItem.PLAYSTART = m.parseDateStringToSeconds(asInteger(programData.json.extensions.start_time))
+        programItem.PLAYDURATION = m.parseDateStringToSeconds(asInteger(programData.json.extensions.end_time)) - m.parseDateStringToSeconds(asInteger(programData.json.extensions.start_time))
         programItem.TITLE = programData.title
         programItem.id = programData.id
-        programItem.genre = programData.json.genre
-        programItem.shortDescriptionLine1 = programData.json.summary
+        programItem.genre = asString(programData.json.genre)
+        programItem.shortDescriptionLine1 = asString(programData.json.summary)
         'programItem.HDSMALLICONURL = programData.json.images.image_base
         m.programsData.push(programItem)
       end for
       if m.channelCount = 0
         m.programPlayStart = m.programsData.[programsCount].PLAYSTART
       end if
+      m.programsData.SortBy("PLAYSTART")
+      m.timeGridContent.getChild(m.channelCount).appendChildren(m.programsData)
+      m.taskCount--
     end if
-    m.programsData.SortBy("PLAYSTART")
-    m.timeGridContent.getChild(m.channelCount).appendChildren(m.programsData)
-    m.taskCount--
+
     if m.taskCount = 0
       m.setField("content", m.timeGridContent)
       currentTime = CreateObject("roDateTime").asSeconds()
@@ -386,36 +258,11 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   private function onLoadResponse(result)
     m.log.method("onLoadResponse")
 
-    if result.isOk
+    if asBoolean(result.isOk)
       m.content.appendChildren(result.data.getChildren(-1, 0))
     end if
     m.state = "ready"
   end function
-
-  function calculateDaysDifference(currentTimestamp as integer, targetTimestamp as integer) as integer
-    timestampDifference = targetTimestamp - currentTimestamp
-    daysDifference = timestampDifference / 86400
-    daysDifference = m.customRoundUp(daysDifference)
-
-    if daysDifference >= 8
-      return daysDifference
-    end if
-
-    return daysDifference + 1
-  end function
-
-  function customRoundUp(value as float) as integer
-    integerPart = Int(value)
-
-    if value - integerPart > 0
-      roundedValue = integerPart + 1
-    else
-      roundedValue = integerPart
-    end if
-
-    return roundedValue
-  end function
-
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ Public Method
@@ -437,24 +284,151 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     'm.selectProgram(programIndex)
   end function
 
-  private function selectProgram(programIndex)
-    if m.channelFocused <> -1
-      m.log.info("onProgramSelected", programIndex)
-      content = m.content.getChild(m.channelFocused)
-      if content <> invalid
-        program = content.getChild(programIndex)
-        'm.onFocusEntry(program)
-        'selection = m.createSelectionFromContent(program)
-        'selection.playMode = "default"
-        'mc.setOrAddNodeField(selection.initialItem, "itemType", "video")
-        'm.executeContentSelection(selection)
+  public function onSelectedIndexChangeMenu(index)
+    m.log.info("selected index", index)
+    item = m.menuButtons[index]
+    currentTime = CreateObject("roDateTime")
+    currentDayIndex = currentTime.getDayOfWeek()
+
+    if item <> invalid
+
+      newIndex = item.index
+      if index = 0
+        dayDifference = 0
+      else
+        dayDifference = newIndex - currentDayIndex
       end if
+
+      if dayDifference < 0
+        dayDifference = abs(index - 7)
+      end if
+
+      targetTime = currentTime.asSeconds() + (m.dayInSeconds * dayDifference)
+
+      m.leftEdgeTargetTime = targetTime
+      m.content = m.timeGridContent
+    end if
+  end function
+
+  function onLeftEdgeTargetTime()
+    dt = CreateObject("roDateTime")
+    nowTime = dt.AsSeconds()
+    dayInSecond = m.dayInSeconds
+    startDay = nowTime - (dt.GetHours() * 60 + dt.getMinutes() - dt.GetTimeZoneOffset()) * 60
+    endDay = startDay + dayInSecond
+    dt.FromSeconds(m.TimeGrid.leftEdgeTargetTime - (dt.GetTimeZoneOffset() * 60))
+    m.timeGridDayText = dt.GetWeekday()
+    if m.TimeGrid.leftEdgeTargetTime < endDay
+      m.timeGridDayText = "Today"
     end if
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ style support
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function epgHardcodedStyle(style)
+    m.log.info("set timeGrid style")
+
+    plugin = m.plugin
+    timeGrid = m.timeGrid
+    timeGridGroup = m.getMField("TimeGridGroup")
+
+    m.defaultValues(timeGrid, plugin, style)
+    m.timeGridOverallSettings(timeGrid, timeGridGroup, plugin, style)
+    m.programItemSection(timeGrid, plugin, style)
+    m.timeBarSection(timeGrid, plugin, style)
+    m.channelInfoSection(timeGrid, plugin, style)
+    m.nowBarSection(timeGrid, plugin, style)
+    m.nowNextSection(timeGrid, plugin, style)
+  end function
+
+  private function defaultValues(timeGrid, plugin, style)
+    timeGrid.timeBarTwoLineLayout = true
+    timeGrid.duration = 12600
+    timeGrid.sectionDividerTopOffset = 30
+    timeGrid.scrollSpeed = 100
+    timeGrid.overlayBitmapUri = ""
+    timeGrid.vertFocusAnimationStyle = "floatingFocus"
+  end function
+
+  private function timeGridOverallSettings(timeGrid, timeGridGroup, plugin, style)
+    yPosition = plugin.getIntValue("time_grid_position_y", 500)
+    xPosition = plugin.getIntValue("time_grid_margin_left", 0)
+    rightOffset = plugin.getIntValue("time_grid_margin_right", 0)
+
+    timeGridHeight = plugin.getIntValue("time_grid_item_size", 125)
+    timeGrid.clippingRect = [0, -50, 1920, 1920]
+    timeGridGroup.translation = [xPosition, yPosition]
+    timeGrid.numRows = plugin.getIntValue("time_grid_visible_row", 6)
+    timeGrid.itemSize = [1920 - rightOffset, timeGridHeight]
+    timeGrid.focusBitmapUri = "pkg:/images/SearchFocusBackground2.9.png"
+  end function
+
+  private function programItemSection(timeGrid, plugin, style)
+    programFontName = mc.getString(style, "label1_font_name", "medium")
+    programFontSize = plugin.getIntValue("label1_font_size", 12)
+    programRightPadding = plugin.getIntValue("grid_item_padding_right", 12)
+    programLeftPadding = plugin.getIntValue("grid_item_padding_left", 12)
+
+    timeGrid.programBackgroundBitmapUri = asString(style.guide_item_asset_background_uri, "pkg:/images/timeGridBackground.9.png")
+    'timeGrid.programTitleFont = zapp.viewUtils.resolveUIBFont(programFontName, programFontSize)
+    timeGrid.programTitleColor = zapp.viewUtils.transposeUIBColor(style.label1_live_font_color, "#FFFFFF")
+    timeGrid.programTitleFocusedColor = zapp.viewUtils.transposeUIBColor(style.label1_live_focused_font_color, "#FFFFFF")
+    timeGrid.programHorizMargin = programLeftPadding + programRightPadding
+  end function
+
+  private function timeBarSection(timeGrid, plugin, style)
+    titleDayLabel = m.getMField("titleLabel")
+
+    timeBarTopPadding = plugin.getIntValue("time_bar_padding_top", 60)
+    timeBarBottomPadding = plugin.getIntValue("time_bar_padding_bottom", 60)
+    timebarFontSize = plugin.getIntValue("time_bar_label_font_size", 12)
+    timebarFontName = mc.getString(style, "time_bar_label_font_name", "medium")
+
+    timeGrid.pastTimeScreenBlendColor = "#3D80FF"
+    timeGrid.timeBarBitmapUri = asString(style.time_bar_background_url, "")
+    timeGrid.timeBarHeight = timeBarBottomPadding + timeBarTopPadding
+    timeGrid.timeLabelColor = zapp.viewUtils.transposeUIBColor(style.time_bar_label_font_color, "#FFFFFF")
+    titleDayLabel.color = zapp.viewUtils.transposeUIBColor(style.time_bar_label_font_color, "#FFFFFF")
+    'timeGrid.timeLabelFont = zapp.viewUtils.resolveUIBFont(timebarFontName, timebarFontSize)
+  end function
+
+  private function channelInfoSection(timeGrid, plugin, style)
+    channelAssetHeight = plugin.getIntValue("channel_asset_height", 42)
+    channelPaddingTop = plugin.getIntValue("channel_padding_top", 15)
+    channelPaddingRight = plugin.getIntValue("channel_padding_right", 13)
+    channelPaddingBottom = plugin.getIntValue("channel_padding_bottom", 15)
+    channelPaddingLeft = plugin.getIntValue("channel_padding_left", 13)
+
+    m.channelGuideItem.channelGuideSettings = {
+      "channelAssetHeight": channelAssetHeight
+      "channelPaddingTop": channelPaddingTop
+      "channelPaddingRight": channelPaddingRight
+      "channelPaddingBottom": channelPaddingBottom
+      "channelPaddingLeft": channelPaddingLeft
+    }
+
+    timeGrid.channelInfoBackgroundBitmapUri = asString(style.channel_background_item_uri, "pkg:/images/timeGridBackground.9.png")
+    timeGrid.channelInfoWidth = plugin.getIntValue("channel_list_width", 245)
+  end function
+
+  private function nowBarSection(timeGrid, plugin, style)
+    timeGrid.nowBarWidth = plugin.getIntValue("time_bar_badge_width", 10)
+    timeGrid.nowBarBitmapUri = asString(style.time_bar_badge_item_uri)
+    timeGrid.nowBarBlendColor = zapp.viewUtils.transposeUIBColor(style.time_bar_badge_background_color, "")
+    timeGrid.nowBarOffset = plugin.getIntValue("time_bar_badge_padding_left", 0)
+  end function
+
+  private function nowNextSection(timeGrid, plugin, style)
+    timeGrid.nowNextMode = asBoolean(style.grid_item_show)
+    timeGrid.nowBackgroundBitmapUri = asString(style.grid_item_live_background_color, "pkg:/images/timeGridBackground.9.png")
+    timeGrid.nextBackgroundBitmapUri = asString(style.grid_item_future_background_color, "pkg:/images/timeGridBackground.9.png")
+    timeGrid.programNowNextTimeColor = zapp.viewUtils.transposeUIBColor(style.grid_item_future_background_color, "#FFFFFF")
+    timeGrid.programNowNextTimeFocusedColor = zapp.viewUtils.transposeUIBColor(style.grid_item_future_focused_background_color, "#FFFFFF")
+    'timeGrid.programNowNextHorizMargin =
+    'timeGrid.programNowNextTimeTitleGap =
+  end function
 
   private function updateHeaderStyle(styles)
     m.log.info("setHeroStyle")
@@ -553,6 +527,17 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     end if
   end function
 
+  private function setButtonStyles(styles)
+    m.isUsingButtons = zapp.viewUtils.getUIBBool(styles, "epg_filter_button_enable")
+    m.menuStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "epg_filter_button", "custom", "")
+    m.menuStyle.normal.delete("text")
+    m.menuPosition = zapp.viewUtils.makeUIBPosition(styles, "epg_filter_button", 960, 200)
+    m.buttonSize = zapp.viewUtils.makeUIBSize(styles, "epg_filter_button", 100, 100)
+    m.buttonSpacing = zapp.viewUtils.getUIBInt(styles, "epg_filter_button_spacing", 5)
+    mc.setOrAddNodeField(m.menuStyle, "layoutDirection", "horiz")
+    m.titleTextStyle = zapp.viewUtils.makeUIBTextStyle(styles, "title")
+  end function
+
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ feed processing
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -561,7 +546,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     m.log.method("onFeedResult")
     m.toggleLoadingDataTask(false)
 
-    if result.isOk
+    if asBoolean(result.isOk)
       m.isFirstLoadComplete = true
       m.setContentStyle(result.data)
       m.feed = result.data
@@ -583,6 +568,68 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   '++ Private Methods
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+  private function calculateDaysDifference(currentTimestamp as integer, targetTimestamp as integer) as integer
+    timestampDifference = targetTimestamp - currentTimestamp
+    daysDifference = timestampDifference / m.dayInSeconds
+    daysDifference = m.customRoundUp(daysDifference)
+
+    if daysDifference >= 8
+      return daysDifference
+    end if
+
+    return daysDifference + 1
+  end function
+
+  private function customRoundUp(value as float) as integer
+    integerPart = Int(value)
+
+    if value - integerPart > 0
+      roundedValue = integerPart + 1
+    else
+      roundedValue = integerPart
+    end if
+
+    return roundedValue
+  end function
+
+  private function selectProgram(programIndex)
+    if m.channelFocused <> -1
+      m.log.info("onProgramSelected", programIndex)
+      content = m.content.getChild(m.channelFocused)
+      if content <> invalid
+        program = content.getChild(programIndex)
+        selection = m.createSelectionFromContent(program)
+        selection.playMode = "default"
+        mc.setOrAddNodeField(selection.initialItem, "itemType", "video")
+        m.executeContentSelection(selection)
+      end if
+    end if
+  end function
+
+  private function onShowHideAnimation(anim as mv.animations.AnimationBase, visible as boolean, animated as boolean)
+    m.log.info("onShowHideAnimation epg screen")
+
+    if animated
+      anim.start()
+    else
+      anim.jumpToEnd()
+    end if
+  end function
+
+  private function isDayMenuInFocus(focusId)
+    for i = 0 to m.focusIds[0].count() - 1
+      if focusId = m.focusIds[0][0]
+        return true
+      end if
+    end for
+    return false
+  end function
+
+  private function createAnimations()
+    'm.showAnim = new mv.animations.Move(m.backgroundDayRectangle, 0.1, [-700, 0], [0, 0])
+    'm.hideAnim = new mv.animations.Move(m.backgroundDayRectangle, 0.3, [0, 0], [-700, 0])
+  end function
+
   private function updateFocusControls()
     itemGroup = []
     if m.isUsingButtons
@@ -593,27 +640,13 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   end function
 
   private function updateButtons(styles as mc.types.assocarray)
-    m.getLocalization()
     m.setButtonStyles(styles)
   end function
 
   private function getLocalization()
-    m.plugin = m.plugins.getPluginById("quick-brick-epg-screen")
-
     localization = asAA(m.plugin.json.configuration_json.localizations)
     language = m.getInstance("languageCode") ?? "en"
     m.localizations = localization[language]
-  end function
-
-  private function setButtonStyles(styles)
-    m.isUsingButtons = zapp.viewUtils.getUIBBool(styles, "epg_filter_button_enable")
-    m.menuStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "epg_filter_button", "custom", "")
-    m.menuStyle.normal.delete("text")
-    m.menuPosition = zapp.viewUtils.makeUIBPosition(styles, "epg_filter_button", 960, 200)
-    m.buttonSize = zapp.viewUtils.makeUIBSize(styles, "epg_filter_button", 100, 100)
-    m.buttonSpacing = zapp.viewUtils.getUIBInt(styles, "epg_filter_button_spacing", 5)
-    mc.setOrAddNodeField(m.menuStyle, "layoutDirection", "horiz")
-    m.titleTextStyle = zapp.viewUtils.makeUIBTextStyle(styles, "title")
   end function
 
   private function createCustomItems()
@@ -621,8 +654,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     dataTime = CreateObject("roDateTime")
     nowTime = dataTime.asSeconds()
     currentDayIndex = dataTime.getDayOfWeek()
-    '//Today Item
-    item = m.createButton("button_1", 0)
+
+    item = m.createButton("button_1", 0) '//Today Item
     if item <> invalid
       m.customItems.push(item)
     end if
@@ -667,20 +700,6 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     items.append(m.customItems)
     m.menuButtons = items
     m.jumpToIndex = 0
-  end function
-
-  private function makeEPGData(riversJsonData)
-    m.setEpgContent(riversJsonData.data)
-    m.isFirstLoadComplete = true
-    return true
-  end function
-
-  private function setEpgStyle(styles)
-    if styles <> invalid
-      'm.stylingChannelItemComponent(styles)
-      'm.stylingDayLabelComponent(styles)
-      'm.stylingGridComponent(styles)
-    end if
   end function
 
   private function toggleUpdateTimer(active as boolean)
@@ -742,6 +761,10 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     return url.replace("{{id}}", id)
   end function
 
+  private function toggleNavigationMenuFocus()
+    'zapp.appService.toggleNavMenuFocus(true)
+  end function
+
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ Key Presses
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -749,7 +772,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   override function onKeyPressUp() as boolean
     m.log.info("on Keypress up. focusId", m.focusId)
     if m.isDayMenuInFocus(m.focusId)
-      zapp.appService.toggleNavMenuFocus(true)
+      m.toggleNavigationMenuFocus()
     end if
 
     if not m.isDayMenuInFocus(m.focusId)
@@ -769,15 +792,6 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     end if
 
     return true
-  end function
-
-  private function isDayMenuInFocus(focusId)
-    for i = 0 to m.focusIds[0].count() - 1
-      if focusId = m.focusIds[0][0]
-        return true
-      end if
-    end for
-    return false
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

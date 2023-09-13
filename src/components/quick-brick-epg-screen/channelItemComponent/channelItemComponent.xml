@@ -2,6 +2,9 @@
 <component
     name='channelItemComponent'
     extends='Group'>
+  <script
+      type='text/brightscript'
+      uri='pkg:/source/roku_modules/maestro/core/MIOC.brs' />
 
   <interface>
     <field
