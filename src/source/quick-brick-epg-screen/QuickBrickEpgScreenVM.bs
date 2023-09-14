@@ -225,8 +225,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       programsCount = programsData.getChildCount() - 1
       for each programData in programsData.getChildren(-1, 0)
         programItem = m.channelItem.createChild("ContentNode")
-        programItem.PLAYSTART = m.parseDateStringToSeconds(asInteger(programData.json.extensions.start_time))
-        programItem.PLAYDURATION = m.parseDateStringToSeconds(asInteger(programData.json.extensions.end_time)) - m.parseDateStringToSeconds(asInteger(programData.json.extensions.start_time))
+        programItem.PLAYSTART = m.parseDateStringToSeconds(programData.json.extensions.start_time)
+        programItem.PLAYDURATION = m.parseDateStringToSeconds(programData.json.extensions.end_time) - m.parseDateStringToSeconds(programData.json.extensions.start_time)
         programItem.TITLE = programData.title
         programItem.id = programData.id
         programItem.genre = asString(programData.json.genre)
@@ -237,10 +237,10 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       if m.channelCount = 0
         m.programPlayStart = m.programsData.[programsCount].PLAYSTART
       end if
-      m.programsData.SortBy("PLAYSTART")
-      m.timeGridContent.getChild(m.channelCount).appendChildren(m.programsData)
-      m.taskCount--
     end if
+    m.programsData.SortBy("PLAYSTART")
+    m.timeGridContent.getChild(m.channelCount).appendChildren(m.programsData)
+    m.taskCount--
 
     if m.taskCount = 0
       m.setField("content", m.timeGridContent)
@@ -655,34 +655,91 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     nowTime = dataTime.asSeconds()
     currentDayIndex = dataTime.getDayOfWeek()
 
-    item = m.createButton("button_1", 0) '//Today Item
+    item = m.createButton("button_1", 0, 0) '//Today Item
     if item <> invalid
       m.customItems.push(item)
     end if
 
     days = m.calculateDaysDifference(nowTime, m.programPlayStart)
 
-    for i = currentDayIndex + 1 to days + currentDayIndex
+    j = 1
+    for i = currentDayIndex + 2 to days + currentDayIndex
       numberText = str(i).trim()
-      item = m.createButton("button_" + numberText, i - 1)
+      item = m.createButton("button_" + numberText, i - 1, j)
+      j++
       if item <> invalid
         m.customItems.push(item)
       end if
     end for
   end function
 
-  private function createButton(prefix, index)
+  private function createButton(prefix, index, itemIndex)
+    targetDay = m.calculateTargetDay(itemIndex)
+
     text = m.getLocalizeButtonText(prefix + "_title")
     text = zapp.viewUtils.textToTextTransformFormat(text, m.riversJsonData.styles.epg_filter_button_text_transform)
-    'width = text.localBoundingRect().width
+
     if text <> invalid and text.trim() <> ""
       return {
-        title: text
+        title: `${text}${targetDay}`
         index: index
       }
     end if
 
     return invalid
+  end function
+
+  private function calculateTargetDay(itemIndex)
+    currentDateTime = CreateObject("roDateTime")
+
+    currentYear = currentDateTime.GetYear()
+    currentMonth = currentDateTime.GetMonth()
+
+    daysInMonth = m.getDaysInMonth(currentMonth, currentYear)
+
+    currentDay = currentDateTime.GetDayOfMonth()
+    targetDay = int(currentDay + itemIndex)
+    targetMonth = currentMonth
+    targetYear = currentYear
+
+    if targetDay > daysInMonth
+      targetDay = targetDay - daysInMonth
+      targetMonth = targetMonth + 1
+      if targetMonth > 12
+        targetMonth = 1
+        targetYear = targetYear + 1
+      end if
+    end if
+
+    targetDay = `, ${targetDay}`
+    if itemIndex = 0
+      targetDay = ""
+    end if
+
+    return targetDay
+  end function
+
+  function getDaysInMonth(month as integer, year as integer) as integer
+    if month < 1 or month > 12
+      return 0
+    end if
+
+    ' Days in each month (non-leap year)
+    daysInMonth = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+
+    ' Adjust for leap year (February has 29 days)
+    if m.isLeapYear(year) and month = 2
+      return 29
+    end if
+
+    return daysInMonth[month]
+  end function
+
+  function isLeapYear(year)
+    if (year mod 4 = 0 and year mod 100 <> 0) or (year mod 400 = 0)
+      return true
+    end if
+    return false
   end function
 
   private function getLocalizeButtonText(prefix as string)
