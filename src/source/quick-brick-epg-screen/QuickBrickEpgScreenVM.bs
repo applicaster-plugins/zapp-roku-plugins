@@ -331,6 +331,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     m.log.info("set timeGrid style")
 
     plugin = m.plugin
+    plugin.json.configuration_json.append(style)
     timeGrid = m.timeGrid
     timeGridGroup = m.getMField("TimeGridGroup")
 
@@ -372,10 +373,10 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     programLeftPadding = plugin.getIntValue("grid_item_padding_left", 12)
 
     timeGrid.programBackgroundBitmapUri = asString(style.guide_item_asset_background_uri, "pkg:/images/timeGridBackground.9.png")
-    'timeGrid.programTitleFont = zapp.viewUtils.resolveUIBFont(programFontName, programFontSize)
     timeGrid.programTitleColor = zapp.viewUtils.transposeUIBColor(style.label1_live_font_color, "#FFFFFF")
     timeGrid.programTitleFocusedColor = zapp.viewUtils.transposeUIBColor(style.label1_live_focused_font_color, "#FFFFFF")
     timeGrid.programHorizMargin = programLeftPadding + programRightPadding
+    timeGrid.programTitleFont = m.resolveFont(programFontName, programFontSize)
   end function
 
   private function timeBarSection(timeGrid, plugin, style)
@@ -387,11 +388,35 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     timebarFontName = mc.getString(style, "time_bar_label_font_name", "medium")
 
     timeGrid.pastTimeScreenBlendColor = "#3D80FF"
-    timeGrid.timeBarBitmapUri = asString(style.time_bar_background_url, "")
-    timeGrid.timeBarHeight = timeBarBottomPadding + timeBarTopPadding
+    timeGrid.timeBarBitmapUri = asString(style.time_bar_background_url, ":")
+    'timeGrid.timeBarHeight = timeBarBottomPadding + timeBarTopPadding
     timeGrid.timeLabelColor = zapp.viewUtils.transposeUIBColor(style.time_bar_label_font_color, "#FFFFFF")
     titleDayLabel.color = zapp.viewUtils.transposeUIBColor(style.time_bar_label_font_color, "#FFFFFF")
-    'timeGrid.timeLabelFont = zapp.viewUtils.resolveUIBFont(timebarFontName, timebarFontSize)
+    titleDayLabel.font = m.resolveFont(timebarFontName, timebarFontSize)
+    timeGrid.timeLabelFont = m.resolveFont(timebarFontName, timebarFontSize)
+  end function
+
+  private function resolveFont(programFontName, programFontSize)
+    headerFont = CreateObject("roSGNode", "Font")
+    font = invalid
+    if programFontName <> invalid and programFontName.instr("SystemFont") <> -1
+      font = "font:" + programFontName.trim()
+    else if programFontName <> invalid and lCase(programFontName) = "medium" or lCase(programFontName) = "mediumbold"
+      font = "font:" + programFontName.trim() + "SystemFont"
+    else if programFontName <> invalid and programFontName.instr("SystemFont") = -1
+      headerFont.uri = "pkg:/fonts/" + programFontName + ".ttf"
+      headerFont.size = programFontSize
+    else if programFontName <> invalid and font = invalid
+      font = "font:" + programFontName.trim() + "SystemFont"
+    else
+      font = "font:MediumSystemFont"
+    end if
+
+    if font <> invalid
+      return font
+    else
+      return headerFont
+    end if
   end function
 
   private function channelInfoSection(timeGrid, plugin, style)

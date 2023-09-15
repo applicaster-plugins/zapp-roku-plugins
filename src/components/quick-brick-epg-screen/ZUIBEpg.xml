@@ -58,7 +58,7 @@
           height='56'
           wrap='true'
           text='{{timeGridDayText}}'
-          translation='[37,-68]'
+          translation='[37,-59]'
           horizAlign='left'
           vertAlign='center'
           font='font:MediumSystemFont' />
