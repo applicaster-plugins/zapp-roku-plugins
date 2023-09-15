@@ -310,7 +310,7 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
       end if
       m.isErrorShowing = true
       m.isRegisterButtonEnabled = true
-      m.setFocus(m.getMField("top"))
+      m.focusId = "usernameInput"
     end if
 
     m.isLoading = false
