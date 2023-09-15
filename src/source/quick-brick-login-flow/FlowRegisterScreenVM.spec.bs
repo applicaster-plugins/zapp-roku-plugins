@@ -491,6 +491,7 @@ namespace zapp.tests
     @params({ "state": "error", "message": "m" }, "m")
     function _(result, expectedMessage)
       m.vm.state = "loading"
+      m.vm.focusId = "usernameInput"
       m.expectNone(m.vm, "dismiss")
       m.expectOnce(m.vm, "setFocus", invalid)
 
@@ -498,6 +499,7 @@ namespace zapp.tests
 
       m.assertFalse(m.vm.isLoading)
       m.assertEqual(m.vm.state, "ready")
+      m.assertEqual(m.vm.focusId, "usernameInput")
       m.assertEqual(m.vm.errorText, expectedMessage)
       m.assertTrue(m.vm.isErrorShowing)
       m.assertTrue(m.vm.isRegisterButtonEnabled)
