@@ -1,0 +1,195 @@
+'/* cspell:disable */
+namespace zapp.plugins.tests
+  @tags("core", "auth", "cleeng")
+  @only
+  @suite
+  class QuickBrickEpgScreenVMTests extends tests.BaseTestSuite
+
+    private user
+    private plugin
+    private vm
+
+    private constants = {
+      "deviceInfo": {
+        "modelName": "mn"
+        "model": "md"
+        "version": "ver"
+        "userAgent": "ua"
+        "uiResolution": {
+          "width": 100
+          "height": 100
+        }
+      }
+      "applicasterDeviceId": "adid"
+    }
+
+    protected override function beforeEach()
+      super.beforeEach()
+
+      pluginJson = {
+        "geo_is_enabled": true
+        "geo_countries_list": ["US", "ES"]
+        "geo_layout": "B4567"
+        "experiment_is_enabled": true
+        "experiment_id": "exId"
+        "styles": {
+          "cell": "cell"
+        }
+        "json": {
+          "configuration_json": {
+            "localizations": {
+              "en": {}
+            }
+          }
+        }
+      }
+      cellStyles = {
+        "styleIdsByKey": {}
+      }
+      mioc.setInstance("cellStyles", cellStyles)
+      mioc.setInstance("languageCode", "en")
+
+      m.plugin = new zapp.BasePlugin(tests.utils.createPluginJson("quick-brick-epg-screen", pluginJson))
+
+      m.vm = new QuickBrickEpgScreenVM(pluginJson)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onLoadMoreResponse")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("Load More Response if data is valid")
+    function _()
+      result = {
+        "isOk": true
+      }
+      m.vm.onLoadMoreResponse(result)
+
+      m.assertEqual(m.vm.state, "ready")
+    end function
+
+    @it("state error on invalid result")
+    function _()
+      result = {
+        "isOk": false
+        "data": {
+        }
+      }
+      m.vm.onLoadMoreResponse(result)
+
+      m.assertEqual(m.vm.state, "error")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onLoadProgramsResponse")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("Load More Response if data is valid")
+    function _()
+      m.vm.channelCount = -1
+      m.vm.taskCount = 1
+      m.vm.timeGridContent = mc.createSGNode("ZPEntry")
+      m.vm.channelItem = mc.createSGNode("ZPEntry", m.vm.timeGridContent, "ca")
+
+      feed = mc.createSGNode("ZPEntry")
+      ca = mc.createSGNode("ZPEntry", feed, "ca")
+      cb = mc.createSGNode("ZPEntry", feed, "cb")
+
+      result = {
+        "isOk": true
+        "data": feed
+      }
+
+      m.expectCalled(m.vm.parseDateStringToSeconds(0), 0)
+      m.expectCalled(m.vm.parseDateStringToSeconds(0), 0)
+      m.expectCalled(m.vm.parseDateStringToSeconds(0), 0)
+      m.expectCalled(m.vm.parseDateStringToSeconds(0), 0)
+      m.expectCalled(m.vm.parseDateStringToSeconds(0), 0)
+      m.expectCalled(m.vm.parseDateStringToSeconds(0), 0)
+
+      m.expectCalled(m.vm.createCustomItems())
+      m.expectCalled(m.vm.updateMenuItems())
+
+      m.vm.onLoadProgramsResponse(result)
+
+      m.assertEqual(m.vm.state, "ready")
+    end function
+
+    @it("state error on invalid result")
+    function _()
+      m.vm.taskCount = 0
+
+      m.vm.timeGridContent = mc.createSGNode("ZPEntry")
+      m.vm.channelItem = mc.createSGNode("ZPEntry", m.vm.timeGridContent, "ca")
+
+      result = {
+        "isOk": false
+        "data": {
+        }
+      }
+
+      m.expectCalled(m.vm.createCustomItems())
+      m.expectCalled(m.vm.updateMenuItems())
+
+      m.vm.onLoadProgramsResponse(result)
+
+      m.assertEqual(m.vm.state, "ready")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onKeyPressUp")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("set focus to navigation bar")
+    function _()
+      m.vm.focusId = 0
+
+      m.expectCalled(m.vm.isDayMenuInFocus(0), true)
+      m.expectCalled(m.vm.isDayMenuInFocus(0), true)
+      m.expectCalled(m.vm.toggleNavigationMenuFocus())
+
+      m.vm.onKeyPressUp()
+    end function
+
+    @it("set focus to 1 item in list")
+    function _()
+      m.vm.focusId = 1
+      m.vm.focusIds = [[0, 1], [2, 3]]
+
+      m.expectCalled(m.vm.isDayMenuInFocus(1), false)
+      m.expectCalled(m.vm.isDayMenuInFocus(1), false)
+      m.expectCalled(m.vm.setFocusId(0))
+
+      m.vm.onKeyPressUp()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onKeyPressDown")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("set focus to mext item")
+    function _()
+      m.vm.focusId = 0
+      m.vm.focusIds = [[0, 1], [2, 3]]
+
+      m.expectCalled(m.vm.isDayMenuInFocus(0), false)
+
+      m.vm.onKeyPressDown()
+    end function
+
+    @it("set focus to 1 item in list")
+    function _()
+      m.vm.focusId = 1
+      m.vm.isUsingButtons = true
+      m.vm.focusIds = [[0, 1], [2, 3]]
+
+      m.expectCalled(m.vm.isDayMenuInFocus(1), true)
+      m.expectCalled(m.vm.setFocusId(1))
+
+      m.vm.onKeyPressDown()
+    end function
+
+
+  end class
+
+end namespace

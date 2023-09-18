@@ -1,0 +1,95 @@
+<?xml version='1.0' encoding='utf-8'?>
+<component
+    name='ZUIBEpg'
+    extends='UIBScreen'
+    vm='QuickBrickEpgScreenVM'>
+
+  <interface>
+    <field
+        id='screenState'
+        type='node' />
+    <field
+        id='leftEdgeTargetTime'
+        type='time'
+        alias='TimeGrid.leftEdgeTargetTime' />
+  </interface>
+
+  <children>
+    <Rectangle
+        id='backgroundRectangle'
+        width='1920'
+        height='1080'
+        color='{{=zapp_viewUtils_UIBColor("screen_background_color")}}' />
+    <mv_Poster
+        id='backgroundPoster'
+        style='{{=zapp_viewUtils_UIBBackgroundPoster("screen_background_color")}}' />
+    <mv_Poster
+        id='logoPoster'
+        style='{{=zapp_viewUtils_UIBPoster("logo")}}' />
+
+    <HeaderControl
+        id='headerControl'
+        style='{{:riversJson.styles}}'
+        entry='{{headerItem}}'
+        visible='{{isHeaderShown}}'
+        isImageVisible='{{isHeaderImageVisible}}'
+        isImageVideoPlayback='{{isHeaderImageVideoPlayback}}'
+        isDetailsVisible='{{isDetailsVisible}}' />
+
+    <Group
+        id='TimeGridGroup'
+        translation='[0,500]'>
+      <TimeGrid
+          id='TimeGrid'
+          content='{{content}}'
+          contentStartTime='{{contentStartTime}}'
+          leftEdgeTargetTime='{{leftEdgeTargetTime}}'
+          channelFocused='{(onChannelFocused(value))}'
+          programFocused='{(onProgramFocused(value))}'
+          leftEdgeTargetTime='{(onLeftEdgeTargetTime())}'
+          programSelected='{(onProgramSelected(value))}'
+          vertFocusAnimationStyle='floatingFocus'
+          translation='[0, 0]'
+          channelInfoComponentName='channelItemComponent' />
+      <mv_Label
+          id='titleLabel'
+          color='0xFFFFFFFF'
+          width='230'
+          height='56'
+          wrap='true'
+          text='{{timeGridDayText}}'
+          translation='[37,-59]'
+          horizAlign='left'
+          vertAlign='center'
+          font='font:MediumSystemFont' />
+    </Group>
+
+
+    <LayoutGroup
+        id='layoutGroup'
+        layoutDirection='vert'
+        horizAlignment='left'
+        vertAlignment='center'
+        translation='{{:menuPosition}}'>
+      <Menu
+          id='menu'
+          buttons='{{menubuttons}}'
+          style='{{:menuStyle}}'
+          selectedIndex='{(onSelectedIndexChangeMenu(value))}'
+          jumpToIndex='{{jumpToIndex}}'
+          buttonSize='{{:buttonSize}}'
+          layoutDirection='horiz'
+          buttonSpacing='{{:buttonSpacing}}' />
+    </LayoutGroup>
+
+    <LoadingIndicator
+        id='loadingIndicator'
+        width='100'
+        height='100'
+        translation='[1000,500]'
+        isActive='{{isLoading}}'
+        backgroundVisible='false'
+        text='' />
+
+  </children>
+</component>
