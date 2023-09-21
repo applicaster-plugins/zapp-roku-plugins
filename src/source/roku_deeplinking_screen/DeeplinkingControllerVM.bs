@@ -202,12 +202,16 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
     m.log.info("Applying deep link for entry with entry ", mc.dv(deeplinkingData.entry), mc.dv(deeplinkingData.parentEntry))
 
     m.setInstance("deeplinkingSelection", deeplinkingSelection)
+    skipOnExitFeedLocator = m.getInstance("skipOnExitFeedLocator")
 
-
-    if deeplinkingData.parentEntry <> invalid
-
+    if asBoolean(skipOnExitFeedLocator)
+      m.log.error("exiting feed locator entry")
+      m.exitFromDeeplinking()
+    else if deeplinkingData.parentEntry <> invalid
       m.parentScreen = m.getParentScreen(deeplinkingData, deeplinkingSelection)
-
+      if asString(deeplinkingData.feed_locator) <> ""
+        m.setInstance("skipOnExitFeedLocator", true)
+      end if
       if m.shouldShowPrehook()
         m.log.info("this screen requires a prehook to be executed first. showing it now")
       else
