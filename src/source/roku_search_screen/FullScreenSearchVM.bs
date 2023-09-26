@@ -66,6 +66,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
       focusColor: zapp.viewUtils.transposeUIBColor(styles.focused_key_color)
     }
     keyboard.keyGrid.palette = palettes
+    keyboard.textEditBox.textColor = zapp.viewUtils.transposeUIBColor(styles.key_color)
 
     m.minCharacters = zapp.viewUtils.getUIBInt(styles, "search_min_chars", 3)
     m.searchQueryName = mc.getPath(styles, "search_query_name", "q")
