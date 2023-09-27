@@ -51,10 +51,11 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     m.loadDepth = zapp.viewUtils.getUIBInt(styles, "data_depth", 0)
     m.gridStyle = m.getGridStyle(styles, m.style)
     m.loadNextOffset = zapp.viewUtils.getUIBInt(styles, "load_next_offset", 2)
+    normalColor = zapp.viewUtils.transposeUIBColor(styles.key_color)
 
     m.keyboardStyle = {
       translation: zapp.viewUtils.makeUIBPosition(styles, "keyboard", 300, 500)
-      keyColor: zapp.viewUtils.transposeUIBColor(styles.key_color)
+      keyColor: normalColor
       keyboardBitmapUri: zapp.viewUtils.getPosterUri(styles.keyboard_bitmap_uri)
       focusBitmapUri: zapp.viewUtils.getPosterUri(styles.keyboard_focus_bitmap_uri)
       lowerCase: zapp.viewUtils.getUIBBool(styles, "keyboard_lower_case", false)
@@ -62,10 +63,11 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     keyboard = m.getMField("keyboard")
     palettes = createObject("roSGNode", "RSGPalette")
     palettes.colors = {
-      primaryTextColor: zapp.viewUtils.transposeUIBColor(styles.key_color)
+      primaryTextColor: normalColor
       focusColor: zapp.viewUtils.transposeUIBColor(styles.focused_key_color)
     }
     keyboard.keyGrid.palette = palettes
+    keyboard.textEditBox.textColor = normalColor
 
     m.minCharacters = zapp.viewUtils.getUIBInt(styles, "search_min_chars", 3)
     m.searchQueryName = mc.getPath(styles, "search_query_name", "q")
