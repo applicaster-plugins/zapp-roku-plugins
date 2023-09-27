@@ -7,6 +7,7 @@ import "pkg:/source/zapp-controls/BaseCollectionRowVM.bs"
 import "pkg:/source/lib/ViewUtils.bs"
 import "pkg:/source/zapp-pipes/EntryLoader.bs"
 import "pkg:/source/UIBuilder/view/ScreenVM.bs"
+import "pkg:/source/zapp-pipes/Parser.bs"
 
 enum ButtonAction
   play = "play"
@@ -194,7 +195,10 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
 
     if asBoolean(result.isOk)
       m.state = "ready"
-
+      dataTime = CreateObject("roDateTime")
+      parser = new zapp.pipes.Parser()
+      milliseconds = dataTime.GetMilliseconds()
+      isoTime = dataTime.ToISOString("millseconds").replace("Z", `.${milliseconds}Z`)
       m.timeGridContent = CreateObject("roSGNode", "ContentNode")
       m.taskCount = 0
       m.channelCount = -1
@@ -204,8 +208,11 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
         for each channelData in channelsData.getChildren(-1, 0)
           m.channelItem = m.timeGridContent.createChild("ContentNode")
           m.channelItem.title = channelData.title
-          m.channelItem.HDSMALLICONURL = channelData.json.images.image_base
-          actuallUrl = m.substituteIdInUrl(programUrl, channelData.id)
+          if asArray(channelData.media_group).count() > 0
+            m.channelItem.HDSMALLICONURL = parser.parseMediaGroup(m.channelItem, channelData.media_group)
+          end if
+
+          actuallUrl = m.substituteIdInUrl(programUrl, channelData.id, isoTime)
           m.taskCount++
           m.loadProgramTask = m.executeloadTaskWithUrl("1", m.onLoadProgramsResponse, actuallUrl, 0)
         end for
@@ -839,8 +846,9 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     return result
   end function
 
-  private function substituteIdInUrl(url as string, id as integer) as string
-    return url.replace("{{id}}", id)
+  private function substituteIdInUrl(url as string, id as integer, isoTime) as string
+    url = `${url}&start_time=${isoTime}`.replace("{{id}}", id)
+    return url
   end function
 
   private function toggleNavigationMenuFocus()
