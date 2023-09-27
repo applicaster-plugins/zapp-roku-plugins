@@ -241,7 +241,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
         'programItem.HDSMALLICONURL = programData.json.images.image_base
         m.programsData.push(programItem)
       end for
-      if m.channelCount = 0
+      if m.channelCount = 0 and programsCount > 0
         m.programPlayStart = m.programsData.[programsCount].PLAYSTART
       end if
     end if
@@ -820,6 +820,22 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       m.log.error("parseDateStringToSeconds: not a valid string")
       return 0
     end if
+
+    totalOffsetInSeconds = 0
+    timeZone = dateString.right(6)
+    if timeZone.startsWith("-") or timeZone.startsWith("+")
+      offsetParts = timeZone.Split(":")
+      hoursInSeconds = abs(mc.strToInt(offsetParts[0]) * 3600)
+      minutesInSeconds = mc.strToInt(offsetParts[1]) * 60
+
+      totalOffsetInSeconds = (hoursInSeconds + minutesInSeconds)
+      if timeZone.startsWith("-")
+        totalOffsetInSeconds *= -1
+      end if
+
+      dateString = dateString.replace(timeZone, "Z")
+    end if
+
     if len(dateString) <> 24
       m.log.error("parseDateStringToSeconds: dateString is not in the expected format 'YYYY/MM/DD HH:MM:SS +zzzz'")
       return 0
@@ -843,6 +859,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
 
     ' return integer seconds in GMT
     result = parsedSeconds + zoneOffsetSign * ((zoneOffsetHH.ToInt() * 3600) + (zoneOffsetMM.ToInt() * 60))
+    result += totalOffsetInSeconds
     return result
   end function
 
