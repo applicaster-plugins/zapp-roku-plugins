@@ -196,7 +196,6 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     if asBoolean(result.isOk)
       m.state = "ready"
       dataTime = CreateObject("roDateTime")
-      parser = new zapp.pipes.Parser()
       milliseconds = dataTime.GetMilliseconds()
       isoTime = dataTime.ToISOString("millseconds").replace("Z", `.${milliseconds}Z`)
       m.timeGridContent = CreateObject("roSGNode", "ContentNode")
@@ -208,9 +207,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
         for each channelData in channelsData.getChildren(-1, 0)
           m.channelItem = m.timeGridContent.createChild("ContentNode")
           m.channelItem.title = channelData.title
-          if asArray(channelData.media_group).count() > 0
-            m.channelItem.HDSMALLICONURL = parser.parseMediaGroup(m.channelItem, channelData.media_group)
-          end if
+          m.channelItem.id = channelData.id
+          m.channelItem.HDSMALLICONURL = asString(channelData.json.images.image_base)
 
           actuallUrl = m.substituteIdInUrl(programUrl, channelData.id, isoTime)
           m.taskCount++
