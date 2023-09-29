@@ -1,7 +1,6 @@
 '/* cspell:disable */
 namespace zapp.plugins.tests
   @tags("core", "auth", "cleeng")
-  @only
   @suite
   class QuickBrickEpgScreenVMTests extends tests.BaseTestSuite
 
@@ -135,6 +134,18 @@ namespace zapp.plugins.tests
 
       m.assertEqual(m.vm.state, "ready")
     end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("parseDateStringToSeconds")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("parse date string to seconds")
+    function _()
+      result = m.vm.parseDateStringToSeconds("2023-09-27T12:00:00.000-04:00")
+
+      m.assertEqual(`${result}`, `${1695801600}`)
+    end function
+
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("onKeyPressUp")

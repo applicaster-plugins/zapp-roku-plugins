@@ -7,6 +7,7 @@ import "pkg:/source/zapp-controls/BaseCollectionRowVM.bs"
 import "pkg:/source/lib/ViewUtils.bs"
 import "pkg:/source/zapp-pipes/EntryLoader.bs"
 import "pkg:/source/UIBuilder/view/ScreenVM.bs"
+import "pkg:/source/zapp-pipes/Parser.bs"
 
 enum ButtonAction
   play = "play"
@@ -194,7 +195,10 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
 
     if asBoolean(result.isOk)
       m.state = "ready"
-
+      dataTime = CreateObject("roDateTime")
+      parser = new zapp.pipes.Parser()
+      milliseconds = dataTime.GetMilliseconds()
+      isoTime = dataTime.ToISOString("millseconds").replace("Z", `.${milliseconds}Z`)
       m.timeGridContent = CreateObject("roSGNode", "ContentNode")
       m.taskCount = 0
       m.channelCount = -1
@@ -204,8 +208,11 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
         for each channelData in channelsData.getChildren(-1, 0)
           m.channelItem = m.timeGridContent.createChild("ContentNode")
           m.channelItem.title = channelData.title
-          m.channelItem.HDSMALLICONURL = channelData.json.images.image_base
-          actuallUrl = m.substituteIdInUrl(programUrl, channelData.id)
+          if asArray(channelData.media_group).count() > 0
+            m.channelItem.HDSMALLICONURL = parser.parseMediaGroup(m.channelItem, channelData.media_group)
+          end if
+
+          actuallUrl = m.substituteIdInUrl(programUrl, channelData.id, isoTime)
           m.taskCount++
           m.loadProgramTask = m.executeloadTaskWithUrl("1", m.onLoadProgramsResponse, actuallUrl, 0)
         end for
@@ -234,7 +241,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
         'programItem.HDSMALLICONURL = programData.json.images.image_base
         m.programsData.push(programItem)
       end for
-      if m.channelCount = 0
+      if m.channelCount = 0 and programsCount > 0
         m.programPlayStart = m.programsData.[programsCount].PLAYSTART
       end if
     end if
@@ -813,6 +820,22 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       m.log.error("parseDateStringToSeconds: not a valid string")
       return 0
     end if
+
+    totalOffsetInSeconds = 0
+    timeZone = dateString.right(6)
+    if timeZone.startsWith("-") or timeZone.startsWith("+")
+      offsetParts = timeZone.Split(":")
+      hoursInSeconds = abs(mc.strToInt(offsetParts[0]) * 3600)
+      minutesInSeconds = mc.strToInt(offsetParts[1]) * 60
+
+      totalOffsetInSeconds = (hoursInSeconds + minutesInSeconds)
+      if timeZone.startsWith("-")
+        totalOffsetInSeconds *= -1
+      end if
+
+      dateString = dateString.replace(timeZone, "Z")
+    end if
+
     if len(dateString) <> 24
       m.log.error("parseDateStringToSeconds: dateString is not in the expected format 'YYYY/MM/DD HH:MM:SS +zzzz'")
       return 0
@@ -836,11 +859,12 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
 
     ' return integer seconds in GMT
     result = parsedSeconds + zoneOffsetSign * ((zoneOffsetHH.ToInt() * 3600) + (zoneOffsetMM.ToInt() * 60))
+    result += totalOffsetInSeconds
     return result
   end function
 
-  private function substituteIdInUrl(url as string, id as integer) as string
-    return url.replace("{{id}}", id)
+  private function substituteIdInUrl(url as string, id as integer, isoTime) as string
+    return `${url}&start_time=${isoTime}`.replace("{{id}}", id)
   end function
 
   private function toggleNavigationMenuFocus()
