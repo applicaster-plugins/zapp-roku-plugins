@@ -864,8 +864,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   end function
 
   private function substituteIdInUrl(url as string, id as integer, isoTime) as string
-    url = `${url}&start_time=${isoTime}`.replace("{{id}}", id)
-    return url
+    return `${url}&start_time=${isoTime}`.replace("{{id}}", id)
   end function
 
   private function toggleNavigationMenuFocus()
