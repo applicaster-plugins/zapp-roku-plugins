@@ -202,7 +202,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       m.taskCount = 0
       m.channelCount = -1
       channelsData = result.data
-      programUrl = asString(m.riversJsonData.data.programs_source.source)
+      programData = asAA(m.riversJsonData.data.programs_source)
       if channelsData <> invalid
         for each channelData in channelsData.getChildren(-1, 0)
           m.channelItem = m.timeGridContent.createChild("ContentNode")
@@ -210,9 +210,9 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
           m.channelItem.id = channelData.id
           m.channelItem.HDSMALLICONURL = asString(channelData.json.images.image_base)
 
-          actuallUrl = m.substituteIdInUrl(programUrl, channelData.id, isoTime)
+          actuallUrl = m.substituteIdInUrl(programData.source, channelData.id, isoTime)
           m.taskCount++
-          m.loadProgramTask = m.executeloadTaskWithUrl("1", m.onLoadProgramsResponse, actuallUrl, 0)
+          m.loadProgramTask = m.executeloadTaskWithUrlAndMapping("1", m.onLoadProgramsResponse, actuallUrl, 0, "value", m.channelItem, programData)
         end for
       end if
     else
@@ -834,7 +834,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       dateString = dateString.replace(timeZone, "Z")
     end if
 
-    if len(dateString) <> 24
+    if len(dateString) < 24 and len(dateString) > 25
       m.log.error("parseDateStringToSeconds: dateString is not in the expected format 'YYYY/MM/DD HH:MM:SS +zzzz'")
       return 0
     end if
