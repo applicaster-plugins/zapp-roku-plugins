@@ -1,5 +1,6 @@
 import "pkg:/source/UIBuilder/view/ScreenVM.bs"
 import "pkg:/source/lib/ViewUtils.bs"
+import "../lib/DSP2DeeplinkingProcessor.bs"
 
 class DeeplinkingControllerVM extends zapp.uib.ScreenVM
 
@@ -14,6 +15,8 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
   private deeplinkingData = invalid
   private willExitOnShow = false
   private parentScreen as mc.types.node
+  private dsp2Processor = new zapp.DSP2DeeplinkingProcessor()
+
 
   public screenIdsByName = {}
 
@@ -78,6 +81,9 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
       m.log.info("prehook successfully finished - continuing")
       m.toggleLoadingIndicator(true)
       m.showParentScreen()
+
+      queryArgs = m.getInstance("queryArgsIOC")
+      m.dsp2Processor.executeFeedLocatorRequest(queryArgs)
     else if state = "error" or state = "back"
       ' m.currentScreen = invalid
       m.dismissDeeplinkingController()
@@ -86,9 +92,19 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
 
   private function getPrehookController(screen as mc.types.node)
     m.log.info("getPrehookController")
-    prehooks = asArray(screen.riversJson.hooks.preload_plugins)
+    isStillInDeeplinkMode = m.getInstance("isStillInDeeplinkMode")
+    prehook = m.getAuthProvider()
+    screenId = m.getScreenIdByPluginType(prehook.id)
+    'prehooks = asArray(screen.riversJson.hooks.preload_plugins)
 
-    if prehooks <> invalid and prehooks.count() > 0
+    prehooks = [{
+        identifier: asString(prehook.json.identifier)
+        type: asString(prehook.json.type)
+        screen_id: screenId
+        weight: 1
+      }
+    ]
+    if prehooks <> invalid and prehooks.count() > 0 and asBoolean(isStillInDeeplinkMode)
       m.log.info("this deeplink controller has prehooks")
       prehookScreen = m.createInstance("ScreenHookController", invalid, "prehooksController")
       prehookScreen.hooks = prehooks
