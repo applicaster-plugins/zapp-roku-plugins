@@ -17,6 +17,8 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
   private parentScreen as mc.types.node
   private dsp2Processor = new zapp.DSP2DeeplinkingProcessor()
 
+  @inject("deepLinkIOC")
+  private deepLinkIOC
 
   public screenIdsByName = {}
 
@@ -82,7 +84,7 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
       m.toggleLoadingIndicator(true)
       m.showParentScreen()
 
-      queryArgs = m.getInstance("queryArgsIOC")
+      queryArgs = m.deepLinkIOC.queryArgs
       m.dsp2Processor.executeFeedLocatorRequest(queryArgs)
     else if state = "error" or state = "back"
       ' m.currentScreen = invalid
@@ -92,19 +94,9 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
 
   private function getPrehookController(screen as mc.types.node)
     m.log.info("getPrehookController")
-    isStillInDeeplinkMode = m.getInstance("isStillInDeeplinkMode")
-    prehook = m.getAuthProvider()
-    screenId = m.getScreenIdByPluginType(prehook.id)
-    'prehooks = asArray(screen.riversJson.hooks.preload_plugins)
+    prehooks = m.getLoginScreenPrehook()
 
-    prehooks = [{
-        identifier: asString(prehook.json.identifier)
-        type: asString(prehook.json.type)
-        screen_id: screenId
-        weight: 1
-      }
-    ]
-    if prehooks <> invalid and prehooks.count() > 0 and asBoolean(isStillInDeeplinkMode)
+    if prehooks <> invalid and prehooks.count() > 0 and asBoolean(m.deepLinkIOC.isStillInDeeplinkMode)
       m.log.info("this deeplink controller has prehooks")
       prehookScreen = m.createInstance("ScreenHookController", invalid, "prehooksController")
       prehookScreen.hooks = prehooks
@@ -115,6 +107,19 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
       return invalid
     end if
 
+  end function
+
+  private function getLoginScreenPrehook()
+    prehook = m.getAuthProvider()
+    screenId = m.getScreenIdByPluginType(prehook.id)
+    prehooks = [{
+        identifier: asString(prehook.json.identifier)
+        type: asString(prehook.json.type)
+        screen_id: screenId
+        weight: 1
+      }
+    ]
+    return prehooks
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
