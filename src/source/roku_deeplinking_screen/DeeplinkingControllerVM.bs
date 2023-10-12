@@ -1,5 +1,7 @@
 import "pkg:/source/UIBuilder/view/ScreenVM.bs"
 import "pkg:/source/lib/ViewUtils.bs"
+import "../lib/DSP2DeeplinkingProcessor.bs"
+import "pkg:/source/UIBuilder/view/utils/AuthUtil.bs"
 
 class DeeplinkingControllerVM extends zapp.uib.ScreenVM
 
@@ -14,6 +16,12 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
   private deeplinkingData = invalid
   private willExitOnShow = false
   private parentScreen as mc.types.node
+  private dsp2Processor = new zapp.DSP2DeeplinkingProcessor()
+  'bs:disable-next-line
+  private authUtil = new zapp.view.utils.AuthUtil(m)
+
+  @inject("deepLinkIOC")
+  private deepLinkIOC
 
   public screenIdsByName = {}
 
@@ -78,6 +86,9 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
       m.log.info("prehook successfully finished - continuing")
       m.toggleLoadingIndicator(true)
       m.showParentScreen()
+
+      queryArgs = m.deepLinkIOC.queryArgs
+      m.dsp2Processor.executeFeedLocatorRequest(queryArgs)
     else if state = "error" or state = "back"
       ' m.currentScreen = invalid
       m.dismissDeeplinkingController()
@@ -86,9 +97,9 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
 
   private function getPrehookController(screen as mc.types.node)
     m.log.info("getPrehookController")
-    prehooks = asArray(screen.riversJson.hooks.preload_plugins)
+    prehooks = m.getLoginScreenPrehook()
 
-    if prehooks <> invalid and prehooks.count() > 0
+    if prehooks <> invalid and prehooks.count() > 0 and asBoolean(m.deepLinkIOC.isStillInDeeplinkMode)
       m.log.info("this deeplink controller has prehooks")
       prehookScreen = m.createInstance("ScreenHookController", invalid, "prehooksController")
       prehookScreen.hooks = prehooks
@@ -99,6 +110,19 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
       return invalid
     end if
 
+  end function
+
+  private function getLoginScreenPrehook()
+    prehook = m.authUtil.getAuthProvider()
+    screenId = m.getScreenIdByPluginType(prehook.id)
+    prehooks = [{
+        identifier: asString(prehook.json.identifier)
+        type: asString(prehook.json.type)
+        screen_id: screenId
+        weight: 1
+      }
+    ]
+    return prehooks
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
