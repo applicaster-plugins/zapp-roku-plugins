@@ -139,7 +139,8 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
     if isActive
       m.log.info("starting deeplinking task")
       m.deeplinkingTask = m.createInstance("DeeplinkingTask", invalid, "deeplinkingTask")
-      m.observeNodeField(m.deeplinkingTask, "deeplinkingData", m.onDeeplinkingTaskResult, "value", true)
+      m.observe(m.deeplinkingTask.deeplinkingData, m.onDeeplinkingTaskResult, "value", true)
+      m.observe(m.dsp2Processor.deeplinkIOC.isStillInDeeplinkMode, m.applyDeeplinkingForFeed, "value", true)
 
       m.deeplinkingTask.args = args
       m.deeplinkingTask.control = "run"
@@ -164,6 +165,14 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ deeeplinking application
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  function applyDeeplinkingForFeed(deeplinkingData)
+    if asBoolean(deeplinkingData)
+      deeplinkingData = m.deeplinkingData
+      m.setInstance("skipOnExitFeedLocator", false)
+      m.applyDeeplinking(deeplinkingData)
+    end if
+  end function
 
   function applyDeeplinking(deeplinkingData) as void
     m.log.method("applyDeeplinking - app is configured for deeplinking. Navigating to the appropriate view")
