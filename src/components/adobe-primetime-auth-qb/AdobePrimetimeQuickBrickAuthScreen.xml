@@ -38,7 +38,7 @@
         visible='{{isContentGroupVisible}}'>
       <mv_Label
           id='titleLabel'
-          style='{{=zapp_viewUtils_UIBLabel("title", "", invalid)}}'
+          style='{{=zapp_viewUtils_UIBLabel("title", invalid, "title")}}'
           text='{{title}}' />
       <LayoutGroup
           id='labelsGroup'
@@ -48,17 +48,17 @@
 
         <mv_Label
             id='text1Label'
-            style='{{=zapp_viewUtils_UIBLabel("text1", "", invalid)}}'
+            style='{{=zapp_viewUtils_UIBLabel("text1", invalid, "text1")}}'
             text='{{text1}}' />
 
         <mv_Label
             id='text2Label'
-            style='{{=zapp_viewUtils_UIBLabel("text2", "", invalid)}}'
+            style='{{=zapp_viewUtils_UIBLabel("text2", invalid, "text2")}}'
             text='{{text2}}' />
 
         <mv_Label
             id='text3Label'
-            style='{{=zapp_viewUtils_UIBLabel("text3", "", invalid)}}'
+            style='{{=zapp_viewUtils_UIBLabel("text3", invalid, "text3")}}'
             text='{{text3}}' />
 
         <mv_Label
@@ -68,7 +68,7 @@
 
         <mv_Label
             id='text4Label'
-            style='{{=zapp_viewUtils_UIBLabel("text4", "", invalid)}}'
+            style='{{=zapp_viewUtils_UIBLabel("text4", invalid, "text4")}}'
             text='{{text4}}' />
 
         <mv_Label
