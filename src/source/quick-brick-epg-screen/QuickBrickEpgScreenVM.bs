@@ -256,8 +256,10 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       m.state = "ready"
     end if
 
-    m.createCustomItems()
-    m.updateMenuItems()
+    if m.isUsingButtons
+      m.createCustomItems()
+      m.updateMenuItems()
+    end if
   end function
 
   private function onLoadResponse(result)
@@ -439,7 +441,12 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       "channelPaddingLeft": channelPaddingLeft
     }
 
-    timeGrid.channelInfoBackgroundBitmapUri = asString(style.channel_background_item_uri, "pkg:/images/timeGridBackground.9.png")
+    channelInfoBackgroundBitmapUri = asString(style.channel_background_item_uri, "pkg:/images/timeGridBackground.9.png")
+    if channelInfoBackgroundBitmapUri = ""
+      timeGrid.channelInfoBackgroundBitmapUri = "pkg:/images/timeGridBackground.9.png"
+    else
+      timeGrid.channelInfoBackgroundBitmapUri = channelInfoBackgroundBitmapUri
+    end if
     timeGrid.channelInfoWidth = plugin.getIntValue("channel_list_width", 245)
   end function
 
