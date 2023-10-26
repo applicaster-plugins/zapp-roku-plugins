@@ -93,6 +93,7 @@ end function
 
 sub ViewManager_sendRequest(req as string, params = invalid)
 
+  ?"reqreqreqreq " req
   if req = "ping"
     params = m.infoManager.getRequestParams("ping", params)
 

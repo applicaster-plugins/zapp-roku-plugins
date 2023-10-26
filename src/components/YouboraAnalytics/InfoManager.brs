@@ -89,7 +89,7 @@ function InfoManager(plugin, options = invalid)
   end function
 
   this.getTitle = function()
-    title = m.options["content.title"]
+    title = m.options.content.title
 
     if title = invalid
       title = m.plugin.getTitle()
@@ -392,13 +392,17 @@ function InfoManager(plugin, options = invalid)
 end function
 
 function InfoManager_getEntities() as object
+  content = m.options.content
   return {
     "rendition": m.getRendition(),
     "title": m.getTitle(),
-    "program": m.options["content.program"],
-    "cdn": m.options["content.cdn"],
+    "program": content.program,
+    "cdn": content.cdn,
     "subtitles": m.getSubtitles(),
-    "contentLanguage": m.options["content.language"]
+    "contentLanguage": content.language
+    "user_id": content.user_id
+    "app_release_version": content.app_release_version
+    "app_version_number": content.app_version_number
   }
 end function
 
@@ -447,8 +451,8 @@ function InfoManager_getRequestParams(requestName = "" as string, params = inval
     if outParams.DoesExist("ip") = false then outParams["ip"] = m.options["network.ip"]
     if outParams.DoesExist("connectionType") = false then outParams["connectionType"] = m.options["network.connectionType"]
     'App
-    if outParams.DoesExist("appName") = false then outParams["appName"] = m.options["app.name"]
-    if outParams.DoesExist("appReleaseVersion") = false then outParams["appReleaseVersion"] = m.options["app.releaseVersion"]
+    if outParams.DoesExist("appName") = false then outParams["appName"] = m.options.app.name
+    if outParams.DoesExist("appReleaseVersion") = false then outParams["appReleaseVersion"] = m.options.content.app_release_version
   end if
 
   if requestName = "data"

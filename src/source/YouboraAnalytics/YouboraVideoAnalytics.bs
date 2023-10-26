@@ -54,7 +54,11 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
   private youboraTask = invalid
   private config = {}
   private taskName = "YBPluginRokuVideo"
+  private user = invalid
   private isUsingAdvancedVideoAnalytics = false
+
+  @inject("buildConfig")
+  private buildConfig
 
   public function new(plugin = invalid)
     super("YouboraVideoAnalytics")
@@ -69,6 +73,7 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
       "enableDebug": plugin.getBoolValue("is_debug")
     }
     m.isUsingAdvancedVideoAnalytics = plugin.getBoolValue("use_advanced_video_analytics")
+    m.user = m.getSessionStoreValue("quick-brick-login-flow", "user_id")
   end function
 
   private function getPlugin(plugin = invalid)
@@ -99,9 +104,18 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
     end if
     videoOptions = {}
     videoOptions.content = {
-      "title": contentNode.title,
+      "title": asString(contentNode.json.extensions.guid, contentNode.title)
       "isLive": contentNode.LIVE = true
+      "name": `${m.buildConfig.app_name}`
+      "user_id": asString(m.user)
+      "app_release_version": `${m.buildConfig.version_name} ${m.buildConfig.build_version}`
+      "app_version_number": m.buildConfig.version_name
     }
+    videoOptions.app = {
+      "name": `${m.buildConfig.app_name}`
+    }
+    videoOptions.username = asString(m.user)
+
     videoOptions.append(m.config)
     m.log.info("Sending payload to Youbora ", videoOptions)
     m.youboraTask.options = videoOptions
