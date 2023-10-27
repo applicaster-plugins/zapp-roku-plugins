@@ -5,8 +5,12 @@ import "pkg:/source/zapp-controls/CollectionRowUtils.bs"
 
 class FullScreenSearchVM extends zapp.uib.ComponentVM
 
+  public currentScreen = invalid
+
   public results = invalid
   public isGridVisible = false
+  public isScreenContainerVisible = false
+  public screenContainerTranslation = [0, 0]
   public isNoSearchLabelVisible = false
   public isNotFoundLabelVisible = false
 
@@ -16,6 +20,8 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
   public jumpToItem = 0
   public searchText = ""
 
+  private isFirstLoadComplete = false
+  private fallbackScreen = invalid
   private searchDelayTask = invalid
   private loadNextOffset = 2
   private isPaginationSupported = true
@@ -31,20 +37,22 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
   private direction = 1
   private lastRowIndex = -1
   private rowTarget = invalid
+  private nameOfParentScreen = ""
 
   public function new(riversJson)
     super(riversJson, "FullScreenSearchVM")
     m.focusId = "keyboard"
     m.processStyles(riversJson.styles)
     m.setGridVisible(false)
+    m.setScreenContainerVisible()
 
     m.rowTarget = riversJson.data.target
+    m.fallbackScreen = asString(riversJson.general.fallback)
 
     if zapp.viewUtils.getUIBBool(riversJson.styles, "override_target_screen", false)
       m.rowTarget = mc.getPath(riversJson, "data.target_screen")
       m.log.warn("Using overridden screen name for target!", m.rowTarget)
     end if
-
   end function
 
   function processStyles(styles)
@@ -87,6 +95,47 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     style.translation = zapp.viewUtils.makeUIBPosition(styles, "grid", 900, 500)
 
     return style
+  end function
+
+  private function showFirstScreen()
+    screen = m.getScreen(m.fallbackScreen)
+    if screen <> invalid
+      m.setScreenParent(screen)
+      screen.isFirstScreen = true
+      m.toggleSubScreen(screen)
+    end if
+  end function
+
+  private function setScreenParent(screen as mc.types.node)
+    parent = screen.getParent()
+    m.nameOfParentScreen = asString(parent.name)
+  end function
+
+
+  function toggleSubScreen(screen)
+    m.log.method("toggleSubScreen")
+
+    m.unobserveNodeField(m.currentScreen, "state", m.onsubScreenStateChange)
+
+    m.currentScreen = invalid
+
+    if screen <> invalid
+      m.currentScreen = screen
+      m.onsubScreenStateChange(m.currentScreen.state)
+      m.observeNodeField(m.currentScreen, "state", m.onSubScreenStateChange)
+    end if
+
+  end function
+
+  private function onSubScreenStateChange(state as string)
+    if state = "initialized"
+      m.isScreenContainerVisible = true
+      m.screenContainerTranslation = m.gridStyle.translation
+      m.isGridVisible = false
+      m.currentScreen.visible = true
+      m.currentScreen.setFocus(true)
+      m.isFirstLoadComplete = true
+    end if
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -146,6 +195,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     else
       m.log.verbose("too few chars. ignoring")
       m.setGridVisible(false)
+      m.setScreenContainerVisible()
       m.isLoading = false
     end if
 
@@ -167,6 +217,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
 
     m.isLoading = true
     m.setGridVisible(true)
+    m.setScreenContainerVisible()
     m.toggleLoadingDataTask(true, { "search": text.trim().encodeUriComponent() }, m.loadDepth)
 
   end function
@@ -193,6 +244,20 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     m.results = results
     m.jumpToItem = 0
     m.setGridVisible(true)
+    m.setScreenContainerVisible()
+  end function
+
+  private function setScreenContainerVisible()
+    if not m.isGridVisible
+      m.isScreenContainerVisible = true and m.currentscreen <> invalid
+    else
+      m.isScreenContainerVisible = false
+    end if
+
+    if not m.isGridVisible and m.focusId = "grid"
+      m.setFocusId("keyboard")
+      m.isScreenContainerVisible = true and m.currentscreen <> invalid
+    end if
   end function
 
   private function setGridVisible(isGridVisible)
@@ -262,13 +327,16 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     if m.focusId = "keyboard" and m.isGridVisible
       m.setFocusId("grid")
       return true
+    else if m.focusId = "keyboard" and m.isScreenContainerVisible
+      m.setFocusId("screenContainer")
+      return true
     end if
 
     return false
   end function
 
   function onKeyPressLeft() as boolean
-    if m.focusId = "grid"
+    if m.focusId = "grid" or m.focusId = "screenContainer"
       m.setFocusId("keyboard")
       return true
     end if
@@ -280,6 +348,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     m.jumpToItem = 0
     m.results = createObject("roSGNode", "ZPEntry")
     m.setGridVisible(false)
+    m.setScreenContainerVisible()
     m.searchText = ""
   end function
 
@@ -301,6 +370,12 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     m.trackScreen()
     if not m.isShowingContent
       m.reset()
+    end if
+
+    if m.isFirstLoadComplete
+      m.log.info("search fallbackScreen already loaded")
+    else
+      m.showFirstScreen()
     end if
 
     m.isShowingContent = false
