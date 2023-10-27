@@ -130,6 +130,8 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
   private function onSubScreenStateChange(state as string)
     if state = "initialized"
       m.isScreenContainerVisible = true
+      m.isNoSearchLabelVisible = false
+      m.isNotFoundLabelVisible = false
       m.screenContainerTranslation = m.gridStyle.translation
       m.isGridVisible = false
       m.currentScreen.visible = true
@@ -250,6 +252,8 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
   private function setScreenContainerVisible()
     if not m.isGridVisible
       m.isScreenContainerVisible = true and m.currentscreen <> invalid
+      m.isNoSearchLabelVisible = not m.isScreenContainerVisible
+      m.isNotFoundLabelVisible = not m.isScreenContainerVisible
     else
       m.isScreenContainerVisible = false
     end if
