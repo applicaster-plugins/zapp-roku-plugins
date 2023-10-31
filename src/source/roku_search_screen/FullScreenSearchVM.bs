@@ -68,7 +68,18 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
       focusBitmapUri: zapp.viewUtils.getPosterUri(styles.keyboard_focus_bitmap_uri)
       lowerCase: zapp.viewUtils.getUIBBool(styles, "keyboard_lower_case", false)
     }
+    m.applyKeyboardPalette(styles, normalColor)
+
+    m.minCharacters = zapp.viewUtils.getUIBInt(styles, "search_min_chars", 3)
+    m.searchQueryName = mc.getPath(styles, "search_query_name", "q")
+  end function
+
+  private function applyKeyboardPalette(styles, normalColor) as void
     keyboard = m.getMField("keyboard")
+    if keyboard = invalid
+      m.log.error("keyboard not found")
+      return
+    end if
     palettes = createObject("roSGNode", "RSGPalette")
     palettes.colors = {
       primaryTextColor: normalColor
@@ -76,9 +87,6 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     }
     keyboard.keyGrid.palette = palettes
     keyboard.textEditBox.textColor = normalColor
-
-    m.minCharacters = zapp.viewUtils.getUIBInt(styles, "search_min_chars", 3)
-    m.searchQueryName = mc.getPath(styles, "search_query_name", "q")
   end function
 
   private function getGridStyle(styles, cellStyle)
