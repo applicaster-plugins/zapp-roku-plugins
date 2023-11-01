@@ -21,6 +21,12 @@
         id='keyboard'
         style='{{:keyboardStyle}}'
         text='{[searchText|onSearchTextChange(value)]}' />
+    <mv_DynamicContainer
+        id='screenContainer'
+        translation='{{screenContainerTranslation}}'
+        isDestroyingChildViewsOnRemoval='true'
+        visible='{{isScreenContainerVisible}}'
+        setNextView='{{currentScreen}}' />
 
     <mv_MarkupGrid
         id='grid'
