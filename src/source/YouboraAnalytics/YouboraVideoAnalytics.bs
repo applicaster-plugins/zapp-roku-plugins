@@ -88,11 +88,13 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
 
   public override function videoStart(videoNode, contentNode) as void
     super.videoStart(videoNode, contentNode)
+    m.log.info("video starting",contentNode.title)
 
     m.contentNode = contentNode
     m.youboraTask = m.getInstance("youboraAnalyticsTask")
 
     if m.youboraTask = invalid
+      m.log.warn("Creating new Youbora Task")
       m.youboraTask = m.createInstance(m.taskName, videoNode, "youboraAnalyticsTask")
       m.youboraTask.videoplayer = videoNode
       m.youboraTask.control = "RUN"
@@ -100,6 +102,7 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
     end if
 
     if m.isUsingAdvancedVideoAnalytics
+      m.log.warn("Using advanced video analytics")
       return
     end if
     videoOptions = {}
@@ -126,15 +129,19 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
   end function
 
   public override function videoEnd() as void
-    m.log.method("videoEnd")
     super.videoEnd()
+    m.log.info("video session ending")
 
     if m.isUsingAdvancedVideoAnalytics
+      m.log.warn("Using advanced video analytics")
       return
     end if
     if m.youboraTask <> invalid
+      m.log.info("Stopping Youbora Task")
       m.youboraTask.event = { handler: "stop" }
       m.youboraTask.taskState = "stop"
+    else
+      m.log.warn("No Youbora Task to stop")
     end if
   end function
 
@@ -147,8 +154,8 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
   end function
 
   public override function adTrackingEvent(eventType, rafCtx) as void
-    m.log.method("adTrackingEvent")
     super.adTrackingEvent(eventType, rafCtx)
+    m.log.method("adTrackingEvent")
 
     if m.isUsingAdvancedVideoAnalytics
       return
