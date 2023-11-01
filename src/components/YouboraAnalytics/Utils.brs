@@ -13,7 +13,7 @@ end function
 sub YouboraLog(message as string, contextName as string)
   try
     if m.YouboraLogActive = invalid
-      m.YouboraLogActive = true
+      m.YouboraLogActive = m.global.YouboraLogActive
     end if
     if m.YouboraLogActive = true
       timeStamp = getCurrentTime()
