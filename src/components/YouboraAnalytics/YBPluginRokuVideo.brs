@@ -96,59 +96,50 @@ sub processPlayerState(newState as string)
 
   YouboraLog("Player state: " + newState, "YBPluginRokuVideo")
 
-  try
-    if newState = "buffering"
-      if m.viewManager.isStartSent = false
-        eventHandler("play")
-      else
-        if m.viewManager.isPaused = true
-          eventHandler("resume")
-          eventHandler("seeking")
-        else
-          eventHandler("buffering")
-        end if
-      end if
-    else if newState = "playing"
-      'if m.viewManager.isStartSent = true
-      if m.viewManager.isJoinSent = false
-        eventHandler("join")
-      else if m.viewManager.isPaused = true
+  if newState = "buffering"
+    if m.viewManager.isStartSent = false
+      eventHandler("play")
+    else
+      if m.viewManager.isPaused = true
         eventHandler("resume")
-      end if
-
-      if m.viewManager.isBuffering = true
-        eventHandler("buffered")
-      else if m.viewManager.isSeeking = true
-        eventHandler("seeked")
-      end if
-      'endif
-    else if newState = "stopped"
-      'Sometimes when playing an HLS Live stream, the Video player
-      'enters the "stopped" state while buffering.
-      '
-      'Here we check for the control property of the video player
-      'and close the view only if it is stop. This avoids sending
-      'false stop events.
-      ' if m.top.videoplayer.control = "stop" AND m.viewManager.isShowingAds = false
-      '     'eventHandler("stop")
-      ' else
-      '     YouboraLog("Ignoring 'stopped' state; Video.control is not 'stop'")
-      ' endif
-    else if newState = "error"
-      onVideoError()
-    else if newState = "paused"
-      eventHandler("pause")
-    else if newState = "finished"
-      m.viewManager.isFinished = true
-      if m.top.videoplayer.control = "stop"
-        onStopVideo()
+        eventHandler("seeking")
       else
-        YouboraLog("Ignoring 'stopped' state; Video.control is not 'stop'", "YBPluginRokuVideo")
+        eventHandler("buffering")
       end if
     end if
-  catch e
-    YouboraLog("Exception managing player state: " + e.message, "YBPluginRokuVideo")
-  end try
+  else if newState = "playing"
+    'if m.viewManager.isStartSent = true
+    if m.viewManager.isJoinSent = false
+      eventHandler("join")
+    else if m.viewManager.isPaused = true
+      eventHandler("resume")
+    end if
+
+    if m.viewManager.isBuffering = true
+      eventHandler("buffered")
+    else if m.viewManager.isSeeking = true
+      eventHandler("seeked")
+    end if
+    'endif
+  else if newState = "stopped"
+    if m.top.videoplayer.control = "stop" and m.viewManager.isShowingAds = false
+      eventHandler("stop")
+    else
+      YouboraLog("Ignoring 'stopped' state; Video.control is not 'stop'")
+    end if
+  else if newState = "error"
+    onVideoError()
+  else if newState = "paused"
+    eventHandler("pause")
+  else if newState = "finished"
+    m.viewManager.isFinished = true
+    if m.top.videoplayer.control = "stop"
+      onStopVideo()
+    else
+      YouboraLog("Ignoring 'stopped' state; Video.control is not 'stop'", "YBPluginRokuVideo")
+    end if
+  end if
+  YouboraLog("Exception managing player state: ", "YBPluginRokuVideo")
 end sub
 
 'Overriden parent method

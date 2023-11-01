@@ -30,11 +30,11 @@ function Request_send() as boolean
   YouboraLog("XHR Req: " + url, "Request")
 
   'We need a little setup if the request is https
-  if url.Left(5) = "https"
+  'if url.Left(5) = "https"
     m.request.SetCertificatesFile("common:/certs/ca-bundle.crt")
     m.request.AddHeader("X-Roku-Reserved-Dev-Id", "")
     m.request.InitClientCertificates()
-  end if
+  'end if
 
   'Send
   return m.request.AsyncGetToString()
