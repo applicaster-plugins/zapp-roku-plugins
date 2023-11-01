@@ -109,7 +109,6 @@ sub _run()
     processMessage(msg, m.port)
 
     mt = type(msg)
-
     if mt = "roSGNodeEvent"
       if msg.getField() = "event" 'Process event from outside
         data = msg.getData()
@@ -678,7 +677,7 @@ sub receiveData(response as string)
 
 end sub
 
-sub setOptions(options = invalid)
+sub setOptions(options)
   if options <> invalid
     m.infoManager.options = options
   end if
