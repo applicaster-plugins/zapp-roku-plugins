@@ -88,20 +88,9 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
 
   public override function videoStart(videoNode, contentNode) as void
     super.videoStart(videoNode, contentNode)
+    m.log.info("video starting", contentNode.title)
 
     m.contentNode = contentNode
-    m.youboraTask = m.getInstance("youboraAnalyticsTask")
-
-    if m.youboraTask = invalid
-      m.youboraTask = m.createInstance(m.taskName, videoNode, "youboraAnalyticsTask")
-      m.youboraTask.videoplayer = videoNode
-      m.youboraTask.control = "RUN"
-      m.setInstance("youboraAnalyticsTask", m.youboraTask)
-    end if
-
-    if m.isUsingAdvancedVideoAnalytics
-      return
-    end if
     videoOptions = {}
     videoOptions.content = {
       "title": asString(contentNode.json.extensions.guid, contentNode.title)
@@ -117,24 +106,48 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
     videoOptions.username = asString(m.user)
 
     videoOptions.append(m.config)
-    m.log.info("Sending payload to Youbora ", videoOptions)
-    m.youboraTask.options = videoOptions
+    m.youboraTask = m.getInstance("youboraAnalyticsTask")
 
+    if m.youboraTask = invalid
+      m.log.warn("Creating new Youbora Task")
+      m.youboraTask = m.createInstance(m.taskName, videoNode, "youboraAnalyticsTask")
+      m.youboraTask.videoplayer = videoNode
+      m.log.info("Sending payload to Youbora ", videoOptions)
+      m.youboraTask.options = videoOptions
+      m.youboraTask.control = "RUN"
+      m.setInstance("youboraAnalyticsTask", m.youboraTask)
+    else
+      m.youboraTask.options = videoOptions
+    end if
+
+    if m.isUsingAdvancedVideoAnalytics
+      m.log.warn("Using advanced video analytics")
+      return
+    end if
     'note if we're using 6.1 or higher, that we should do a "init" event here
     'current SDK is 6.0.4
     m.youboraTask.event = { handler: "play" }
   end function
 
   public override function videoEnd() as void
-    m.log.method("videoEnd")
     super.videoEnd()
+    m.log.info("video session ending")
 
     if m.isUsingAdvancedVideoAnalytics
+      m.log.warn("Using advanced video analytics")
       return
     end if
+
+    m.youboraTask = m.getInstance("youboraAnalyticsTask")
+
     if m.youboraTask <> invalid
+      m.log.info("Stopping Youbora Task")
       m.youboraTask.event = { handler: "stop" }
       m.youboraTask.taskState = "stop"
+      m.youboraTask.control = "done"
+      m.youboraTask = invalid
+    else
+      m.log.warn("No Youbora Task to stop")
     end if
   end function
 
@@ -147,8 +160,8 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
   end function
 
   public override function adTrackingEvent(eventType, rafCtx) as void
-    m.log.method("adTrackingEvent")
     super.adTrackingEvent(eventType, rafCtx)
+    m.log.method("adTrackingEvent")
 
     if m.isUsingAdvancedVideoAnalytics
       return
