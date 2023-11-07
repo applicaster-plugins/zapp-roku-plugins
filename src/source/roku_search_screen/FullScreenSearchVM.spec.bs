@@ -113,25 +113,22 @@ namespace zapp.tests
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("screen container visibility")
-    @params(true, false, true, true, "grid", invalid, false)
-    @params(false, true, false, false, "grid", {}, true)
-    @params(false, false, true, true, "grid", {}, true)
-    @params(false, false, false, false, "keyboard", {}, true)
-    @params(false, false, false, false, "grid", invalid, false)
-    function _(isGridVisible, isScreenContainerVisible, isNoSearchLabelVisible, isNotFoundLabelVisible, focusId, currentscreen, expectedResult)
-
+    @params(true, false, true, "grid", invalid, false, true)
+    @params(false, true, false, "grid", {}, true, true)
+    @params(false, false, true, "grid", {}, true, true)
+    @params(false, false, false, "keyboard", {}, true, true)
+    @params(false, false, true, "grid", invalid, false, true)
+    function _(isGridVisible, isScreenContainerVisible, isNoSearchLabelVisible, focusId, currentscreen, expectedResult, visible)
       m.vm.isGridVisible = isGridVisible
       m.vm.isScreenContainerVisible = isScreenContainerVisible
       m.vm.isNoSearchLabelVisible = isNoSearchLabelVisible
-      m.vm.isNotFoundLabelVisible = isNotFoundLabelVisible
       m.vm.focusId = focusId
       m.vm.currentscreen = currentscreen
 
-      m.vm.setScreenContainerVisible()
+      m.vm.setScreenContainerVisible(visible)
 
       m.assertEqual(m.vm.isScreenContainerVisible, expectedResult)
       m.assertEqual(m.vm.isNoSearchLabelVisible, not expectedResult)
-      m.assertEqual(m.vm.isNotFoundLabelVisible, not expectedResult)
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -141,7 +138,7 @@ namespace zapp.tests
     @it("reset")
     function _()
       m.expectCalled(m.vm.setGridVisible(false))
-      m.expectCalled(m.vm.setScreenContainerVisible())
+      m.expectCalled(m.vm.setScreenContainerVisible(true))
 
       m.vm.reset()
 
@@ -256,7 +253,6 @@ namespace zapp.tests
 
       m.expectCalled(m.vm.toggleLoadingDataTask(true, expected, loadDepth))
       m.expectCalled(m.vm.setGridVisible(true))
-      m.expectCalled(m.vm.setScreenContainerVisible)
 
       m.vm.performSearch(text)
 
