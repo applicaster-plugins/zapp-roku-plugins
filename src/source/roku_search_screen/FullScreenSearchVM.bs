@@ -44,7 +44,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     m.focusId = "keyboard"
     m.processStyles(riversJson.styles)
     m.setGridVisible(false)
-    m.setScreenContainerVisible()
+    m.setScreenContainerVisible(true)
 
     m.rowTarget = riversJson.data.target
     m.fallbackScreen = asString(riversJson.general.fallback)
@@ -205,7 +205,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     else
       m.log.verbose("too few chars. ignoring")
       m.setGridVisible(false)
-      m.setScreenContainerVisible()
+      m.setScreenContainerVisible(true)
       m.isLoading = false
     end if
 
@@ -227,7 +227,6 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
 
     m.isLoading = true
     m.setGridVisible(true)
-    m.setScreenContainerVisible()
     m.toggleLoadingDataTask(true, { "search": text.trim().encodeUriComponent() }, m.loadDepth)
 
   end function
@@ -238,6 +237,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     m.toggleLoadingDataTask(false)
     m.isLoading = false
     results = result.data
+    result.isOk = false
     if result.isOk and results <> invalid
       m.setContentStyle(results)
       m.nextUrl = zapp.collectionRowUtils.getNextUrl(result.data.json)
@@ -254,14 +254,15 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     m.results = results
     m.jumpToItem = 0
     m.setGridVisible(true)
-    m.setScreenContainerVisible()
+    m.setScreenContainerVisible(false)
   end function
 
-  private function setScreenContainerVisible()
+  private function setScreenContainerVisible(visible)
     if not m.isGridVisible
-      m.isScreenContainerVisible = true and m.currentscreen <> invalid
-      m.isNoSearchLabelVisible = not m.isScreenContainerVisible
-      m.isNotFoundLabelVisible = not m.isScreenContainerVisible
+      m.isScreenContainerVisible = true and m.currentscreen <> invalid and visible
+      if m.isScreenContainerVisible
+        m.isNoSearchLabelVisible = false
+      end if
     else
       m.isScreenContainerVisible = false
     end if
@@ -360,7 +361,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     m.jumpToItem = 0
     m.results = createObject("roSGNode", "ZPEntry")
     m.setGridVisible(false)
-    m.setScreenContainerVisible()
+    m.setScreenContainerVisible(true)
     m.searchText = ""
   end function
 
