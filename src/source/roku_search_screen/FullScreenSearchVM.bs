@@ -237,7 +237,6 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     m.toggleLoadingDataTask(false)
     m.isLoading = false
     results = result.data
-    result.isOk = false
     if result.isOk and results <> invalid
       m.setContentStyle(results)
       m.nextUrl = zapp.collectionRowUtils.getNextUrl(result.data.json)
