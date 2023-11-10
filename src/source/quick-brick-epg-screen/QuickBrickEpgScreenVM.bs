@@ -236,7 +236,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
         programItem.id = programData.id
         programItem.genre = asString(programData.json.genre)
         programItem.shortDescriptionLine1 = asString(programData.json.summary)
-        'programItem.HDSMALLICONURL = programData.json.images.image_base
+        programItem.HDSMALLICONURL = asString(programData.json.images.image_base)
         m.programsData.push(programItem)
       end for
       if m.channelCount = 0 and programsCount > 0
@@ -352,12 +352,20 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   end function
 
   private function defaultValues(timeGrid, plugin, style)
-    timeGrid.timeBarTwoLineLayout = true
-    timeGrid.duration = 12600
-    timeGrid.sectionDividerTopOffset = 30
-    timeGrid.scrollSpeed = 100
-    timeGrid.overlayBitmapUri = ""
-    timeGrid.vertFocusAnimationStyle = "floatingFocus"
+
+    if asBoolean(style.grid_item_show)
+      titleDayLabel = m.getMField("titleLabel")
+      titleDayLabel.visible = false
+      timeGrid.clippingRect = [0, -100, 1920, 1920]
+    else
+      timeGrid.timeBarTwoLineLayout = true
+      timeGrid.clippingRect = [0, -50, 1920, 1920]
+    end if
+      timeGrid.duration = 12600
+      timeGrid.sectionDividerTopOffset = 30
+      timeGrid.scrollSpeed = 100
+      timeGrid.overlayBitmapUri = ""
+      timeGrid.vertFocusAnimationStyle = "floatingFocus"
   end function
 
   private function timeGridOverallSettings(timeGrid, timeGridGroup, plugin, style)
