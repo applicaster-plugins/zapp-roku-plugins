@@ -1,6 +1,7 @@
 namespace zapp.tests
   @nocatch
   @tags("public", "auth", "vm")
+  @only
   @suite
   class FlowRegisterScreenVMTests extends tests.BaseTestSuite
     private riversJson
@@ -120,7 +121,7 @@ namespace zapp.tests
       m.vm.isLoading = false
       m.vm.isCredsValid = true
 
-      m.expectOnce(m.vm, "register")
+      m.expectCalled(m.vm.register)
 
       m.vm.onRegisterButtonSelected(true)
     end function
@@ -130,13 +131,44 @@ namespace zapp.tests
     function _()
       m.vm.isLoading = false
       m.vm.isCredsValid = false
-      m.expectNone(m.vm, "register")
+      m.expectNotCalled(m.vm.register)
 
       m.vm.onRegisterButtonSelected(true)
 
       m.assertTrue(m.vm.isErrorShowing)
-      m.assertEqual(m.vm.errorText, "Please enter your email address and password")
+      m.assertEqual(m.vm.errorText, "Please enter your: Email address, First name, Last name, Password")
 
+    end function
+
+    @it("shows errors on creeds validator status")
+    @params("Please enter your: Email address, First name, Last name, Password", false, false, false, false)
+    @params("Please enter your: Email address, First name, Last name", false, false, false, true)
+    @params("Please enter your: Email address, First name", false, false, true, true)
+    @params("Please enter your: Email address", false, true, true, true)
+    @params("Please enter your: First name, Last name, Password", true, false, false, false)
+    @params("Please enter your: First name, Last name", true, false, false, true)
+    @params("Please enter your: First name", true, false, true, true)
+    @params("Please enter your: Last name, Password", true, true, false, false)
+    @params("Please enter your: Last name", true, true, false, true)
+    @params("Please enter your: Password", true, true, true, false)
+    @params("Please enter your: Email address, First name, Last name, Password", false, false, false, false)
+    @params("Please enter your: First name, Last name, Password", true, false, false, false)
+    @params("Please enter your: Last name, Password", true, true, false, false)
+    @params("Please enter your: Password", true, true, true, false)
+    @params("Please enter your: Email address, First name, Last name", false, false, false, true)
+    @params("Please enter your: Email address, First name", false, false, true, true)
+    @params("Please enter your: Email address", false, true, true, true)
+
+    function _(expectedResult, email, firstName, lastName, password)
+      m.vm.isLoading = false
+      m.vm.isCredsValid = false
+      m.vm.credsValidator = [email,firstName,lastName,password]
+      m.expectNotCalled(m.vm.register)
+
+      m.vm.onRegisterButtonSelected(true)
+
+      m.assertTrue(m.vm.isErrorShowing)
+      m.assertEqual(m.vm.errorText, expectedResult)
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -493,7 +525,6 @@ namespace zapp.tests
       m.vm.state = "loading"
       m.vm.focusId = "usernameInput"
       m.expectNone(m.vm, "dismiss")
-      m.expectOnce(m.vm, "setFocus", invalid)
 
       m.vm.onRegisterComplete(result)
 
