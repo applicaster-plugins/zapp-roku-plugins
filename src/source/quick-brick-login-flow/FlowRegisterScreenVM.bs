@@ -48,6 +48,7 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
   private focusIds = []
   private maxDebugAccounts = 1
   private debugAccountId = 0
+  private credsValidator = [false, false, false, false]
 
   private authTask
   private channelStore
@@ -147,8 +148,27 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
     if not m.isLoading and m.isCredsValid
       m.register()
     else if not m.isCredsValid
+      credsValidator = m.credsValidator
+      errorText = "Please enter your: "
+      errors = ["Email address", "First name", "Last name", "Password"]
+
+      errorsFields = []
+
+      for i = 0 to credsValidator.count() - 1
+        if not credsValidator[i]
+          errorsFields.push(errors[i])
+        end if
+      end for
+
+      if errorsFields.count() > 0
+        ' Combine the invalid fields with commas
+        errorText += errorsFields.join(", ")
+      end if
+
       if asString(m.localizations.register_error_text, "") = ""
-        m.errorText = "Please enter your email address and password"
+        m.errorText = errorText
+      else
+        m.errorText = asString(m.localizations.register_error_text)
       end if
       m.isErrorShowing = true
     else
@@ -222,6 +242,7 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
       m.username = text
       m.usernameButtonType = "textInput"
     end if
+    m.setTextFromKeyboard("email", text)
   end function
 
   private function onNameKeyboardDialogDismissal(text)
@@ -244,10 +265,11 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
 
   public function checkCredsValid()
     isUsernameValid = asString(m.username) <> ""
-    isFirstNameValid = (m.isFirstNameFieldVisible and asString(m.firstName) <> "") or (m.isFirstNameFieldVisible = false and (asString(m.firstName) = "" or asString(m.firstName) <> ""))
+    isFirstNameValid = (m.isFirstNameFieldVisible and asString(m.firstName) <> "") or (m.isFirstNameFieldVisible = false)
     isLastNameValid = (m.isLastNameFieldVisible and asString(m.lastName) <> "") or (m.isLastNameFieldVisible = false and asString(m.lastName) = "")
     isPasswordValid = asString(m.password) <> ""
 
+    m.credsValidator = [isUsernameValid, isFirstNameValid, isLastNameValid, isPasswordValid]
     m.isCredsValid = isUsernameValid and isFirstNameValid and isLastNameValid and isPasswordValid
 
     m.isRegisterButtonEnabled = m.isCredsValid and not m.isLoading
