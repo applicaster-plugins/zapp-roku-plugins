@@ -146,6 +146,7 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
       m.youboraTask.taskState = "stop"
       m.youboraTask.control = "done"
       m.youboraTask = invalid
+      m.setInstance("youboraAnalyticsTask", m.youboraTask)
     else
       m.log.warn("No Youbora Task to stop")
     end if
