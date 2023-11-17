@@ -259,6 +259,13 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       m.contentStartTime = currentTime - 900
       m.content = m.timeGridContent
       m.log.info("content for Epg", m.timeGridContent)
+      numRows = zapp.viewUtils.getUIBInt(m.riversJsonData.styles, "time_grid_visible_row", 6)
+
+      channelCount = m.timeGridContent.getChildCount()
+      if channelCount < numRows
+        m.timeGrid.numRows = channelCount
+      end if
+
       m.state = "ready"
     end if
 
@@ -388,7 +395,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
 
     timeGridHeight = plugin.getIntValue("time_grid_item_size", 125)
     timeGridGroup.translation = [xPosition, yPosition]
-    timeGrid.numRows = plugin.getIntValue("time_grid_visible_row", 6)
+    'timeGrid.numRows = plugin.getIntValue("time_grid_visible_row", 6)
     timeGrid.itemSize = [1920 - rightOffset, timeGridHeight]
     timeGrid.focusBitmapUri = "pkg:/images/SearchFocusBackground2.9.png"
   end function
@@ -400,6 +407,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     programLeftPadding = plugin.getIntValue("grid_item_padding_left", 12)
 
     timeGrid.programBackgroundBitmapUri = asString(style.guide_item_asset_background_uri, "pkg:/images/timeGridBackground.9.png")
+    timeGrid.focusBitmapBlendColor = zapp.viewUtils.transposeUIBColor(style.program_background_color, "#FFFFFF")
     timeGrid.programTitleColor = zapp.viewUtils.transposeUIBColor(style.label1_live_font_color, "#FFFFFF")
     timeGrid.programTitleFocusedColor = zapp.viewUtils.transposeUIBColor(style.label1_live_focused_font_color, "#FFFFFF")
     timeGrid.programHorizMargin = programLeftPadding + programRightPadding
@@ -891,7 +899,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       minutesInSeconds = mc.strToInt(offsetParts[1]) * 60
 
       totalOffsetInSeconds = (hoursInSeconds + minutesInSeconds)
-      if timeZone.startsWith("-")
+      if timeZone.startsWith("+")
         totalOffsetInSeconds *= -1
       end if
 
