@@ -125,7 +125,7 @@ sub processPlayerState(newState as string)
     if m.top.videoplayer.control = "stop" and m.viewManager.isShowingAds = false
       eventHandler("stop")
     else
-      YouboraLog("Ignoring 'stopped' state; Video.control is not 'stop'")
+      YouboraLog("Ignoring 'stopped' state; Video.control is not 'stop'","YBPluginRokuVideo")
     end if
   else if newState = "error"
     onVideoError()
