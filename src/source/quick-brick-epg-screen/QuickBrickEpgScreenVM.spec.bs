@@ -85,6 +85,9 @@ namespace zapp.plugins.tests
 
     @it("Load More Response if data is valid")
     function _()
+      m.vm.timeGrid = { "id": "timeGrid", "numRows": 1 }
+      m.vm.isNowNextMode = false
+      m.vm.isUsingButtons = true
       m.vm.channelCount = -1
       m.vm.taskCount = 1
       m.vm.timeGridContent = mc.createSGNode("ZPEntry")
@@ -97,6 +100,20 @@ namespace zapp.plugins.tests
       result = {
         "isOk": true
         "data": feed
+      }
+
+      ca.json = {
+        "extensions": {
+          "start_time": 0,
+          "end_time": 0
+        }
+      }
+
+      cb.json = {
+        "extensions": {
+          "start_time": 0,
+          "end_time": 0
+        }
       }
 
       m.expectCalled(m.vm.parseDateStringToSeconds(0), 0)
@@ -116,8 +133,11 @@ namespace zapp.plugins.tests
 
     @it("state error on invalid result")
     function _()
-      m.vm.taskCount = 0
-
+      m.vm.channelCount = 0
+      m.vm.taskCount = 1
+      m.vm.isUsingButtons = true
+      m.vm.isNowNextMode = false
+      m.vm.timeGrid = { "id": "timeGrid", "numRows": 1 }
       m.vm.timeGridContent = mc.createSGNode("ZPEntry")
       m.vm.channelItem = mc.createSGNode("ZPEntry", m.vm.timeGridContent, "ca")
 
@@ -143,7 +163,7 @@ namespace zapp.plugins.tests
     function _()
       result = m.vm.parseDateStringToSeconds("2023-09-27T12:00:00.000-04:00")
 
-      m.assertEqual(`${result}`, `${1695801600}`)
+      m.assertEqual(`${result}`, `${1695830400}`)
     end function
 
 
