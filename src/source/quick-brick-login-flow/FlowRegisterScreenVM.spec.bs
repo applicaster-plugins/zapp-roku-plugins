@@ -1,7 +1,6 @@
 namespace zapp.tests
   @nocatch
   @tags("public", "auth", "vm")
-  @only
   @suite
   class FlowRegisterScreenVMTests extends tests.BaseTestSuite
     private riversJson
