@@ -15,6 +15,7 @@ namespace zapp.tests
         "task_name": "Node"
       }
 
+
       m.pluginData = new zapp.BasePlugin({ "configuration_json": m.config, "identifier": "youbora" })
 
       m.plugin = new YouboraVideoAnalytics(m.pluginData)
@@ -35,6 +36,11 @@ namespace zapp.tests
       videoNode = { "id": "videoNode" }
       task = { "id": "task" }
       m.plugin.taskName = "YBPluginRokuVideo"
+      m.plugin.buildConfig = {
+        "app_name": "appN",
+        "version_name": "vn",
+        "build_version": "bv",
+      }
 
       m.expectOnce(m.plugin, "getInstance", ["youboraAnalyticsTask"], invalid)
       m.expectOnce(m.plugin, "createInstance", ["YBPluginRokuVideo", videoNode, "youboraAnalyticsTask"], task)
@@ -62,6 +68,12 @@ namespace zapp.tests
       videoNode = { "id": "videoNode" }
       task = { "id": "task" }
       m.plugin.config = { "isConfigSet": true }
+      m.plugin.buildConfig = {
+        "app_name": "appN",
+        "version_name": "vn",
+        "build_version": "bv",
+      }
+
       m.expectOnce(m.plugin, "getInstance", ["youboraAnalyticsTask"], task)
       m.expectNone(m.plugin, "createInstance")
       m.expectNone(m.plugin, "setInstance")
@@ -87,11 +99,14 @@ namespace zapp.tests
     @it("stopevent called on end")
     function _()
       m.plugin.youboraTask = { "id": "task" }
+      youboraTask = { "id": "task" }
+
+      m.expectCalled(m.plugin.getInstance("youboraAnalyticsTask"), youboraTask)
 
       m.plugin.videoEnd()
 
-      m.assertEqual(m.plugin.youboraTask.event, { handler: "stop" })
-      m.assertEqual(m.plugin.youboraTask.taskState, "stop")
+      m.assertEqual(youboraTask.event, { handler: "stop" })
+      m.assertEqual(youboraTask.taskState, "stop")
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
