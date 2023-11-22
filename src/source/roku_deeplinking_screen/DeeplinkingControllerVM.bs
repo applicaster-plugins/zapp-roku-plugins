@@ -65,10 +65,10 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
     m.log.method("togglePrehookController", isActive)
     m.isLoadingIndicatorVisible = false
 
-    m.unobserve(m.currentScreen.state, m.onPrehookControllerStateChange)
+    m.unobserveNodeField(m.currentScreen, "state", m.onPrehookControllerStateChange)
 
     if isActive
-      m.observe(controller.state, m.onPrehookControllerStateChange, "value")
+      m.observeNodeField(controller, "state", m.onPrehookControllerStateChange, "value")
       m.currentScreen = controller
       m.setFocus(m.currentScreen)
     else
