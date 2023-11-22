@@ -46,6 +46,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   public listStyle = {}
   public contentStartTime = {}
   public leftEdgeTargetTime = 0
+  public isoTime = 0
 
   private jwtUtil = new zapp.JWTUtil()
   private isNowNextMode = false
@@ -59,6 +60,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   private channelItem = invalid
   private timeGridContent = invalid
   private timeGrid = invalid
+  private buttonsIsReady = false
   private contentLoader = new zapp.pipes.EntryLoader()
 
   private focusIds = []
@@ -155,9 +157,19 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   private function makeEPGData(riversJsonData)
+    m.setIsoTime()
     m.setEpgContent(riversJsonData.data)
     m.isFirstLoadComplete = true
     return true
+  end function
+
+  private function setIsoTime(targetTimestamp = invalid)
+    dataTime = CreateObject("roDateTime")
+    if targetTimestamp <> invalid
+      dataTime.FromSeconds(targetTimestamp)
+    end if
+    isoTime = dataTime.ToISOString("millseconds")
+    m.isoTime = isoTime.replace("Z", `.${123}Z`)
   end function
 
   private function applyDataMap(feed as mc.types.node, style as mc.types.assocarray) as void
@@ -201,9 +213,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
 
     if asBoolean(result.isOk)
       m.state = "ready"
-      dataTime = CreateObject("roDateTime")
-      milliseconds = dataTime.GetMilliseconds()
-      isoTime = dataTime.ToISOString("millseconds").replace("Z", `.${milliseconds}Z`)
+      isoTime = m.isoTime
       m.timeGridContent = CreateObject("roSGNode", "ContentNode")
       m.taskCount = 0
       m.channelCount = -1
@@ -242,7 +252,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
         programItem.id = programData.id
         programItem.genre = asString(programData.json.genre)
         programItem.shortDescriptionLine1 = asString(programData.json.summary)
-        'programItem.HDSMALLICONURL = asString(programData.json.images.image_base)
+        'programItem.HDSMALLICONURL = "pkg:/images/playButton.png"
         m.programsData.push(programItem)
       end for
       if m.channelCount = 0 and programsCount > 0
@@ -269,7 +279,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       m.state = "ready"
     end if
 
-    if m.isUsingButtons and not m.isNowNextMode
+    if m.isUsingButtons and not m.isNowNextMode and not m.buttonsIsReady
       m.createCustomItems()
       m.updateMenuItems()
     end if
@@ -308,27 +318,35 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   public function onSelectedIndexChangeMenu(index)
     m.log.info("selected index", index)
     item = m.menuButtons[index]
-    currentTime = CreateObject("roDateTime")
-    currentDayIndex = currentTime.getDayOfWeek()
 
     if item <> invalid
+      currentTime = CreateObject("roDateTime")
+      currentDayIndex = currentTime.getDayOfWeek()
 
-      newIndex = item.index
-      if index = 0
-        dayDifference = 0
-      else
-        dayDifference = newIndex - currentDayIndex
-      end if
-
-      if dayDifference < 0
-        dayDifference = abs(newIndex - 7)
-      end if
+      dayDifference = m.dayDiffernceCalculation(index, currentDayIndex, item)
 
       targetTime = currentTime.asSeconds() + (m.dayInSeconds * dayDifference)
-
       m.leftEdgeTargetTime = targetTime
-      m.content = m.timeGridContent
+
+      m.setIsoTime(targetTime)
+      m.setEpgContent(m.riversJsonData.data)
     end if
+  end function
+
+  private function dayDiffernceCalculation(index, currentDayIndex, item)
+
+    newIndex = item.index
+    if index = 0
+      dayDifference = 0
+    else
+      dayDifference = newIndex - currentDayIndex
+    end if
+
+    if dayDifference < 0
+      dayDifference = abs(newIndex - 7)
+    end if
+
+    return dayDifference
   end function
 
   function changingCurrentDayLabel()
@@ -403,8 +421,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   private function programItemSection(timeGrid, plugin, style)
     programFontName = mc.getString(style, "label1_font_name", "medium")
     programFontSize = plugin.getIntValue("label1_font_size", 12)
-    programRightPadding = plugin.getIntValue("grid_item_padding_right", 12)
-    programLeftPadding = plugin.getIntValue("grid_item_padding_left", 12)
+    programRightPadding = plugin.getIntValue("grid_item_padding_right")
+    programLeftPadding = plugin.getIntValue("grid_item_padding_left")
 
     timeGrid.programBackgroundBitmapUri = asString(style.guide_item_asset_background_uri, "pkg:/images/timeGridBackground.9.png")
     timeGrid.focusBitmapBlendColor = zapp.viewUtils.transposeUIBColor(style.program_background_color, "#FFFFFF")
@@ -420,8 +438,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     nextLabel = m.getMField("NextLabel")
     localizations = m.localizations
 
-    timeBarTopPadding = plugin.getIntValue("time_bar_padding_top", 70)
-    timeBarBottomPadding = plugin.getIntValue("time_bar_padding_bottom", 70)
+    timeBarTopPadding = plugin.getIntValue("time_bar_padding_top")
+    timeBarBottomPadding = plugin.getIntValue("time_bar_padding_bottom")
 
     timeBarTitleVisible = plugin.getBoolValue("time_bar_show", true)
     nowTextVisible = plugin.getBoolValue("time_bar_now_show", true)
@@ -460,17 +478,17 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   private function resolveFont(programFontName, programFontSize)
     headerFont = CreateObject("roSGNode", "Font")
     font = invalid
-    if programFontName <> invalid and programFontName.instr("SystemFont") <> -1
-      font = "font:" + programFontName.trim()
-    else if programFontName <> invalid and lCase(programFontName) = "medium" or lCase(programFontName) = "mediumbold"
-      font = "font:" + programFontName.trim() + "SystemFont"
-    else if programFontName <> invalid and programFontName.instr("SystemFont") = -1
-      headerFont.uri = "pkg:/fonts/" + programFontName + ".ttf"
+
+    language = m.getInstance("languageCode") ?? "en"
+    runtimeFonts = m.getInstance("runtimeFonts") ?? []
+    programFontName = zapp.viewUtils.getTargetLanguageFontName(programFontName, language, runtimeFonts)
+    labelFontPath = zapp.viewUtils.getLabelFontPath(programFontName, language, font)
+
+    if labelFontPath.startsWith("pkg:/") or labelFontPath.startsWith("tmp:/")
+      headerFont.uri = labelFontPath
       headerFont.size = programFontSize
-    else if programFontName <> invalid and font = invalid
-      font = "font:" + programFontName.trim() + "SystemFont"
     else
-      font = "font:MediumSystemFont"
+      font = labelFontPath
     end if
 
     if font <> invalid
@@ -481,11 +499,11 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   end function
 
   private function channelInfoSection(timeGrid, plugin, style)
-    channelAssetHeight = plugin.getIntValue("channel_asset_height", 42)
-    channelPaddingTop = plugin.getIntValue("channel_padding_top", 15)
-    channelPaddingRight = plugin.getIntValue("channel_padding_right", 13)
-    channelPaddingBottom = plugin.getIntValue("channel_padding_bottom", 15)
-    channelPaddingLeft = plugin.getIntValue("channel_padding_left", 13)
+    channelAssetHeight = plugin.getIntValue("channel_asset_height")
+    channelPaddingTop = plugin.getIntValue("channel_padding_top")
+    channelPaddingRight = plugin.getIntValue("channel_padding_right")
+    channelPaddingBottom = plugin.getIntValue("channel_padding_bottom")
+    channelPaddingLeft = plugin.getIntValue("channel_padding_left")
 
     m.channelGuideItem.channelGuideSettings = {
       "channelAssetHeight": channelAssetHeight
@@ -508,7 +526,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     timeGrid.nowBarWidth = plugin.getIntValue("time_bar_badge_width", 10)
     timeGrid.nowBarBitmapUri = asString(style.time_bar_badge_item_uri)
     timeGrid.nowBarBlendColor = zapp.viewUtils.transposeUIBColor(style.time_bar_badge_background_color, "")
-    timeGrid.nowBarOffset = plugin.getIntValue("time_bar_badge_padding_left", 0)
+    timeGrid.nowBarOffset = plugin.getIntValue("time_bar_badge_padding_left")
   end function
 
   private function nowNextSection(timeGrid, plugin, style)
@@ -765,7 +783,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       end if
     end for
 
-    for i = 2 to currentDayIndex + 1
+    for i = 2 to currentDayIndex
       numberText = str(i).trim()
       item = m.createButton("button_" + numberText, i - 1, j)
       j++
@@ -859,6 +877,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     items.append(m.customItems)
     m.menuButtons = items
     m.jumpToIndex = 0
+    m.buttonsIsReady = true
   end function
 
   private function toggleUpdateTimer(active as boolean)

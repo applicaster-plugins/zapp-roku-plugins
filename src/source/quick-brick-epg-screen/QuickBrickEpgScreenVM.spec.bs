@@ -54,6 +54,81 @@ namespace zapp.plugins.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("setEpgContent")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("set epg content")
+    function _()
+      data = {
+        "channels_source": {
+          "source": "sourceUrl"
+        }
+      }
+
+      m.expectCalled(m.vm.executeloadTaskWithUrl("1", m.vm.onLoadMoreResponse, "sourceUrl", 0), "data")
+
+      m.vm.setEpgContent(data)
+
+      m.assertEqual(m.vm.state, "loading")
+      m.assertNotEmpty(m.vm.loadChannelTask)
+    end function
+
+    @it("do nothing if source is empty")
+    function _()
+      data = {
+        "channels_source": {
+          "source": ""
+        }
+      }
+
+      m.expectNotCalled(m.vm.executeloadTaskWithUrl)
+
+      m.vm.setEpgContent(data)
+
+      m.assertNotEqual(m.vm.state, "loading")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onSelectedIndexChangeMenu")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("do nothing if item is invalid")
+    function _()
+      m.vm.menuButtons = []
+
+      m.expectNotCalled(m.vm.setIsoTime)
+      m.expectNotCalled(m.vm.setEpgContent)
+
+      m.vm.onSelectedIndexChangeMenu(0)
+    end function
+
+    @it("set iso time and load epg content on target day")
+    function _()
+      m.vm.riversJsonData = {
+        "data": "riversData"
+      }
+
+      m.vm.menuButtons = [
+        {
+          "id": "0"
+          "title": "title"
+          "index": 0
+        }
+      ]
+      dayDifference = 0
+      currentTime = CreateObject("roDateTime")
+      currentDayIndex = currentTime.getDayOfWeek()
+      targetTime = currentTime.asSeconds() + (86400 * dayDifference)
+
+      m.expectCalled(m.vm.dayDiffernceCalculation(0, currentDayIndex, m.vm.menuButtons[0]), dayDifference)
+      m.expectCalled(m.vm.setIsoTime(targetTime))
+      m.expectCalled(m.vm.setEpgContent("riversData"))
+
+      m.vm.onSelectedIndexChangeMenu(0)
+    end function
+
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("onLoadMoreResponse")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
