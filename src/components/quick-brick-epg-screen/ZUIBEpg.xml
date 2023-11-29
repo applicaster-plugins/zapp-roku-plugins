@@ -47,6 +47,7 @@
           channelFocused='{(onChannelFocused(value))}'
           programFocused='{(onProgramFocused(value))}'
           programSelected='{(onProgramSelected(value))}'
+          leftEdgeTargetTime='{(onLeftEdgeTargetTime())}'
           vertFocusAnimationStyle='floatingFocus'
           translation='[0, 0]'
           channelInfoComponentName='channelItemComponent' />
@@ -84,6 +85,11 @@
           horizAlign='left'
           vertAlign='center'
           font='font:MediumSystemFont' />
+      <NowEpgIndicator
+          id='nowEpgIndicator'
+          nowIndicatorStyle='{{nowIndicatorStyle}}'
+          translation='{{indicatorTranslation}}'
+          visibility='{{indicatorVisible}}' />
     </Group>
 
 
