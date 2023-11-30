@@ -308,7 +308,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     timeDiff = abs(m.currentTimeGridLeftEdgeTime - currentTime)
 
     indicatorXpos = timeDiff * pixelPerSecond
-    m.indicatorTranslation = [int(indicatorXpos) + xPosition, yPosition]
+    m.indicatorTranslation = [m.customRoundUp(indicatorXpos) + xPosition, yPosition]
 
     m.nowIndicatorTimer = m.setInterval(m.setNowBarIndicatorPosition, 15)
   end function
@@ -433,23 +433,21 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       "yPosition": timeGrid.clippingRect.y
       "contentWidth": timeGrid.itemSize[0] - timeGrid.channelInfoWidth
       "pixelPerSecond": contentWidth / timeGrid.duration
-      "xPosition": 1920 - timeGrid.itemSize[0]
+      "xPosition": 1920 - timeGrid.itemSize[0] + 2
     }
 
-    timebarFontSize = plugin.getIntValue("time_bar_label_font_size", 12)
-    timebarFontName = mc.getString(style, "time_bar_label_font_name", "medium")
-    fontColor = zapp.viewUtils.transposeUIBColor(style.time_bar_label_font_color, "#FFFFFF")
+    timebarFontSize = plugin.getIntValue("time_bar_badge_label_font_size", 12)
+    timebarFontName = mc.getString(style, "time_bar_badge_label_font_name", "medium")
+    fontColor = zapp.viewUtils.transposeUIBColor(style.time_bar_badge_label_font_color, "#FFFFFF")
     font = m.resolveFont(timebarFontName, timebarFontSize)
-    nowBarWidth = plugin.getIntValue("time_bar_badge_width", 10)
+    nowBarWidth = plugin.getIntValue("time_bar_badge_width", 2)
     nowBarHeight = plugin.getIntValue("time_bar_badge_height", 500)
-    nowBarBadgeWidth = plugin.getIntValue("time_bar_now_badge_width", 100)
-    nowBarBadgeHeight = plugin.getIntValue("time_bar_now_badge_height", 25)
+    nowBarBadgeWidth = plugin.getIntValue("time_bar_now_badge_width", 70)
+    nowBarBadgeHeight = plugin.getIntValue("time_bar_now_badge_height", 35)
     nowBarText = asString(m.localizations.now_label_text, "Now")
 
-    nowBarBitmapUri = asString(style.time_bar_badge_item_uri)
     nowBarBlendColor = zapp.viewUtils.transposeUIBColor(style.time_bar_badge_background_color, "")
     verticalTimelineColor = zapp.viewUtils.transposeUIBColor(style.time_bar_badge_vertival_background_color, "#808080")
-    nowBarOffset = plugin.getIntValue("time_bar_badge_padding_left")
 
     style = {
       "fontColor": fontColor
@@ -459,10 +457,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       "nowBarBadgeHeight": nowBarBadgeHeight
       "nowBarWidth": nowBarWidth
       "nowBarHeight": nowBarHeight
-      "nowBarBitmapUri": nowBarBitmapUri
       "verticalTimelineColor": verticalTimelineColor
       "nowBarBlendColor": nowBarBlendColor
-      "nowBarOffset": nowBarOffset
     }
     m.nowIndicatorStyle = style
   end function
