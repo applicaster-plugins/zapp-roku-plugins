@@ -764,11 +764,13 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       channelItem = m.content.getChild(m.channelFocused)
       if channelItem <> invalid
         liveIndex = m.getLiveProgramIndexForChannel(channelItem)
-        program = channelItem.getChild(liveIndex)
-        selection = m.createSelectionFromContent(program)
-        selection.playMode = "default"
-        mc.setOrAddNodeField(selection.initialItem, "itemType", "video")
-        m.executeContentSelection(selection)
+        if programIndex = liveIndex
+          program = channelItem.getChild(programIndex)
+          selection = m.createSelectionFromContent(program)
+          selection.playMode = "default"
+          mc.setOrAddNodeField(selection.initialItem, "itemType", "video")
+          m.executeContentSelection(selection)
+        end if
       end if
     end if
   end function
@@ -1061,7 +1063,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
         '  m.toggleUpdateTimer(true)
         'end if
         'm.removingGridGap()
-        m.load()
+        'm.load()
       else
         m.log.info("this zapp.view has never loaded - trying now")
         m.load()
