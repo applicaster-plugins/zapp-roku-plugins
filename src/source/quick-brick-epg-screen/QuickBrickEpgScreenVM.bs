@@ -63,6 +63,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   private timeGrid = invalid
   private buttonsIsReady = false
   private contentLoader = new zapp.pipes.EntryLoader()
+  private parser = new zapp.pipes.Parser()
 
   private focusIds = []
   private riversJsonData = invalid
@@ -253,6 +254,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
         programItem.PLAYDURATION = m.parseDateStringToSeconds(programData.json.extensions.end_time) - m.parseDateStringToSeconds(programData.json.extensions.start_time)
         programText = zapp.viewUtils.textToTextTransformFormat(programData.title, styles.label1_text_transform)
         programItem.TITLE = programText
+        mc.setOrAddNodeField(programItem, "content", programData.json.content)
+        mc.setOrAddNodeField(programItem, "type", programData.json.type)
         programItem.id = programData.id
         programItem.genre = asString(programData.json.genre)
         programItem.shortDescriptionLine1 = asString(programData.json.summary)
@@ -766,9 +769,9 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
         liveIndex = m.getLiveProgramIndexForChannel(channelItem)
         if programIndex = liveIndex
           program = channelItem.getChild(programIndex)
-          selection = m.createSelectionFromContent(program)
+          newEntry = m.parser.parseEntry(program)
+          selection = m.createSelectionFromContent(newEntry)
           selection.playMode = "default"
-          mc.setOrAddNodeField(selection.initialItem, "itemType", "video")
           m.executeContentSelection(selection)
         end if
       end if
