@@ -721,6 +721,19 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   '++ Private Methods
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+  private function getLiveProgramIndexForChannel(channel)
+    now = CreateObject("roDateTime").AsSeconds()
+    for j = 0 to channel.getChildCount() - 1 step 1
+      program = channel.getChild(j)
+      playEnd = program.playStart + program.playDuration
+      if program.playStart < now and playEnd > now
+        return j
+        exit for
+      end if
+    end for
+    return 0
+  end function
+
   private function calculateDaysDifference(currentTimestamp as integer, targetTimestamp as integer) as integer
     timestampDifference = targetTimestamp - currentTimestamp
     daysDifference = timestampDifference / m.dayInSeconds
@@ -748,9 +761,10 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   private function selectProgram(programIndex)
     if m.channelFocused <> -1
       m.log.info("onProgramSelected", programIndex)
-      content = m.content.getChild(m.channelFocused)
-      if content <> invalid
-        program = content.getChild(programIndex)
+      channelItem = m.content.getChild(m.channelFocused)
+      if channelItem <> invalid
+        liveIndex = m.getLiveProgramIndexForChannel(channelItem)
+        program = channelItem.getChild(liveIndex)
         selection = m.createSelectionFromContent(program)
         selection.playMode = "default"
         mc.setOrAddNodeField(selection.initialItem, "itemType", "video")
