@@ -18,9 +18,12 @@ function updateMaskSize()
 
   m.photoRectangle.maskSize = [m.top.width - 120, m.top.height - 10]
   m.programFrame.width = m.top.width - 120
-  m.channelPoster.width = m.top.width - 10
   m.programFrame.height = m.top.height - 10
+
+  aspectRatio = channelGuideSettings.channelAssetAspectRatio
+  ratioValue = aspectRatio.split("x")
   m.channelPoster.height = channelGuideSettings.channelAssetHeight
+  m.channelPoster.width = ratioValue[0].toInt() * m.channelPoster.height
   m.photoRectangle.translation = [xPadding, yPadding]
 end function
 

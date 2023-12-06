@@ -44,6 +44,7 @@
           content='{{content}}'
           contentStartTime='{{contentStartTime}}'
           leftEdgeTargetTime='{{leftEdgeTargetTime}}'
+          leftEdgeTargetTime='{(onLeftEdgeTargetTime())}'
           channelFocused='{(onChannelFocused(value))}'
           programFocused='{(onProgramFocused(value))}'
           programSelected='{(onProgramSelected(value))}'
