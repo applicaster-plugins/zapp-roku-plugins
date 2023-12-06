@@ -391,15 +391,6 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     return dayDifference
   end function
 
-  function onLeftEdgeTargetTime()
-    currentTime = CreateObject("roDateTime").asSeconds()
-    if m.TimeGrid.leftEdgeTargetTime > currentTime
-      m.indicatorVisible = false
-    else
-      m.indicatorVisible = true
-    end if
-  end function
-
   function changingCurrentDayLabel()
     dt = m.dateTime
     nowTime = dt.AsSeconds()
@@ -420,9 +411,13 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   end function
 
   function onLeftEdgeTargetTime()
-    dt = CreateObject("roDateTime")
-    now = dt.AsSeconds()
+    now = CreateObject("roDateTime").asSeconds()
     content = m.timeGrid.content
+    if m.TimeGrid.leftEdgeTargetTime > now
+      m.indicatorVisible = false
+    else
+      m.indicatorVisible = true
+    end if
     if content <> invalid
       for i = 0 to content.getChildCount() - 1
         channel = content.getChild(i)
