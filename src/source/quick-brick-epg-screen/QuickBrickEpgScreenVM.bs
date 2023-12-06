@@ -385,7 +385,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   function onLeftEdgeTargetTime()
     dt = CreateObject("roDateTime")
     now = dt.AsSeconds()
-    content = m.TimeGrid.content
+    content = m.timeGrid.content
     if content <> invalid
       for i = 0 to content.getChildCount() - 1
         channel = content.getChild(i)
