@@ -1,6 +1,7 @@
 '/* cspell:disable */
 namespace zapp.plugins.tests
   @tags("core", "auth", "cleeng")
+  @only
   @suite
   class QuickBrickEpgScreenVMTests extends tests.BaseTestSuite
 
@@ -117,8 +118,12 @@ namespace zapp.plugins.tests
       ]
       dayDifference = 0
       currentTime = CreateObject("roDateTime")
+      timezone = currentTime.GetTimeZoneOffset() * 60
+      hours = currentTime.GetHours() * 3600
+      minutes = currentTime.GetMinutes() * 60
+
       currentDayIndex = currentTime.getDayOfWeek()
-      targetTime = currentTime.asSeconds() + (86400 * dayDifference)
+      targetTime = currentTime.asSeconds() + (86400 * dayDifference) - hours - minutes + timezone
 
       m.expectCalled(m.vm.dayDiffernceCalculation(0, currentDayIndex, m.vm.menuButtons[0]), dayDifference)
       m.expectCalled(m.vm.setIsoTime(targetTime))
@@ -165,6 +170,11 @@ namespace zapp.plugins.tests
       m.vm.isUsingButtons = true
       m.vm.channelCount = -1
       m.vm.taskCount = 1
+      m.vm.riversJsonData = {
+        "styles": {
+          "label1_text_transform": "capitalize"
+        }
+      }
       m.vm.timeGridContent = mc.createSGNode("ZPEntry")
       m.vm.channelItem = mc.createSGNode("ZPEntry", m.vm.timeGridContent, "ca")
 
@@ -177,6 +187,7 @@ namespace zapp.plugins.tests
         "data": feed
       }
 
+      ca.title = "lower Case"
       ca.json = {
         "extensions": {
           "start_time": 0,
@@ -184,7 +195,9 @@ namespace zapp.plugins.tests
         }
       }
 
+      cb.title = "upper case"
       cb.json = {
+        "title": "upper case"
         "extensions": {
           "start_time": 0,
           "end_time": 0
@@ -204,6 +217,8 @@ namespace zapp.plugins.tests
       m.vm.onLoadProgramsResponse(result)
 
       m.assertEqual(m.vm.state, "ready")
+      m.assertEqual(m.vm.programsData[0].title, "Lower case")
+      m.assertEqual(m.vm.programsData[1].title, "Upper case")
     end function
 
     @it("state error on invalid result")
@@ -228,6 +243,112 @@ namespace zapp.plugins.tests
       m.vm.onLoadProgramsResponse(result)
 
       m.assertEqual(m.vm.state, "ready")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onLeftEdgeTargetTime")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("do nothing if data is invalid")
+    function _()
+      m.vm.timeGrid = { "id": "timeGrid", "numRows": 1 }
+
+      m.vm.onLeftEdgeTargetTime()
+    end function
+
+    @it("do nothing if channel data is invalid")
+    function _()
+      m.vm.timeGrid = { "id": "timeGrid", "numRows": 1 }
+      m.vm.timeGrid.content = mc.createSGNode("ZPEntry")
+      ca = mc.createSGNode("ZPEntry", m.vm.timeGrid.content, "ca")
+      cb = mc.createSGNode("ZPEntry", m.vm.timeGrid.content, "cb")
+
+      m.vm.onLeftEdgeTargetTime()
+    end function
+
+    @it("do nothing if playStart is invalid")
+    function _()
+      m.vm.timeGrid = { "id": "timeGrid", "numRows": 1 }
+      m.vm.timeGrid.content = mc.createSGNode("ZPEntry")
+      ca = mc.createSGNode("ZPEntry", m.vm.timeGrid.content, "ca")
+      cb = mc.createSGNode("ZPEntry", m.vm.timeGrid.content, "cb")
+
+      m.vm.onLeftEdgeTargetTime()
+    end function
+
+    @it("set live poster on Correct time")
+    function _()
+      m.vm.liveAsset = "liveAsset"
+      m.vm.timeGrid = { "id": "timeGrid", "numRows": 1 }
+      m.vm.timeGrid.content = mc.createSGNode("ZPEntry")
+      ca = mc.createSGNode("ZPEntry", m.vm.timeGrid.content, "ca")
+      cb = mc.createSGNode("ZPEntry", m.vm.timeGrid.content, "cb")
+      pa = mc.createSGNode("ZPEntry", ca, "ca")
+      pb = mc.createSGNode("ZPEntry", cb, "cb")
+
+      currentTime = CreateObject("roDateTime").asSeconds()
+
+      pa.playStart = currentTime - 100
+      pa.playDuration = 200
+      m.vm.onLeftEdgeTargetTime()
+
+      m.assertEqual(m.vm.timeGrid.content.getChild(0).getchild(0).HDSMALLICONURL, m.vm.liveAsset)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("epgHardcodedStyle")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("return epg style")
+    function _()
+      m.vm.plugin = {
+        "id": "pluginId",
+        "json": {
+          "configuration_json": {
+          }
+        }
+      }
+      style = {
+        "style": "style"
+      }
+      m.vm.timeGrid = { "id": "timeGrid" }
+
+      m.expectCalled(m.vm.getMField("TimeGridGroup"), {})
+      m.expectCalled(m.vm.defaultValues(m.vm.timeGrid, m.vm.plugin, style))
+      m.expectCalled(m.vm.timeGridOverallSettings(m.vm.timeGrid, {}, m.vm.plugin, style))
+      m.expectCalled(m.vm.nowNextSection(m.vm.timeGrid, m.vm.plugin, style))
+      m.expectCalled(m.vm.programItemSection(m.vm.timeGrid, m.vm.plugin, style))
+      m.expectCalled(m.vm.channelInfoSection(m.vm.timeGrid, m.vm.plugin, style))
+      m.expectCalled(m.vm.timeBarSection(m.vm.timeGrid, m.vm.plugin, style))
+      m.expectCalled(m.vm.nowBarSection(m.vm.timeGrid, m.vm.plugin, style))
+
+      m.vm.epgHardcodedStyle(style)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("channelInfoSection")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("set channel info section")
+    function _()
+      configuration_json = {}
+      plugin = new zapp.BasePlugin({ "configuration_json": configuration_json })
+
+      m.vm.channelGuideItem = {
+        channelGuideSettings: {}
+      }
+      style = {
+        "style": "style"
+      }
+      timeGrid = { "id": "timeGrid" }
+      m.vm.channelInfoSection(timeGrid, plugin, style)
+
+      m.assertAAHasKey(m.vm.channelGuideItem.channelGuideSettings, "channelAssetHeight")
+      m.assertAAHasKey(m.vm.channelGuideItem.channelGuideSettings, "channelPaddingTop")
+      m.assertAAHasKey(m.vm.channelGuideItem.channelGuideSettings, "channelPaddingRight")
+      m.assertAAHasKey(m.vm.channelGuideItem.channelGuideSettings, "channelPaddingBottom")
+      m.assertAAHasKey(m.vm.channelGuideItem.channelGuideSettings, "channelPaddingLeft")
+      m.assertAAHasKey(m.vm.channelGuideItem.channelGuideSettings, "channelAssetAspectRatio")
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
