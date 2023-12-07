@@ -48,7 +48,6 @@
           channelFocused='{(onChannelFocused(value))}'
           programFocused='{(onProgramFocused(value))}'
           programSelected='{(onProgramSelected(value))}'
-          leftEdgeTargetTime='{(onLeftEdgeTargetTime())}'
           vertFocusAnimationStyle='floatingFocus'
           translation='[0, 0]'
           channelInfoComponentName='channelItemComponent' />

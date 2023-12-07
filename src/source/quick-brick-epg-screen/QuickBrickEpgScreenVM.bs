@@ -413,9 +413,11 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   function onLeftEdgeTargetTime()
     now = CreateObject("roDateTime").asSeconds()
     content = m.timeGrid.content
-    if m.TimeGrid.leftEdgeTargetTime > now
+    m.currentTimeGridLeftEdgeTime = m.TimeGrid.leftEdgeTargetTime
+    if m.TimeGrid.leftEdgeTargetTime + 100 > now
       m.indicatorVisible = false
     else
+      m.setNowBarIndicatorPosition()
       m.indicatorVisible = true
     end if
     if content <> invalid
