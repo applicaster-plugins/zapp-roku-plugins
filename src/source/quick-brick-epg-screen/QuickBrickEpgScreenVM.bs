@@ -433,7 +433,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       timeGrid.timeBarTwoLineLayout = true
       timeGrid.clippingRect = [0, -50, 1920, 1920]
     end if
-    timeGrid.duration = 12600
+    timeGrid.duration = 7200
     timeGrid.sectionDividerTopOffset = 30
     timeGrid.scrollSpeed = 100
     timeGrid.overlayBitmapUri = ""
