@@ -426,6 +426,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
         for j = 0 to channel.getChildCount() - 1
           program = channel.getChild(j)
           playEnd = program.playStart + program.playDuration
+          program.HDSMALLICONURL = ""
           if program.playStart < now and playEnd > now
             program.HDSMALLICONURL = m.liveAsset
             exit for
@@ -464,7 +465,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       "yPosition": timeGrid.clippingRect.y
       "contentWidth": timeGrid.itemSize[0] - timeGrid.channelInfoWidth
       "pixelPerSecond": contentWidth / timeGrid.duration
-      "xPosition": 1920 - timeGrid.itemSize[0] + 2
+      "xPosition": timeGrid.channelInfoWidth
     }
 
     timebarFontSize = plugin.getIntValue("time_bar_badge_label_font_size", 12)
@@ -641,7 +642,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
 
   private function nowBarSection(timeGrid, plugin, style)
     timeGrid.nowBarWidth = plugin.getIntValue("time_bar_badge_width", 10)
-    timeGrid.nowBarBitmapUri = asString(style.time_bar_badge_item_uri)
+    timeGrid.nowBarBitmapUri = "empty"
     timeGrid.nowBarBlendColor = zapp.viewUtils.transposeUIBColor(style.time_bar_badge_background_color, "")
     timeGrid.nowBarOffset = plugin.getIntValue("time_bar_badge_padding_left")
   end function
