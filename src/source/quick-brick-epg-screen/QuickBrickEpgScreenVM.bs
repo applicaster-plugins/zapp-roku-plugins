@@ -275,7 +275,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     if m.taskCount = 0
       m.setField("content", m.timeGridContent)
       currentTime = CreateObject("roDateTime").asSeconds()
-      m.contentStartTime = currentTime - 1799
+      m.contentStartTime = currentTime
       m.content = m.timeGridContent
       m.log.info("content for Epg", m.timeGridContent)
       numRows = zapp.viewUtils.getUIBInt(m.riversJsonData.styles, "time_grid_visible_row", 6)

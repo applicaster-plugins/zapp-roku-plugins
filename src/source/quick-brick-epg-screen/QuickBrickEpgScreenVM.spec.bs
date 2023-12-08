@@ -1,7 +1,6 @@
 '/* cspell:disable */
 namespace zapp.plugins.tests
   @tags("core", "auth", "cleeng")
-  @only
   @suite
   class QuickBrickEpgScreenVMTests extends tests.BaseTestSuite
 
