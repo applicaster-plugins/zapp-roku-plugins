@@ -282,7 +282,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     if m.taskCount = 0
       m.setField("content", m.timeGridContent)
       currentTime = CreateObject("roDateTime").asSeconds()
-      m.contentStartTime = currentTime - 1799
+      m.contentStartTime = currentTime
       m.currentTimeGridLeftEdgeTime = m.contentStartTime
       m.content = m.timeGridContent
       m.log.info("content for Epg", m.timeGridContent)
@@ -509,7 +509,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       timeGrid.timeBarTwoLineLayout = true
       timeGrid.clippingRect = [0, -50, 1920, 1920]
     end if
-    timeGrid.duration = 12600
+    timeGrid.duration = 7200
     timeGrid.sectionDividerTopOffset = 30
     timeGrid.scrollSpeed = 100
     timeGrid.overlayBitmapUri = ""

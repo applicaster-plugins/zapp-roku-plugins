@@ -103,6 +103,7 @@
           id='menu'
           buttons='{{menubuttons}}'
           style='{{:menuStyle}}'
+          isFootprintOnSelectOnly='true'
           selectedIndex='{(onSelectedIndexChangeMenu(value))}'
           jumpToIndex='{{jumpToIndex}}'
           buttonSize='{{:buttonSize}}'
