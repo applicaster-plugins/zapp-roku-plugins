@@ -28,6 +28,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   public menuStyle = {}
   public menuPosition = [960, 584]
   public buttonSize = [700, 100]
+  public indicatorVisible = false
+  public indicatorTranslation = [0, 0]
   public buttonSpacing = 5
   public jumpToIndex = -1
   public isHeaderShown = false
@@ -47,8 +49,10 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   public contentStartTime = {}
   public leftEdgeTargetTime = 0
   public isoTime = 0
+  public nowIndicatorStyle = {}
 
   private jwtUtil = new zapp.JWTUtil()
+  private nowIndicatorTimer as mc.types.node
   private liveAsset = ""
   private isNowNextMode = false
   private dayInSeconds = 86400
@@ -63,6 +67,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   private timeGrid = invalid
   private buttonsIsReady = false
   private contentLoader = new zapp.pipes.EntryLoader()
+  private cachedTimeGridValue = {}
+  private currentTimeGridLeftEdgeTime = 0
   private parser = new zapp.pipes.Parser()
 
   private focusIds = []
@@ -107,6 +113,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     m.plugin = m.plugins.getPluginById("quick-brick-epg-screen")
 
     m.focusId = "TimeGrid"
+    m.timeGrid = m.getMField("TimeGrid")
     m.timeGrid = m.getMField("TimeGrid")
     m.dateTime = CreateObject("roDateTime")
 
@@ -276,14 +283,16 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       m.setField("content", m.timeGridContent)
       currentTime = CreateObject("roDateTime").asSeconds()
       m.contentStartTime = currentTime
+      m.currentTimeGridLeftEdgeTime = m.contentStartTime
       m.content = m.timeGridContent
       m.log.info("content for Epg", m.timeGridContent)
       numRows = zapp.viewUtils.getUIBInt(m.riversJsonData.styles, "time_grid_visible_row", 6)
-
       channelCount = m.timeGridContent.getChildCount()
       if channelCount < numRows
         m.timeGrid.numRows = channelCount
       end if
+
+      m.setNowBarIndicatorPosition()
 
       m.state = "ready"
     end if
@@ -292,6 +301,25 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       m.createCustomItems()
       m.updateMenuItems()
     end if
+  end function
+
+  private function setNowBarIndicatorPosition()
+    m.log.method("setNowBarIndicatorPosition")
+    m.cancelInterval(m.nowIndicatorTimer)
+    m.nowIndicatorTimer = invalid
+
+    cachedTimeGridValue = m.cachedTimeGridValue
+    yPosition = cachedTimeGridValue.yPosition
+    pixelPerSecond = cachedTimeGridValue.pixelPerSecond
+    xPosition = cachedTimeGridValue.xPosition
+
+    currentTime = CreateObject("roDateTime").asSeconds()
+    timeDiff = abs(m.currentTimeGridLeftEdgeTime - currentTime)
+
+    indicatorXpos = timeDiff * pixelPerSecond
+    m.indicatorTranslation = [m.customRoundUp(indicatorXpos) + xPosition, yPosition]
+
+    m.nowIndicatorTimer = m.setInterval(m.setNowBarIndicatorPosition, 15)
   end function
 
   private function onLoadResponse(result)
@@ -383,15 +411,16 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   end function
 
   function onLeftEdgeTargetTime()
-    dt = CreateObject("roDateTime")
-    now = dt.AsSeconds()
+    now = CreateObject("roDateTime").asSeconds()
     content = m.timeGrid.content
+    m.checkIndicatorVisibleOnLeftEdgeChange(now)
     if content <> invalid
       for i = 0 to content.getChildCount() - 1
         channel = content.getChild(i)
         for j = 0 to channel.getChildCount() - 1
           program = channel.getChild(j)
           playEnd = program.playStart + program.playDuration
+          program.HDSMALLICONURL = ""
           if program.playStart < now and playEnd > now
             program.HDSMALLICONURL = m.liveAsset
             exit for
@@ -400,6 +429,16 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       end for
     end if
 
+  end function
+
+  private function checkIndicatorVisibleOnLeftEdgeChange(nowTime)
+    m.currentTimeGridLeftEdgeTime = m.TimeGrid.leftEdgeTargetTime
+    if m.TimeGrid.leftEdgeTargetTime + 100 > nowTime
+      m.indicatorVisible = false
+    else
+      m.setNowBarIndicatorPosition()
+      m.indicatorVisible = true
+    end if
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -421,6 +460,43 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     m.channelInfoSection(timeGrid, plugin, style)
     m.timeBarSection(timeGrid, plugin, style)
     m.nowBarSection(timeGrid, plugin, style)
+    m.setNowBarIndicatorStyle(timeGrid, plugin, style)
+  end function
+
+  private function setNowBarIndicatorStyle(timeGrid, plugin, style)
+    contentWidth = timeGrid.itemSize[0] - timeGrid.channelInfoWidth
+    m.cachedTimeGridValue = {
+      "yPosition": timeGrid.clippingRect.y
+      "contentWidth": timeGrid.itemSize[0] - timeGrid.channelInfoWidth
+      "pixelPerSecond": contentWidth / timeGrid.duration
+      "xPosition": timeGrid.channelInfoWidth
+    }
+
+    timebarFontSize = plugin.getIntValue("time_bar_badge_label_font_size", 12)
+    timebarFontName = mc.getString(style, "time_bar_badge_label_font_name", "medium")
+    fontColor = zapp.viewUtils.transposeUIBColor(style.time_bar_badge_label_font_color, "#FFFFFF")
+    font = m.resolveFont(timebarFontName, timebarFontSize)
+    nowBarWidth = plugin.getIntValue("time_bar_badge_width", 2)
+    nowBarHeight = plugin.getIntValue("time_bar_badge_height", 500)
+    nowBarBadgeWidth = plugin.getIntValue("time_bar_now_badge_width", 70)
+    nowBarBadgeHeight = plugin.getIntValue("time_bar_now_badge_height", 35)
+    nowBarText = asString(m.localizations.now_label_text, "Now")
+
+    nowBarBlendColor = zapp.viewUtils.transposeUIBColor(style.time_bar_badge_background_color, "")
+    verticalTimelineColor = zapp.viewUtils.transposeUIBColor(style.time_bar_badge_vertival_background_color, "#808080")
+
+    style = {
+      "fontColor": fontColor
+      "font": font
+      "nowBarText": nowBarText
+      "nowBarBadgeWidth": nowBarBadgeWidth
+      "nowBarBadgeHeight": nowBarBadgeHeight
+      "nowBarWidth": nowBarWidth
+      "nowBarHeight": nowBarHeight
+      "verticalTimelineColor": verticalTimelineColor
+      "nowBarBlendColor": nowBarBlendColor
+    }
+    m.nowIndicatorStyle = style
   end function
 
   private function defaultValues(timeGrid, plugin, style)
@@ -570,7 +646,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
 
   private function nowBarSection(timeGrid, plugin, style)
     timeGrid.nowBarWidth = plugin.getIntValue("time_bar_badge_width", 10)
-    timeGrid.nowBarBitmapUri = asString(style.time_bar_badge_item_uri)
+    timeGrid.nowBarBitmapUri = "empty"
     timeGrid.nowBarBlendColor = zapp.viewUtils.transposeUIBColor(style.time_bar_badge_background_color, "")
     timeGrid.nowBarOffset = plugin.getIntValue("time_bar_badge_padding_left")
   end function
@@ -925,11 +1001,14 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   end function
 
   private function getLocalizeButtonText(prefix as string)
-    text = m.localizations[prefix]
-    if text = invalid or text.trim() = ""
-      text = m.riversJson.styles[prefix]
+    if m.localizations <> invalid
+      text = m.localizations[prefix]
+      if text = invalid or text.trim() = ""
+        text = m.riversJson.styles[prefix]
+      end if
+      return text
     end if
-    return text
+    return ""
   end function
 
   private function updateMenuItems()

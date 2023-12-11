@@ -85,6 +85,11 @@
           horizAlign='left'
           vertAlign='center'
           font='font:MediumSystemFont' />
+      <NowEpgIndicator
+          id='nowEpgIndicator'
+          nowIndicatorStyle='{{nowIndicatorStyle}}'
+          translation='{{indicatorTranslation}}'
+          visibility='{{indicatorVisible}}' />
     </Group>
 
 
