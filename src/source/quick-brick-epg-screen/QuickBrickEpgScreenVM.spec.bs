@@ -1,7 +1,6 @@
 '/* cspell:disable */
 namespace zapp.plugins.tests
   @tags("core", "auth", "cleeng")
-  @only
   @suite
   class QuickBrickEpgScreenVMTests extends tests.BaseTestSuite
 
@@ -132,6 +131,32 @@ namespace zapp.plugins.tests
       m.vm.onSelectedIndexChangeMenu(0)
     end function
 
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("getLocalizeButtonText")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("return Localized text if he is valid")
+    @params("p1", "t1", "s1", "t1")
+    @params("p1", "t1", "", "t1")
+    @params("p1", "", "s1", "s1")
+    @params("p1", invalid, "s1", "s1")
+    @params("p1", invalid, invalid, invalid)
+    function _(prefix, localizedText, styleText, expectedText)
+
+      m.vm.localizations = {}
+      m.vm.localizations[prefix] = localizedText
+      m.vm.riversJson.styles = {}
+      m.vm.riversJson.styles[prefix] = styleText
+
+      m.assertEqual(m.vm.getLocalizeButtonText(prefix), expectedText)
+    end function
+
+    @it("return empty string if localizations is invalid")
+    function _()
+      m.vm.localizations = invalid
+      prefix = "buttons"
+      m.assertEqual(m.vm.getLocalizeButtonText(prefix), "")
+    end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("onLoadMoreResponse")
@@ -210,6 +235,7 @@ namespace zapp.plugins.tests
       m.expectCalled(m.vm.parseDateStringToSeconds(0), 0)
       m.expectCalled(m.vm.parseDateStringToSeconds(0), 0)
       m.expectCalled(m.vm.parseDateStringToSeconds(0), 0)
+      m.expectCalled(m.vm.setNowBarIndicatorPosition())
 
       m.expectCalled(m.vm.createCustomItems())
       m.expectCalled(m.vm.updateMenuItems())
@@ -237,6 +263,7 @@ namespace zapp.plugins.tests
         }
       }
 
+      m.expectCalled(m.vm.setNowBarIndicatorPosition())
       m.expectCalled(m.vm.createCustomItems())
       m.expectCalled(m.vm.updateMenuItems())
 
@@ -251,27 +278,36 @@ namespace zapp.plugins.tests
 
     @it("do nothing if data is invalid")
     function _()
+      currentTime = CreateObject("roDateTime").asSeconds()
       m.vm.timeGrid = { "id": "timeGrid", "numRows": 1 }
+
+      m.expectCalled(m.vm.checkIndicatorVisibleOnLeftEdgeChange(currentTime))
 
       m.vm.onLeftEdgeTargetTime()
     end function
 
     @it("do nothing if channel data is invalid")
     function _()
+      currentTime = CreateObject("roDateTime").asSeconds()
       m.vm.timeGrid = { "id": "timeGrid", "numRows": 1 }
       m.vm.timeGrid.content = mc.createSGNode("ZPEntry")
       ca = mc.createSGNode("ZPEntry", m.vm.timeGrid.content, "ca")
       cb = mc.createSGNode("ZPEntry", m.vm.timeGrid.content, "cb")
+
+      m.expectCalled(m.vm.checkIndicatorVisibleOnLeftEdgeChange(currentTime))
 
       m.vm.onLeftEdgeTargetTime()
     end function
 
     @it("do nothing if playStart is invalid")
     function _()
+      currentTime = CreateObject("roDateTime").asSeconds()
       m.vm.timeGrid = { "id": "timeGrid", "numRows": 1 }
       m.vm.timeGrid.content = mc.createSGNode("ZPEntry")
       ca = mc.createSGNode("ZPEntry", m.vm.timeGrid.content, "ca")
       cb = mc.createSGNode("ZPEntry", m.vm.timeGrid.content, "cb")
+
+      m.expectCalled(m.vm.checkIndicatorVisibleOnLeftEdgeChange(currentTime))
 
       m.vm.onLeftEdgeTargetTime()
     end function
@@ -290,10 +326,50 @@ namespace zapp.plugins.tests
 
       pa.playStart = currentTime - 100
       pa.playDuration = 200
+
+      m.expectCalled(m.vm.checkIndicatorVisibleOnLeftEdgeChange(currentTime))
+
       m.vm.onLeftEdgeTargetTime()
 
       m.assertEqual(m.vm.timeGrid.content.getChild(0).getchild(0).HDSMALLICONURL, m.vm.liveAsset)
     end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("checkIndicatorVisibleOnLeftEdgeChange")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("set indicator visible true on left edge change")
+    function _()
+      edgeTime = 200
+
+      m.vm.currentTimeGridLeftEdgeTime = edgeTime
+      m.vm.indicatorVisible = false
+      m.vm.TimeGrid = { "leftEdgeTargetTime": edgeTime }
+
+      m.expectCalled(m.vm.setNowBarIndicatorPosition())
+
+      m.vm.checkIndicatorVisibleOnLeftEdgeChange(500)
+
+      m.assertEqual(m.vm.currentTimeGridLeftEdgeTime, edgeTime)
+      m.assertEqual(m.vm.indicatorVisible, true)
+    end function
+
+    @it("set indicator visible false on left edge change")
+    function _()
+      edgeTime = 500
+
+      m.vm.currentTimeGridLeftEdgeTime = edgeTime
+      m.vm.indicatorVisible = false
+      m.vm.TimeGrid = { "leftEdgeTargetTime": edgeTime }
+
+      m.expectNotCalled(m.vm.setNowBarIndicatorPosition)
+
+      m.vm.checkIndicatorVisibleOnLeftEdgeChange(500)
+
+      m.assertEqual(m.vm.currentTimeGridLeftEdgeTime, edgeTime)
+      m.assertEqual(m.vm.indicatorVisible, false)
+    end function
+
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("epgHardcodedStyle")
@@ -321,6 +397,7 @@ namespace zapp.plugins.tests
       m.expectCalled(m.vm.channelInfoSection(m.vm.timeGrid, m.vm.plugin, style))
       m.expectCalled(m.vm.timeBarSection(m.vm.timeGrid, m.vm.plugin, style))
       m.expectCalled(m.vm.nowBarSection(m.vm.timeGrid, m.vm.plugin, style))
+      m.expectCalled(m.vm.setNowBarIndicatorStyle(m.vm.timeGrid, m.vm.plugin, style))
 
       m.vm.epgHardcodedStyle(style)
     end function
