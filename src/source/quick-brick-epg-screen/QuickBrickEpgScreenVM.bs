@@ -29,6 +29,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   public menuPosition = [960, 584]
   public buttonSize = [700, 100]
   public indicatorVisible = false
+  public indicatorOpacity = 1
   public indicatorTranslation = [0, 0]
   public buttonSpacing = 5
   public jumpToIndex = -1
@@ -68,6 +69,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   private buttonsIsReady = false
   private contentLoader = new zapp.pipes.EntryLoader()
   private cachedTimeGridValue = {}
+  private programState = ""
   private currentTimeGridLeftEdgeTime = 0
   private parser = new zapp.pipes.Parser()
 
@@ -251,6 +253,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     m.log.method("onLoadProgramsResponse")
     m.programsData = []
     styles = m.riversJsonData.styles
+    m.programState = "loading"
     if asBoolean(result.isOk)
       m.channelCount++
       programsData = result.data
@@ -295,6 +298,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       m.setNowBarIndicatorPosition()
 
       m.state = "ready"
+      m.programState = "ready"
     end if
 
     if m.isUsingButtons and not m.isNowNextMode and not m.buttonsIsReady
@@ -357,19 +361,17 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     item = m.menuButtons[index]
 
     if item <> invalid
-      currentTime = CreateObject("roDateTime")
-      currentDayIndex = currentTime.getDayOfWeek()
+      if m.taskCount = 0 and m.programState = "ready"
+        currentTime = CreateObject("roDateTime")
+        currentDayIndex = currentTime.getDayOfWeek()
 
-      dayDifference = m.dayDiffernceCalculation(index, currentDayIndex, item)
-      timezone = currentTime.GetTimeZoneOffset() * 60
-      hours = currentTime.GetHours() * 3600
-      minutes = currentTime.GetMinutes() * 60
-
-      targetTime = currentTime.asSeconds() + (m.dayInSeconds * dayDifference) - hours - minutes + timezone
-      m.leftEdgeTargetTime = targetTime
-
-      m.setIsoTime(targetTime)
-      if m.taskCount = 0
+        dayDifference = m.dayDiffernceCalculation(index, currentDayIndex, item)
+        timezone = currentTime.GetTimeZoneOffset() * 60
+        hours = currentTime.GetHours() * 3600
+        minutes = currentTime.GetMinutes() * 60
+        targetTime = currentTime.asSeconds() + (m.dayInSeconds * dayDifference) - hours - minutes + timezone
+        m.leftEdgeTargetTime = targetTime
+        m.setIsoTime(targetTime)
         m.setEpgContent(m.riversJsonData.data)
       end if
     end if
@@ -393,6 +395,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
 
   function changingCurrentDayLabel()
     dt = m.dateTime
+    dt.mark()
     nowTime = dt.AsSeconds()
     dayInSecond = m.dayInSeconds
     startDay = nowTime - (dt.GetHours() * 60 + dt.getMinutes() - dt.GetTimeZoneOffset()) * 60
@@ -402,10 +405,10 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     if i <> -1 and j <> -1
       focusedItem = m.timeGridContent.getChild(i).getChild(j)
       if focusedItem <> invalid and focusedItem.PLAYSTART + 100 > endDay
-        dt.FromSeconds(m.TimeGrid.leftEdgeTargetTime - (dt.GetTimeZoneOffset() * 60))
+        dt.FromSeconds(focusedItem.PLAYSTART - (dt.GetTimeZoneOffset() * 60))
         m.timeGridDayText = dt.GetWeekday()
       else
-        m.timeGridDayText = "Today"
+        m.timeGridDayText = asString(m.localizations.button_1_title, "Today")
       end if
     end if
   end function
@@ -433,7 +436,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
 
   private function checkIndicatorVisibleOnLeftEdgeChange(nowTime)
     m.currentTimeGridLeftEdgeTime = m.TimeGrid.leftEdgeTargetTime
-    if m.TimeGrid.leftEdgeTargetTime + 100 > nowTime
+    if m.TimeGrid.leftEdgeTargetTime - 10 > nowTime
       m.indicatorVisible = false
     else
       m.setNowBarIndicatorPosition()
@@ -453,8 +456,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     timeGrid = m.timeGrid
     timeGridGroup = m.getMField("TimeGridGroup")
 
-    m.defaultValues(timeGrid, plugin, style)
     m.timeGridOverallSettings(timeGrid, timeGridGroup, plugin, style)
+    m.defaultValues(timeGrid, plugin, style)
     m.nowNextSection(timeGrid, plugin, style)
     m.programItemSection(timeGrid, plugin, style)
     m.channelInfoSection(timeGrid, plugin, style)
@@ -502,10 +505,15 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   private function defaultValues(timeGrid, plugin, style)
 
     if asBoolean(style.grid_item_show)
+      m.isNowNextMode = true
       m.timeGridDayVisible = false
+      rightOffset = plugin.getIntValue("time_grid_margin_right_last", 0)
+      timeGrid.itemSize = [timeGrid.itemSize[0] - rightOffset, timeGrid.itemSize[1]]
+      m.indicatorOpacity = 0
       m.timeGridDayText = ""
       timeGrid.clippingRect = [0, -100, 1920, 1920]
     else
+      m.isNowNextMode = true
       timeGrid.timeBarTwoLineLayout = true
       timeGrid.clippingRect = [0, -50, 1920, 1920]
     end if
@@ -519,12 +527,11 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   private function timeGridOverallSettings(timeGrid, timeGridGroup, plugin, style)
     yPosition = plugin.getIntValue("time_grid_position_y", 500)
     xPosition = plugin.getIntValue("time_grid_margin_left", 0)
-    rightOffset = plugin.getIntValue("time_grid_margin_right", 0)
 
     timeGridHeight = plugin.getIntValue("time_grid_item_size", 125)
     timeGridGroup.translation = [xPosition, yPosition]
     timeGrid.numRows = plugin.getIntValue("time_grid_visible_row", 6)
-    timeGrid.itemSize = [1920 - rightOffset, timeGridHeight]
+    timeGrid.itemSize = [1920 - xPosition, timeGridHeight]
     timeGrid.focusBitmapUri = "pkg:/images/SearchFocusBackground2.9.png"
   end function
 
@@ -537,10 +544,14 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     verticalGutter = plugin.getIntValue("grid_vertical_gutter")
     m.liveAsset = asString(style.grid_item_live_asset)
 
-    timeGrid.iconColor = zapp.viewUtils.transposeUIBColor(style.grid_item_live_background_color, "#FFFFFF")
-    timeGrid.iconFocusedColor = zapp.viewUtils.transposeUIBColor(style.grid_item_live_focused_background_color, "#808080")
+    timeGrid.iconColor = zapp.viewUtils.transposeUIBColor(style.grid_item_asset_color, "#FFFFFF")
+    timeGrid.iconFocusedColor = zapp.viewUtils.transposeUIBColor(style.grid_item_asset_focused_color, "#808080")
     timeGrid.itemSpacing = [horizontalGutter, verticalGutter]
-    timeGrid.programBackgroundBitmapUri = asString(style.guide_item_asset_background_uri, "pkg:/images/timeGridBackground.9.png")
+    if m.isNowNextMode
+      timeGrid.programBackgroundBitmapUri = "empty"
+    else
+      timeGrid.programBackgroundBitmapUri = asString(style.guide_item_asset_background_uri, "pkg:/images/timeGridBackground.9.png")
+    end if
     timeGrid.focusBitmapBlendColor = zapp.viewUtils.transposeUIBColor(style.program_background_color, "#FFFFFF")
     timeGrid.programTitleColor = zapp.viewUtils.transposeUIBColor(style.label1_live_font_color, "#FFFFFF")
     timeGrid.programTitleFocusedColor = zapp.viewUtils.transposeUIBColor(style.label1_live_focused_font_color, "#FFFFFF")
@@ -653,13 +664,15 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
 
   private function nowNextSection(timeGrid, plugin, style)
     timeGrid.nowNextMode = asBoolean(style.grid_item_show)
-    timeGrid.nowBackgroundBitmapUri = asString(style.grid_item_live_background_color, "pkg:/images/timeGridBackground.9.png")
-    timeGrid.nextBackgroundBitmapUri = asString(style.grid_item_future_background_color, "pkg:/images/timeGridBackground.9.png")
+
+    nowBackgroundBitmapUri = asString(style.grid_item_live_background_url) <> "" ? asString(style.grid_item_live_background_url) : "pkg:/images/timeGridBackground.9.png"
+    nextBackgroundBitmapUri = asString(style.grid_item_live_focused_background_url) <> "" ? asString(style.grid_item_live_focused_background_url) : "pkg:/images/timeGridBackground.9.png"
+    timeGrid.nowBackgroundBitmapUri = nowBackgroundBitmapUri
+    timeGrid.nextBackgroundBitmapUri = nextBackgroundBitmapUri
     timeGrid.programNowNextTimeColor = zapp.viewUtils.transposeUIBColor(style.grid_item_future_background_color, "#FFFFFF")
     timeGrid.programNowNextTimeFocusedColor = zapp.viewUtils.transposeUIBColor(style.grid_item_future_focused_background_color, "#FFFFFF")
     'timeGrid.programNowNextHorizMargin =
     'timeGrid.programNowNextTimeTitleGap =
-    m.isNowNextMode = timeGrid.nowNextMode
   end function
 
   private function updateHeaderStyle(styles)

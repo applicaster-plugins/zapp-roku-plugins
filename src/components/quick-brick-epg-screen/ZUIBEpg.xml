@@ -89,6 +89,7 @@
           id='nowEpgIndicator'
           nowIndicatorStyle='{{nowIndicatorStyle}}'
           translation='{{indicatorTranslation}}'
+          opacity='{{indicatorOpacity}}'
           visibility='{{indicatorVisible}}' />
     </Group>
 

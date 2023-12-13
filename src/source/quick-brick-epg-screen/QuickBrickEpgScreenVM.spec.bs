@@ -102,6 +102,29 @@ namespace zapp.plugins.tests
       m.vm.onSelectedIndexChangeMenu(0)
     end function
 
+    @it("do nothing if programState is not ready")
+    function _()
+      m.vm.riversJsonData = {
+        "data": "riversData"
+      }
+
+      m.vm.menuButtons = [
+        {
+          "id": "0"
+          "title": "title"
+          "index": 0
+        }
+      ]
+      m.vm.taskCount = 0
+      m.vm.programState = "invalid"
+
+
+      m.expectNotCalled(m.vm.setIsoTime)
+      m.expectNotCalled(m.vm.setEpgContent)
+
+      m.vm.onSelectedIndexChangeMenu(0)
+    end function
+
     @it("set iso time and load epg content on target day")
     function _()
       m.vm.riversJsonData = {
@@ -115,6 +138,8 @@ namespace zapp.plugins.tests
           "index": 0
         }
       ]
+      m.vm.taskCount = 0
+      m.vm.programState = "ready"
       dayDifference = 0
       currentTime = CreateObject("roDateTime")
       timezone = currentTime.GetTimeZoneOffset() * 60
@@ -192,6 +217,7 @@ namespace zapp.plugins.tests
     function _()
       m.vm.timeGrid = { "id": "timeGrid", "numRows": 1 }
       m.vm.isNowNextMode = false
+      m.vm.programState = "loading"
       m.vm.isUsingButtons = true
       m.vm.channelCount = -1
       m.vm.taskCount = 1
@@ -252,6 +278,7 @@ namespace zapp.plugins.tests
       m.vm.channelCount = 0
       m.vm.taskCount = 1
       m.vm.isUsingButtons = true
+      m.vm.programState = "loading"
       m.vm.isNowNextMode = false
       m.vm.timeGrid = { "id": "timeGrid", "numRows": 1 }
       m.vm.timeGridContent = mc.createSGNode("ZPEntry")
@@ -270,6 +297,7 @@ namespace zapp.plugins.tests
       m.vm.onLoadProgramsResponse(result)
 
       m.assertEqual(m.vm.state, "ready")
+      m.assertEqual(m.vm.programState, "ready")
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -356,7 +384,7 @@ namespace zapp.plugins.tests
 
     @it("set indicator visible false on left edge change")
     function _()
-      edgeTime = 500
+      edgeTime = 600
 
       m.vm.currentTimeGridLeftEdgeTime = edgeTime
       m.vm.indicatorVisible = false
