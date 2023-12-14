@@ -283,6 +283,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     m.taskCount--
 
     if m.taskCount = 0
+      m.timeGrid.maxDays = 1
       m.setField("content", m.timeGridContent)
       currentTime = CreateObject("roDateTime").asSeconds()
       m.contentStartTime = currentTime
@@ -359,11 +360,12 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   public function onSelectedIndexChangeMenu(index)
     m.log.info("selected index", index)
     item = m.menuButtons[index]
-
+    lastIndex = m.menuButtons.count() - 1
     if item <> invalid
       if m.taskCount = 0 and m.programState = "ready"
         currentTime = CreateObject("roDateTime")
         currentDayIndex = currentTime.getDayOfWeek()
+
 
         dayDifference = m.dayDiffernceCalculation(index, currentDayIndex, item)
         timezone = currentTime.GetTimeZoneOffset() * 60
@@ -507,13 +509,13 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     if asBoolean(style.grid_item_show)
       m.isNowNextMode = true
       m.timeGridDayVisible = false
-      rightOffset = plugin.getIntValue("time_grid_margin_right_last", 0)
+      rightOffset = plugin.getIntValue("time_grid_margin_right", 0)
       timeGrid.itemSize = [timeGrid.itemSize[0] - rightOffset, timeGrid.itemSize[1]]
       m.indicatorOpacity = 0
       m.timeGridDayText = ""
       timeGrid.clippingRect = [0, -100, 1920, 1920]
     else
-      m.isNowNextMode = true
+      m.isNowNextMode = false
       timeGrid.timeBarTwoLineLayout = true
       timeGrid.clippingRect = [0, -50, 1920, 1920]
     end if
