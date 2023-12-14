@@ -283,7 +283,6 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     m.taskCount--
 
     if m.taskCount = 0
-      m.timeGrid.maxDays = 1
       m.setField("content", m.timeGridContent)
       currentTime = CreateObject("roDateTime").asSeconds()
       m.contentStartTime = currentTime
@@ -360,7 +359,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   public function onSelectedIndexChangeMenu(index)
     m.log.info("selected index", index)
     item = m.menuButtons[index]
-    lastIndex = m.menuButtons.count() - 1
+
     if item <> invalid
       if m.taskCount = 0 and m.programState = "ready"
         currentTime = CreateObject("roDateTime")
