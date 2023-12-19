@@ -124,7 +124,7 @@ class LoginScreenVM extends zapp.uib.ScreenVM
     m.loginButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "login_button", "custom", styles.login_button_text)
     registerButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "register_button", "custom", styles.register_button_text)
     registerButtonStyle.visible = styles.use_register = true
-    forgotPasswordButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "forgot_password_button", "custom", styles.forgot_password_button_text)
+    forgotPasswordButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "forgot_password_button", "custom", styles.forgot_password_button_text_on_login_screen)
     forgotPasswordButtonStyle.visible = styles.use_forgot_password = true
     m.registerButtonStyle = registerButtonStyle
     m.forgotPasswordButtonStyle = forgotPasswordButtonStyle
