@@ -468,8 +468,10 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
 
   private function setNowBarIndicatorStyle(timeGrid, plugin, style)
     contentWidth = timeGrid.itemSize[0] - timeGrid.channelInfoWidth
+    nowBarBadgeYposition = plugin.getIntValue("time_bar_indicator_y", 0)
+
     m.cachedTimeGridValue = {
-      "yPosition": timeGrid.clippingRect.y
+      "yPosition": nowBarBadgeYposition - 50
       "contentWidth": timeGrid.itemSize[0] - timeGrid.channelInfoWidth
       "pixelPerSecond": contentWidth / timeGrid.duration
       "xPosition": timeGrid.channelInfoWidth
@@ -586,7 +588,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     halfTimeBar = timeGrid.timeBarHeight / 2
     percentOfOffset = halfTimeBar / abs(clippingY)
 
-    if halfTimeBar >= abs(clippingY)
+    if halfTimeBar - timebarFontSize >= abs(clippingY)
       timeGrid.clippingRect = [0, clippingY * percentOfOffset - 20, 1920, 1920]
     end if
     fontColor = zapp.viewUtils.transposeUIBColor(style.time_bar_label_font_color, "#FFFFFF")
