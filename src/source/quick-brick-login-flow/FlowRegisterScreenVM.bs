@@ -265,8 +265,8 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
 
   public function checkCredsValid()
     isUsernameValid = asString(m.username) <> ""
-    isFirstNameValid = (m.isFirstNameFieldVisible and asString(m.firstName) <> "") or (m.isFirstNameFieldVisible = false)
-    isLastNameValid = (m.isLastNameFieldVisible and asString(m.lastName) <> "") or (m.isLastNameFieldVisible = false and asString(m.lastName) = "")
+    isFirstNameValid = (m.isFirstNameFieldVisible and asString(m.firstName) <> "") or (not m.isFirstNameFieldVisible)
+    isLastNameValid = (m.isLastNameFieldVisible and asString(m.lastName) <> "") or (not m.isLastNameFieldVisible and asString(m.lastName) = "")
     isPasswordValid = asString(m.password) <> ""
 
     m.credsValidator = [isUsernameValid, isFirstNameValid, isLastNameValid, isPasswordValid]
@@ -377,7 +377,9 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
       lastName = mc.getPath(data, "lastname", "")
       'sep = firstName <> "" and lastName <> "" ? " " : ""
       m.setTextFromKeyboard("firstName", firstName)
-      m.setTextFromKeyboard("lastname", lastName)
+      if m.isLastNameFieldVisible
+        m.setTextFromKeyboard("lastname", lastName)
+      end if
       m.focusId = "passwordInput"
     end if
 
