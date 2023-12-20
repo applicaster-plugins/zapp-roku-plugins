@@ -161,7 +161,7 @@ namespace zapp.tests
     function _(expectedResult, email, firstName, lastName, password)
       m.vm.isLoading = false
       m.vm.isCredsValid = false
-      m.vm.credsValidator = [email,firstName,lastName,password]
+      m.vm.credsValidator = [email, firstName, lastName, password]
       m.expectNotCalled(m.vm.register)
 
       m.vm.onRegisterButtonSelected(true)
@@ -317,8 +317,7 @@ namespace zapp.tests
       m.assertTrue(m.vm.onKeyPressBack())
     end function
 
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("checkCredsValid")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++    @describe("checkCredsValid")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @it("checkCredsValid")
@@ -566,6 +565,8 @@ namespace zapp.tests
       m.vm.channelStore = {
         id: "channelStore"
       }
+      m.vm.isLastNameFieldVisible = true
+
       m.expectOnce(m.vm, "setTextFromKeyboard", ["username", email])
       m.expectOnce(m.vm, "setTextFromKeyboard", ["firstName", name])
       m.expectOnce(m.vm, "setTextFromKeyboard", ["lastname", lastname])
