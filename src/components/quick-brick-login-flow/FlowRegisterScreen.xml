@@ -30,7 +30,7 @@
           id='labelsGroup'
           layoutDirection='vert'
           translation='{{=zapp_viewUtils_UIBPosition("labels", 230, 310)}}'
-          itemSpacings='[56, 56, 26]'>
+          itemSpacings='{{itemTextSpacings}}'>
         <mv_Label
             id='titleText'
             style='{{=zapp_viewUtils_UIBLabel("title", invalid, "register_title")}}'
