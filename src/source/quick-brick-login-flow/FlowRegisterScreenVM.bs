@@ -6,6 +6,7 @@ import "pkg:/source/roku_modules/maestro/core/Utils.brs"
 class FlowRegisterScreenVM extends zapp.uib.ScreenVM
   'styles
   public itemSpacings = [10, 45, 52]
+  public itemTextSpacings = [56, 56, 26]
   public inputStyle = invalid
   public loginButtonStyle = invalid
   public registerButtonStyle = invalid
@@ -83,6 +84,7 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
 
   function processStyles(styles)
     m.itemSpacings = zapp.viewUtils.stringToArray(asString(m.riversJson.styles.input_spacing, "10,45,52"))
+    m.itemTextSpacings = zapp.viewUtils.stringToArray(asString(m.riversJson.styles.input_text_spacing, "56,56,26"))
     m.usernameText = m.localizations.register_username_placeholder_text
     m.usernamePlaceholderText = m.usernameText
 
