@@ -1,0 +1,58 @@
+<?xml version='1.0' encoding='utf-8'?>
+<component
+    name='QuickBrickMultiLoginProviders'
+    extends='UIBScreen'
+    vm='QuickBrickMultiLoginProvidersVM'>
+
+  <interface>
+    <field
+        id='ignoreCompletionAction'
+        type='boolean'
+        value='false' />
+    <field
+        id='isInsideStoreScreen'
+        type='boolean'
+        value='false' />
+    <field
+        id='screenState'
+        type='node' />
+  </interface>
+
+  <children>
+    <mv_List
+        id='list'
+        translation='{{listTranslation}}'
+        width='1920'
+        height='500'
+        numRows='3'
+        style='{{listStyle}}'
+        drawFocusFeedback='true'
+        content='{{listItems}}'
+        visible='{{listVisible}}' />
+
+    <LayoutGroup
+        id='layoutGroup'
+        layoutDirection='vert'
+        horizAlignment='center'
+        vertAlignment='center'
+        translation='{{:menuPosition}}'>
+      <Menu
+          id='menu'
+          buttons='{{menubuttons}}'
+          style='{{:menuStyle}}'
+          selectedIndex='{(onSelectedIndexChange(value))}'
+          buttonSize='{{:buttonSize}}'
+          buttonSpacing='{{:buttonSpacing}}' />
+    </LayoutGroup>
+
+    <LoadingIndicator
+        id='loadingIndicator'
+        width='100'
+        height='100'
+        translation='[1000,500]'
+        isActive='{{isLoading}}'
+        backgroundVisible='false'
+        text='' />
+
+  </children>
+</component>
