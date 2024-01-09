@@ -112,21 +112,27 @@ class QuickBrickMultiLoginProvidersVM extends zapp.uib.ScreenVM
       m.log.info("showPrehookOnce is true - dismissing")
       m.dismiss("success")
     else
-      m.proccessButtonStyles(riversJson)
+      if styles <> invalid
+        m.proccessButtonStyles(riversJson)
 
-      m.cellStyle = m.getChildCellStyle(styles)
-      m.listStyle = m.getListStyle(styles)
-      xPos = zapp.viewUtils.getUIBInt(styles, "styles.multi_container_x_offset", 0)
-      yPos = zapp.viewUtils.getUIBInt(styles, "styles.multi_container_y_offset", 750)
-      m.listTranslation = [xPos, yPos]
-      url = asString(styles.data.source)
-      m.log.info("list style is ", m.listStyle)
-      ctxInjectedUrl = zapp.APIUtils.creatingDataWithCtx(url)
-      definitionJson = {
-        source: ctxInjectedUrl
-      }
-      m.executeLoadDataTask(definitionJson, m.onListContentResult, 0)
+        m.cellStyle = m.getChildCellStyle(styles)
+        m.listStyle = m.getListStyle(styles)
+        xPos = zapp.viewUtils.getUIBInt(styles, "styles.multi_container_x_offset", 0)
+        yPos = zapp.viewUtils.getUIBInt(styles, "styles.multi_container_y_offset", 750)
+        m.listTranslation = [xPos, yPos]
+        url = asString(styles.data.source)
+        m.log.info("list style is ", m.listStyle)
+        m.executeNetworkCall(url)
+      end if
     end if
+  end function
+
+  private function executeNetworkCall(url)
+    ctxInjectedUrl = zapp.APIUtils.creatingDataWithCtx(url)
+    definitionJson = {
+      source: ctxInjectedUrl
+    }
+    m.executeLoadDataTask(definitionJson, m.onListContentResult, 0)
   end function
 
   private function proccessButtonStyles(riverJson)
@@ -431,7 +437,6 @@ class QuickBrickMultiLoginProvidersVM extends zapp.uib.ScreenVM
   end function
 
   public function isCapturingAnyKeyPress(key, press)
-    ?"isCapturingAnyKeyPressasfasfasf ", key, press
     'do not anyone escape this screen!
     return true
   end function

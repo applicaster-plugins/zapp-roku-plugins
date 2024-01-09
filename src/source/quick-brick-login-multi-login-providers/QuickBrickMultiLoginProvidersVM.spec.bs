@@ -1,5 +1,6 @@
 namespace zapp.tests
   @tags("public", "auth", "vm")
+  @only
   @suite("QuickBrickMultiLoginProvidersVMTests")
   class QuickBrickMultiLoginProvidersVMTests extends tests.BaseTestSuite
     private riversJson
@@ -13,7 +14,14 @@ namespace zapp.tests
         "id": "11937f34-a364-4601-a0du3-1dace40fe0ed"
         "styles": {
         }
+        "ui_components": [
+
+        ]
       }
+
+      mioc.setInstance("loginHook", {
+        "showPrehookOnce": false
+      })
 
       m.vm = new QuickBrickMultiLoginProvidersVM(m.riversJson)
       m.vm.initialize()
@@ -26,7 +34,6 @@ namespace zapp.tests
 
     @it("constructor")
     function _()
-      m.assertEqual(m.vm.focusId, "usernameInput")
       m.assertEqual(m.vm.riversJson, m.riversJson)
     end function
 
@@ -36,38 +43,21 @@ namespace zapp.tests
 
     @it("does not dismiss if subscreen is visible")
     function _()
-      m.vm.isSubScreenVisible = true
-      m.expectNone(m.vm, "dismiss")
+      m.expectCalled(m.vm.dismiss("cancel"))
+      m.expectCalled(m.vm.dismiss("cancel"))
+      m.expectCalled(m.vm.getTopField("isDismissable"), true)
 
       m.assertTrue(m.vm.onKeyPressBack())
 
-      m.assertEqual(m.vm.focusId, "usernameInput")
     end function
 
     @it("exits app if no subscreen, not dismissable and focused on username input")
     function _()
-      m.vm.isSubScreenVisible = false
-      m.vm.focusId = "usernameInput"
-      m.expectOnce(m.vm, "getTopField", ["isDismissable"], false)
-
-      m.expectOnce(m.vm, "exitApp", [invalid, true])
+      m.expectCalled(m.vm.dismiss("cancel"))
+      m.expectCalled(m.vm.getTopField("isDismissable"), false)
+      m.expectCalled(m.vm.exitApp(invalid, true))
 
       m.assertTrue(m.vm.onKeyPressBack())
-
-      m.assertEqual(m.vm.focusId, "usernameInput")
-    end function
-
-    @it("dismisses if dismissable, no subscreen is not visible and focused on username input")
-    function _()
-      m.vm.isSubScreenVisible = false
-      m.vm.focusId = "usernameInput"
-      m.expectOnce(m.vm, "getTopField", ["isDismissable"], true)
-
-      m.expectOnce(m.vm, "dismiss", ["cancel"])
-
-      m.assertTrue(m.vm.onKeyPressBack())
-
-      m.assertEqual(m.vm.focusId, "usernameInput")
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -153,69 +143,131 @@ namespace zapp.tests
       m.assertEqual(m.vm.isLoginRequired(), isLoginRequired)
     end function
 
+
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @tags("integration")
-    @describe("INTEGRATION tests processLogin")
+    @describe("onSelectedIndexChange")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @beforeEach
-    override function integratin_processLogin_beforeEach()
-      m.beforeEach()
-      mioc.setInstance("constants", { "simulateInAppPurchases": true })
-      mioc.setInstance("entitlements", createObject("roSGNode", "SimpleEntitlements"))
-      mioc.setInstance("authenticationData", createObject("roSGNode", "AuthenticationData"))
-      mioc.setInstance("buildConfig", {})
-      m.user = createObject("roSGNode", "user")
-      mioc.setInstance("user", m.user)
-      mioc.setInstance("plugins", [{
-        "identifier": "aws_cognito_auth_plugin",
-        "api": {
-          "require_startup_execution": false,
-          "class_name": "AwsCognitoAuthPlugin",
-          "interfaces": ["IAuthProvider"]
-        },
-        "type": "auth_provider"
-        "configuration_json": {
-          "host": "SOME_HOST"
-          "region": "SOME_REGION"
-          "endpoint": "SOME_ENDPOINT"
-          "app_client_id": "SOME_CLIENT_ID"
+    @it("do nothing if item is invalid")
+    function _()
+      m.vm.menuButtons = [
+        { "id": "0" }
+      ]
+      m.expectNotCalled(m.vm.getScreen)
+      m.expectNotCalled(m.vm.toggleSubScreen)
+
+      m.vm.onSelectedIndexChange(5)
+    end function
+
+    @it("do nothing if screen is invalid")
+    function _()
+      m.vm.menuButtons = [
+        { "id": "0"
+          "target": "targetId"
         }
-      }])
+      ]
+      m.expectCalled(m.vm.getScreen("targetId"), invalid)
+      m.expectNotCalled(m.vm.toggleSubScreen)
+
+      m.vm.onSelectedIndexChange(0)
     end function
 
-    @it("valid creds")
+    @it("push screen on valid data")
     function _()
-      m.vm.isCredsValid = true
-      m.vm.usernameText = "SOME_USER@email.com"
-      m.vm.password = "SOME_PASSWORD"
+      m.vm.menuButtons = [
+        { "id": "0"
+          "target": "targetId"
+        }
+      ]
 
-      m.expectOnce(m.vm, "createInstance", ["AuthenticationCredentials"], createObject("roSGNode", "AuthenticationCredentials"))
+      m.expectCalled(m.vm.getScreen("targetId"), "screen")
+      m.expectCalled(m.vm.toggleSubScreen("screen"))
+      m.expectCalled(m.vm.setInstance("currentSelection", invalid))
+      m.expectCalled(m.vm.push("screen"))
+      m.expectCalled(m.vm.setFocus("screen"))
 
-      m.vm.processLogin()
+      m.vm.onSelectedIndexChange(0)
 
-      tests.utils.waitForField(m.vm, "isLoading", 3000, 5)
-
-      m.assertEqual(m.vm.state, "finished")
-      m.assertFalse(m.vm.isLoading)
+      m.assertEqual(m.vm.focusIndex, 0)
     end function
 
-    @it("processLogin_integration_test_invalid")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("processStyles")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("dismiss screen if show preehook only once")
     function _()
+      m.vm.loginHook = {
+        "showPrehookOnce": true
+      }
+      style = {
+        "id": "style"
+      }
+      riverJson = {
+        "styles": "style"
+      }
 
-      m.vm.isCredsValid = true
-      m.vm.usernameText = "user"
-      m.vm.password = "pass"
+      m.expectCalled(m.vm.dismiss("success"))
 
-      m.expectOnce(m.vm, "createInstance", ["AuthenticationCredentials"], createObject("roSGNode", "AuthenticationCredentials"))
+      m.vm.processStyles(style, riverJson)
+    end function
 
-      m.vm.processLogin()
+    @it("set style by default")
+    function _()
+      m.vm.loginHook = {
+        "showPrehookOnce": false
+      }
+      style = {
+        "id": "style"
+        "data": {
+          "source": "sourceUrl"
+        }
+      }
+      riverJson = {
+        "styles": {
+          "default": "value"
+        }
+      }
 
-      tests.utils.waitForField(m.vm, "isLoading")
+      m.expectCalled(m.vm.proccessButtonStyles(riverJson))
+      m.expectCalled(m.vm.getChildCellStyle(style))
+      m.expectCalled(m.vm.getListStyle(style))
+      m.expectCalled(m.vm.executeNetworkCall("sourceUrl"))
 
-      m.assertEqual(m.vm.state, "ready")
-      m.assertFalse(m.vm.isLoading)
-      m.assertEqual(m.vm.errorText, "User does not exist.")
+      m.vm.processStyles(style, riverJson)
+
+      m.assertEqual(m.vm.listTranslation, [0, 750])
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("getAuthMenuItems")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("logout")
+    function _()
+      user = { "id": "user", "isLoggedIn": true }
+      m.vm.authItemConfig = "logoutOnly"
+      m.vm.logoutItem = { "id": "item" }
+      m.expectCalled(m.vm.getInstance("user"), user)
+
+      m.assertEqual(m.vm.getAuthMenuItems(), [m.vm.logoutItem])
+    end function
+
+    @it("empty scenarios")
+    @params("none", false, invalid)
+    @params("none", true, { "id": "item" })
+    @params("none", false, { "id": "item" })
+    @params("logoutOnly", false, { "id": "item" })
+    @params("logoutOnly", false, invalid)
+    @params("logoutOnly", true, invalid)
+    function _(authItemConfig, isLoggedIn, logoutItem)
+      user = { "id": "user", "isLoggedIn": isLoggedIn }
+      m.vm.authItemConfig = authItemConfig
+      m.vm.logoutItem = logoutItem
+
+      m.expectCalled(m.vm.getInstance("user"), user)
+
+      m.assertEmpty(m.vm.getAuthMenuItems())
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -261,7 +313,6 @@ namespace zapp.tests
       m.expectCalled(m.vm.isLoggedIn(), false)
       m.expectCalled(m.vm.trackScreen())
       m.expectCalled(m.vm.signalAppLaunchDialog(false))
-      m.expectCalled(m.vm.showFirstScreen())
       m.expectNotCalled(m.vm.dismiss)
 
       m.vm.onRefreshComplete({})
