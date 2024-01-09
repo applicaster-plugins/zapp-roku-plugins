@@ -1,6 +1,5 @@
 namespace zapp.tests
   @tags("public", "auth", "vm")
-  @only
   @suite("QuickBrickMultiLoginProvidersVMTests")
   class QuickBrickMultiLoginProvidersVMTests extends tests.BaseTestSuite
     private riversJson
