@@ -1,0 +1,475 @@
+import "pkg:/source/UIBuilder/view/ScreenVM.bs"
+import "pkg:/source/roku_modules/maestro/core/Result.brs"
+import "pkg:/source/lib/APIUtils.bs"
+
+
+class QuickBrickMultiLoginProvidersVM extends zapp.uib.ScreenVM
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ public fields
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public currentScreen = invalid
+  public listStyle = false
+  public listTranslation = [0, 750]
+  public listItems = invalid
+  public listVisible = false
+  public menuButtons = []
+  public menuStyle = {}
+  public menuPosition = [960, 584]
+  public buttonSize = [700, 100]
+  public buttonSpacing = 5
+  public titleTextStyle = {}
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ private fields
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private providerId = "quick-brick-login-multi-login-providers"
+  private nameOfParentScreen = ""
+  private authTask as mc.types.node
+  private skipTypes = ""
+  private skipKey = ""
+  private cellStyle
+  private authItemConfig = "none"
+  private authItem2Config = "none"
+  private logoutItem = invalid
+  private loginItem = invalid
+  private logoutItem2 = invalid
+  private loginItem2 = invalid
+  private customItems = []
+  private focusIndex = 0
+  private showPrehookOnce = false
+
+  @inject("loginHook")
+  private loginHook
+
+  @inject("user")
+  private user
+
+  public function new(riversJson)
+    super(riversJson, "QuickBrickMultiLoginProvidersVM")
+    styles = m.riversJson.ui_components[0]
+    m.processStyles(styles, riversJson)
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Overridden
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public override function load() as boolean
+    m.state = "loading"
+    if not m.isLoginRequired()
+      m.log.info("no need to show in this case")
+      m.dismiss("success")
+    else if m.isKeyToSkipSet()
+      m.log.info("skip key set")
+      m.dismiss("success")
+    else if m.isLoggedIn()
+      m.log.info("user is logged in, no need to show")
+      m.dismiss("success")
+    else
+      m.log.info("user not logged in - attemping refreshing")
+      m.refreshLogin()
+    end if
+    return true
+  end function
+
+  public function onSelectedIndexChange(index)
+    m.log.info("selected index", index)
+    item = m.menuButtons[index]
+
+    if item <> invalid
+
+      screen = m.getScreen(item.target)
+
+      if screen <> invalid
+        m.toggleSubScreen(screen)
+        m.setInstance("currentSelection", invalid)
+        m.log.info("found screen for button, displaying it")
+        m.focusIndex = index
+        m.push(screen)
+        m.setFocus(screen)
+      else
+        m.log.error("could not get the screen for", item.target)
+      end if
+    end if
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Public Methods
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public override function createData(definitionJson, depth = 1)
+    data = createObject("roSGNode", "ZPData")
+    data.definition = definitionJson
+    data.depth = depth
+    return data
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Styles
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  function processStyles(styles, riversJson)
+    if m.loginHook.showPrehookOnce
+      m.log.info("showPrehookOnce is true - dismissing")
+      m.dismiss("success")
+    else
+      if styles <> invalid
+        m.proccessButtonStyles(riversJson)
+
+        m.cellStyle = m.getChildCellStyle(styles)
+        m.listStyle = m.getListStyle(styles)
+        xPos = zapp.viewUtils.getUIBInt(styles, "styles.multi_container_x_offset", 0)
+        yPos = zapp.viewUtils.getUIBInt(styles, "styles.multi_container_y_offset", 750)
+        m.listTranslation = [xPos, yPos]
+        url = asString(styles.data.source)
+        m.log.info("list style is ", m.listStyle)
+        m.executeNetworkCall(url)
+      else
+        m.log.error("error processing styles")
+      end if
+    end if
+  end function
+
+  private function executeNetworkCall(url)
+    ctxInjectedUrl = zapp.APIUtils.creatingDataWithCtx(url)
+    definitionJson = {
+      source: ctxInjectedUrl
+    }
+    m.executeLoadDataTask(definitionJson, m.onListContentResult, 0)
+  end function
+
+  private function proccessButtonStyles(riverJson)
+    styles = riverJson.styles
+    m.loginHook.showPrehookOnce = asBoolean(riverJson.general.show_hook_once, false)
+    m.titleTextStyle = zapp.viewUtils.makeUIBTextStyle(styles, "title")
+    m.menuStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "menu_button", "custom", "")
+    m.menuStyle.normal.delete("text")
+
+    m.authItemConfig = mc.getPath(styles, "auth_items", "loginAndLogout")
+    m.authItem2Config = mc.getPath(styles, "auth2_items", "loginAndLogout")
+    m.menuPosition = zapp.viewUtils.makeUIBPosition(styles, "menu", 960, 584)
+    m.buttonSize = zapp.viewUtils.makeUIBSize(styles, "menu", 700, 100)
+    m.buttonSpacing = zapp.viewUtils.getUIBInt(styles, "menu_spacing", 5)
+
+    m.logoutItem = m.createButton("logout_screen_1", "prefix_logout_title")
+    m.loginItem = m.createButton("login_screen_1", "prefix_login_title")
+    m.logoutItem2 = m.createButton("logout_screen_2", "prefix_logout_title")
+    m.loginItem2 = m.createButton("login_screen_2", "prefix_login_title")
+    m.updateMenuItems()
+  end function
+
+  private function createButton(prefix, localizationPrefix)
+    text = m.getLocalizeButtonText(localizationPrefix)
+    if text <> invalid and text.trim() <> ""
+      screenId = m.getScreenIdForAuthItem(prefix)
+      if screenId <> invalid and screenId.trim() <> ""
+        if not m.hasScreen(screenId)
+          m.log.error("there was no screen matching name", screenId)
+          text = "missing screen: " + screenId
+          return invalid
+        end if
+        return {
+          title: text + m.getPluginTypeForScreenId(screenId)
+          target: screenId
+          providerId: m.getPluginTypeForScreenId(screenId)
+        }
+      end if
+    end if
+
+    return invalid
+  end function
+
+  private function getScreenIdForAuthItem(prefix as string) as string
+    m.log.info("get screen id for auth item by prefix:", prefix)
+    return m.riversJson.general[prefix]
+  end function
+
+  private function getLocalizeButtonText(prefix as string)
+    text = m.localizations[prefix]
+    if text = invalid or text.trim() = ""
+      text = m.riversJson.styles[prefix]
+    end if
+    return text
+  end function
+
+  private function updateMenuItems()
+    m.log.info("updateMenuItems")
+
+    items = m.getAuthMenuItems()
+    items.append(m.customItems)
+
+    m.menuButtons = items
+    m.focusId = "menu"
+  end function
+
+  private function getAuthMenuItems()
+    m.user = m.getInstance("user")
+    items = []
+    if (m.authItemConfig = "logoutOnly" or m.authItemConfig = "loginAndLogout") and m.isLoggedInForAuthButton(m.loginItem) and m.logoutItem <> invalid
+      items.push(m.logoutItem)
+    end if
+
+    if (m.authItemConfig = "loginOnly" or m.authItemConfig = "loginAndLogout") and not m.isLoggedInForAuthButton(m.loginItem) and m.loginItem <> invalid
+      items.push(m.loginItem)
+    end if
+
+    if (m.authItem2Config = "logoutOnly" or m.authItem2Config = "loginAndLogout") and m.isLoggedInForAuthButton(m.loginItem2) and m.logoutItem2 <> invalid
+      items.push(m.logoutItem2)
+    end if
+
+    if (m.authItem2Config = "loginOnly" or m.authItem2Config = "loginAndLogout") and not m.isLoggedInForAuthButton(m.loginItem2) and m.loginItem2 <> invalid
+      items.push(m.loginItem2)
+    end if
+
+    return items
+  end function
+
+
+  private function isLoggedInForAuthButton(loginItem as mc.types.assocarray)
+    providerId = asString(loginItem.providerId)
+    if providerId = ""
+      return m.user.isLoggedIn
+    else
+      return m.user.loggedInServices[providerId] = true
+    end if
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Private Methods
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function isKeyToSkipSet()
+    m.log.info("checking if this key is set", m.skipKey)
+    parts = m.skipKey.split(".")
+    if parts.count() = 2
+      value = m.getSessionStoreValue(parts[0], parts[1])
+      m.log.info("session store contained value:", value)
+      if value <> invalid
+        return true
+      end if
+    end if
+
+    return false
+  end function
+
+  private function getMatchesTypeForItem(currentSelection)
+    return currentSelection@.getMatchesType(m.skipTypes)
+  end function
+
+  private function checkIfCurrentItemRequiresAuthentication(currentItemJson as mc.types.node)
+    extensions = asAA(currentItemJson.extensions)
+    if asBoolean(extensions.requires_authentication) or asString(extensions.requires_authentication) = "true"
+      return true
+    end if
+    return false
+  end function
+
+  private override function executeLoadDataTask(definitionJson, callback, depth = 1, sendMode = "value")
+    m.log.debug("executeLoadDataTask", "callback", callback, "depth", depth)
+    args = {
+      "data": m.createData(definitionJson, depth)
+    }
+    task = m.createTask("LoadDataTask", args, callback, true, sendMode)
+    return task
+  end function
+
+
+  private function isLoginRequired()
+    currentItem = m.getInstance("currentSelection", "currentItem")
+    currentSelection = m.getInstance("currentSelection")
+    if currentSelection <> invalid and m.getMatchesTypeForItem(currentSelection)
+      m.log.info("type maches- skipping")
+      return false
+    else if currentItem = invalid
+      return true
+    end if
+    return m.checkIfCurrentItemRequiresAuthentication(currentItem.json)
+  end function
+
+  private function getChildCellStyle(componentJson as mc.types.assocarray)
+    cellStyles = m.getInstance("cellStyles")
+
+    return mc.getPath(cellStyles, asString(componentJson.styles.cell_plugin_configuration_id))
+  end function
+
+  private function onListContentResult(result as mc.Result)
+    m.log.info("received result for List", result)
+
+    if asBoolean(result.isOk)
+      m.log.info("set content for theater list")
+      listItems = createObject("roSGNode", "ContentNode")
+
+      for each item in result.data.getChildren(-1, 0)
+        listItems.appendChild(item.clone(true))
+      end for
+      m.setContentStyle(listItems)
+
+      m.listItems = listItems
+      m.listVisible = true
+      m.setFocusId("menu")
+    end if
+  end function
+
+  private function setContentStyle(content as mc.types.node)
+    m.log.method("setContentStyle")
+
+    if m.cellStyle <> invalid
+      cellStyle = m.cellStyle.cell
+      cellStyle.dataMap = m.cellStyle.dataMap
+      cellStyle.delete("translation")
+      mc.setOrAddNodeField(content, "_style", cellStyle)
+      mc.setOrAddNodeField(content, "_styleId", cellStyle.id)
+    end if
+
+  end function
+
+  private function getListStyle(componentJson as mc.types.assocarray)
+
+    styles = asAA(componentJson.styles)
+    size = asArray(m.cellStyle.cell.normal.size, [0, 50])
+    style = {
+      "visible": true
+      "itemComponentName": "ZPowerCell"
+      "direction": "horizontal"
+      "itemSpacing": zapp.viewUtils.getUIBInt(styles, "itemSpacing", 0)
+      "rowHeights": [size[1]]
+      "focusXOffset": asNumber(styles.focusXOffset, 0)
+      "rowSpacings": asNumber(styles.itemSpacing, 50)
+      "rowItemSize": size
+      "rowItemSpacing": asNumber(styles.rowItemSpacing, 50)
+      "showRowLabel": false
+      "showRowCounter": false
+      "itemSize": size
+      "focusBitmapBlendColor": zapp.viewUtils.transposeUIBColor(styles.focusBitmapBlendColor, "#000000bb")
+      "focusBitmapUri": asString(styles.focusBitmapUri)
+    }
+    return style
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Screen Management
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  function toggleSubScreen(screen)
+    m.log.method("toggleSubScreen")
+
+    m.unobserveNodeField(m.currentScreen, "state", m.onsubScreenStateChange)
+
+    m.currentScreen = invalid
+
+    if screen <> invalid
+      m.currentScreen = screen
+      m.currentScreen.isDisplayedInPrehook = true
+      m.onsubScreenStateChange(m.currentScreen.state)
+      m.observeNodeField(m.currentScreen, "state", m.onSubScreenStateChange)
+    end if
+
+  end function
+
+  private function onSubScreenStateChange(state as string)
+    ignoreCompletionAction = m.getTopField("ignoreCompletionAction")
+    m.log.method("current screen state change", state, "ignoreCompletionAction", ignoreCompletionAction)
+
+    if m.nameOfParentScreen = "tabChildNavController" and state = "cancel"
+      m.navigateToHomeScreen()
+    else if ignoreCompletionAction = true and (state = "success" or state = "cancel")
+      m.log.info("ignoreCompletionAction is true - dismissing on state", state)
+      m.dismiss(state)
+    else if state = "success"
+      m.signalAppLaunchDialog(true)
+      m.performNextAction()
+    else if state = "cancel"
+      m.toggleSubScreen(invalid)
+      m.toggleNavMenuVisible(true, true)
+    end if
+  end function
+
+  private function performNextAction()
+    m.log.info("ascertaining next action")
+    action = asString(m.riversJson.general.login_completion_action, "go_back")
+
+    if m.isDisplayedInPrehook
+      m.log.info("was displayed in prehook - ignoring all next actions")
+      m.dismiss("success")
+    else if action = "default"
+      m.dismiss("success")
+    else if action = "go_back"
+      m.dismiss("success")
+    else if action = "go_home"
+      m.navigateToHomeScreen()
+    else if action = "go_to_screen"
+      screenId = asString(m.riversJson.navigations.id)
+
+      m.navigateToScreenById(screenId)
+    end if
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Refresh
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function refreshLogin()
+    m.log.info("calling authTask to refresh login")
+
+    m.isLoading = true
+    m.authTask = m.createAuthTask("execLoad", m.providerId, m.onRefreshComplete)
+  end function
+
+  private function onRefreshComplete(result)
+    m.log.method("onRefreshComplete", result)
+    m.isLoading = false
+
+    if m.isLoggedIn()
+      m.dismiss("success")
+    else
+      m.trackScreen()
+      m.signalAppLaunchDialog(false)
+    end if
+
+  end function
+
+  private function isLoggedIn()
+    return m.user.isLoggedIn
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ launch support
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  override function sendLaunchBeacon()
+    'we handle this manually
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Key press
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public function isCapturingAnyKeyPress(key, press)
+    m.log.info("Multi login isCapturingAnyKeyPress", key, press)
+    'do not anyone escape this screen!
+    return true
+  end function
+
+  override function onKeyPressUp() as boolean
+    return true
+  end function
+
+  public function onKeyPressBack() as boolean
+    m.log.method("onKeyPressBack", m.focusId)
+    m.dismiss("cancel")
+
+    isDismissable = m.getTopField("isDismissable")
+    if isDismissable = true
+      m.dismiss("cancel")
+      return true
+    else
+      m.exitApp(invalid, true)
+    end if
+
+    return true
+  end function
+
+end class

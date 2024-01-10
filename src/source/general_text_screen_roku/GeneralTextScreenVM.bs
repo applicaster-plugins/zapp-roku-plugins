@@ -54,8 +54,8 @@ class GeneralTextScreenVM extends zapp.uib.ScreenVM
     m.descriptionStyle = zapp.viewUtils.makeUIBTextStyle(styles, "description")
     m.optional1Style = zapp.viewUtils.makeUIBTextStyle(styles, "optional_text1")
     m.backgroundColor = zapp.viewUtils.transposeUIBColor(styles.background_color)
-    m.backgroundUrl = styles.background_url
-    m.logoImageUrl = styles.logo_image_url
+    m.backgroundUrl = zapp.viewUtils.getPosterUri(styles.background_url)
+    m.logoImageUrl = zapp.viewUtils.getPosterUri(styles.logo_image_url)
 
     m.buttonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "done_button", "custom", styles.done_button_text)
 

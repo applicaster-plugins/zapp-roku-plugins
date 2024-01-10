@@ -1,0 +1,390 @@
+namespace zapp.tests
+  @tags("public", "auth", "vm")
+  @suite("QuickBrickMultiLoginProvidersVMTests")
+  class QuickBrickMultiLoginProvidersVMTests extends tests.BaseTestSuite
+    private riversJson
+    private vm
+    private user
+
+    protected override function beforeEach()
+      super.beforeEach()
+
+      m.riversJson = {
+        "id": "11937f34-a364-4601-a0du3-1dace40fe0ed"
+        "styles": {
+        }
+        "ui_components": [
+
+        ]
+      }
+
+      mioc.setInstance("loginHook", {
+        "showPrehookOnce": false
+      })
+
+      m.vm = new QuickBrickMultiLoginProvidersVM(m.riversJson)
+      m.vm.initialize()
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("constructor")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("constructor")
+    function _()
+      m.assertEqual(m.vm.riversJson, m.riversJson)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onKeyPressBack")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("does not dismiss if subscreen is visible")
+    function _()
+      m.expectCalled(m.vm.dismiss("cancel"))
+      m.expectCalled(m.vm.dismiss("cancel"))
+      m.expectCalled(m.vm.getTopField("isDismissable"), true)
+
+      m.assertTrue(m.vm.onKeyPressBack())
+
+    end function
+
+    @it("exits app if no subscreen, not dismissable and focused on username input")
+    function _()
+      m.expectCalled(m.vm.dismiss("cancel"))
+      m.expectCalled(m.vm.getTopField("isDismissable"), false)
+      m.expectCalled(m.vm.exitApp(invalid, true))
+
+      m.assertTrue(m.vm.onKeyPressBack())
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("load")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("dismisses if login is not required")
+    function _()
+      m.expectCalled(m.vm.isLoginRequired(), false)
+      m.expectCalled(m.vm.dismiss("success"))
+
+      m.expectNotCalled(m.vm.isKeyToSkipSet)
+      m.expectNotCalled(m.vm.refreshLogin)
+
+      m.vm.load()
+    end function
+
+    @it("dismisses if logged in")
+    function _()
+      m.expectCalled(m.vm.isLoginRequired(), true)
+      m.expectCalled(m.vm.isKeyToSkipSet(), false)
+      m.expectCalled(m.vm.isLoggedIn(), true)
+      m.expectCalled(m.vm.dismiss("success"))
+
+      m.expectNotCalled(m.vm.refreshLogin)
+
+      m.vm.load()
+    end function
+
+    @it("dismisses if isKeyToSkipSet")
+    function _()
+      m.expectCalled(m.vm.isLoginRequired(), true)
+      m.expectCalled(m.vm.isKeyToSkipSet(), true)
+      m.expectCalled(m.vm.dismiss("success"))
+
+      m.expectNotCalled(m.vm.isLoggedIn)
+      m.expectNotCalled(m.vm.refreshLogin)
+
+      m.vm.load()
+    end function
+
+    @it("otherwise refreshes")
+    function _()
+      m.expectCalled(m.vm.isLoginRequired(), true)
+      m.expectCalled(m.vm.isKeyToSkipSet(), false)
+      m.expectCalled(m.vm.isLoggedIn(), false)
+      m.expectCalled(m.vm.refreshLogin())
+
+      m.expectNotCalled(m.vm.dismiss)
+
+      m.vm.load()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("isLoginRequired")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns expected value")
+    @params(invalid, { id: "currentItem" }, false, true)
+    @params({ json: invalid }, { id: "currentItem" }, false, false)
+    @params({ json: { extensions: invalid } }, { id: "currentItem" }, false, false)
+    @params({ json: { extensions: { requires_authentication: true } } }, { id: "currentItem" }, false, true)
+    @params({ json: { extensions: { requires_authentication: false } } }, { id: "currentItem" }, false, false)
+    @params({ json: { extensions: { requires_authentication: false } } }, { id: "currentItem" }, true, false)
+    function _(item, currentSelection, getMatchesTypeForItem, isLoginRequired)
+      currentItem = { "id": "currentItem" }
+
+      m.expectCalled(m.vm.getInstance("currentSelection", "currentItem"), item)
+      m.expectCalled(m.vm.getInstance("currentSelection"), currentSelection)
+      m.expectCalled(m.vm.getMatchesTypeForItem(currentItem), getMatchesTypeForItem)
+
+      m.assertEqual(m.vm.isLoginRequired(), isLoginRequired)
+    end function
+
+    @it("returns false if currentSelection invalid")
+    @params(invalid, invalid, false, true)
+    function _(item, currentSelection, getMatchesTypeForItem, isLoginRequired)
+
+      m.expectCalled(m.vm.getInstance("currentSelection", "currentItem"), item)
+      m.expectCalled(m.vm.getInstance("currentSelection"), currentSelection)
+      m.expectNotCalled(m.vm.getMatchesTypeForItem)
+
+      m.assertEqual(m.vm.isLoginRequired(), isLoginRequired)
+    end function
+
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onSelectedIndexChange")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("do nothing if item is invalid")
+    function _()
+      m.vm.menuButtons = [
+        { "id": "0" }
+      ]
+      m.expectNotCalled(m.vm.getScreen)
+      m.expectNotCalled(m.vm.toggleSubScreen)
+
+      m.vm.onSelectedIndexChange(5)
+    end function
+
+    @it("do nothing if screen is invalid")
+    function _()
+      m.vm.menuButtons = [
+        { "id": "0"
+          "target": "targetId"
+        }
+      ]
+      m.expectCalled(m.vm.getScreen("targetId"), invalid)
+      m.expectNotCalled(m.vm.toggleSubScreen)
+
+      m.vm.onSelectedIndexChange(0)
+    end function
+
+    @it("push screen on valid data")
+    function _()
+      m.vm.menuButtons = [
+        { "id": "0"
+          "target": "targetId"
+        }
+      ]
+
+      m.expectCalled(m.vm.getScreen("targetId"), "screen")
+      m.expectCalled(m.vm.toggleSubScreen("screen"))
+      m.expectCalled(m.vm.setInstance("currentSelection", invalid))
+      m.expectCalled(m.vm.push("screen"))
+      m.expectCalled(m.vm.setFocus("screen"))
+
+      m.vm.onSelectedIndexChange(0)
+
+      m.assertEqual(m.vm.focusIndex, 0)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("processStyles")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("dismiss screen if show preehook only once")
+    function _()
+      m.vm.loginHook = {
+        "showPrehookOnce": true
+      }
+      style = {
+        "id": "style"
+      }
+      riverJson = {
+        "styles": "style"
+      }
+
+      m.expectCalled(m.vm.dismiss("success"))
+
+      m.vm.processStyles(style, riverJson)
+    end function
+
+    @it("set style by default")
+    function _()
+      m.vm.loginHook = {
+        "showPrehookOnce": false
+      }
+      style = {
+        "id": "style"
+        "data": {
+          "source": "sourceUrl"
+        }
+      }
+      riverJson = {
+        "styles": {
+          "default": "value"
+        }
+      }
+
+      m.expectCalled(m.vm.proccessButtonStyles(riverJson))
+      m.expectCalled(m.vm.getChildCellStyle(style))
+      m.expectCalled(m.vm.getListStyle(style))
+      m.expectCalled(m.vm.executeNetworkCall("sourceUrl"))
+
+      m.vm.processStyles(style, riverJson)
+
+      m.assertEqual(m.vm.listTranslation, [0, 750])
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("getAuthMenuItems")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("logout")
+    function _()
+      user = { "id": "user", "isLoggedIn": true }
+      m.vm.authItemConfig = "logoutOnly"
+      m.vm.logoutItem = { "id": "item" }
+      m.expectCalled(m.vm.getInstance("user"), user)
+
+      m.assertEqual(m.vm.getAuthMenuItems(), [m.vm.logoutItem])
+    end function
+
+    @it("empty scenarios")
+    @params("none", false, invalid)
+    @params("none", true, { "id": "item" })
+    @params("none", false, { "id": "item" })
+    @params("logoutOnly", false, { "id": "item" })
+    @params("logoutOnly", false, invalid)
+    @params("logoutOnly", true, invalid)
+    function _(authItemConfig, isLoggedIn, logoutItem)
+      user = { "id": "user", "isLoggedIn": isLoggedIn }
+      m.vm.authItemConfig = authItemConfig
+      m.vm.logoutItem = logoutItem
+
+      m.expectCalled(m.vm.getInstance("user"), user)
+
+      m.assertEmpty(m.vm.getAuthMenuItems())
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("refreshLogin")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("refreshLogin")
+    function _()
+      authTask = { "id": "authTask" }
+      m.vm.providerId = "p"
+
+      m.expectCalled(m.vm.createAuthTask("execLoad", m.vm.providerId, m.vm.onRefreshComplete), authTask)
+
+      m.vm.refreshLogin()
+
+      m.assertEqual(m.vm.authTask, authTask)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onRefreshComplete")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("dismisses on succesful refresh")
+    function _()
+      m.vm.providerId = "pid"
+      m.expectCalled(m.vm.isLoggedIn(), true)
+      m.expectCalled(m.vm.dismiss("success"))
+
+      m.vm.isRefreshing = true
+      m.vm.isLoading = true
+      m.vm.isMainGroupVisible = true
+
+      m.vm.onRefreshComplete({})
+    end function
+
+    @it("does not dismiss on refresh failure")
+    function _()
+
+      m.vm.isRefreshing = true
+      m.vm.isLoading = true
+      m.vm.isMainGroupVisible = true
+
+      m.expectCalled(m.vm.isLoggedIn(), false)
+      m.expectCalled(m.vm.trackScreen())
+      m.expectCalled(m.vm.signalAppLaunchDialog(false))
+      m.expectNotCalled(m.vm.dismiss)
+
+      m.vm.onRefreshComplete({})
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("performNextAction")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("go to back if action go_back")
+    function _()
+      m.vm.riversJson = {
+        general: {
+          login_completion_action: "go_back"
+        }
+      }
+      m.vm.isDisplayedInPrehook = false
+
+      m.expectCalled(m.vm.dismiss("success"))
+
+      m.vm.performNextAction()
+    end function
+
+    @it("dismisses if displayed in prehook, regardless of the login completion action")
+
+    @params("go_home")
+    @params("bo_back")
+    @params("go_to_screen")
+    function _(action)
+      m.vm.riversJson = {
+        general: {
+          login_completion_action: action
+        }
+      }
+      m.vm.isDisplayedInPrehook = true
+
+      m.expectCalled(m.vm.dismiss("success"))
+
+      m.vm.performNextAction()
+    end function
+
+    @it("go to home screen action is go_home")
+    function _()
+      m.vm.riversJson = {
+        general: {
+          login_completion_action: "go_home"
+        }
+      }
+      m.vm.isDisplayedInPrehook = false
+
+      m.expectCalled(m.vm.navigateToHomeScreen())
+
+      m.vm.performNextAction()
+    end function
+
+    @it("go to some screen if action is go_to_screen")
+    function _()
+      m.vm.riversJson = {
+        general: {
+          login_completion_action: "go_to_screen"
+        }
+        navigations: {
+          id: "someScreenId"
+        }
+      }
+      m.vm.isDisplayedInPrehook = false
+
+      screenId = m.vm.riversJson.navigations.id
+      m.expectCalled(m.vm.navigateToScreenById(screenId))
+
+      m.vm.performNextAction()
+    end function
+
+  end class
+end namespace
