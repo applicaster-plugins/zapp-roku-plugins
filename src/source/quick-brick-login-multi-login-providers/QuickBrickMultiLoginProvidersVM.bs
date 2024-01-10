@@ -5,20 +5,15 @@ import "pkg:/source/lib/APIUtils.bs"
 
 class QuickBrickMultiLoginProvidersVM extends zapp.uib.ScreenVM
 
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ public fields
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
   public currentScreen = invalid
-
-  private providerId = "quick-brick-login-multi-login-providers"
-  private nameOfParentScreen = ""
-  private authTask as mc.types.node
-  private skipTypes = ""
-  private skipKey = ""
-
   public listStyle = false
   public listTranslation = [0, 750]
   public listItems = invalid
   public listVisible = false
-  private cellStyle
-
   public menuButtons = []
   public menuStyle = {}
   public menuPosition = [960, 584]
@@ -26,6 +21,16 @@ class QuickBrickMultiLoginProvidersVM extends zapp.uib.ScreenVM
   public buttonSpacing = 5
   public titleTextStyle = {}
 
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ private fields
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private providerId = "quick-brick-login-multi-login-providers"
+  private nameOfParentScreen = ""
+  private authTask as mc.types.node
+  private skipTypes = ""
+  private skipKey = ""
+  private cellStyle
   private authItemConfig = "none"
   private authItem2Config = "none"
   private logoutItem = invalid
@@ -70,18 +75,6 @@ class QuickBrickMultiLoginProvidersVM extends zapp.uib.ScreenVM
     return true
   end function
 
-  private function isLoginRequired()
-    currentItem = m.getInstance("currentSelection", "currentItem")
-    currentSelection = m.getInstance("currentSelection")
-    if currentSelection <> invalid and m.getMatchesTypeForItem(currentSelection)
-      m.log.info("type maches- skipping")
-      return false
-    else if currentItem = invalid
-      return true
-    end if
-    return m.checkIfCurrentItemRequiresAuthentication(currentItem.json)
-  end function
-
   public function onSelectedIndexChange(index)
     m.log.info("selected index", index)
     item = m.menuButtons[index]
@@ -104,7 +97,18 @@ class QuickBrickMultiLoginProvidersVM extends zapp.uib.ScreenVM
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '++ styles
+  '++ Public Methods
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public override function createData(definitionJson, depth = 1)
+    data = createObject("roSGNode", "ZPData")
+    data.definition = definitionJson
+    data.depth = depth
+    return data
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Styles
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   function processStyles(styles, riversJson)
@@ -123,6 +127,8 @@ class QuickBrickMultiLoginProvidersVM extends zapp.uib.ScreenVM
         url = asString(styles.data.source)
         m.log.info("list style is ", m.listStyle)
         m.executeNetworkCall(url)
+      else
+        m.log.error("error processing styles")
       end if
     end if
   end function
@@ -232,8 +238,34 @@ class QuickBrickMultiLoginProvidersVM extends zapp.uib.ScreenVM
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '++ Private Methods Rowlist
+  '++ Private Methods
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function isKeyToSkipSet()
+    m.log.info("checking if this key is set", m.skipKey)
+    parts = m.skipKey.split(".")
+    if parts.count() = 2
+      value = m.getSessionStoreValue(parts[0], parts[1])
+      m.log.info("session store contained value:", value)
+      if value <> invalid
+        return true
+      end if
+    end if
+
+    return false
+  end function
+
+  private function getMatchesTypeForItem(currentSelection)
+    return currentSelection@.getMatchesType(m.skipTypes)
+  end function
+
+  private function checkIfCurrentItemRequiresAuthentication(currentItemJson as mc.types.node)
+    extensions = asAA(currentItemJson.extensions)
+    if asBoolean(extensions.requires_authentication) or asString(extensions.requires_authentication) = "true"
+      return true
+    end if
+    return false
+  end function
 
   private override function executeLoadDataTask(definitionJson, callback, depth = 1, sendMode = "value")
     m.log.debug("executeLoadDataTask", "callback", callback, "depth", depth)
@@ -244,11 +276,17 @@ class QuickBrickMultiLoginProvidersVM extends zapp.uib.ScreenVM
     return task
   end function
 
-  public override function createData(definitionJson, depth = 1)
-    data = createObject("roSGNode", "ZPData")
-    data.definition = definitionJson
-    data.depth = depth
-    return data
+
+  private function isLoginRequired()
+    currentItem = m.getInstance("currentSelection", "currentItem")
+    currentSelection = m.getInstance("currentSelection")
+    if currentSelection <> invalid and m.getMatchesTypeForItem(currentSelection)
+      m.log.info("type maches- skipping")
+      return false
+    else if currentItem = invalid
+      return true
+    end if
+    return m.checkIfCurrentItemRequiresAuthentication(currentItem.json)
   end function
 
   private function getChildCellStyle(componentJson as mc.types.assocarray)
@@ -346,7 +384,6 @@ class QuickBrickMultiLoginProvidersVM extends zapp.uib.ScreenVM
     else if state = "cancel"
       m.toggleSubScreen(invalid)
       m.toggleNavMenuVisible(true, true)
-      'm.dismiss("cancel")
     end if
   end function
 
@@ -407,36 +444,11 @@ class QuickBrickMultiLoginProvidersVM extends zapp.uib.ScreenVM
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  '++ Private
+  '++ Key press
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  private function isKeyToSkipSet()
-    m.log.info("checking if this key is set", m.skipKey)
-    parts = m.skipKey.split(".")
-    if parts.count() = 2
-      value = m.getSessionStoreValue(parts[0], parts[1])
-      m.log.info("session store contained value:", value)
-      if value <> invalid
-        return true
-      end if
-    end if
-
-    return false
-  end function
-
-  private function getMatchesTypeForItem(currentSelection)
-    return currentSelection@.getMatchesType(m.skipTypes)
-  end function
-
-  private function checkIfCurrentItemRequiresAuthentication(currentItemJson as mc.types.node)
-    extensions = asAA(currentItemJson.extensions)
-    if asBoolean(extensions.requires_authentication) or asString(extensions.requires_authentication) = "true"
-      return true
-    end if
-    return false
-  end function
-
   public function isCapturingAnyKeyPress(key, press)
+    m.log.info("Multi login isCapturingAnyKeyPress", key, press)
     'do not anyone escape this screen!
     return true
   end function
