@@ -14,7 +14,7 @@ function updateMaskSize()
   channelGuideSettings = mioc.getInstance("channelGuideItem").channelGuideSettings
 
   yPadding = channelGuideSettings.channelPaddingTop
-  'xPadding = channelGuideSettings.channelPaddingLeft - channelGuideSettings.channelPaddingRight
+  xPadding = channelGuideSettings.channelPaddingLeft - channelGuideSettings.channelPaddingRight
 
   m.photoRectangle.maskSize = [m.top.width - 120, m.top.height - 10]
   m.programFrame.width = m.top.width - 120
@@ -25,7 +25,8 @@ function updateMaskSize()
   m.channelPoster.height = channelGuideSettings.channelAssetHeight
   channelAssetWidth = m.channelPoster.height * ratioValue[0].toInt() / ratioValue[1].toInt()
   m.channelPoster.width = channelAssetWidth
-  m.photoRectangle.translation = [channelAssetWidth / 2, yPadding]
+  xPosition = (channelAssetWidth / 2) + xPadding
+  m.photoRectangle.translation = [xPosition, yPadding]
 end function
 
 function OnContentChangeForChannel()
