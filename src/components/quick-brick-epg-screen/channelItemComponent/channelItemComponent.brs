@@ -21,6 +21,9 @@ function updateMaskSize()
   m.programFrame.height = m.top.height - 10
 
   aspectRatio = channelGuideSettings.channelAssetAspectRatio
+  if aspectRatio = "other"
+    aspectRatio = channelGuideSettings.channelCustomAssetAspectRatio
+  end if
   ratioValue = aspectRatio.split("x")
   m.channelPoster.height = channelGuideSettings.channelAssetHeight
   channelAssetWidth = m.channelPoster.height * ratioValue[0].toInt() / ratioValue[1].toInt()
