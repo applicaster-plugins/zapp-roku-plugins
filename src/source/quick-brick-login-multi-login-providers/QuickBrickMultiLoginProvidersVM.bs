@@ -172,7 +172,7 @@ class QuickBrickMultiLoginProvidersVM extends zapp.uib.ScreenVM
           return invalid
         end if
         return {
-          title: text + m.getPluginTypeForScreenId(screenId)
+          title: text + " " + m.getPluginNameForScreenId(screenId)
           target: screenId
           providerId: m.getPluginTypeForScreenId(screenId)
         }
