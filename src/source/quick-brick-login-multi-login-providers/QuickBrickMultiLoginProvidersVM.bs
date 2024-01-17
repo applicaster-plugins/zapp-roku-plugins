@@ -40,6 +40,7 @@ class QuickBrickMultiLoginProvidersVM extends zapp.uib.ScreenVM
   private customItems = []
   private focusIndex = 0
   private showPrehookOnce = false
+  private topScreen = invalid
 
   @inject("loginHook")
   private loginHook
@@ -50,6 +51,7 @@ class QuickBrickMultiLoginProvidersVM extends zapp.uib.ScreenVM
   public function new(riversJson)
     super(riversJson, "QuickBrickMultiLoginProvidersVM")
     styles = m.riversJson.ui_components[0]
+    m.topScreen = m.getMField("top")
     m.processStyles(styles, riversJson)
   end function
 
@@ -72,6 +74,7 @@ class QuickBrickMultiLoginProvidersVM extends zapp.uib.ScreenVM
       m.log.info("user not logged in - attemping refreshing")
       m.refreshLogin()
     end if
+    m.topScreen.opacity = 1
     return true
   end function
 
@@ -127,6 +130,7 @@ class QuickBrickMultiLoginProvidersVM extends zapp.uib.ScreenVM
         url = asString(styles.data.source)
         m.log.info("list style is ", m.listStyle)
         m.executeNetworkCall(url)
+        m.topScreen.opacity = 0
       else
         m.log.error("error processing styles")
       end if
@@ -432,9 +436,13 @@ class QuickBrickMultiLoginProvidersVM extends zapp.uib.ScreenVM
   end function
 
   private function isLoggedIn()
-    return m.user.isLoggedIn
+    for each providerId in m.user.loggedInServices
+      if m.user.loggedInServices[providerId]
+        return true
+      end if
+    end for
+    return false
   end function
-
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ launch support
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
