@@ -647,6 +647,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     channelPaddingBottom = plugin.getIntValue("channel_padding_bottom")
     channelPaddingLeft = plugin.getIntValue("channel_padding_left")
     channelAssetAspectRatio = plugin.getStringValue("channel_asset_aspect_ratio")
+    channelCustomAssetAspectRatio = plugin.getStringValue("channel_asset_aspect_ratio_custom")
     timeGridHeight = plugin.getIntValue("time_grid_item_size", 125)
     channelInfoWidth = plugin.getIntValue("channel_list_width", 245)
 
@@ -658,6 +659,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       "channelPaddingBottom": channelPaddingBottom
       "channelPaddingLeft": channelPaddingLeft
       "channelAssetAspectRatio": channelAssetAspectRatio
+      "channelCustomAssetAspectRatio": channelCustomAssetAspectRatio
       "channelInfoWidth": channelInfoWidth
       "channelInfoHeight": timeGridHeight
     }
