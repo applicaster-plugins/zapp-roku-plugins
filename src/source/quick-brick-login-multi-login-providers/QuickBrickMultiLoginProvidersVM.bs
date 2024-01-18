@@ -20,6 +20,7 @@ class QuickBrickMultiLoginProvidersVM extends zapp.uib.ScreenVM
   public buttonSize = [700, 100]
   public buttonSpacing = 5
   public titleTextStyle = {}
+  public isSubScreenVisible = false
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ private fields
@@ -362,11 +363,13 @@ class QuickBrickMultiLoginProvidersVM extends zapp.uib.ScreenVM
 
     m.unobserveNodeField(m.currentScreen, "state", m.onsubScreenStateChange)
 
+    m.isSubScreenVisible = screen <> invalid
     m.currentScreen = invalid
 
     if screen <> invalid
       m.currentScreen = screen
       m.currentScreen.isDisplayedInPrehook = true
+      mc.setOrAddNodeField(m.currentScreen.screenState, "isDisplayedInPrehook", true)
       m.onsubScreenStateChange(m.currentScreen.state)
       m.observeNodeField(m.currentScreen, "state", m.onSubScreenStateChange)
     end if
