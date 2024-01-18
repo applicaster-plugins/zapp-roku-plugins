@@ -6,7 +6,7 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
 
   'styles
   public itemLoginSpacings = [10, 10, 10]
-  public itemLoginTextSpacings = [56,56,26]
+  public itemLoginTextSpacings = [56, 56, 26]
   public inputStyle = invalid
   public loginButtonStyle = invalid
   public registerButtonStyle = invalid
@@ -51,6 +51,9 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
   private setTextFromKeyboard = zapp.keyboardDialogMixin.setTextFromKeyboard
   protected fireScreenAnalyticsOnShow = false
   private skipKey = ""
+
+  @inject("constants")
+  private constants
 
   public function new(riversJson)
     super(riversJson, "FlowLoginScreenVM")
@@ -230,11 +233,19 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
       else
         creds.username = m.usernameText
       end if
+      languageCode = mioc.getInstance("languageCode") ?? "en"
       creds.password = m.password
       creds.apiUrlLogin = asString(m.riversJson.general.api_url_login)
       creds.apiUrlRegister = asString(m.riversJson.general.api_url_register)
       creds.apiUrlReset = asString(m.riversJson.general.api_url_reset_password)
       creds.apiUrlRefresh = asString(m.riversJson.general.api_url_refresh)
+      creds.langCode = languageCode
+      creds.versionNumber = mioc.getInstance("manifest", "version_number", invalid)
+      creds.countryCode = mioc.getInstance("countryCode")
+      creds.deviceMake = "Roku"
+      creds.deviceModel = m.constants.deviceModel
+      creds.platform = "roku"
+      creds.signedDeviceInfoToken = zapp.mixin.getSessionStoreValue(zapp.pipes.Namespaces.default, "signedDeviceInfoToken")
 
       m.authTask = m.createAuthTask("execLogIn", m.providerId, m.onLoginComplete, creds)
 
