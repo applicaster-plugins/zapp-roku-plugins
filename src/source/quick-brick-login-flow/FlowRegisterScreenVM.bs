@@ -59,6 +59,10 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
   private _onKeyboardDialogButtonSelected = zapp.keyboardDialogMixin.onKeyboardDialogButtonSelected
   private _closeKeyboardDialog = zapp.keyboardDialogMixin.closeKeyboardDialog
   private setTextFromKeyboard = zapp.keyboardDialogMixin.setTextFromKeyboard
+
+  @inject("constants")
+  private constants
+
   public function new(riversJson)
     super(riversJson, "RegisterScreenVM")
     m.focusId = "usernameInput"
@@ -282,7 +286,7 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
 
     if m.isCredsValid
       creds = m.createInstance("AuthenticationCredentials")
-
+      languageCode = mioc.getInstance("languageCode") ?? "en"
       creds.firstName = m.firstName
       creds.lastName = m.lastName
       creds.name = m.getFullName()
@@ -293,6 +297,13 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
       creds.apiUrlRegister = asString(m.riversJson.general.api_url_register)
       creds.apiUrlReset = asString(m.riversJson.general.api_url_reset_password)
       creds.apiUrlRefresh = asString(m.riversJson.general.api_url_refresh)
+      creds.langCode = languageCode
+      creds.versionNumber = mioc.getInstance("manifest", "version_number", invalid)
+      creds.countryCode = mioc.getInstance("countryCode")
+      creds.deviceMake = "Roku"
+      creds.deviceModel = m.constants.deviceModel
+      creds.platform = "roku"
+      creds.signedDeviceInfoToken = zapp.mixin.getSessionStoreValue(zapp.pipes.Namespaces.default, "signedDeviceInfoToken")
 
       m.authTask = m.createAuthTask("execRegister", m.providerId, m.onRegisterComplete, creds)
 
