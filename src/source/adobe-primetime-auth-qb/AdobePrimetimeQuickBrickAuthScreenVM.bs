@@ -275,6 +275,7 @@ class AdobePrimetimeQuickBrickAuthScreenVM extends zapp.uib.ScreenVM
   end function
 
   public function onKeyPressBack() as boolean
+    m.isDisplayedInPrehook = false
     m.dismiss("cancel")
     return true
   end function

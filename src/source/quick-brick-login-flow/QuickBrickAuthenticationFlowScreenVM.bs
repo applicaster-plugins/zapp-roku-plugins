@@ -141,7 +141,7 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
     m.log.info("ascertaining next action")
     action = asString(m.riversJson.general.login_completion_action, "go_back")
 
-    if m.isDisplayedInPrehook
+    if m.isDisplayedInPrehook or asBoolean(m.screenstate.isDisplayedInPrehook)
       m.log.info("was displayed in prehook - ignoring all next actions")
       m.dismiss("success")
     else if action = "default"

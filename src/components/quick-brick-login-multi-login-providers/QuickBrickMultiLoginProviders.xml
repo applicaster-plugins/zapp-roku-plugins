@@ -10,10 +10,6 @@
         type='boolean'
         value='false' />
     <field
-        id='isInsideStoreScreen'
-        type='boolean'
-        value='false' />
-    <field
         id='screenState'
         type='node' />
   </interface>
@@ -44,6 +40,12 @@
           buttonSize='{{:buttonSize}}'
           buttonSpacing='{{:buttonSpacing}}' />
     </LayoutGroup>
+
+    <mv_DynamicContainer
+        id='screenContainer'
+        visible='{{isSubScreenVisible}}'
+        isDestroyingChildViewsOnRemoval='true'
+        setNextView='{{currentScreen}}' />
 
     <LoadingIndicator
         id='loadingIndicator'
