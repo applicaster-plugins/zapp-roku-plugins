@@ -76,9 +76,13 @@ namespace zapp.tests
           "enable_tou": true
         }
       }
+      constants = {
+        "deviceModel": "Roku"
+      }
 
       m.vm = new FlowLoginScreenVM(m.riversJson)
       m.vm.initialize()
+      m.vm.constants = constants
 
     end function
 
