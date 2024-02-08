@@ -170,6 +170,7 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
     if asBoolean(deeplinkingData)
       deeplinkingData = m.deeplinkingData
       if deeplinkingData <> invalid
+        m.deepLinkIOC.isRequesting = false
         m.setInstance("skipOnExitFeedLocator", false)
         m.applyDeeplinking(deeplinkingData)
       end if
