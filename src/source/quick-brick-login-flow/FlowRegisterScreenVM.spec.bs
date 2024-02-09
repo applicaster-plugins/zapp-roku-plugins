@@ -77,9 +77,13 @@ namespace zapp.tests
         }
       }
 
+      constants = {
+        "deviceModel": "Roku"
+      }
+
       m.vm = new FlowRegisterScreenVM(m.riversJson)
       m.vm.initialize()
-
+      m.vm.constants = constants
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
