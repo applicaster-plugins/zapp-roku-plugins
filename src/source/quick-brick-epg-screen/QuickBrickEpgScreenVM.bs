@@ -485,7 +485,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     nowBarHeight = plugin.getIntValue("time_bar_badge_height", 500)
     nowBarBadgeWidth = plugin.getIntValue("time_bar_now_badge_width", 70)
     nowBarBadgeHeight = plugin.getIntValue("time_bar_now_badge_height", 35)
-    nowBarLabelBadgeBackground = asString(style.time_bar_now_badge_background_url) <> "" ? asString(style.time_bar_now_badge_background_url) : "pkg:/images/nowIndicator.9.png"
+    nowBarLabelBadgeBackground = zapp.viewUtils.getPosterUri(asString(style.time_bar_now_badge_background_url), "pkg:/images/nowIndicator.9.png", "nowBarLabelBadge")
     nowBarText = asString(m.localizations.now_label_text, "Now")
 
     nowBarBlendColor = zapp.viewUtils.transposeUIBColor(style.time_bar_badge_background_color, "")
@@ -546,7 +546,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     programLeftPadding = plugin.getIntValue("grid_item_padding_left")
     horizontalGutter = plugin.getIntValue("grid_horizontal_gutter", 6)
     verticalGutter = plugin.getIntValue("grid_vertical_gutter")
-    m.liveAsset = asString(style.grid_item_live_asset)
+
+    m.liveAsset = zapp.viewUtils.getPosterUri(asString(style.grid_item_live_asset), "pkg:/images/$$RES$$/grid-screen-mask.png", "liveAsset")
 
     timeGrid.iconColor = zapp.viewUtils.transposeUIBColor(style.grid_item_asset_color, "#FFFFFF")
     timeGrid.iconFocusedColor = zapp.viewUtils.transposeUIBColor(style.grid_item_asset_focused_color, "#808080")
@@ -562,6 +563,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     timeGrid.programHorizMargin = programLeftPadding + programRightPadding
     timeGrid.programTitleFont = m.resolveFont(programFontName, programFontSize)
   end function
+
+
 
   private function timeBarSection(timeGrid, plugin, style)
     titleDayLabel = m.getMField("titleLabel")
