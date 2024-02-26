@@ -179,93 +179,12 @@ function InfoManager(plugin, options = invalid)
     if m.options["device.model"] = invalid
       devInfo = CreateObject("roDeviceInfo")
       hardwareModel = devInfo.GetModel()
-      'Mapping
-      models = {
-        'Roku Smart Soundbar
-        "9100X": "Roku Smart Soundbar",
-        'Roku Streambar
-        "9102X": "Roku Streambar"
-        'Roku Ultra LT
-        "4662X": "Roku Ultra LT",
-        'Roku Streaming Stick+
-        "3810X": "Roku Streaming Stick+",
-        "3811X": "Roku Streaming Stick+",
-        '4K Roku TV
-        "7000X": "4K Roku TV",
-        "A000X": "4K Roku TV",
-        "C000X": "4K Roku TV",
-        "C000GB": "4K Roku TV",
-        'Roku LT
-        "2400X": "Roku LT",
-        "2450X": "Roku LT",
-        "2700X": "Roku LT",
-        'Roku 1
-        "2710X": "Roku 1",
-        'Roku 2
-        "2720X": "Roku 2",
-        "3000X": "Roku 2",
-        "3050X": "Roku 2",
-        "3100X": "Roku 2",
-        "4210X": "Roku 2",
-        'Roku Stick
-        "3600X": "Roku Stick",
-        "3800X": "Roku Stick",
-        "3400X": "Roku Stick",
-        "3420X": "Roku Stick",
-        "3500X": "Roku Stick",
-        'Roku 3
-        "4200X": "Roku 3",
-        "4230X": "Roku 3",
-        'Roku 4
-        "4400X": "Roku 4",
-        'Roku TV
-        "5000X": "Roku TV",
-        "6000X": "Roku TV",
-        "8000X": "Roku TV",
-        "D000X": "Roku TV",
-        'Roku Express
-        "3700X": "Roku Express",
-        "3710X": "Roku Express",
-        "3900X": "Roku Express",
-        "3910X": "Roku Express",
-        "3930X": "Roku Express",
-        'Roku Express+
-        "3931X": "Roku Express+",
-        'Roku Express 4K
-        "3940X": "Roku Express 4K",
-        'Roku Express 4K+
-        "3941X": "Roku Express 4K+",
-        'Roku Premiere
-        "4620X": "Roku Premiere",
-        "4630X": "Roku Premiere",
-        'Roku Ultra
-        "4640X": "Roku Ultra",
-        "4660X": "Roku Ultra",
-        "4800X": "Roku Ultra",
-        'Roku SD
-        "N1050": "Roku SD",
-        'Roku HD Classic (Roku HD)
-        "N1000": "Roku HD Classic (Roku HD)",
-        "N1100": "Roku HD Classic (Roku HD)",
-        'Roku XD
-        "2050X": "Roku XD",
-        "2050N": "Roku XD",
-        "N1101": "Roku XD",
-        "2100X": "Roku XD",
-        "2100N": "Roku XD",
-        'Roku HD
-        "2000C": "Roku HD",
-        "2500X": "Roku HD"
-      }
 
       deviceInfo["model"] = hardwareModel
-      if models.DoesExist(hardwareModel)
-        deviceInfo["deviceName"] = models[hardwareModel]
-      else
-        deviceInfo["deviceName"] = devInfo.GetModelDisplayName()
-      end if
+      deviceInfo["deviceName"] = "Roku"
     else
       deviceInfo["model"] = m.options["device.model"]
+      deviceInfo["deviceName"] = "Roku"
     end if
 
     if m.options["device.osVersion"] = invalid
