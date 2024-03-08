@@ -335,9 +335,11 @@ class QuickBrickMultiLoginProvidersVM extends zapp.uib.ScreenVM
 
     styles = asAA(componentJson.styles)
     size = asArray(m.cellStyle.cell.normal.size, [0, 50])
+    cellStyle = m.cellStyle.cell.normal
+
     style = {
       "visible": true
-      "itemComponentName": "ZPowerCell"
+      "itemComponentName": zapp.viewUtils.getCellStylesComponent(cellStyle)
       "direction": "horizontal"
       "itemSpacing": zapp.viewUtils.getUIBInt(styles, "itemSpacing", 0)
       "rowHeights": [size[1]]
