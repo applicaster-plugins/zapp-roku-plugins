@@ -336,12 +336,14 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   function onKeyPressRight() as boolean
-    if m.focusId = "keyboard" and m.isGridVisible
-      m.setFocusId("grid")
-      return true
-    else if m.focusId = "keyboard" and m.isScreenContainerVisible
-      m.setFocusId("screenContainer")
-      return true
+    if m.focusId = "keyboard"
+      if m.isGridVisible
+        m.setFocusId("grid")
+        return true
+      else if m.isScreenContainerVisible
+        m.setFocusId("screenContainer")
+        return true
+      end if
     end if
 
     return false
@@ -351,6 +353,16 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     if m.focusId = "grid" or m.focusId = "screenContainer"
       m.setFocusId("keyboard")
       return true
+    end if
+
+    return false
+  end function
+
+  function isCapturingAnyKeyPress(key as string, press as boolean) as boolean
+    if key = "left"
+      return m.onKeyPressLeft()
+    else if key = "right"
+      return m.onKeyPressRight()
     end if
 
     return false
