@@ -365,7 +365,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
         currentDayIndex = currentTime.getDayOfWeek()
 
 
-        dayDifference = m.dayDiffernceCalculation(index, currentDayIndex, item)
+        dayDifference = m.dayDifferenceCalculation(index, currentDayIndex, item)
         timezone = currentTime.GetTimeZoneOffset() * 60
         hours = currentTime.GetHours() * 3600
         minutes = currentTime.GetMinutes() * 60
@@ -377,7 +377,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     end if
   end function
 
-  private function dayDiffernceCalculation(index, currentDayIndex, item)
+  private function dayDifferenceCalculation(index, currentDayIndex, item)
 
     newIndex = item.index
     if index = 0
@@ -406,7 +406,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       focusedItem = m.timeGridContent.getChild(i).getChild(j)
       if focusedItem <> invalid and focusedItem.PLAYSTART + 100 > endDay
         dt.FromSeconds(focusedItem.PLAYSTART - (dt.GetTimeZoneOffset() * 60))
-        m.timeGridDayText = dt.GetWeekday()
+        dayOfTheWeek = dt.GetDayOfWeek() + 1
+        m.timeGridDayText = mc.getPath(m.localizations, `button_${dayOfTheWeek}_title`, dt.GetWeekday())
       else
         m.timeGridDayText = asString(m.localizations.button_1_title, "Today")
       end if
@@ -521,7 +522,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       timeGrid.timeBarTwoLineLayout = true
       timeGrid.clippingRect = [0, -50, 1920, 1920]
     end if
-    timeGrid.duration = 7200
+    defaultDuration = 7200
+    timeGrid.duration = defaultDuration
     timeGrid.sectionDividerTopOffset = 30
     timeGrid.scrollSpeed = 100
     timeGrid.overlayBitmapUri = ""
@@ -870,10 +872,12 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
         liveIndex = m.getLiveProgramIndexForChannel(channelItem)
         if programIndex = liveIndex
           program = channelItem.getChild(programIndex)
-          newEntry = m.parser.parseEntry(program)
-          selection = m.createSelectionFromContent(newEntry)
-          selection.playMode = "default"
-          m.executeContentSelection(selection)
+          if program <> invalid
+            newEntry = m.parser.parseEntry(program)
+            selection = m.createSelectionFromContent(newEntry)
+            selection.playMode = "default"
+            m.executeContentSelection(selection)
+          end if
         end if
       end if
     end if
@@ -919,7 +923,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   end function
 
   private function getLocalization()
-    localization = asAA(m.plugin.json.configuration_json.localizations)
+    localization = asAA(m.riversJson.localizations)
     language = m.getInstance("languageCode") ?? "en"
     m.localizations = localization[language]
   end function
