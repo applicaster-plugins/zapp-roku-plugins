@@ -276,8 +276,19 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       end if
     end if
     m.programsData.SortBy("PLAYSTART")
-    if m.timeGridContent.getChild(m.channelCount) <> invalid
-      m.timeGridContent.getChild(m.channelCount).appendChildren(m.programsData)
+
+    foundChildIndex = -1
+    numChildren = m.timeGridContent.getChildCount()
+    for i = 0 to numChildren - 1
+      childNode = m.timeGridContent.getChild(i)
+      if childNode <> invalid and childNode.id = asString(result.data.id)
+        foundChildIndex = i
+        exit for
+      end if
+    end for
+
+    if foundChildIndex <> -1
+      m.timeGridContent.getChild(foundChildIndex).appendChildren(m.programsData)
     end if
     m.taskCount--
 
