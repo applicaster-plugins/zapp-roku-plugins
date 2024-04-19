@@ -114,7 +114,7 @@ class DeeplinkingControllerVM extends zapp.uib.ScreenVM
 
   private function getLoginScreenPrehook()
     prehook = m.authUtil.getAuthProvider()
-    screenId = m.getScreenIdByPluginType(prehook.id)
+    screenId = m.getScreenIdByPluginType(asString(prehook.id))
     prehooks = [{
         identifier: asString(prehook.json.identifier)
         type: asString(prehook.json.type)
