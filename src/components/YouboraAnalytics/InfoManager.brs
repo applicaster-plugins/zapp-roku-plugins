@@ -310,6 +310,20 @@ function InfoManager(plugin, options = invalid)
 
 end function
 
+function getNestedValue(data, keyPath) as dynamic
+  keys = keyPath.split(".")
+  value = data
+  for each key in keys
+    if value <> invalid and value.DoesExist(key)
+      value = value[key]
+    else
+      return invalid
+    end if
+  end for
+  return value
+end function
+
+
 function InfoManager_getEntities() as object
   content = m.options.content
   return {
@@ -398,46 +412,47 @@ function InfoManager_getRequestParams(requestName = "" as string, params = inval
     if outParams.DoesExist("live") = false then outParams["live"] = m.getIsLive()
     if outParams.DoesExist("rendition") = false then outParams["rendition"] = m.getRendition()
     if outParams.DoesExist("title") = false then outParams["title"] = m.getTitle()
-    if outParams.DoesExist("properties") = false then outParams["properties"] = m.options["content.metadata"]
-    if outParams.DoesExist("cdn") = false then outParams["cdn"] = m.options["content.cdn"]
-    if outParams.DoesExist("program") = false then outParams["program"] = m.options["content.program"]
-    if outParams.DoesExist("saga") = false then outParams["saga"] = m.options["content.saga"]
-    if outParams.DoesExist("tvshow") = false then outParams["tvshow"] = m.options["content.tvShow"]
-    if outParams.DoesExist("season") = false then outParams["season"] = m.options["content.season"]
-    if outParams.DoesExist("titleEpisode") = false then outParams["titleEpisode"] = m.options["content.episodeTitle"]
-    if outParams.DoesExist("channel") = false then outParams["channel"] = m.options["content.Channel"]
-    if outParams.DoesExist("contentId") = false then outParams["contentId"] = m.options["content.id"]
-    if outParams.DoesExist("imdbID") = false then outParams["imdbID"] = m.options["content.imdbId"]
-    if outParams.DoesExist("gracenoteID") = false then outParams["gracenoteID"] = m.options["content.gracenoteId"]
-    if outParams.DoesExist("contentType") = false then outParams["contentType"] = m.options["content.type"]
-    if outParams.DoesExist("genre") = false then outParams["genre"] = m.options["content.genre"]
-    if outParams.DoesExist("contentLanguage") = false then outParams["contentLanguage"] = m.options["content.language"]
+    if outParams.DoesExist("properties") = false then outParams["properties"] = m.options.content["metadata"]
+    if outParams.DoesExist("cdn") = false then outParams["cdn"] = m.options.content["cdn"]
+    if outParams.DoesExist("program") = false then outParams["program"] = m.options.content["program"]
+    if outParams.DoesExist("saga") = false then outParams["saga"] = m.options.content["saga"]
+    if outParams.DoesExist("tvshow") = false then outParams["tvshow"] = m.options.content["tvShow"]
+    if outParams.DoesExist("season") = false then outParams["season"] = m.options.content["season"]
+    if outParams.DoesExist("titleEpisode") = false then outParams["titleEpisode"] = m.options.content["episodeTitle"]
+    if outParams.DoesExist("channel") = false then outParams["channel"] = m.options.content["Channel"]
+    if outParams.DoesExist("contentId") = false then outParams["contentId"] = m.options.content["id"]
+    if outParams.DoesExist("imdbID") = false then outParams["imdbID"] = m.options.content["imdbId"]
+    if outParams.DoesExist("gracenoteID") = false then outParams["gracenoteID"] = m.options.content["gracenoteId"]
+    if outParams.DoesExist("contentType") = false then outParams["contentType"] = m.options.content["type"]
+    if outParams.DoesExist("genre") = false then outParams["genre"] = m.options.content["genre"]
+    if outParams.DoesExist("contentLanguage") = false then outParams["contentLanguage"] = m.options.content["language"]
     if outParams.DoesExist("subtitles") = false then outParams["subtitles"] = m.getSubtitles()
-    if outParams.DoesExist("contractedResolution") = false then outParams["contractedResolution"] = m.options["content.contractedResolution"]
-    if outParams.DoesExist("cost") = false then outParams["cost"] = m.options["content.cost"]
-    if outParams.DoesExist("price") = false then outParams["price"] = m.options["content.price"]
-    if outParams.DoesExist("playbackType") = false then outParams["playbackType"] = m.options["content.playbackType"]
-    if outParams.DoesExist("drm") = false then outParams["drm"] = m.options["content.drm"]
-    if outParams.DoesExist("videoCodec") = false then outParams["videoCodec"] = m.options["content.encoding.videoCodec"]
-    if outParams.DoesExist("audioCodec") = false then outParams["audioCodec"] = m.options["content.encoding.audioCodec"]
-    if outParams.DoesExist("codecSettings") = false then outParams["codecSettings"] = m.options["content.encoding.codecSettings"]
-    if outParams.DoesExist("codecProfile") = false then outParams["codecProfile"] = m.options["content.encoding.codecProfile"]
-    if outParams.DoesExist("containerFormat") = false then outParams["containerFormat"] = m.options["content.encoding.containerFormat"]
+    if outParams.DoesExist("contractedResolution") = false then outParams["contractedResolution"] = m.options.content["contractedResolution"]
+    if outParams.DoesExist("cost") = false then outParams["cost"] = m.options.content["cost"]
+    if outParams.DoesExist("price") = false then outParams["price"] = m.options.content["price"]
+    if outParams.DoesExist("playbackType") = false then outParams["playbackType"] = m.options.content["playbackType"]
+    if outParams.DoesExist("drm") = false then outParams["drm"] = m.options.content["drm"]
+    if outParams.DoesExist("videoCodec") = false then outParams["videoCodec"] = m.options.content["encoding.videoCodec"]
+    if outParams.DoesExist("audioCodec") = false then outParams["audioCodec"] = m.options.content["encoding.audioCodec"]
+    if outParams.DoesExist("codecSettings") = false then outParams["codecSettings"] = m.options.content["encoding.codecSettings"]
+    if outParams.DoesExist("codecProfile") = false then outParams["codecProfile"] = m.options.content["encoding.codecProfile"]
+    if outParams.DoesExist("containerFormat") = false then outParams["containerFormat"] = m.options.content["encoding.containerFormat"]
     'Extra params
-    if outParams.DoesExist("dimensions") = false then outParams["dimensions"] = m.options["content.customDimensions"]
+    if outParams.DoesExist("dimensions") = false then outParams["dimensions"] = m.options.content["customDimensions"]
     nextraparams = 20
     index = 1
     while (index <= nextraparams)
       optionKey = "extraparam." + index.ToStr()
       paramKey = "param" + index.ToStr()
-      optionCustomDimensionKey = "content.customDimension." + index.ToStr()
-      paramValue = m.options[optionKey]
-      if m.options[optionKey] = invalid then paramValue = m.options[optionCustomDimensionKey]
+      optionCustomDimensionKey = "content.customDimension" + index.ToStr()
+      paramValue = getNestedValue(m.options, optionKey)
+      if paramValue = invalid then paramValue = getNestedValue(m.options, optionCustomDimensionKey)
       if paramValue <> invalid
         if outParams.DoesExist(paramKey) = false then outParams[paramKey] = paramValue
       end if
       index = index + 1
     end while
+
 
     'Error-specific params
     if requestName = "error"
@@ -609,14 +624,15 @@ function InfoManager_getRequestParams(requestName = "" as string, params = inval
     while (index <= nextraparams)
       optionKey = "extraparam." + index.ToStr()
       paramKey = "param" + index.ToStr()
-      optionCustomDimensionKey = "content.customDimension." + index.ToStr()
-      paramValue = m.options[optionKey]
-      if m.options[optionKey] = invalid then paramValue = m.options[optionCustomDimensionKey]
+      optionCustomDimensionKey = "content.customDimension" + index.ToStr()
+      paramValue = getNestedValue(m.options, optionKey)
+      if paramValue = invalid then paramValue = getNestedValue(m.options, optionCustomDimensionKey)
       if paramValue <> invalid
         if outParams.DoesExist(paramKey) = false then outParams[paramKey] = paramValue
       end if
       index = index + 1
     end while
+
   else if requestName = "sessionNav"
     if outParams.DoesExist("username") = false
       if m.options["user.name"] = invalid
