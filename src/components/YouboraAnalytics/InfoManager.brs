@@ -395,50 +395,62 @@ function InfoManager_getRequestParams(requestName = "" as string, params = inval
   else if requestName = "start" or requestName = "error"
     'Start and Error share most of the params, but error also has error code and error message
     ' Params
-    if outParams.DoesExist("system") = false then outParams["system"] = m.options["accountCode"]
-    if outParams.DoesExist("player") = false then outParams["player"] = m.plugin.getPluginName()
+    contentAttributes = {
+      "properties": "metadata"
+      "cdn": "cdn"
+      "program": "program"
+      "saga": "saga"
+      "tvshow": "tvShow"
+      "season": "season"
+      "titleEpisode": "episodeTitle"
+      "channel": "Channel"
+      "contentId": "id"
+      "imdbID": "imdbId"
+      "gracenoteID": "gracenoteId"
+      "contentType": "type"
+      "genre": "genre"
+      "contentLanguage": "language"
+      "contractedResolution": "contractedResolution"
+      "cost": "cost"
+      "price": "price"
+      "playbackType": "playbackType"
+      "drm": "drm"
+      "videoCodec": "encoding.videoCodec"
+      "audioCodec": "encoding.audioCodec"
+      "codecSettings": "encoding.codecSettings"
+      "codecProfile": "encoding.codecProfile"
+      "containerFormat": "encoding.containerFormat"
+      "dimensions": "customDimensions"
+    }
 
-    if outParams.DoesExist("transactionCode") = false then outParams["transactionCode"] = m.options["content.transactionCode"]
-    if outParams.DoesExist("deviceUUID") = false then outParams["deviceUUID"] = m.getDeviceUUID()
-    'Plugin versioning
-    if outParams.DoesExist("pluginVersion") = false then outParams["pluginVersion"] = m.plugin.getPluginVersion()
-    if outParams.DoesExist("playerVersion") = false then outParams["playerVersion"] = m.plugin.getPlayerVersion()
-    'Media
-    if outParams.DoesExist("mediaResource") = false then outParams["mediaResource"] = m.getResource()
-    if outParams.DoesExist("parsedResource") = false then outParams["parsedResource"] = m.getParsedResource()
-    if outParams.DoesExist("streamingProtocol") = false then outParams["streamingProtocol"] = m.getStreamingProtocol()
-    if outParams.DoesExist("transportFormat") = false then outParams["transportFormat"] = m.getTransportFormat()
-    if outParams.DoesExist("mediaDuration") = false then outParams["mediaDuration"] = m.getMediaDuration()
-    if outParams.DoesExist("live") = false then outParams["live"] = m.getIsLive()
-    if outParams.DoesExist("rendition") = false then outParams["rendition"] = m.getRendition()
-    if outParams.DoesExist("title") = false then outParams["title"] = m.getTitle()
-    if outParams.DoesExist("properties") = false then outParams["properties"] = m.options.content["metadata"]
-    if outParams.DoesExist("cdn") = false then outParams["cdn"] = m.options.content["cdn"]
-    if outParams.DoesExist("program") = false then outParams["program"] = m.options.content["program"]
-    if outParams.DoesExist("saga") = false then outParams["saga"] = m.options.content["saga"]
-    if outParams.DoesExist("tvshow") = false then outParams["tvshow"] = m.options.content["tvShow"]
-    if outParams.DoesExist("season") = false then outParams["season"] = m.options.content["season"]
-    if outParams.DoesExist("titleEpisode") = false then outParams["titleEpisode"] = m.options.content["episodeTitle"]
-    if outParams.DoesExist("channel") = false then outParams["channel"] = m.options.content["Channel"]
-    if outParams.DoesExist("contentId") = false then outParams["contentId"] = m.options.content["id"]
-    if outParams.DoesExist("imdbID") = false then outParams["imdbID"] = m.options.content["imdbId"]
-    if outParams.DoesExist("gracenoteID") = false then outParams["gracenoteID"] = m.options.content["gracenoteId"]
-    if outParams.DoesExist("contentType") = false then outParams["contentType"] = m.options.content["type"]
-    if outParams.DoesExist("genre") = false then outParams["genre"] = m.options.content["genre"]
-    if outParams.DoesExist("contentLanguage") = false then outParams["contentLanguage"] = m.options.content["language"]
-    if outParams.DoesExist("subtitles") = false then outParams["subtitles"] = m.getSubtitles()
-    if outParams.DoesExist("contractedResolution") = false then outParams["contractedResolution"] = m.options.content["contractedResolution"]
-    if outParams.DoesExist("cost") = false then outParams["cost"] = m.options.content["cost"]
-    if outParams.DoesExist("price") = false then outParams["price"] = m.options.content["price"]
-    if outParams.DoesExist("playbackType") = false then outParams["playbackType"] = m.options.content["playbackType"]
-    if outParams.DoesExist("drm") = false then outParams["drm"] = m.options.content["drm"]
-    if outParams.DoesExist("videoCodec") = false then outParams["videoCodec"] = m.options.content["encoding.videoCodec"]
-    if outParams.DoesExist("audioCodec") = false then outParams["audioCodec"] = m.options.content["encoding.audioCodec"]
-    if outParams.DoesExist("codecSettings") = false then outParams["codecSettings"] = m.options.content["encoding.codecSettings"]
-    if outParams.DoesExist("codecProfile") = false then outParams["codecProfile"] = m.options.content["encoding.codecProfile"]
-    if outParams.DoesExist("containerFormat") = false then outParams["containerFormat"] = m.options.content["encoding.containerFormat"]
-    'Extra params
-    if outParams.DoesExist("dimensions") = false then outParams["dimensions"] = m.options.content["customDimensions"]
+    for each attribute in contentAttributes.items()
+      outParams[attribute.key] = outParams[attribute.key] = invalid ? m.options.content[attribute.value] : outParams[attribute.key]
+    end for
+
+    parameterList = {
+      "system": m.options["accountCode"]
+      "player": m.plugin.getPluginName()
+      "transactionCode": m.options["content.transactionCode"]
+      "deviceUUID": m.getDeviceUUID()
+      "pluginVersion": m.plugin.getPluginVersion()
+      "playerVersion": m.plugin.getPlayerVersion()
+      "mediaResource": m.getResource()
+      "parsedResource": m.getParsedResource()
+      "streamingProtocol": m.getStreamingProtocol()
+      "transportFormat": m.getTransportFormat()
+      "mediaDuration": m.getMediaDuration()
+      "live": m.getIsLive()
+      "rendition": m.getRendition()
+      "title": m.getTitle()
+      "subtitles": m.getSubtitles()
+    }
+
+    for each parameter in parameterList.items()
+      if outParams.DoesExist(parameter["key"]) = false then
+        outParams[parameter["key"]] = parameter["value"]
+      end if
+    end for
+
     nextraparams = 20
     index = 1
     while (index <= nextraparams)
