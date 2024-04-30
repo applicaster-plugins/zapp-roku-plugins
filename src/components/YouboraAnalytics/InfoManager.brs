@@ -729,3 +729,59 @@ function InfoManager_getFromInnerAsocArray(dict as object, dictName as string, k
 
   return invalid
 end function
+
+'//TODO  potential improvement:
+
+' contentAttributes = m.getContentAttributes(requestName)
+' m.updateOuterParam(m.plugin, contentAttributes)
+' m.updateOuterParam(m.options.content, contentAttributes)
+' m.updateOuterParam(m.options, contentAttributes)
+
+' function getContentAttributes(key as string)
+'   data = {
+'     "adStop": {
+'       "playhead": "getPlayHead"
+'       "adNumber": "getAdNumber"
+'     }
+'     "adPause": {
+'     },
+'     "start": {
+'       "userType": "usertype"
+'       "userType_alternative": "user.type"
+'       "deviceId": "device.code"
+'     }
+'     "data": {
+'       "system": "accountCode"
+'       "pluginName": "getPluginName"
+'     }
+'     "sessionStart": {
+'       "navContext": "RokuPlugin"
+'       "pluginName": "getPluginName"
+'       "pluginVersion": "getPluginVersion"
+'       "obfuscateIp": "user.obfuscateIp"
+'       "deviceUUID": "channelClientId"
+'     }
+'     "sessionNav": {
+'       "username": "username"
+'       "username": "user.name_alternative"
+'       "navContext": "RokuPlugin"
+'       "route": "Roku"
+'     }
+'   }
+
+'   return data
+' end function
+
+
+' function updateOuterParams(values as aaa, contentAtrributes)
+'   for each attribute in contentAttributes.items()
+'     outParams[attribute.key] = outParams[attribute.key] = invalid ? values[attribute.value] : outParams[attribute.key]
+'     if mc.isFunction m[attribute.key]
+'       outParams[attribute.key] = m[attribute.key]()
+'     end if
+'     if values[attribute.key] = invalid
+'       'use alternative
+'       outParamas[attribute.key] = values[`${attribute.key}_alternative`]
+'     end if
+'   end for
+' end function
