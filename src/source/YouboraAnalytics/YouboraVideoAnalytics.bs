@@ -113,7 +113,7 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
 
     m.contentNode = contentNode
     contentMetricPath = m.contentMetricPath
-    contentNodeExtensions = contentNode.json.extensions
+    contentNodeExtensions = asAA(contentNode.json.extensions)
     videoOptions = {}
     videoOptions.content = {
       "title": asString(contentNodeExtensions.guid, contentNode.title)
