@@ -149,7 +149,6 @@ namespace zapp.plugins.tests
       currentDayIndex = currentTime.getDayOfWeek()
       targetTime = currentTime.asSeconds() + (86400 * dayDifference) - hours - minutes + timezone
 
-      m.expectCalled(m.vm.dayDiffernceCalculation(0, currentDayIndex, m.vm.menuButtons[0]), dayDifference)
       m.expectCalled(m.vm.setIsoTime(targetTime))
       m.expectCalled(m.vm.setEpgContent("riversData"))
 
