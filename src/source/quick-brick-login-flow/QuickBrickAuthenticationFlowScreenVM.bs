@@ -235,7 +235,7 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
 
   public function onKeyPressBack() as boolean
     m.log.method("onKeyPressBack", m.focusId)
-    if m.isSubScreenVisible
+    if m.isSubScreenVisible <> invalid and m.isSubScreenVisible
       'this should be caught by the subscreen
       return true
     end if
