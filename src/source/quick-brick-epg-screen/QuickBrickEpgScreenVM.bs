@@ -73,6 +73,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   private currentTimeGridLeftEdgeTime = 0
   private parser = new zapp.pipes.Parser()
 
+  private regex = invalid
   private focusIds = []
   private riversJsonData = invalid
   private contentDepth = 1
@@ -121,6 +122,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     m.style = m.getChildCellStyle(riversJson)
     m.riversJsonData = riversJson
     m.contentDepth = zapp.viewUtils.getUIBInt(riversJson.styles, "data_depth", 1)
+    m.regex = CreateObject("roRegex", "\{\{([a-z_\-\.0-9]*)}\}", "gim")
     m.createAnimations()
     m.getLocalization()
     m.updateButtons(riversJson.styles)
@@ -1136,7 +1138,15 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   end function
 
   private function substituteIdInUrl(url as string, id as integer, isoTime) as string
-    return `${url}&start_time=${isoTime}`.replace("{{id}}", id)
+    matches = m.regex.match(url)
+
+    if matches.count() > 0
+      key = matches[1]
+    else
+      key = "id"
+    end if
+
+    return `${url}&start_time=${isoTime}`.replace(`{{${key}}}`, id)
   end function
 
   private function toggleNavigationMenuFocus()
