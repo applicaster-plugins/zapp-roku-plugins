@@ -236,10 +236,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
         for each channelData in channelsData.getChildren(-1, 0)
           m.channelItem = m.timeGridContent.createChild("ContentNode")
           m.channelItem.title = channelData.title
-          m.channelItem.id = channelData.id
           m.channelItem.HDSMALLICONURL = asString(channelData.json.images.image_base)
-
-          actuallUrl = m.substituteIdInUrl(programData.source, channelData.id, isoTime)
+          actuallUrl = m.substituteIdInUrl(programData.source, m.channelItem, channelData, asAA(programData.mapping), isoTime)
           m.taskCount++
           m.loadProgramTask = m.executeloadTaskWithUrlAndMapping("1", m.onLoadProgramsResponse, actuallUrl, 0, "value", m.channelItem, programData)
         end for
@@ -540,6 +538,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     timeGrid.sectionDividerTopOffset = 30
     timeGrid.scrollSpeed = 100
     timeGrid.overlayBitmapUri = ""
+    timeGrid.fillProgramGaps = true
     timeGrid.vertFocusAnimationStyle = "floatingFocus"
   end function
 
@@ -1055,6 +1054,16 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     return ""
   end function
 
+  private function findLastIndexOf(stringToSearch as string, symbol as string) as integer
+    lastIndex = -1
+    for i = 0 to len(stringToSearch) - 1
+      if mid(stringToSearch, i, 1) = symbol
+        lastIndex = i
+      end if
+    end for
+    return lastIndex
+  end function
+
   private function updateMenuItems()
     m.log.info("updateMenuItems")
 
@@ -1137,16 +1146,33 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     return result
   end function
 
-  private function substituteIdInUrl(url as string, id as integer, isoTime) as string
+  private function substituteIdInUrl(url as string, channelItem, channelData, mapping, isoTime) as string
     matches = m.regex.match(url)
+    key = "id"
 
-    if matches.count() > 0
+    if matches.count() > 0 and mapping.count() > 0
       key = matches[1]
+      if mapping[key].property <> invalid
+        value = mc.getPath(channelData.json, mapping[key].property)
+      else
+        value = mc.getPath(channelData, key)
+      end if
     else
-      key = "id"
+      value = mc.getPath(channelData, key)
     end if
 
-    return `${url}&start_time=${isoTime}`.replace(`{{${key}}}`, id)
+    channelItem.id = value
+
+    lastSlashIndex = m.findLastIndexOf(url, "/")
+    questionMarkIndex = url.Instr(lastSlashIndex, "?")
+
+    if questionMarkIndex > 0
+      concat = "&"
+    else
+      concat = "?"
+    end if
+
+    return `${url}${concat}start_time=${isoTime}`.replace(`{{${key}}}`, value)
   end function
 
   private function toggleNavigationMenuFocus()
