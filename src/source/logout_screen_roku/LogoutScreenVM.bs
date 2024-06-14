@@ -77,6 +77,11 @@ class LogoutScreenVM extends zapp.uib.ScreenVM
     end if
   end function
 
+  private function showAppExitDialog()
+    m.setInstance("prehookDialogBackground", invalid)
+    zapp.appService.callAppControllerFunc("showAppExitDialog")
+  end function
+
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ callbacks
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -138,6 +143,7 @@ class LogoutScreenVM extends zapp.uib.ScreenVM
     if not m.isLoggedOut
       m.pop()
     else
+      m.showAppExitDialog()
       m.log.info("cannot go back when logout is in process")
     end if
 
