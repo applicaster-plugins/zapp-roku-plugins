@@ -112,39 +112,7 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
     m.log.info("video starting", contentNode.title)
 
     m.contentNode = contentNode
-    contentMetricPath = m.contentMetricPath
-    contentNodeExtensions = asAA(contentNode.json.extensions)
-    videoOptions = {}
-    videoOptions.content = {
-      "title": asString(contentNodeExtensions.guid, contentNode.title)
-      "cdn": asString(contentNodeExtensions.cdn)
-      "name": `${m.buildConfig.app_name}`
-      "user_id": asString(m.user)
-      "app_release_version": `${m.buildConfig.version_name} ${m.buildConfig.build_version}`
-      "app_version_number": m.buildConfig.version_name
-      "isLive": mc.getPath(contentNodeExtensions, contentMetricPath.isLive, false)
-      "id": mc.getPath(contentNodeExtensions, contentMetricPath.contentId, "")
-      "program": mc.getPath(contentNodeExtensions, contentMetricPath.contentProgram, "")
-      "channel": mc.getPath(contentNodeExtensions, contentMetricPath.contentChannel, "")
-      "type": mc.getPath(contentNodeExtensions, contentMetricPath.contentType, "")
-      "genre": mc.getPath(contentNodeExtensions, contentMetricPath.contentGenre, "")
-      "season": mc.getPath(contentNodeExtensions, contentMetricPath.contentSeason, "")
-      "episodeTitle": mc.getPath(contentNodeExtensions, contentMetricPath.contentEpisodeTitle, "")
-      "customDimension1": mc.getPath(contentNodeExtensions, contentMetricPath.customDimension1, "")
-      "customDimension2": mc.getPath(contentNodeExtensions, contentMetricPath.customDimension2, "")
-      "customDimension3": mc.getPath(contentNodeExtensions, contentMetricPath.customDimension3, "")
-      "customDimension4": mc.getPath(contentNodeExtensions, contentMetricPath.customDimension4, "")
-      "customDimension5": mc.getPath(contentNodeExtensions, contentMetricPath.customDimension5, "")
-      "customDimension6": mc.getPath(contentNodeExtensions, contentMetricPath.customDimension6, "")
-      "playbackType": mc.getPath(contentNodeExtensions, contentMetricPath.contentPlaybackType, "")
-      "tvShow": mc.getPath(contentNodeExtensions, contentMetricPath.contentTVShow, "")
-    }
-    videoOptions.app = {
-      "name": `${m.buildConfig.app_name}`
-    }
-    videoOptions.username = asString(m.user)
-
-    videoOptions.append(m.config)
+    videoOptions = m.setVideoOptions(contentNode)
     m.youboraTask = m.getInstance("youboraAnalyticsTask")
 
     if m.youboraTask = invalid
@@ -156,6 +124,7 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
       m.youboraTask.control = "RUN"
       m.setInstance("youboraAnalyticsTask", m.youboraTask)
     else
+      m.youboraTask.videoplayer = videoNode
       m.youboraTask.options = videoOptions
     end if
 
@@ -189,6 +158,31 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
     else
       m.log.warn("No Youbora Task to stop")
     end if
+  end function
+
+  public override function screenOpen(contentNode) as void
+    super.screenOpen(contentNode)
+    m.log.info("screen opening")
+    videoOptions = m.setVideoOptions(contentNode)
+
+    m.youboraTask = m.getInstance("youboraAnalyticsTask")
+
+    if m.youboraTask = invalid
+      m.log.warn("Creating new Youbora Task")
+      m.youboraTask = m.createInstance(m.taskName, invalid, "youboraAnalyticsTask")
+      m.log.info("Sending payload to Youbora ", videoOptions)
+      m.youboraTask.options = videoOptions
+      m.youboraTask.control = "RUN"
+      m.setInstance("youboraAnalyticsTask", m.youboraTask)
+    else
+      m.youboraTask.options = videoOptions
+    end if
+
+    m.youboraTask.session = {
+      "ev": "start"
+      "sc": "VideoScene"
+      "dim": { "title": "menuItemTitle" }
+    }
   end function
 
   public override function adBreakStart() as void
@@ -227,6 +221,44 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ Private Methods
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function setVideoOptions(contentNode)
+    contentMetricPath = m.contentMetricPath
+    contentNodeJson = asAA(contentNode.json)
+    videoOptions = {}
+    videoOptions.content = {
+      "title": mc.getPath(contentNodeJson, contentMetricPath.title, contentNode.title)
+      "cdn": asString(contentNodeJson.extensions.cdn)
+      "name": `${m.buildConfig.app_name}`
+      "user_id": asString(m.user)
+      "app_release_version": `${m.buildConfig.version_name} ${m.buildConfig.build_version}`
+      "app_version_number": m.buildConfig.version_name
+      "isLive": mc.getPath(contentNodeJson, contentMetricPath.isLive, false)
+      "id": mc.getPath(contentNodeJson, contentMetricPath.contentId, "")
+      "program": mc.getPath(contentNodeJson, contentMetricPath.contentProgram, "")
+      "channel": mc.getPath(contentNodeJson, contentMetricPath.contentChannel, "")
+      "type": mc.getPath(contentNodeJson, contentMetricPath.contentType, "")
+      "genre": mc.getPath(contentNodeJson, contentMetricPath.contentGenre, "")
+      "season": mc.getPath(contentNodeJson, contentMetricPath.contentSeason, "")
+      "episodeTitle": mc.getPath(contentNodeJson, contentMetricPath.contentEpisodeTitle, "")
+      "customDimension1": mc.getPath(contentNodeJson, contentMetricPath.customDimension1, "")
+      "customDimension2": mc.getPath(contentNodeJson, contentMetricPath.customDimension2, "")
+      "customDimension3": mc.getPath(contentNodeJson, contentMetricPath.customDimension3, "")
+      "customDimension4": mc.getPath(contentNodeJson, contentMetricPath.customDimension4, "")
+      "customDimension5": mc.getPath(contentNodeJson, contentMetricPath.customDimension5, "")
+      "customDimension6": mc.getPath(contentNodeJson, contentMetricPath.customDimension6, "")
+      "playbackType": mc.getPath(contentNodeJson, contentMetricPath.contentPlaybackType, "")
+      "tvShow": mc.getPath(contentNodeJson, contentMetricPath.contentTVShow, "")
+    }
+    videoOptions.app = {
+      "name": `${m.buildConfig.app_name}`
+    }
+    videoOptions.username = asString(m.user)
+
+    videoOptions.append(m.config)
+
+    return videoOptions
+  end function
 
   private function createMapper(plugin) as zapp.analytics.AnalyticsEventMapper
     return new zapp.analytics.AnalyticsEventMapper(asAny(plugin.json.configuration_json.events_mapper))
