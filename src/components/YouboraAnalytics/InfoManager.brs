@@ -208,9 +208,11 @@ function InfoManager(plugin, options = invalid)
       deviceInfo["deviceCode"] = m.options["device.deviceCode"]
     end if
 
-    if m.options["device.osName"] <> invalid
-      deviceInfo["osName"] = m.options["device.osName"]
-    end if
+    deviceInfo["osName"] = "RokuOS"
+    deviceInfo["id"] = devInfo.GetChannelClientId()
+    deviceInfo["isAnonymous"] = false
+    deviceInfo["type"] = devInfo.GetModelType()
+
 
     if m.options["device.browserName"] = invalid
       deviceInfo["browserName"] = ""
@@ -238,6 +240,7 @@ function InfoManager(plugin, options = invalid)
 
     return deviceInfo
   end function
+
 
   this.getAdPosition = function()
     position = m.plugin.getAdPosition()
