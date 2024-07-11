@@ -39,6 +39,33 @@
         numRows='{{=zapp_viewUtils_UIBInt("number_of_rows", 3)}}'
         itemComponentName='ZPowerCell' />
 
+    <!-- <Group
+        id='menuContainer'
+        clippingRect='{{clippingRect}}'
+        translation='{{=zapp_viewUtils_UIBPosition("menu", 960, 584)}}'>
+      <Group id='menuHolder'>
+        translation='{{menuScrollPosition}}'-->
+    <Poster
+        id='backgroundBorderPoster'
+        visible='{{isFilterVisible}}'>
+      <Poster id='backgroundPoster'>
+        <Menu
+            id='menu'
+            buttons='{{menubuttons}}'
+            style='{{:menuStyle}}'
+            selectedIndex='{(onSelectedIndexChange(value))}'
+            focusIndex='{(onFocusIndexChange(value))}'
+            jumpToIndex='{{jumpToIndex}}'
+            jumpSelectToIndex='{{jumpSelectToIndex}}'
+            isFootprintOnSelectOnly='true'
+            buttonSize='{{=zapp_viewUtils_UIBSize("menu", 700, 100)}}'
+            showBarUnderSelectedItem='true'
+            barColor='{{=zapp_viewUtils_UIBColor("focus_bar_color")}}'
+            barHeight='{{=zapp_viewUtils_UIBInt("focus_bar_height", 6)}}' />
+      </Poster>
+    </Poster>
+
+
     <LoadingIndicator
         id='loadingIndicator'
         width='1920'

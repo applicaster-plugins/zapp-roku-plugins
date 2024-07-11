@@ -7,6 +7,25 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
 
   public currentScreen = invalid
 
+  'styles
+  public menuButtons = []
+  public menuStyle = {}
+  public menuPosition = [960, 584]
+  public jumpToIndex = -1
+  public isShowingScreenOnFocus = true
+  public buttonAlign = "center"
+  public infoStatus = ""
+  public clippingRect = [0, 0, 0, 0]
+  public contentClippingRect = [0, 0, 1920, 1080]
+  public menuScrollPosition = [0, 0]
+  public buttonHeight = 100
+  public buttonWidth = 100
+  public visible = false
+  public layoutDirection = "horiz"
+  public isFilterVisible = false
+  public jumpSelectToIndex = 0
+
+
   public results = invalid
   public isGridVisible = false
   public isScreenContainerVisible = false
@@ -38,16 +57,27 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
   private lastRowIndex = -1
   private rowTarget = invalid
   private nameOfParentScreen = ""
+  private searchData = ""
+  private filterData = ""
+
+  private isSearchFilterEnabled = false
+  private textTransform = "uppercase"
+  private selectedFilterIndex = 0
+  private isFilterFocusable = false
 
   public function new(riversJson)
     super(riversJson, "FullScreenSearchVM")
     m.focusId = "keyboard"
     m.processStyles(riversJson.styles)
+    m.processTabStyles(riversJson.styles)
     m.setGridVisible(false)
     m.setScreenContainerVisible(true)
 
+    m.searchData = asAA(riversJson.data.search_source)
+    m.filterData = asAA(riversJson.data.filter_source)
     m.rowTarget = riversJson.data.target
     m.fallbackScreen = asString(riversJson.general.fallback)
+    m.isSearchFilterEnabled = zapp.viewUtils.getUIBBool(riversJson.general, "enable_search_filters", false)
 
     if zapp.viewUtils.getUIBBool(riversJson.styles, "override_target_screen", false)
       m.rowTarget = mc.getPath(riversJson, "data.target_screen")
@@ -73,6 +103,136 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     m.minCharacters = zapp.viewUtils.getUIBInt(styles, "search_min_chars", 3)
     m.searchQueryName = mc.getPath(styles, "search_query_name", "q")
   end function
+
+  function processTabStyles(styles)
+    ?"asfasf" styles
+
+    buttonType = "custom"
+    if m.buttonAlign = "left"
+      buttonType = "customLeft"
+    end if
+    layoutDirection = asString(styles.tab_bar_direction, "horiz")
+    tabBarAligment = asString(styles.tab_bar_alignment, "left")
+    isDynamic = asString(styles.tab_bar_display_mode) <> "fixed"
+    m.textTransform = asString(styles.text_transform, "uppercase")
+
+    borderUri = zapp.viewUtils.getPosterUri(styles.tab_bar_border_background_url)
+    borderSize = zapp.viewUtils.getUIBInt(styles, "tab_bar_border_w")
+
+    title = mc.getPath(styles, "menu_button_text", "")
+    menuStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "tab_bar_item", buttonType, title, true)
+    menuStyle.layoutDirection = layoutDirection
+    menuStyle.horizAlignment = tabBarAligment
+    menuStyle.buttonSpacing = zapp.viewUtils.getUIBInt(styles, "tab_bar_gutter")
+    menuStyle.barHeight = zapp.viewUtils.getUIBInt(styles, "tab_bar_item_underline_thickness")
+
+
+    m.menuStyle = menuStyle
+
+    menuGroupStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "tab_bar", buttonType, title, true)
+    'labelStyle = zapp.viewUtils.makeUIBLabelStyle(styles, "text_label")
+
+    'layoutGroup.horizAlignment = tabBarAligment
+
+    backgroundPoster = m.getMField("backgroundPoster")
+
+    backgroundPoster.width = menuGroupStyle.width - borderSize
+    backgroundPoster.height = menuGroupStyle.height - borderSize
+    'backgroundPoster.uri = menuGroupStyle.normal.backgroundurl
+    backgroundPoster.blendColor = menuGroupStyle.normal.backgroundcolor
+    backgroundPoster.translation = [borderSize, borderSize]
+
+    backgroundBorderPoster = m.getMField("backgroundBorderPoster")
+    backgroundBorderPoster.width = menuGroupStyle.width + borderSize
+    backgroundBorderPoster.height = menuGroupStyle.height + borderSize
+    'backgroundBorderPoster.uri = menuGroupStyle.normal.backgroundBorderUrl
+    'backgroundBorderPoster.uri = menuGroupStyle.normal.backgroundurl
+    backgroundBorderPoster.blendColor = menuGroupStyle.normal.backgroundbordercolor
+    backgroundBorderPoster.translation = menuGroupStyle.translation
+
+    ' "label": "Filters Bar Style",
+
+    ' ++"tab_bar_direction",
+    ' ++"tab_bar_display_mode",
+    ' +"tab_bar_w",
+    ' +"tab_bar_h",
+    ' +"tab_bar_alignment",
+    ' +"tab_bar_x"
+    ' +"tab_bar_y"
+    ' +"tab_bar_background_color"
+    ' +"tab_bar_background_url"
+    ' +"tab_bar_border_color"
+    ' +"tab_bar_border_width"
+    ' +"tab_bar_border_background_url"
+    ' We should add Background over our menu
+
+
+    ' "label": "Filter Items Style",
+
+    ' "tab_bar_gutter"
+    ' "tab_bar_item_size",
+    ' "tab_bar_item_w",
+    ' "tab_bar_item_alignment",
+
+    ' "label": "Filter Title Style",
+
+    ' "tab_bar_item_enabled"
+    ' +"tab_bar_item_color",
+    ' +"tab_bar_item_focused_color",
+    ' +"tab_bar_item_selected_color",
+    ' +"tab_bar_item_focused_selected_color",
+    ' +"tab_bar_item_font_name",
+    ' +"tab_bar_item_font_size",
+    ' +"text_transform",
+
+    ' "label": "Filter Item Style",
+
+    ' "tab_bar_item_underline_color"
+    ' "tab_bar_item_underline_focused_color"
+    ' "tab_bar_item_underline_selected_color"
+    ' "tab_bar_item_underline_focused_selected_color"
+    ' + "tab_bar_item_underline_thickness"
+    ' "tab_bar_item_underline_background_url"
+
+    ' "tab_bar_item_padding_top"
+    ' "tab_bar_item_padding_right"
+    ' "tab_bar_item_padding_bottom"
+    ' "tab_bar_item_padding_left"
+    ' "tab_bar_item_background_color"
+    ' "tab_bar_item_focused_background_color"
+    ' "tab_bar_item_selected_background_color"
+    ' "tab_bar_item_focused_selected_background_color"
+    ' "tab_bar_item_border_color"
+    ' "tab_bar_item_focused_border_color"
+    ' "tab_bar_item_selected_border_color"
+    ' "tab_bar_item_focused_selected_border_color"
+    ' "tab_bar_item_border_width"
+  end function
+
+  function createButtonsWithFeed(entry)
+    if asBoolean(entry.isOk)
+      data = entry.data
+      menuButtons = []
+      i = 0
+      for each item in data.getChildren(-1, 0)
+        id = "item" + str(i).trim()
+        text = item.title
+        text = zapp.viewUtils.textToTextTransformFormat(text, m.riversJson.styles.text_transform)
+
+        menuButtons.push({
+          id: id
+          title: item.title
+          'target: m.targetScreenId
+          entry: item
+        })
+        i++
+      end for
+      m.menuButtons = menuButtons
+      m.isFilterFocusable = m.menuButtons.count() > 0
+      m.appluSearchFilterDefaultState()
+    end if
+  end function
+
 
   private function applyKeyboardPalette(styles, normalColor) as void
     keyboard = m.getMField("keyboard")
@@ -207,6 +367,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
       m.setGridVisible(false)
       m.setScreenContainerVisible(true)
       m.isLoading = false
+      m.appluSearchFilterDefaultState()
     end if
 
   end function
@@ -218,6 +379,20 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     m.performSearch(m.searchText)
   end function
 
+  public function onSelectedIndexChange(index)
+    m.log.info("selected index", index)
+    m.selectedFilterIndex = index
+    m.screenState.originEntry = asAA(m.menuButtons[m.selectedFilterIndex].entry)
+
+    if len(m.searchText.trim()) >= m.minCharacters
+      m.toggleLoadingDataTask(true, { "search": m.searchText.trim().encodeUriComponent() }, m.loadDepth)
+    end if
+  end function
+
+  public function onFocusIndexChange(index)
+    m.log.info("focused index", index, "isShowingScreenOnFocus", m.isShowingScreenOnFocus)
+  end function
+
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ search api invocation
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -227,8 +402,34 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
 
     m.isLoading = true
     m.setGridVisible(true)
-    m.toggleLoadingDataTask(true, { "search": text.trim().encodeUriComponent() }, m.loadDepth)
 
+    searchText = text.trim().encodeUriComponent()
+
+    m.toggleLoadingDataTask(true, { "search": searchText }, m.loadDepth)
+
+  end function
+
+  public override function toggleLoadingDataTask(isActive, componentValues = invalid, depth = 1)
+    m.log.info("toggleLoadingDataTask", isActive)
+    m.loadDataTaskTimer = new zapp.DebugTimer("VM.Feed" + m.name)
+
+    if m.loadDataTask <> invalid
+      m.cancelTask(m.loadDataTask)
+      m.loadDataTask = invalid
+    end if
+
+    if isActive
+      m.riversJson.data = m.searchData
+
+      if mc.getPath(m.riversJson, "data.source", "").trim() <> ""
+        m.loadDataTask = m.executeloadDataTask("componentFeed", m.onFeedResult, componentValues, depth)
+      else
+        m.log.error("tried to load entry without a link")
+        m.onFeedResult({ isOK: false, data: invalid })
+      end if
+    end if
+
+    m.isLoading = m.loadDataTask <> invalid
   end function
 
   public override function onFeedResult(result)
@@ -244,6 +445,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
       m.numRows = m.numItems / m.numCols
       m.feed = result.data
       m.isMoreAvailable = m.nextUrl <> invalid and m.nextUrl <> ""
+      m.isFilterVisible = m.numItems > 0
     else
       results = createObject("roSGNode", "ZPEntry")
     end if
@@ -254,6 +456,12 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     m.jumpToItem = 0
     m.setGridVisible(true)
     m.setScreenContainerVisible(false)
+  end function
+
+  private function appluSearchFilterDefaultState()
+    m.isFilterVisible = false
+    m.jumpSelectToIndex = 0
+    m.onSelectedIndexChange(0)
   end function
 
   private function setScreenContainerVisible(visible)
@@ -349,8 +557,24 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     return false
   end function
 
+  function onKeyPressUp() as boolean
+    if m.isFilterFocusable and m.focusId = "grid"
+      m.setFocusId("menu")
+      return true
+    end if
+    return false
+  end function
+
+  function onKeyPressDown() as boolean
+    if m.focusId = "menu"
+      m.setFocusId("grid")
+      return true
+    end if
+    return false
+  end function
+
   function onKeyPressLeft() as boolean
-    if m.focusId = "grid" or m.focusId = "screenContainer"
+    if m.focusId = "grid" or m.focusId = "screenContainer" or m.focusId = "menu"
       m.setFocusId("keyboard")
       return true
     end if
@@ -359,7 +583,9 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
   end function
 
   function isCapturingAnyKeyPress(key as string, press as boolean) as boolean
-    if key = "left"
+    if m.focusId = "menu" and key = "down"
+      m.setFocusId("keyboard")
+    else if key = "left"
       return m.onKeyPressLeft()
     else if key = "right"
       return m.onKeyPressRight()
@@ -374,6 +600,12 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     m.setGridVisible(false)
     m.setScreenContainerVisible(true)
     m.searchText = ""
+    m.appluSearchFilterDefaultState()
+
+    if m.isSearchFilterEnabled
+      m.riversJson.data = m.filterData
+      m.executeloadDataTask("componentFeed", m.createButtonsWithFeed, invalid, 0)
+    end if
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
