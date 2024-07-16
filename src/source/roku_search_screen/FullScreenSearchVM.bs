@@ -68,11 +68,13 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
   private isFilterFocusable = false
   private backgroundBorderPoster = invalid
   private backgroundPoster = invalid
+  private buttonMenu = invalid
 
   public function new(riversJson)
     super(riversJson, "FullScreenSearchVM")
     m.backgroundBorderPoster = m.getMField("backgroundBorderPoster")
     m.backgroundPoster = m.getMField("backgroundPoster")
+    m.buttonMenu = m.getMField("menu")
 
     m.focusId = "keyboard"
     m.processStyles(riversJson.styles)
@@ -121,39 +123,49 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
       buttonType = "customRight"
     end if
 
-    layoutDirection = asString(styles.tab_bar_direction, "horiz")
     m.isButtonDynamic = asString(styles.tab_bar_item_size) <> "fixed"
     m.textTransform = asString(styles.text_transform, "uppercase")
+    m.buttonSpacing = zapp.viewUtils.getUIBInt(styles, "tab_bar_gutter")
 
-    borderSize = zapp.viewUtils.getUIBInt(styles, "tab_bar_border_w")
+    m.setMenuStyle(styles, buttonType)
+    m.setMenuGroupStyle(styles, buttonType)
+  end function
 
-    title = mc.getPath(styles, "menu_button_text", "")
-    menuStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "tab_bar_item", buttonType, title, true)
+  private function setMenuStyle(styles, buttonType)
+    layoutDirection = asString(styles.tab_bar_direction, "horiz")
+    menuStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "tab_bar_item", buttonType, "", true)
     menuStyle.layoutDirection = layoutDirection
     menuStyle.translation = m.menuPosition
     m.menuStyle = menuStyle
-    m.buttonSpacing = zapp.viewUtils.getUIBInt(styles, "tab_bar_gutter")
+  end function
 
-    menuGroupStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "tab_bar", buttonType, title, true)
-    backgroundPoster = m.backgroundPoster
+  private function setMenuGroupStyle(styles as object, buttonType as string)
+    menuGroupStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "tab_bar", buttonType, "", true)
+    borderSize = zapp.viewUtils.getUIBInt(styles, "tab_bar_border_w")
 
-    backgroundPoster.width = menuGroupStyle.width - borderSize
-    backgroundPoster.height = menuGroupStyle.height - borderSize
-    backgroundPoster.uri = menuGroupStyle.normal.backgroundurl
-    backgroundPoster.blendColor = menuGroupStyle.normal.backgroundcolor
-    backgroundPoster.translation = [borderSize, borderSize]
+    m.adjustPoster(m.backgroundPoster, menuGroupStyle, borderSize, "", false)
+    m.adjustPoster(m.backgroundBorderPoster, menuGroupStyle, borderSize, "Border", true)
+  end function
 
-    backgroundBorderPoster = m.backgroundBorderPoster
-    backgroundBorderPoster.width = menuGroupStyle.width + borderSize
-    backgroundBorderPoster.height = menuGroupStyle.height + borderSize
-    backgroundBorderPoster.uri = menuGroupStyle.normal.backgroundBorderUrl
-    backgroundBorderPoster.blendColor = menuGroupStyle.normal.backgroundbordercolor
-    backgroundBorderPoster.translation = menuGroupStyle.translation
+  private function adjustPoster(poster, style, borderSize, prefix, isBorder)
+    if isBorder
+      poster.width = style.width + borderSize
+      poster.height = style.height + borderSize
+      poster.translation = style.translation
+    else
+      poster.width = style.width - borderSize
+      poster.height = style.height - borderSize
+      poster.translation = [borderSize, borderSize]
+    end if
+
+
+    poster.uri = style.normal[`background${prefix}url`]
+    poster.blendColor = style.normal[`background${prefix}color`]
   end function
 
   private function setButtonAlignment()
     tabBarAlignment = asString(m.riversJson.styles.tab_bar_alignment, "left")
-    menu = m.getMField("menu")
+    menu = m.buttonMenu
     componentWidth = menu.boundingRect().width
     containerWidth = m.backgroundBorderPoster.width
     if tabBarAlignment = "right"
@@ -167,7 +179,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     dynamicGroupSize = asString(m.riversJson.styles.tab_bar_display_mode) <> "fixed"
 
     if dynamicGroupSize
-      menu = m.getMField("menu")
+      menu = m.buttonMenu
       borderSize = zapp.viewUtils.getUIBInt(m.riversJson.styles, "tab_bar_border_w")
 
       m.backgroundPoster.width = menu.boundingRect().width
@@ -177,8 +189,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     end if
   end function
 
-
-  function createButtonsWithFeed(entry)
+  private function createButtonsWithFeed(entry)
     if asBoolean(entry.isOk)
       data = entry.data
       menuButtons = []
@@ -202,7 +213,6 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
       m.setDynamicSizeIfNeeded()
     end if
   end function
-
 
   private function applyKeyboardPalette(styles, normalColor) as void
     keyboard = m.getMField("keyboard")
@@ -248,7 +258,6 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     parent = screen.getParent()
     m.nameOfParentScreen = asString(parent.name)
   end function
-
 
   function toggleSubScreen(screen)
     m.log.method("toggleSubScreen")
