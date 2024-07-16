@@ -13,7 +13,6 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
   public menuPosition = [960, 584]
   public jumpToIndex = -1
   public isShowingScreenOnFocus = true
-  public buttonAlign = "center"
   public infoStatus = ""
   public clippingRect = [0, 0, 0, 0]
   public contentClippingRect = [0, 0, 1920, 1080]
@@ -24,6 +23,9 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
   public layoutDirection = "horiz"
   public isFilterVisible = false
   public jumpSelectToIndex = 0
+  public buttonSpacing = 5
+  public buttonTranslation = [0, 0]
+  public isButtonDynamic = false
 
 
   public results = invalid
@@ -64,9 +66,14 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
   private textTransform = "uppercase"
   private selectedFilterIndex = 0
   private isFilterFocusable = false
+  private backgroundBorderPoster = invalid
+  private backgroundPoster = invalid
 
   public function new(riversJson)
     super(riversJson, "FullScreenSearchVM")
+    m.backgroundBorderPoster = m.getMField("backgroundBorderPoster")
+    m.backgroundPoster = m.getMField("backgroundPoster")
+
     m.focusId = "keyboard"
     m.processStyles(riversJson.styles)
     m.processTabStyles(riversJson.styles)
@@ -105,109 +112,71 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
   end function
 
   function processTabStyles(styles)
-    ?"asfasf" styles
+    textHorizAlign = asString(styles.tab_bar_item_alignment, "center")
 
     buttonType = "custom"
-    if m.buttonAlign = "left"
+    if textHorizAlign = "left"
       buttonType = "customLeft"
+    else if textHorizAlign = "right"
+      buttonType = "customRight"
     end if
+
     layoutDirection = asString(styles.tab_bar_direction, "horiz")
-    tabBarAligment = asString(styles.tab_bar_alignment, "left")
-    isDynamic = asString(styles.tab_bar_display_mode) <> "fixed"
+    m.isButtonDynamic = asString(styles.tab_bar_item_size) <> "fixed"
     m.textTransform = asString(styles.text_transform, "uppercase")
 
-    borderUri = zapp.viewUtils.getPosterUri(styles.tab_bar_border_background_url)
     borderSize = zapp.viewUtils.getUIBInt(styles, "tab_bar_border_w")
 
     title = mc.getPath(styles, "menu_button_text", "")
     menuStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "tab_bar_item", buttonType, title, true)
     menuStyle.layoutDirection = layoutDirection
-    menuStyle.horizAlignment = tabBarAligment
-    menuStyle.buttonSpacing = zapp.viewUtils.getUIBInt(styles, "tab_bar_gutter")
-    menuStyle.barHeight = zapp.viewUtils.getUIBInt(styles, "tab_bar_item_underline_thickness")
-
-
+    menuStyle.translation = m.menuPosition
     m.menuStyle = menuStyle
+    m.buttonSpacing = zapp.viewUtils.getUIBInt(styles, "tab_bar_gutter")
 
     menuGroupStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "tab_bar", buttonType, title, true)
-    'labelStyle = zapp.viewUtils.makeUIBLabelStyle(styles, "text_label")
-
-    'layoutGroup.horizAlignment = tabBarAligment
-
-    backgroundPoster = m.getMField("backgroundPoster")
+    backgroundPoster = m.backgroundPoster
 
     backgroundPoster.width = menuGroupStyle.width - borderSize
     backgroundPoster.height = menuGroupStyle.height - borderSize
-    'backgroundPoster.uri = menuGroupStyle.normal.backgroundurl
+    backgroundPoster.uri = menuGroupStyle.normal.backgroundurl
     backgroundPoster.blendColor = menuGroupStyle.normal.backgroundcolor
     backgroundPoster.translation = [borderSize, borderSize]
 
-    backgroundBorderPoster = m.getMField("backgroundBorderPoster")
+    backgroundBorderPoster = m.backgroundBorderPoster
     backgroundBorderPoster.width = menuGroupStyle.width + borderSize
     backgroundBorderPoster.height = menuGroupStyle.height + borderSize
-    'backgroundBorderPoster.uri = menuGroupStyle.normal.backgroundBorderUrl
-    'backgroundBorderPoster.uri = menuGroupStyle.normal.backgroundurl
+    backgroundBorderPoster.uri = menuGroupStyle.normal.backgroundBorderUrl
     backgroundBorderPoster.blendColor = menuGroupStyle.normal.backgroundbordercolor
     backgroundBorderPoster.translation = menuGroupStyle.translation
-
-    ' "label": "Filters Bar Style",
-
-    ' ++"tab_bar_direction",
-    ' ++"tab_bar_display_mode",
-    ' +"tab_bar_w",
-    ' +"tab_bar_h",
-    ' +"tab_bar_alignment",
-    ' +"tab_bar_x"
-    ' +"tab_bar_y"
-    ' +"tab_bar_background_color"
-    ' +"tab_bar_background_url"
-    ' +"tab_bar_border_color"
-    ' +"tab_bar_border_width"
-    ' +"tab_bar_border_background_url"
-    ' We should add Background over our menu
-
-
-    ' "label": "Filter Items Style",
-
-    ' "tab_bar_gutter"
-    ' "tab_bar_item_size",
-    ' "tab_bar_item_w",
-    ' "tab_bar_item_alignment",
-
-    ' "label": "Filter Title Style",
-
-    ' "tab_bar_item_enabled"
-    ' +"tab_bar_item_color",
-    ' +"tab_bar_item_focused_color",
-    ' +"tab_bar_item_selected_color",
-    ' +"tab_bar_item_focused_selected_color",
-    ' +"tab_bar_item_font_name",
-    ' +"tab_bar_item_font_size",
-    ' +"text_transform",
-
-    ' "label": "Filter Item Style",
-
-    ' "tab_bar_item_underline_color"
-    ' "tab_bar_item_underline_focused_color"
-    ' "tab_bar_item_underline_selected_color"
-    ' "tab_bar_item_underline_focused_selected_color"
-    ' + "tab_bar_item_underline_thickness"
-    ' "tab_bar_item_underline_background_url"
-
-    ' "tab_bar_item_padding_top"
-    ' "tab_bar_item_padding_right"
-    ' "tab_bar_item_padding_bottom"
-    ' "tab_bar_item_padding_left"
-    ' "tab_bar_item_background_color"
-    ' "tab_bar_item_focused_background_color"
-    ' "tab_bar_item_selected_background_color"
-    ' "tab_bar_item_focused_selected_background_color"
-    ' "tab_bar_item_border_color"
-    ' "tab_bar_item_focused_border_color"
-    ' "tab_bar_item_selected_border_color"
-    ' "tab_bar_item_focused_selected_border_color"
-    ' "tab_bar_item_border_width"
   end function
+
+  private function setButtonAlignment()
+    tabBarAlignment = asString(m.riversJson.styles.tab_bar_alignment, "left")
+    menu = m.getMField("menu")
+    componentWidth = menu.boundingRect().width
+    containerWidth = m.backgroundBorderPoster.width
+    if tabBarAlignment = "right"
+      m.buttonTranslation = [containerWidth - componentWidth, menu.translation[1]]
+    else if tabBarAlignment = "center"
+      m.buttonTranslation = [(containerWidth * 0.5) - (componentWidth * 0.5), menu.translation[1]]
+    end if
+  end function
+
+  private function setDynamicSizeIfNeeded()
+    dynamicGroupSize = asString(m.riversJson.styles.tab_bar_display_mode) <> "fixed"
+
+    if dynamicGroupSize
+      menu = m.getMField("menu")
+      borderSize = zapp.viewUtils.getUIBInt(m.riversJson.styles, "tab_bar_border_w")
+
+      m.backgroundPoster.width = menu.boundingRect().width
+      m.backgroundPoster.height = menu.boundingRect().height
+      m.backgroundBorderPoster.width = menu.boundingRect().width + (2 * borderSize)
+      m.backgroundBorderPoster.height = menu.boundingRect().height + (2 * borderSize)
+    end if
+  end function
+
 
   function createButtonsWithFeed(entry)
     if asBoolean(entry.isOk)
@@ -222,14 +191,15 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
         menuButtons.push({
           id: id
           title: item.title
-          'target: m.targetScreenId
           entry: item
         })
         i++
       end for
       m.menuButtons = menuButtons
       m.isFilterFocusable = m.menuButtons.count() > 0
-      m.appluSearchFilterDefaultState()
+      m.applySearchFilterDefaultState()
+      m.setButtonAlignment()
+      m.setDynamicSizeIfNeeded()
     end if
   end function
 
@@ -367,7 +337,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
       m.setGridVisible(false)
       m.setScreenContainerVisible(true)
       m.isLoading = false
-      m.appluSearchFilterDefaultState()
+      m.applySearchFilterDefaultState()
     end if
 
   end function
@@ -458,7 +428,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     m.setScreenContainerVisible(false)
   end function
 
-  private function appluSearchFilterDefaultState()
+  private function applySearchFilterDefaultState()
     m.isFilterVisible = false
     m.jumpSelectToIndex = 0
     m.onSelectedIndexChange(0)
@@ -574,7 +544,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
   end function
 
   function onKeyPressLeft() as boolean
-    if m.focusId = "grid" or m.focusId = "screenContainer" or m.focusId = "menu"
+    if m.focusId = "grid" or m.focusId = "screenContainer"
       m.setFocusId("keyboard")
       return true
     end if
@@ -600,7 +570,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     m.setGridVisible(false)
     m.setScreenContainerVisible(true)
     m.searchText = ""
-    m.appluSearchFilterDefaultState()
+    m.applySearchFilterDefaultState()
 
     if m.isSearchFilterEnabled
       m.riversJson.data = m.filterData

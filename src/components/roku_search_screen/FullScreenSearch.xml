@@ -58,10 +58,18 @@
             jumpToIndex='{{jumpToIndex}}'
             jumpSelectToIndex='{{jumpSelectToIndex}}'
             isFootprintOnSelectOnly='true'
-            buttonSize='{{=zapp_viewUtils_UIBSize("menu", 700, 100)}}'
+            buttonSize='{{=zapp_viewUtils_UIBSize("tab_bar_item", 300, 100)}}'
+            translation='{{:buttonTranslation}}'
+            buttonSpacing='{{:buttonSpacing}}'
             showBarUnderSelectedItem='true'
-            barColor='{{=zapp_viewUtils_UIBColor("focus_bar_color")}}'
-            barHeight='{{=zapp_viewUtils_UIBInt("focus_bar_height", 6)}}' />
+            alwaysShowUnderBar='true'
+            isDynamic='{{:isButtonDynamic}}'
+            barColor='{{=zapp_viewUtils_UIBColor("tab_bar_item_underline_color")}}'
+            focusBarColor='{{=zapp_viewUtils_UIBColor("tab_bar_item_highlighted_underline_color")}}'
+            footprintBarColor='{{=zapp_viewUtils_UIBColor("tab_bar_item_footprint_underline_color")}}'
+            highlightedFootprintBarColor='{{=zapp_viewUtils_UIBColor("tab_bar_item_highlighted_footprint_underline_color")}}'
+            barHeight='{{=zapp_viewUtils_UIBInt("tab_bar_item_underline_thickness", 6)}}'
+            borderHeight='{{=zapp_viewUtils_UIBInt("tab_bar_item_border_w")}}' />
       </Poster>
     </Poster>
 
