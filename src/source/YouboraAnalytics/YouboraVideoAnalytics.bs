@@ -75,6 +75,7 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
     }
 
     m.contentMetricPath = {
+      "cdn": plugin.getStringValue("cdn")
       "title": plugin.getStringValue("title")
       "isLive": plugin.getStringValue("is_live")
       "contentId": plugin.getStringValue("content_id")
@@ -228,7 +229,7 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
     videoOptions = {}
     videoOptions.content = {
       "title": mc.getPath(contentNodeJson, contentMetricPath.title, contentNode.title)
-      "cdn": asString(contentNodeJson.extensions.cdn)
+      "cdn": mc.getPath(contentNodeJson, contentMetricPath.cdn, "")
       "name": `${m.buildConfig.app_name}`
       "user_id": asString(m.user)
       "app_release_version": `${m.buildConfig.version_name} ${m.buildConfig.build_version}`
