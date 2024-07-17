@@ -1,5 +1,6 @@
 namespace zapp.tests
   @tags("public", "vm")
+  @only
   @suite
   class FullScreenSearchVMTests extends tests.BaseTestSuite
     private riversJson
@@ -139,13 +140,13 @@ namespace zapp.tests
     function _()
       m.expectCalled(m.vm.setGridVisible(false))
       m.expectCalled(m.vm.setScreenContainerVisible(true))
+      m.expectCalled(m.vm.applySearchFilterDefaultState())
 
       m.vm.reset()
 
       m.assertNodeEmpty(m.vm.results)
       m.assertEqual(m.vm.jumpToItem, 0)
       m.assertEmpty(m.vm.searchText)
-
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -215,6 +216,66 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onKeyPressUp")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("onKeyPressUp")
+    @params("keyboard", true, "keyboard")
+    @params("grid", true, "menu")
+    @params("keyboard", false, "keyboard")
+    @params("grid", false, "grid")
+    function _(currentKey, isFilterFocusable, expectedKey)
+      m.vm.focusId = currentKey
+      m.vm.isFilterFocusable = isFilterFocusable
+
+      m.vm.onKeyPressUp()
+      m.assertEqual(m.vm.focusId, expectedKey)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("isCapturingAnyKeyPress")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("captures down key press")
+    @params("menu", "down", "keyboard")
+    @params("grid", "down", "grid")
+    function _(focusId, key, expectedFocusId)
+      m.vm.focusId = focusId
+
+      m.vm.isCapturingAnyKeyPress(key, true)
+
+      m.assertEqual(m.vm.focusId, expectedFocusId)
+    end function
+
+    @it("captures left key press")
+    @params("grid", "left", "keyboard")
+    @params("screenContainer", "left", "keyboard")
+    @params("keyboard", "left", "keyboard")
+    function _(focusId, key, expectedFocusId)
+      m.vm.focusId = focusId
+
+      m.vm.isCapturingAnyKeyPress(key, true)
+
+      m.assertEqual(m.vm.focusId, expectedFocusId)
+    end function
+
+    @it("captures right key press")
+    @params("keyboard", true, false, "right", "grid")
+    @params("grid", true, false, "right", "grid")
+    @params("keyboard", false, false, "right", "keyboard")
+    @params("keyboard", false, true, "right", "screenContainer")
+    @params("grid", false, false, "right", "grid")
+    function _(focusId, isGridVisible, isScreenContainerVisible, key, expectedFocusId)
+      m.vm.focusId = focusId
+      m.vm.isGridVisible = isGridVisible
+      m.vm.isScreenContainerVisible = isScreenContainerVisible
+
+      m.vm.isCapturingAnyKeyPress(key, true)
+
+      m.assertEqual(m.vm.focusId, expectedFocusId)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("setGridVisible")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -277,9 +338,10 @@ namespace zapp.tests
       m.vm.minCharacters = 3
       newDelayTask = { "id": "newDelayTask" }
 
-      m.expectOnce(m.vm, "cancelWaitTimer", [searchDelayTask])
-      m.expectOnce(m.vm, "cancelTask", [loadDataTask])
-      m.expectOnce(m.vm, "waitAFrame", [m.vm.onSearchDelayComplete, 0.5], newDelayTask)
+      m.expectCalled(m.vm.cancelWaitTimer(searchDelayTask))
+      m.expectCalled(m.vm.cancelTask(loadDataTask))
+      m.expectCalled(m.vm.waitAFrame(m.vm.onSearchDelayComplete, 0.5), newDelayTask)
+      m.expectNotCalled(m.vm.applySearchFilterDefaultState())
 
       m.vm.onSearchTextChange(text)
 
@@ -298,9 +360,10 @@ namespace zapp.tests
       m.vm.searchDelayTask = searchDelayTask
       m.vm.loadDataTask = loadDataTask
 
-      m.expectOnce(m.vm, "cancelWaitTimer", [searchDelayTask])
-      m.expectOnce(m.vm, "cancelTask", [loadDataTask])
-      m.expectNone(m.vm, "waitAFrame")
+      m.expectCalled(m.vm.cancelWaitTimer(searchDelayTask))
+      m.expectCalled(m.vm.cancelTask(loadDataTask))
+      m.expectNotCalled(m.vm.waitAFrame)
+      m.expectCalled(m.vm.applySearchFilterDefaultState())
 
       m.vm.onSearchTextChange(text)
 

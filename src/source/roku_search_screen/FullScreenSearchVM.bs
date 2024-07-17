@@ -113,7 +113,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     m.searchQueryName = mc.getPath(styles, "search_query_name", "q")
   end function
 
-  function processTabStyles(styles)
+  function processTabStyles(styles as mc.types.assocarray)
     textHorizAlign = asString(styles.tab_bar_item_alignment, "center")
     m.isButtonDynamic = asString(styles.tab_bar_item_size) <> "fixed"
 
@@ -133,7 +133,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     m.setMenuGroupStyle(styles, buttonType)
   end function
 
-  private function setMenuStyle(styles, buttonType)
+  private function setMenuStyle(styles as mc.types.assocarray, buttonType as string)
     layoutDirection = asString(styles.tab_bar_direction, "horiz")
     menuStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "tab_bar_item", buttonType, "", true)
     menuStyle.layoutDirection = layoutDirection
@@ -142,15 +142,17 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     m.menuStyle = menuStyle
   end function
 
-  private function setMenuGroupStyle(styles as object, buttonType as string)
+  private function setMenuGroupStyle(styles as mc.types.assocarray, buttonType as string)
     menuGroupStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "tab_bar", buttonType, "", true)
     borderSize = zapp.viewUtils.getUIBInt(styles, "tab_bar_border_w")
 
-    m.adjustPoster(m.backgroundPoster, menuGroupStyle, borderSize, "", false)
-    m.adjustPoster(m.backgroundBorderPoster, menuGroupStyle, borderSize, "Border", true)
+    if m.backgroundPoster <> invalid
+      m.adjustPoster(m.backgroundPoster, menuGroupStyle, borderSize, "", false)
+      m.adjustPoster(m.backgroundBorderPoster, menuGroupStyle, borderSize, "Border", true)
+    end if
   end function
 
-  private function adjustPoster(poster, style, borderSize, prefix, isBorder)
+  private function adjustPoster(poster as mc.types.node, style as mc.types.assocarray, borderSize as integer, prefix as string, isBorder as boolean)
     if isBorder
       poster.width = style.width + borderSize
       poster.height = style.height + borderSize
@@ -192,7 +194,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     end if
   end function
 
-  private function createButtonsWithFeed(entry)
+  private function createButtonsWithFeed(entry as mc.types.node)
     if asBoolean(entry.isOk)
       data = entry.data
       menuButtons = []
@@ -361,7 +363,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     m.performSearch(m.searchText)
   end function
 
-  public function onSelectedIndexChange(index)
+  public function onSelectedIndexChange(index as integer)
     m.log.info("selected index", index)
     m.selectedFilterIndex = index
     m.screenState.originEntry = asAA(m.menuButtons[m.selectedFilterIndex].entry)
