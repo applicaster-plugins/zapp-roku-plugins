@@ -115,15 +115,17 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
 
   function processTabStyles(styles)
     textHorizAlign = asString(styles.tab_bar_item_alignment, "center")
+    m.isButtonDynamic = asString(styles.tab_bar_item_size) <> "fixed"
 
     buttonType = "custom"
-    if textHorizAlign = "left"
+    if m.isButtonDynamic
+      buttonType = "customLeft"
+    else if textHorizAlign = "left"
       buttonType = "customLeft"
     else if textHorizAlign = "right"
       buttonType = "customRight"
     end if
 
-    m.isButtonDynamic = asString(styles.tab_bar_item_size) <> "fixed"
     m.textTransform = asString(styles.text_transform, "uppercase")
     m.buttonSpacing = zapp.viewUtils.getUIBInt(styles, "tab_bar_gutter")
 
@@ -136,6 +138,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     menuStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "tab_bar_item", buttonType, "", true)
     menuStyle.layoutDirection = layoutDirection
     menuStyle.translation = m.menuPosition
+    menuStyle.menuTextPadding = zapp.viewUtils.makeUIBPadding(styles, "tab_bar_item")
     m.menuStyle = menuStyle
   end function
 
