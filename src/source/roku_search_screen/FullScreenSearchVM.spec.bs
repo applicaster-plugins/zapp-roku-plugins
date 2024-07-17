@@ -1,6 +1,5 @@
 namespace zapp.tests
   @tags("public", "vm")
-  @only
   @suite
   class FullScreenSearchVMTests extends tests.BaseTestSuite
     private riversJson
