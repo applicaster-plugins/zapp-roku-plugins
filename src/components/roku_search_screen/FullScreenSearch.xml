@@ -39,6 +39,41 @@
         numRows='{{=zapp_viewUtils_UIBInt("number_of_rows", 3)}}'
         itemComponentName='ZPowerCell' />
 
+    <!-- <Group
+        id='menuContainer'
+        clippingRect='{{clippingRect}}'
+        translation='{{=zapp_viewUtils_UIBPosition("menu", 960, 584)}}'>
+      <Group id='menuHolder'>
+        translation='{{menuScrollPosition}}'-->
+    <Poster
+        id='backgroundBorderPoster'
+        visible='{{isFilterVisible}}'>
+      <Poster id='backgroundPoster'>
+        <Menu
+            id='menu'
+            buttons='{{menubuttons}}'
+            style='{{:menuStyle}}'
+            selectedIndex='{(onSelectedIndexChange(value))}'
+            focusIndex='{(onFocusIndexChange(value))}'
+            jumpToIndex='{{jumpToIndex}}'
+            jumpSelectToIndex='{{jumpSelectToIndex}}'
+            isFootprintOnSelectOnly='true'
+            buttonSize='{{=zapp_viewUtils_UIBSize("tab_bar_item", 300, 100)}}'
+            translation='{{:buttonTranslation}}'
+            buttonSpacing='{{:buttonSpacing}}'
+            showBarUnderSelectedItem='true'
+            alwaysShowUnderBar='true'
+            isDynamic='{{:isButtonDynamic}}'
+            barColor='{{=zapp_viewUtils_UIBColor("tab_bar_item_underline_color")}}'
+            focusBarColor='{{=zapp_viewUtils_UIBColor("tab_bar_item_highlighted_underline_color")}}'
+            footprintBarColor='{{=zapp_viewUtils_UIBColor("tab_bar_item_footprint_underline_color")}}'
+            highlightedFootprintBarColor='{{=zapp_viewUtils_UIBColor("tab_bar_item_highlighted_footprint_underline_color")}}'
+            barHeight='{{=zapp_viewUtils_UIBInt("tab_bar_item_underline_thickness", 6)}}'
+            borderHeight='{{=zapp_viewUtils_UIBInt("tab_bar_item_border_w")}}' />
+      </Poster>
+    </Poster>
+
+
     <LoadingIndicator
         id='loadingIndicator'
         width='1920'
