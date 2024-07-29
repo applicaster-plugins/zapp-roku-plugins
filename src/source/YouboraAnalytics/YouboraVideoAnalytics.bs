@@ -93,6 +93,7 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
       "customDimension6": plugin.getStringValue("custom_dimension_6")
       "contentPlaybackType": plugin.getStringValue("content_playback_type")
       "contentTVShow": plugin.getStringValue("content_tv_show")
+      "contentResource": plugin.getStringValue("content_resource")
     }
     m.isUsingAdvancedVideoAnalytics = plugin.getBoolValue("use_advanced_video_analytics")
     m.user = m.getSessionStoreValue("quick-brick-login-flow", "user_id")
@@ -250,6 +251,7 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
       "customDimension6": mc.getPath(contentNodeJson, contentMetricPath.customDimension6, "")
       "playbackType": mc.getPath(contentNodeJson, contentMetricPath.contentPlaybackType, "")
       "tvShow": mc.getPath(contentNodeJson, contentMetricPath.contentTVShow, "")
+      "contentResource": mc.getPath(contentNodeJson, contentMetricPath.contentResource, "")
     }
     videoOptions.app = {
       "name": `${m.buildConfig.app_name}`

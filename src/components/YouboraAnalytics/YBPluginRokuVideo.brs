@@ -125,7 +125,7 @@ sub processPlayerState(newState as string)
     if m.top.videoplayer.control = "stop" and m.viewManager.isShowingAds = false
       eventHandler("stop")
     else
-      YouboraLog("Ignoring 'stopped' state; Video.control is not 'stop'","YBPluginRokuVideo")
+      YouboraLog("Ignoring 'stopped' state; Video.control is not 'stop'", "YBPluginRokuVideo")
     end if
   else if newState = "error"
     onVideoError()
@@ -189,9 +189,12 @@ function getResource()
   resource = "unknown"
 
   if m.contentUrl = invalid
-    'Get it from the informed url by the client
+    'Get it from the informed url by the client+
     content = m.top.videoplayer.content
-    if content <> invalid
+    optionContent = m.top.options.content
+    if optionContent.contentResource <> invalid and optionContent.contentResource <> ""
+      m.contentUrl = optionContent.contentResource
+    else if content <> invalid
       resource = content.URL
       m.contentUrl = resource
     end if
