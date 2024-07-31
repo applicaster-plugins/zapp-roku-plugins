@@ -64,6 +64,8 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
 
   private isSearchFilterEnabled = false
   private textTransform = "uppercase"
+  private focusedFilterIndex = 0
+  private savedIndex = 0
   private selectedFilterIndex = 0
   private isFilterFocusable = false
   private backgroundBorderPoster = invalid
@@ -346,6 +348,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
 
     if len(m.searchText.trim()) >= m.minCharacters
       m.searchDelayTask = m.waitAFrame(m.onSearchDelayComplete, 0.5)
+      m.isShowingContent = true
     else
       m.log.verbose("too few chars. ignoring")
       m.setGridVisible(false)
@@ -375,6 +378,12 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
 
   public function onFocusIndexChange(index)
     m.log.info("focused index", index, "isShowingScreenOnFocus", m.isShowingScreenOnFocus)
+    m.savedIndex = index
+    m.waitAFrame(m.onFocusIndexChangeComplete, 0.1)
+  end function
+
+  function onFocusIndexChangeComplete()
+    m.focusedFilterIndex = m.savedIndex
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -558,7 +567,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
   end function
 
   function onKeyPressLeft() as boolean
-    if m.focusId = "grid" or m.focusId = "screenContainer"
+    if m.focusId = "grid" or m.focusId = "screenContainer" or (m.focusId = "menu" and m.focusedFilterIndex = 0)
       m.setFocusId("keyboard")
       return true
     end if
@@ -567,9 +576,9 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
   end function
 
   function isCapturingAnyKeyPress(key as string, press as boolean) as boolean
-    if m.focusId = "menu" and key = "down"
+    if m.focusId = "menu" and (m.searchText = "" and key = "down")
       m.setFocusId("keyboard")
-    else if key = "left"
+    else if key = "left" and not m.focusId = "menu"
       return m.onKeyPressLeft()
     else if key = "right"
       return m.onKeyPressRight()
@@ -608,7 +617,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
   protected override function onShow() as void
     m.log.method("onShow")
     m.trackScreen()
-    if not m.isShowingContent
+    if not m.isShowingContent and len(m.searchText.trim()) < m.minCharacters
       m.reset()
     end if
 
