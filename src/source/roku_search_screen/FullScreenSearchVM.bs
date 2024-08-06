@@ -88,7 +88,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     m.filterData = asAA(riversJson.data.filter_source)
     m.rowTarget = riversJson.data.target
     m.fallbackScreen = asString(riversJson.general.fallback)
-    m.isSearchFilterEnabled = zapp.viewUtils.getUIBBool(riversJson.styles, "enable_search_filters", false)
+    m.isSearchFilterEnabled = zapp.viewUtils.getUIBBool(riversJson.general, "enable_search_filters", false)
 
     if zapp.viewUtils.getUIBBool(riversJson.styles, "override_target_screen", false)
       m.rowTarget = mc.getPath(riversJson, "data.target_screen")
