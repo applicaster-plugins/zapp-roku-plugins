@@ -11,13 +11,7 @@ function SegmentAnalytics(config as object, port as object) as object
     return invalid
   end if
 
-  if config.queueSize = invalid or (type(config.queueSize) <> "roInteger" and type(config.queueSize) <> "roInt") or config.queueSize < 1 then
-    config.queueSize = 1
-  end if
-
-  if config.retryLimit = invalid or (type(config.retryLimit) <> "roInteger" and type(config.retryLimit) <> "roInt") or config.retryLimit < -1 then
-    config.retryLimit = 1
-  end if
+  updatedConfig = _SegmentAnalytics_configWithDefaultValues(config)
 
   di = createObject("roDeviceInfo")
   osVersion = di.getOsVersion()
@@ -47,13 +41,13 @@ function SegmentAnalytics(config as object, port as object) as object
     _minNumber: _SegmentAnalytics_minNumber
 
     'private variables
-    _config: config
+    _config: updatedConfig
     _port: port
     _apiUrl: "https://api.segment.io/v1/batch"
     _device: CreateObject("roDeviceInfo")
     _libraryName: "analytics-roku"
     _libraryVersion: osVersion.major + "." + osVersion.minor + "." + osVersion.build
-    _queueSize: config.queueSize
+    _queueSize: updatedConfig.queueSize
     _messageQueue: []
     _maxBatchByteSize: 500000
     _maxMessageByteSize: 32000
@@ -62,6 +56,67 @@ function SegmentAnalytics(config as object, port as object) as object
   }
 end function
 
+'Create configuration with default values for any values not explicitly included
+function _SegmentAnalytics_configWithDefaultValues(config as object) as object
+  updatedConfig = config
+
+  if config.debug = invalid or (config.debug <> false and config.debug <> true) then
+    updatedConfig.debug = false
+  end if
+
+  if config.queueSize = invalid or (type(config.queueSize) <> "roInteger" and type(config.queueSize) <> "roInt") or config.queueSize < 1 then
+    updatedConfig.queueSize = 1
+  end if
+
+  if config.retryLimit = invalid or (type(config.retryLimit) <> "roInteger" and type(config.retryLimit) <> "roInt") or config.retryLimit < -1 then
+    updatedConfig.retryLimit = 1
+  end if
+
+  if config.requestPoolSize = invalid or (type(config.requestPoolSize) <> "roInteger" and type(config.requestPoolSize) <> "roInt") or config.requestPoolSize < 1 then
+    updatedConfig.requestPoolSize = 1
+  end if
+
+  if config.apiHost = invalid or (type(config.apiHost) <> "roString" and type(config.apiHost) <> "String") then
+    updatedConfig.apiHost = "https://api.segment.io"
+  end if
+
+  if config.settingsApiHost = invalid or (type(config.settingsApiHost) <> "roString" and type(config.settingsApiHost) <> "String") then
+    updatedConfig.settingsApiHost = "https://cdn-settings.segment.com"
+  end if
+
+  if config.factories = invalid or type(config.factories) <> "roAssociativeArray" then
+    updatedConfig.factories = {}
+  end if
+
+  if config.settings = invalid or type(config.settings) <> "roAssociativeArray" then
+    updatedConfig.settings = {}
+  end if
+
+  if config.defaultSettings = invalid or type(config.defaultSettings) <> "roAssociativeArray" then
+    updatedConfig.defaultSettings = {}
+  end if
+
+  if config.defaultSettings.integrations = invalid or type(config.defaultSettings.integrations) <> "roAssociativeArray" then
+    updatedConfig.defaultSettings.integrations = {}
+  end if
+
+  if config.defaultSettings.integrations["Segment.io"] = invalid or type(config.defaultSettings.integrations["Segment.io"]) <> "roAssociativeArray" then
+    config.defaultSettings.integrations["Segment.io"] = {}
+  end if
+
+  if config.defaultSettings.plan = invalid or type(config.defaultSettings.plan) <> "roAssociativeArray" then
+    updatedConfig.defaultSettings.plan = {
+      track: {
+        __default: {
+          enabled: true
+          integrations: {}
+        }
+      }
+    }
+  end if
+
+  return updatedConfig
+end function
 
 function _SegmentAnalytics_checkInvalidConfig(config)
   isInvalid = false
@@ -282,22 +337,22 @@ function _SegmentAnalytics_checkValidId(data as dynamic) as boolean
   hasUserId = false
   hasAnonId = false
 
-  if data.userId <> invalid and (type(data.userId) = "roString" or type(data.userId) = "String") then
-    hasUserId = data.userId.len() > 0
-  end if
+ if data.userId <> invalid and (type(data.userId) = "roString" or type(data.userId) = "String") then
+   hasUserId = data.userId.len() > 0
+ end if
 
-  if data.anonymousId <> invalid and (type(data.anonymousId) <> "roString" or type(data.anonymousId) <> "String") then
-    hasAnonId = data.anonymousId.len() > 0
-  end if
+ if data.anonymousId <> invalid and (type(data.anonymousId) <> "roString" or type(data.anonymousId) <> "String") then
+   hasAnonId = data.anonymousId.len() > 0
+ end if
 
-  if not hasUserId and not hasAnonId then
-    callType = "unknown"
-    if not data.type = invalid and (type(data.type) = "roString" or type(data.type) = "String")
-      callType = data.type
-    end if
-    m._log("No user or anonymous id found in [" + callType + "] call", "ERROR")
-    return false
-  end if
+ if not hasUserId and not hasAnonId then
+   callType = "unknown"
+   if not data.type = invalid and (type(data.type) = "roString" or type(data.type) = "String")
+     callType = data.type
+   end if
+   m._log("No user or anonymous id found in [" + callType + "] call", "ERROR")
+   return false
+ end if
 
   return true
 end function

@@ -14,8 +14,8 @@ class SegmentAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
   private isIdentifyingOnLogout
   private library
   private segmentTask
-  private defaultOptions
-  private defaultProperties
+  private defaultOptions = {}
+  private defaultProperties = {}
   private screenHeartBeatTimer = invalid
   private screenHeartBeatInterval = -1
   private userNation = invalid
@@ -163,6 +163,11 @@ class SegmentAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
 
     if m.isEnabled
 
+      if m.defaultOptions.count() = 0
+        m.start() '/restart the plugin
+        m.defaultOptions = m.getDefaultOptions()
+      end if
+
       options.append(m.defaultOptions)
       properties.append(m.defaultProperties)
 
@@ -182,7 +187,8 @@ class SegmentAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
   protected override function _processAnalyticsEvent(event as zapp.analytics.AnalyticsEvent)
     eventName = event.name
     properties = event.properties
-    options = event.options
+    options = asAA(event.options)
+    options.append(m.defaultOptions)
     m.library.track(eventName, properties, options)
   end function
 
