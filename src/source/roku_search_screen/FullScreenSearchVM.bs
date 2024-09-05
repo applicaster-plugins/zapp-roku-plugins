@@ -84,7 +84,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     m.setGridVisible(false)
     m.setScreenContainerVisible(true)
 
-    m.searchData = asAA(riversJson.data.search_source)
+    m.searchData = asAA(riversJson.data.search_source, riversJson.data)
     m.filterData = asAA(riversJson.data.filter_source)
     m.rowTarget = riversJson.data.target
     m.fallbackScreen = asString(riversJson.general.fallback)
