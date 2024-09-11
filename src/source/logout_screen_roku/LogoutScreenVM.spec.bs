@@ -131,6 +131,8 @@ namespace zapp.tests
       m.vm.isLoggedOut = true
 
       m.expectNone(m.vm, "pop")
+      m.expectCalled(m.vm.showAppExitDialog())
+
       m.vm.onKeyPressBack()
 
     end function
