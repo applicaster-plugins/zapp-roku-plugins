@@ -199,6 +199,72 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("track event")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("do nothing if disabled")
+    function _()
+      eventName = "n"
+      eventActionName = "an"
+      eventProperties = { id: "p" }
+      eventOptions = { id: "o" }
+      m.plugin.isEnabled = false
+
+      m.expectNotCalled(m.plugin.getDefaultOptions)
+      m.expectNotCalled(m.plugin.processAnalyticsEvent)
+
+      m.plugin._trackEvent(eventName, eventActionName, eventProperties, eventOptions)
+    end function
+
+    @it("send event if default options are valid")
+    function _()
+      eventName = "n"
+      eventActionName = "an"
+      eventProperties = { id: "p" }
+      eventOptions = { id: "o" }
+      m.plugin.isEnabled = true
+      m.plugin.defaultOptions = { id: "do" }
+      m.plugin.defaultProperties = { id: "dp" }
+
+      event = {
+        "name": eventName
+        "properties": { action_name: "an", name: "n", id: "dp" }
+        "options": { id: "do" }
+      }
+
+
+      m.expectNotCalled(m.plugin.getDefaultOptions)
+      m.expectCalled(m.plugin.processAnalyticsEvent(event))
+
+      m.plugin._trackEvent(eventName, eventActionName, eventProperties, eventOptions)
+    end function
+
+    @it("send event and re-set default options")
+    function _()
+      eventName = "n"
+      eventActionName = "an"
+      eventProperties = { id: "p" }
+      eventOptions = { id: "o" }
+      defaultOptions = { id: "do" }
+
+      m.plugin.isEnabled = true
+      m.plugin.defaultOptions = {}
+      m.plugin.defaultProperties = { id: "dp" }
+
+      event = {
+        "name": eventName
+        "properties": { action_name: "an", name: "n", id: "dp" }
+        "options": { id: "do" }
+      }
+
+      m.expectCalled(m.plugin.getDefaultOptions, defaultOptions)
+      m.expectCalled(m.plugin.processAnalyticsEvent(event))
+
+      m.plugin._trackEvent(eventName, eventActionName, eventProperties, eventOptions)
+    end function
+
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("toggleHeartbeat")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @it("schedules if active")
