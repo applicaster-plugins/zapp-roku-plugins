@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='utf-8'?>
+<component
+    name='ZBrightCovePlayer'
+    extends='BaseVideoPlayer'
+    vm='BrightCovePlayerVM'>
+
+  <interface>
+    <field
+        id='videoNodeSeek'
+        alwaysnotify='true'
+        type='integer' />
+    <field
+        id='videoNodeSeekMode'
+        alwaysnotify='true'
+        type='string' />
+    <field
+        id='nextVideoPlay'
+        alwaysnotify='false'
+        type='boolean' />
+
+  </interface>
+  <children>
+  </children>
+
+</component>
