@@ -3,6 +3,7 @@ import "pkg:/source/plugin-support/PluginManager.bs"
 import "pkg:/source/lib/ViewUtils.bs"
 import "pkg:/source/roku_modules/maestro/core/Notification.brs"
 import "pkg:/source/roku_video_player/AdBreakInfo.bs"
+import "pkg:/source/roku_video_player/RafManager.bs"
 
 class BrightCovePlayerVM extends zapp.BaseZappVM
 
@@ -23,7 +24,9 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
   private rafIsEnabled = false
   private rafStarted = false
   private sdkIsReady = false
-  private adBreakInfo as zapp.video.AdBreakInfo
+  private playerStarted = false
+  private playerItem = invalid
+  private nextVideoIsInvalid = invalid
 
   public function new(view)
     super("BrightCovelayerVM")
@@ -47,6 +50,8 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
     m.brightcorePlayerSDK.uri = m.sdkPath
     m.view.appendChild(m.brightcorePlayerSDK)
     m.observeNodeField(m.brightcorePlayerSDK, "loadStatus", m.onSDKLoadStatusChange)
+    m.observeNotification("isVideoControlsOkayPressedNeedToSkip", m.onBrightcoveOkayPressedNotificationMessage)
+    m.observeNotification("nextVideoIsInvalid", m.onBrightcoveNextVideoNotificationMessage)
   end function
 
   private function onSDKLoadStatusChange(status)
@@ -105,11 +110,11 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
     csai = bcPlayer.csai
     csai.setFields({
       enabled: true
-      useCSAS: false
+      useCSAS: true
       closeOnFinish: true
       maxRequests: 1
       enableJIT: true
-      enableInPodStitching: false
+      enableInPodStitching: true
       adMeasurements: {}
       adConstraints: {
         maxHeight: 1080
@@ -124,13 +129,13 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
     }
 
     m.observeNodeField(bcPlayer.on, "sdkReady", m.onSDKReady)
-    m.observeNodeField(bcPlayer.on, "start", m.onPlayerStateChange)
+    m.observeNodeField(bcPlayer.on, "start", m.onPlayerStart)
     m.observeNodeField(bcPlayer.on, "play", m.onPlayerStateChange)
     m.observeNodeField(bcPlayer.on, "pause", m.onPlayerStateChange)
     m.observeNodeField(bcPlayer.on, "finished", m.onPlayerStateChange)
     m.observeNodeField(bcPlayer.on, "buffering", m.onPlayerStateChange)
     m.observeNodeField(bcPlayer.on, "error", m.onPlayerStateChange)
-    m.observeNodeField(bcPlayer.on, "keyEvent", m.onPlayerKeyEvent)
+    m.observeNodeField(bcPlayer.on, "close", m.onPlayerClose)
     m.observeNodeField(bcPlayer, "position", m.onPlayerCurrentTimeChange)
     m.observeNodeField(bcPlayer, "duration", m.onPlayerCurrentDurationChange)
     m.observeNodeField(bcPlayer.csai, "event", m.onCSAIEvent)
@@ -150,8 +155,8 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
   end function
 
   public function playItem(item, playMode = "default") as void
-    m.log.method("playItem ", item.id)
     m.removeChildrenAfterIndex(m.view, 0)
+    m.bcPlayer = invalid
 
     'if m.sdkIsReady
     if m.accountId = "" or m.policyKey = ""
@@ -159,21 +164,26 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
       m.errorResult("Account id is missing")
       return
     end if
+    if item = invalid
+      m.log.error("item is invalid")
+      m.errorResult("Item is invalid")
+      return
+    end if
+    m.log.method("play brightcove Item ", item.id)
     m.currentItem = item
     m.playMode = playMode
-    m.adBreakInfo = new zapp.video.AdBreakInfo(m.currentItem)
-    playerItem = m.getPlayerItem(m.currentItem)
+    m.playerItem = m.getPlayerItem(m.currentItem)
 
     m.sendNotification("videoPlayerState", "buffering")
     m.startBCPlayer()
-    m.log.info("playing with player item", formatJson(playerItem))
+    m.log.info("playing with player item", formatJson(m.playerItem))
 
     if m.bcPlayer <> invalid
       m.pendingPlayerItem = invalid
-      m.playBrightcoveItem(m.bcPlayer, playerItem)
+      m.playBrightcoveItem(m.bcPlayer, m.playerItem)
     else
       m.log.warn("player is not ready yet; setting this item as pending")
-      m.pendingPlayerItem = playerItem
+      m.pendingPlayerItem = m.playerItem
     end if
     'end if
   end function
@@ -200,24 +210,28 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
       playStart: asInteger(item.playstart)
       video_id: asString(item.id)
       id: asString(item.id)
-      length: zapp.viewUtils.getUIBInt(itemExtensions, "duration")
+      length: zapp.viewUtils.getUIBInt(itemExtensions, "duration", 60)
       account_id: m.accountId
     }
 
     if m.rafIsEnabled
       currentPlayItem.adsData = {
         type: "csai",
-        'vmap: "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dskippablelinear&correlator="'m.adBreakInfo.getAdUrl(item)
-        'adBreakTimes: [120, 150] ' [optional] provide a set of adBreak times if applicable. This property is used in RAF's setAdBreaks() function
+        vmap: m.getAdUrl(item)
       }
     end if
     return currentPlayItem
+  end function
+
+  private function getAdUrl(item)
+    return mc.getString(item, "json.extensions.video_ads", invalid)
   end function
 
   public function stopItem()
     m.log.method("stopItem")
     if m.bcPlayer <> invalid and asBoolean(m.bcPlayer.on.sdkReady)
       m.bcPlayer.callFunc("close")
+      m.bcPlayer = invalid
     end if
     m.pendingPlayerItem = invalid
     m.currentItem = invalid
@@ -236,7 +250,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
 
     if stateReason = "finished"
       if state.errorCode = 0
-        if not asBoolean(m.view.nextVideoPlay)
+        if not asBoolean(m.view.nextVideoPlay) and m.playerStarted
           m.finishResult()
         end if
       else
@@ -245,9 +259,25 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
     else if stateReason = "error"
       m.errorResult()
     else
+      if asInteger(state.data.errorCode, -1) = 0
+        m.waitAframe(m.reCreatePlayer, 5)
+      end if
       'ignore this state ; but check if we've got a duration yet
     end if
 
+  end function
+
+  private function onPlayerStart(state) as void
+    m.playerStarted = true
+  end function
+
+  private function reCreatePlayer()
+    m.log.method("reCreatePlayer")
+    m.playerStarted = false
+    if m.currentItem <> invalid
+      m.pendingPlayerItem = m.currentItem
+    end if
+    m.playItem(m.pendingPlayerItem, m.playMode)
   end function
 
   private function onPlayerCurrentTimeChange(currentTime)
@@ -258,18 +288,8 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
     m.view.duration = duration
   end function
 
-  private function onPlayerKeyEvent(keyEvent)
-    m.log.method("onPlayerKeyEvent", keyEvent)
-    if asBoolean(keyEvent.press) or m.rafStarted
-
-      if keyEvent.key = "back"
-        m.stopItem()
-        m.bcPlayer.callFunc("close")
-      else if keyEvent.key = "OK"
-        m.sendNotification(mc.createNotification("isVideoControlsOkayPressed", true))
-      end if
-    end if
-
+  private function onPlayerClose(event)
+    m.log.method("onPlayerClose", event)
   end function
 
   function seekOnSkipOverlay(seekValue)
@@ -277,6 +297,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
       m.videoNode.control = "pause"
       m.videoNode.getChild(0).seekMode = "accurate"
       m.videoNode.seek = seekValue + 0.5
+      m.videoNode = m.bcPlayer.getChild(3)
     else
       m.bcPlayer.control = "pause"
       m.bcPlayer.seekMode = "accurate"
@@ -285,25 +306,69 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
   end function
 
   function onCSAIEvent(ev)
-    ? "CSAI Event: " ev
-    if ev.event = "start"
+    eventName = asString(ev.event)
+    if eventName = "start"
       m.videoNode = m.bcPlayer.getChild(3)
-      m.observeNodeField(m.videoNode, "position", m.onPlayerCurrentTimeChange)
+      video = m.videoNode.getChild(0)
+      m.observeNodeField(video, "position", m.onPlayerCurrentTimeChange)
       m.onPlayerCurrentDurationChange(m.videoNode.duration)
       m.rafStarted = true
-    else if ev.event = "raf-podstart"
+    else if eventName = "raf-podstart"
+      video = m.videoNode.getChild(0)
+      m.unobserveNodeField(video, "position", m.onPlayerCurrentTimeChange)
       m.sendNotification("adBreak", "started")
-    else if ev.event = "raf-podcomplete"
+    else if eventName = "raf-podcomplete"
+      video = m.videoNode.getChild(0)
+      m.observeNodeField(video, "position", m.onPlayerCurrentTimeChange)
       m.sendNotification("adBreak", "finished")
-    else if ev.event = "raf-contentcomplete"
-    else if ev.event = "close"
+    else if eventName = "raf-state"
       m.finishResult()
+    else if eventName = "raf-contentcomplete"
+      if m.nextVideoIsInvalid
+        m.stopItem()
+      else
+        m.setFocus(m.videoNode)
+        m.bcPlayer.callFunc("close")
+        m.sendNotification(mc.createNotification("isVideoControlsOkayPressed", true))
+      end if
+    else if eventName = "close"
+      m.finishResult()
+      m.stopItem()
     end if
+  end function
+
+  function isCapturingAnyKeyPress(key, press) as boolean
+    m.log.method("isBrightCoveCapturingAnyKeyPress", key, "press", press)
+    press = true
+    if press or m.rafStarted
+
+      if key = "back"
+        m.stopItem()
+      else if key = "OK"
+        m.sendNotification(mc.createNotification("isVideoControlsOkayPressed", true))
+      end if
+    end if
+
+    return false
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ private methods
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function onBrightcoveOkayPressedNotificationMessage(notification as mc.types.assocarray)
+    m.log.info("isBrightcoveOkayPressedNeedToSkip notification")
+    if m.rafStarted
+      m.videoNode.control = "stop"
+      m.setFocus(m.videoNode)
+      m.bcPlayer.callFunc("close")
+    end if
+  end function
+
+  private function onBrightcoveNextVideoNotificationMessage(notification as mc.types.assocarray)
+    m.log.info("onBrightcoveNextVideoNotificationMessage notification")
+    m.nextVideoIsInvalid = notification.data
+  end function
 
   function removeChildrenAfterIndex(parent as object, indexToRemoveAfter as integer)
     ' Remove children after the specified index
