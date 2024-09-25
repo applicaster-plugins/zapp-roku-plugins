@@ -34,7 +34,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
 
     m.policyKey = mc.getPath(view.riversJson, "general.policy_key", "")
     m.accountId = mc.getPath(view.riversJson, "general.account_id", "")
-    m.sdkPath = mc.getPath(view.riversJson, "general.sdk_url", "https://players.brightcove.net/roku-sdk/1.2.3/roku-sdk.pkg")
+    m.sdkPath = mc.getPath(view.riversJson, "general.sdk_url", "https://players.brightcove.net/roku-sdk/1/roku-sdk.pkg")
     m.rafIsEnabled = asBoolean(view.riversJson.general.raf_enabled)
   end function
 
@@ -310,21 +310,19 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
   function onCSAIEvent(ev)
     eventName = asString(ev.event)
     if eventName = "start"
-      m.videoNode = m.bcPlayer.getChild(3)
-      video = m.videoNode.getChild(0)
+      video = m.getVideoNode()
       m.observeNodeField(video, "position", m.onPlayerCurrentTimeChange)
       m.rafStarted = true
     else if eventName = "raf-podstart"
-      video = m.videoNode.getChild(0)
+      video = m.getVideoNode()
       m.unobserveNodeField(video, "position", m.onPlayerCurrentTimeChange)
       m.sendNotification("adBreak", "started")
     else if eventName = "raf-podcomplete"
-      video = m.videoNode.getChild(0)
+      video = m.getVideoNode()
       m.observeNodeField(video, "position", m.onPlayerCurrentTimeChange)
       m.sendNotification("adBreak", "finished")
     else if eventName = "raf-position"
-      m.videoNode = m.bcPlayer.getChild(3)
-      video = m.videoNode.getChild(0)
+      video = m.getVideoNode()
       video.duration = video.pauseBufferEnd
       m.onPlayerCurrentDurationChange(video.pauseBufferEnd)
     else if eventName = "raf-state"
@@ -361,6 +359,14 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ private methods
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function getVideoNode()
+    if m.videoNode <> invalid
+      return m.videoNode.getChild(0)
+    end if
+    m.videoNode = m.bcPlayer.getChild(3)
+    return m.videoNode.getChild(0)
+  end function
 
   private function onBrightcoveOkayPressedNotificationMessage(notification as mc.types.assocarray)
     m.log.info("isBrightcoveOkayPressedNeedToSkip notification")

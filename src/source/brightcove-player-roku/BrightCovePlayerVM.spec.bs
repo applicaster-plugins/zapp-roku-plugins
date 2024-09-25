@@ -164,6 +164,7 @@ namespace zapp.tests
     function _()
       m.vm.state = "playing"
       m.vm.bcPlayer = m.player
+      m.vm.playerStarted = true
       state = { reason: "finished", errorCode: 0 }
 
       m.expectCalled(m.vm.sendNotification("videoPlayerState", state.reason))
@@ -206,6 +207,8 @@ namespace zapp.tests
       m.vm.sdkIsReady = true
       m.vm.state = "ready"
       m.vm.bcPlayer = m.player
+      m.vm.accountId = "acID"
+      m.vm.policyKey = "pK"
 
       m.expectCalled(m.vm.removeChildrenAfterIndex(m.vm.view, 0))
       m.expectCalled(m.vm.getPlayerItem(item), playerData)
