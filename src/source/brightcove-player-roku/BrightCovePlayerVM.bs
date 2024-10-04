@@ -27,6 +27,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
   private playerStarted = false
   private playerItem = invalid
   private nextVideoIsInvalid = invalid
+  private baseUrl = "https://edge.api.brightcove.com/playback/v1"
 
   public function new(view)
     super("BrightCovelayerVM")
@@ -180,7 +181,21 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
 
     if m.bcPlayer <> invalid
       m.pendingPlayerItem = invalid
-      m.playBrightcoveItem(m.bcPlayer, m.playerItem)
+      if m.playerItem.url = ""
+        m.log.info("try to load item from remote")
+
+        url = m.baseUrl + `/accounts/${m.accountId}/videos/${m.playerItem.video_id}`
+
+        m.createTask("NetworkTask", {
+          "url": url,
+          "method": "GET"
+          "headers": {
+            "bcov-policy": m.policyKey
+          }
+        }, m.onVideoResponse)
+      else
+        m.playBrightcoveItem(m.bcPlayer, m.playerItem)
+      end if
     else
       m.log.warn("player is not ready yet; setting this item as pending")
       m.pendingPlayerItem = m.playerItem
@@ -188,7 +203,16 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
     'end if
   end function
 
-  function playBrightcoveItem(bcPlayer, playerItem)
+  function onVideoResponse(data)
+    if asBoolean(data.isok)
+      m.playerItem.url = asString(data.data.sources[0].src)
+      m.playBrightcoveItem(m.bcPlayer, m.playerItem)
+    else
+      m.errorResult("Error loading video")
+    end if
+  end function
+
+  function playBrightcoveItem(bcPlayer, playerItem, isCustom = true)
     m.log.method("playBrightcoveItem")
 
     m.state = "playing"
