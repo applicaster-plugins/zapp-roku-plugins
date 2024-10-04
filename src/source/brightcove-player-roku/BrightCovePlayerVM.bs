@@ -1,0 +1,442 @@
+import "pkg:/source/zapp/BaseZappVM.bs"
+import "pkg:/source/plugin-support/PluginManager.bs"
+import "pkg:/source/lib/ViewUtils.bs"
+import "pkg:/source/roku_modules/maestro/core/Notification.brs"
+import "pkg:/source/roku_video_player/AdBreakInfo.bs"
+import "pkg:/source/roku_video_player/RafManager.bs"
+
+class BrightCovePlayerVM extends zapp.BaseZappVM
+
+  private view = invalid
+  private videoNode as mc.types.node
+  private bcPlayer = invalid
+  private currentItem = invalid
+  private policyKey = ""
+  private accountId = ""
+  private pendingPlayerItem = invalid
+  private playMode = "default"
+  private brightcorePlayerSDK
+  private playerFunctions
+  private playerFields
+  private playerState
+  private sdkPath
+  private bcAPI
+  private rafIsEnabled = false
+  private rafStarted = false
+  private sdkIsReady = false
+  private playerStarted = false
+  private playerItem = invalid
+  private nextVideoIsInvalid = invalid
+  private baseUrl = "https://edge.api.brightcove.com/playback/v1"
+
+  public function new(view)
+    super("BrightCovelayerVM")
+    m.view = view
+
+    m.policyKey = mc.getPath(view.riversJson, "general.policy_key", "")
+    m.accountId = mc.getPath(view.riversJson, "general.account_id", "")
+    m.sdkPath = mc.getPath(view.riversJson, "general.sdk_url", "https://players.brightcove.net/roku-sdk/1/roku-sdk.pkg")
+    m.rafIsEnabled = asBoolean(view.riversJson.general.raf_enabled)
+  end function
+
+  override function initialize()
+    super.initialize()
+    m.createPlayer()
+  end function
+
+  private function createPlayer()
+    m.state = "creatingPlayer"
+    m.brightcorePlayerSDK = m.view.createChild("ComponentLibrary")
+    m.brightcorePlayerSDK.id = "bcLib"
+    m.brightcorePlayerSDK.uri = m.sdkPath
+    m.view.appendChild(m.brightcorePlayerSDK)
+    m.observeNodeField(m.brightcorePlayerSDK, "loadStatus", m.onSDKLoadStatusChange)
+    m.observeNotification("isVideoControlsOkayPressedNeedToSkip", m.onBrightcoveOkayPressedNotificationMessage)
+    m.observeNotification("nextVideoIsInvalid", m.onBrightcoveNextVideoNotificationMessage)
+  end function
+
+  private function onSDKLoadStatusChange(status)
+    m.log.info("sdk status is now", status)
+
+    if status = "ready"
+      m.sdkIsReady = true
+    else if status = "error"
+      m.log.error("sdk failed to load")
+      m.state = "error"
+    end if
+  end function
+
+  function onSDKReady(status)
+    m.log.info("sdk is ready to use", status)
+  end function
+
+  function startBCPlayer()
+    m.log.info("creating player")
+    bcPlayer = m.view.createChild("bcLib:bcPlayer")
+
+    bcPlayer.setFields({
+      streamPreference: ["hls", "dash", "mp4"],
+      drmPreference: ["widevine", "playready", "none"],
+      logLevel: 4,
+      credentials: invalid,
+      env: "production",
+      watermarkToken: "",
+      spinnerConfig: {},
+      closeOnBack: true,
+      retryOnError: true,
+      enableDialogs: false,
+      bufferTimeout: 0,
+      loading: false
+    })
+
+    bcPlayer.spinnerConfig = {
+      url: "noImage"
+    }
+
+    analytics = bcPlayer.analytics
+    analytics.setFields({
+      accountId: ""
+      url: ""
+      applicationID: ""
+      env: ""
+      playerId: ""
+      playerName: ""
+      accountId: ""
+      user: ""
+      destination: ""
+      source: ""
+      eventOut: {} ' read-only
+    })
+
+    csai = bcPlayer.csai
+    csai.setFields({
+      enabled: true
+      useCSAS: true
+      closeOnFinish: true
+      maxRequests: 1
+      enableJIT: true
+      enableInPodStitching: true
+      adMeasurements: {}
+      adConstraints: {
+        maxHeight: 1080
+        maxWidth: 1920
+        maxBitrate: 100000
+      }
+    })
+
+    bcPlayer.credentials = {
+      account_id: m.accountId,
+      policy_key: m.policyKey
+    }
+
+    m.observeNodeField(bcPlayer.on, "sdkReady", m.onSDKReady)
+    m.observeNodeField(bcPlayer.on, "start", m.onPlayerStart)
+    m.observeNodeField(bcPlayer.on, "play", m.onPlayerStateChange)
+    m.observeNodeField(bcPlayer.on, "pause", m.onPlayerStateChange)
+    m.observeNodeField(bcPlayer.on, "finished", m.onPlayerStateChange)
+    m.observeNodeField(bcPlayer.on, "buffering", m.onPlayerStateChange)
+    m.observeNodeField(bcPlayer.on, "error", m.onPlayerStateChange)
+    m.observeNodeField(bcPlayer.on, "close", m.onPlayerClose)
+    m.observeNodeField(bcPlayer, "position", m.onPlayerCurrentTimeChange)
+    m.observeNodeField(bcPlayer, "duration", m.onPlayerCurrentDurationChange)
+    m.observeNodeField(bcPlayer.csai, "event", m.onCSAIEvent)
+    m.observeNodeField(m.view, "videoNodeSeek", m.seekOnSkipOverlay)
+
+    m.bcPlayer = bcPlayer
+    m.state = "ready"
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Public api
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  function onReady(ev)
+    isReady = ev.getData()
+    m.log.info("bcAPI is ready", isReady)
+  end function
+
+  public function playItem(item, playMode = "default") as void
+    m.removeChildrenAfterIndex(m.view, 0)
+    m.bcPlayer = invalid
+
+    'if m.sdkIsReady
+    if m.accountId = "" or m.policyKey = ""
+      m.log.error("account id or policy key is missing")
+      m.errorResult("Account id is missing")
+      return
+    end if
+    if item = invalid
+      m.log.error("item is invalid")
+      m.errorResult("Item is invalid")
+      return
+    end if
+    m.log.method("play brightcove Item ", item.id)
+    m.currentItem = item
+    m.playMode = playMode
+    m.playerItem = m.getPlayerItem(m.currentItem)
+
+    m.sendNotification("videoPlayerState", "buffering")
+    m.startBCPlayer()
+    m.log.info("playing with player item", formatJson(m.playerItem))
+
+    if m.bcPlayer <> invalid
+      m.pendingPlayerItem = invalid
+      if m.playerItem.url = ""
+        m.log.info("try to load item from remote")
+
+        url = m.baseUrl + `/accounts/${m.accountId}/videos/${m.playerItem.video_id}`
+
+        m.createTask("NetworkTask", {
+          "url": url,
+          "method": "GET"
+          "headers": {
+            "bcov-policy": m.policyKey
+          }
+        }, m.onVideoResponse)
+      else
+        m.playBrightcoveItem(m.bcPlayer, m.playerItem)
+      end if
+    else
+      m.log.warn("player is not ready yet; setting this item as pending")
+      m.pendingPlayerItem = m.playerItem
+    end if
+    'end if
+  end function
+
+  function onVideoResponse(data)
+    if asBoolean(data.isok)
+      m.playerItem.url = asString(data.data.sources[0].src)
+      m.playBrightcoveItem(m.bcPlayer, m.playerItem)
+    else
+      m.errorResult("Error loading video")
+    end if
+  end function
+
+  function playBrightcoveItem(bcPlayer, playerItem, isCustom = true)
+    m.log.method("playBrightcoveItem")
+
+    m.state = "playing"
+    bcPlayer.control = "stop"
+    bcPlayer.content = invalid
+    bcPlayer.callFunc("loadCustom", playerItem)
+    bcPlayer.control = "play"
+    if m.playMode = "default"
+      m.setFocus(bcPlayer)
+    end if
+  end function
+
+  public function getPlayerItem(item)
+    itemExtensions = asAA(item.json.extensions)
+    currentPlayItem = {
+      url: asString(item.url)
+      title: asString(item.title)
+      streamFormat: asString(item.streamformat)
+      playStart: asInteger(item.playstart)
+      video_id: asString(item.id)
+      id: asString(item.id)
+      length: zapp.viewUtils.getUIBInt(itemExtensions, "duration", 60)
+      account_id: m.accountId
+    }
+
+    if m.rafIsEnabled
+      currentPlayItem.adsData = {
+        type: "csai",
+        vmap: m.getAdUrl(item)
+      }
+    end if
+    return currentPlayItem
+  end function
+
+  private function getAdUrl(item)
+    return mc.getString(item, "json.extensions.video_ads", invalid)
+  end function
+
+  public function stopItem()
+    m.log.method("stopItem")
+    if m.bcPlayer <> invalid and asBoolean(m.bcPlayer.on.sdkReady)
+      m.bcPlayer.callFunc("close")
+      m.bcPlayer = invalid
+    end if
+    m.pendingPlayerItem = invalid
+    m.currentItem = invalid
+    m.view.isPlaybackFinished = true
+    m.state = "ready"
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Player callbacks
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function onPlayerStateChange(state) as void
+    m.log.info("player state change", state)
+    stateReason = asString(state.reason)
+    m.sendNotification("videoPlayerState", stateReason)
+
+    if stateReason = "finished"
+      if state.errorCode = 0
+        if not asBoolean(m.view.nextVideoPlay) and m.playerStarted
+          m.finishResult()
+        end if
+      else
+        m.errorResult()
+      end if
+    else if stateReason = "error"
+      m.errorResult()
+    else
+      if asInteger(state.data.errorCode, -1) = 0
+        m.waitAframe(m.reCreatePlayer, 5)
+      end if
+      'ignore this state ; but check if we've got a duration yet
+    end if
+
+  end function
+
+  private function onPlayerStart(state) as void
+    m.playerStarted = true
+  end function
+
+  private function reCreatePlayer()
+    m.log.method("reCreatePlayer")
+    m.playerStarted = false
+    if m.currentItem <> invalid
+      m.pendingPlayerItem = m.currentItem
+    end if
+    m.playItem(m.pendingPlayerItem, m.playMode)
+  end function
+
+  private function onPlayerCurrentTimeChange(currentTime)
+    m.view.position = currentTime
+  end function
+
+  private function onPlayerCurrentDurationChange(duration)
+    if duration > 0
+      m.view.duration = duration
+    end if
+  end function
+
+  private function onPlayerClose(event)
+    m.log.method("onPlayerClose", event)
+  end function
+
+  function seekOnSkipOverlay(seekValue)
+    if m.rafStarted
+      m.videoNode.control = "pause"
+      m.videoNode.getChild(0).seekMode = "accurate"
+      m.videoNode.seek = seekValue + 0.5
+      m.videoNode = m.bcPlayer.getChild(3)
+    else
+      m.bcPlayer.control = "pause"
+      m.bcPlayer.seekMode = "accurate"
+      m.bcPlayer.seek = seekValue + 0.5
+    end if
+  end function
+
+  function onCSAIEvent(ev)
+    eventName = asString(ev.event)
+    if eventName = "start"
+      video = m.getVideoNode()
+      m.observeNodeField(video, "position", m.onPlayerCurrentTimeChange)
+      m.rafStarted = true
+    else if eventName = "raf-podstart"
+      video = m.getVideoNode()
+      m.unobserveNodeField(video, "position", m.onPlayerCurrentTimeChange)
+      m.sendNotification("adBreak", "started")
+    else if eventName = "raf-podcomplete"
+      video = m.getVideoNode()
+      m.observeNodeField(video, "position", m.onPlayerCurrentTimeChange)
+      m.sendNotification("adBreak", "finished")
+    else if eventName = "raf-position"
+      video = m.getVideoNode()
+      video.duration = video.pauseBufferEnd
+      m.onPlayerCurrentDurationChange(video.pauseBufferEnd)
+    else if eventName = "raf-state"
+      m.finishResult()
+    else if eventName = "raf-contentcomplete"
+      if m.nextVideoIsInvalid
+        m.stopItem()
+      else
+        m.setFocus(m.videoNode)
+        m.bcPlayer.callFunc("close")
+        m.sendNotification(mc.createNotification("isVideoControlsOkayPressed", true))
+      end if
+    else if eventName = "close"
+      m.finishResult()
+      m.stopItem()
+    end if
+  end function
+
+  function isCapturingAnyKeyPress(key, press) as boolean
+    m.log.method("isBrightCoveCapturingAnyKeyPress", key, "press", press)
+    press = true
+    if press or m.rafStarted
+
+      if key = "back"
+        m.stopItem()
+      else if key = "OK"
+        m.sendNotification(mc.createNotification("isVideoControlsOkayPressed", true))
+      end if
+    end if
+
+    return false
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ private methods
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function getVideoNode()
+    if m.videoNode <> invalid
+      return m.videoNode.getChild(0)
+    end if
+    m.videoNode = m.bcPlayer.getChild(3)
+    return m.videoNode.getChild(0)
+  end function
+
+  private function onBrightcoveOkayPressedNotificationMessage(notification as mc.types.assocarray)
+    m.log.info("isBrightcoveOkayPressedNeedToSkip notification")
+    if m.rafStarted
+      m.videoNode.control = "stop"
+      m.setFocus(m.videoNode)
+      m.bcPlayer.callFunc("close")
+    end if
+  end function
+
+  private function onBrightcoveNextVideoNotificationMessage(notification as mc.types.assocarray)
+    m.log.info("onBrightcoveNextVideoNotificationMessage notification")
+    m.nextVideoIsInvalid = notification.data
+  end function
+
+  function removeChildrenAfterIndex(parent as object, indexToRemoveAfter as integer)
+    ' Remove children after the specified index
+    if indexToRemoveAfter >= 0 and indexToRemoveAfter < parent.getChildCount() - 1
+      for i = parent.getChildCount() - 1 to indexToRemoveAfter + 1 step -1
+        parent.removeChild(parent.getChild(i))
+      end for
+    end if
+  end function
+
+  private function finishResult()
+    m.log.info("finishResult")
+    m.view.playbackResult = m.makeResult("finished", "")
+    m.view.isPlaybackFinished = true
+    m.state = "ready"
+  end function
+
+  private function errorResult(message = "Error during playback")
+    m.log.info("errorResult")
+    errorMessage = asString(m.bcPlayer.on.error.message, message)
+    m.view.playbackResult = m.makeResult("error", errorMessage)
+    m.view.isPlaybackFinished = true
+    m.state = "error"
+  end function
+
+  private function makeResult(state, message)
+    return { "state": state, "message": message }
+  end function
+
+  override function destroy()
+    'video player is never destroyed
+  end function
+
+
+end class

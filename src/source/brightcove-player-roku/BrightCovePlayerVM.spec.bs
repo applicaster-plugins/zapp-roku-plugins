@@ -1,0 +1,311 @@
+namespace zapp.tests
+  @tags("public", "video", "vm")
+  @suite
+  class BrightCovePlayerVMTests extends tests.BaseTestSuite
+
+    private BrightcovePlayerState
+    private BrightcoveFields
+    private selection
+    private riversJson
+    private view
+    private player
+    private vm
+
+    protected override function beforeEach()
+      super.beforeEach()
+      mioc.setInstance("collectionBookmarks", CreateObject("roSGNode", "Bookmarks"))
+      mioc.setInstance("vodItemBookmarks", CreateObject("roSGNode", "Bookmarks"))
+      mioc.setInstance("plugins", [])
+      m.BrightcovePlayerState = { "PLAYING": "playing", "STALLING": "stalling", "PAUSED": "paused", "FINISHED": "finished", "ERROR": "error", "NONE": "none", "SETUP": "setup", "READY": "ready" }
+
+
+      m.BrightcoveFields = { "PLAYER_STATE": "playerState", "ERROR": "error", "WARNING": "warning", "SEEK": "seek", "SEEKED": "seeked", "TIME_SHIFT": "timeShift", "TIME_SHIFTED": "timeShifted", "CURRENT_TIME": "currentTime", "SOURCE_LOADED": "sourceLoaded", "SOURCE_UNLOADED": "sourceUnloaded", "PLAY": "play", "METADATA": "metadata", "AUDIO_CHANGED": "audioChanged", "MUTED": "muted", "UNMUTED": "unmuted", "DOWNLOAD_FINISHED": "downloadFinished" }
+
+      m.selection = createObject("roSGNode", "Selection")
+
+      m.riversJson = {
+        "general": {
+          "policy_key": "pk"
+          "account_id": "aid"
+        }
+      }
+
+      m.view = { "id": "#view", "isPlaybackFinished": false, "playbackResult": invalid, "riversJson": m.riversJson }
+      m.player = {
+        "on": {
+          sdkReady: true
+        }
+        "BrightcoveFunctions": { "CLOSE": "close", "LOAD": "loadCustom", }
+        "BrightcoveFields": m.BrightcoveFields
+        "BrightcovePlayerState": m.BrightcovePlayerState
+      }
+
+      m.vm = new BrightCovePlayerVM(m.view)
+    end function
+
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("constructor")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("bad configured plugin")
+    @params({})
+    @params({ "policy_key": invalid })
+    @params({ "policy_key": "" })
+    @params({ "policy_key": "", })
+    @params({ "policy_key": "", })
+    @params({ "policy_key": "", "accountId": invalid })
+    @params({ "policy_key": "", "accountId": "" })
+    @params({ "accountId": "" })
+    @params({ "accountId": "#override" })
+    function _(generalJson)
+      m.view.riversJson = { "general": generalJson }
+      m.vm = new BrightCovePlayerVM(m.view)
+
+      m.assertEqual(m.vm.state, "none")
+      m.assertEqual(m.vm.view, m.view)
+      m.assertEmpty(m.vm.policyKey)
+      m.assertEmpty(m.vm.accountId)
+    end function
+
+    @it("valid plugin")
+    function _()
+      m.view.riversJson = { "general": {
+          "policy_key": "#key"
+          "account_id": "#override"
+        }
+      }
+
+      m.vm = new BrightCovePlayerVM(m.view)
+
+      m.assertEqual(m.vm.state, "none")
+      m.assertEqual(m.vm.view, m.view)
+      m.assertEqual(m.vm.policyKey, "#key")
+      m.assertEqual(m.vm.accountId, "#override")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onSDKLoadStatusChange")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("onLoadSDKStatusChange other states")
+    @params("none")
+    @params("notReady")
+    @params("loading")
+    function _(state)
+      m.vm.onSDKLoadStatusChange(state)
+
+      m.assertInvalid(m.vm.bcPlayer)
+      m.assertInvalid(m.vm.playerFunctions)
+      m.assertInvalid(m.vm.playerFields)
+    end function
+
+    @it("onLoadSDKStatusChange error states")
+    @params("error")
+    function _(state)
+      m.vm.onSDKLoadStatusChange(state)
+
+      m.assertEqual(m.vm.state, "error")
+    end function
+
+    @it("onLoadSDKStatusChange ready")
+    function _()
+      m.vm.sdkIsReady = false
+
+      m.vm.onSDKLoadStatusChange("ready")
+
+      m.assertEqual(m.vm.sdkIsReady, true)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onPlayerStateChange")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("onPlayerStateChange - other")
+    @params({ reason : "stalling" })
+    @params({ reason : "paused" })
+    @params({ reason : "playing" })
+    @params({ reason : "none" })
+    @params({ reason : "setup" })
+    function _(state)
+      m.vm.state = "playing"
+      m.vm.bcPlayer = m.player
+
+      m.expectCalled(m.vm.sendNotification("videoPlayerState", state.reason))
+
+      m.vm.onPlayerStateChange(state)
+    end function
+
+    @it("error")
+    function _()
+      m.vm.state = "playing"
+      m.vm.bcPlayer = m.player
+      state = { reason: "error" }
+
+      m.expectCalled(m.vm.sendNotification("videoPlayerState", state.reason))
+      m.expectCalled(m.vm.errorResult())
+
+      m.vm.onPlayerStateChange(state)
+    end function
+
+    @it("error finished")
+    function _()
+      m.vm.state = "playing"
+      m.vm.bcPlayer = m.player
+      state = { reason: "finished", errorCode: 1 }
+
+      m.expectCalled(m.vm.sendNotification("videoPlayerState", state.reason))
+      m.expectCalled(m.vm.errorResult())
+
+      m.vm.onPlayerStateChange(state)
+    end function
+
+    @it("finished")
+    function _()
+      m.vm.state = "playing"
+      m.vm.bcPlayer = m.player
+      m.vm.playerStarted = true
+      state = { reason: "finished", errorCode: 0 }
+
+      m.expectCalled(m.vm.sendNotification("videoPlayerState", state.reason))
+      m.expectCalled(m.vm.finishResult())
+
+      m.vm.onPlayerStateChange(state)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("errorResult")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("errorResult")
+    @params({ "message": "error1" })
+    @params({ "message": "error2" })
+    @params({ "message": "error3" })
+    function _(error)
+      m.vm.bcPlayer = m.player
+      m.vm.bcPlayer = {
+        "on": {
+          "error": error
+        }
+      }
+
+      m.vm.errorResult()
+
+      m.assertEqual(m.view.playbackResult, { "state": "error", "message": error.message })
+      m.assertEqual(m.view.isPlaybackFinished, true)
+      m.assertEqual(m.vm.state, "error")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("playItem")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("ready")
+    function _()
+      item = { "id": "a" }
+      playerData = { "id": "playerData" }
+      m.vm.sdkIsReady = true
+      m.vm.state = "ready"
+      m.vm.bcPlayer = m.player
+      m.vm.accountId = "acID"
+      m.vm.policyKey = "pK"
+
+      m.expectCalled(m.vm.removeChildrenAfterIndex(m.vm.view, 0))
+      m.expectCalled(m.vm.getPlayerItem(item), playerData)
+      m.expectCalled(m.vm.sendNotification("videoPlayerState", "buffering"))
+      m.expectCalled(m.vm.startBCPlayer())
+      m.expectCalled(m.vm.playBrightcoveItem(m.vm.bcPlayer, playerData))
+
+      m.vm.playItem(item)
+
+      m.assertInvalid(m.vm.pendingPlayerItem)
+    end function
+
+    @it("not ready")
+    function _()
+      item = { "id": "a" }
+      playerData = { "id": "playerData" }
+      m.vm.sdkIsReady = true
+      m.vm.state = "ready"
+      m.vm.bcPlayer = invalid
+      m.vm.playerFunctions = m.player.BrightcoveFunctions
+
+      m.expectCalled(m.vm.removeChildrenAfterIndex(m.vm.view, 0))
+      m.expectCalled(m.vm.getPlayerItem(item), playerData)
+      m.expectCalled(m.vm.sendNotification("videoPlayerState", "buffering"))
+      m.expectCalled(m.vm.startBCPlayer())
+      m.expectNotCalled(m.vm.playBrightcoveItem)
+
+      m.vm.playItem(item)
+
+      m.assertEqual(m.vm.pendingPlayerItem, playerData)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("playBrightcoveItem")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("playBrightcoveItem")
+    function _()
+      playerData = { "id": "playerData" }
+
+      m.vm.playMode = "default"
+      m.vm.state = "ready"
+      m.vm.bcPlayer = m.player
+      m.vm.playerFunctions = m.player.BrightcoveFunctions
+
+      m.expectCalled(m.vm.setFocus(m.player))
+      m.expectCalled(m.player.callFunc(m.player.BrightcoveFunctions.LOAD, playerData))
+
+      m.vm.playBrightcoveItem(m.player, playerData)
+
+      m.assertEqual(m.vm.bcPlayer.control, "play")
+      m.assertEqual(m.vm.state, "playing")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("stopItem")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("stopItem")
+    function _()
+      m.vm.state = "playing"
+      m.vm.bcPlayer = m.player
+      m.vm.bcPlayer = {
+        "on": {
+          sdkReady: true
+        }
+      }
+      m.expectCalled(m.vm.bcPlayer.callFunc(m.player.BrightcoveFunctions.CLOSE), invalid)
+
+      m.vm.stopItem()
+
+      m.assertEqual(m.vm.pendingPlayerItem, invalid)
+      m.assertEqual(m.vm.currentItem, invalid)
+      m.assertEqual(m.vm.state, "ready")
+      m.assertTrue(m.vm.view.isPlaybackFinished)
+    end function
+
+    @it("do not stop item if sdk is not ready")
+    function _()
+      m.player = {
+        "on": {
+          sdkReady: false
+        }
+        "BrightcoveFunctions": { "CLOSE": "close", "LOAD": "loadCustom", }
+      }
+      m.vm.state = "playing"
+      m.vm.bcPlayer = m.player
+      m.expectNotCalled(m.vm.bcPlayer.callFunc)
+
+      m.vm.stopItem()
+
+      m.assertEqual(m.vm.pendingPlayerItem, invalid)
+      m.assertEqual(m.vm.currentItem, invalid)
+      m.assertEqual(m.vm.state, "ready")
+      m.assertTrue(m.vm.view.isPlaybackFinished)
+    end function
+
+
+  end class
+end namespace

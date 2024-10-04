@@ -1,0 +1,47 @@
+import "pkg:/source/brightcove-player-roku/BrightCovePlayerVM.bs"
+
+function init()
+  m.top.observeField("control", "onControlChange")
+end function
+
+function onControlChange()
+  m.log.info("onControlChange", m.top.control)
+
+  if m.top.control = "play"
+    m.vm.player.callFunc(m.vm.playerFunctions.PLAY, invalid)
+  end if
+
+end function
+
+function initialize(args)
+  m.log.info("initialize")
+  createVM()
+end function
+
+function createVM()
+  m.log.method("createVM")
+
+  m.vm = new BrightCovePlayerVM(m.top)
+  m.vm.initialize()
+
+  mx.initializeBindings()
+end function
+
+function _applyStyle(styles, localizations, assets)
+end function
+
+function playItem(item, playMode = "default")
+  m.vm.playItem(item)
+end function
+
+function stopItem(args = invalid)
+  m.vm.stopItem()
+end function
+
+function onGainedFocus(isSelfFocused)
+  if isSelfFocused
+    if m.vm.player <> invalid
+      m.vm.player.setFocus(true)
+    end if
+  end if
+end function
