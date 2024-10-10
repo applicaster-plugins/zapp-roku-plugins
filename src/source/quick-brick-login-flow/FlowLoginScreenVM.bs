@@ -13,6 +13,7 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
   public forgotPasswordButtonStyle = invalid
   public usernamePlaceholderText = ""
   public passwordPlaceholderText = ""
+  public backgroundPosterColor = "#ffffff00"
 
   'state
   public isCredsValid = false
@@ -104,6 +105,7 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
     m.registerButtonStyle = registerButtonStyle
     m.forgotPasswordButtonStyle = forgotPasswordButtonStyle
     m.maxDebugAccounts = zapp.viewUtils.getUIBInt(styles, "debug_max_accounts")
+    m.backgroundPosterColor = zapp.viewUtils.transposeUIBColor(styles["background_color"], "#ffffff")
 
     m.updateFocusControls()
   end function
