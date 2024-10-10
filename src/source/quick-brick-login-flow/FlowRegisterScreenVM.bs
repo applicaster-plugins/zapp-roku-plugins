@@ -14,6 +14,7 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
   public namePlaceholderText = ""
   public lastNamePlaceholderText = ""
   public passwordPlaceholderText = ""
+  public backgroundPosterColor = "#ffffff00"
 
   'state
   public isCredsValid = false
@@ -113,6 +114,7 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
     m.loginButtonStyle = loginButtonStyle
     m.registerButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "button", "custom", m.localizations.register_button_text)
     m.maxDebugAccounts = zapp.viewUtils.getUIBInt(styles, "debug_max_accounts")
+    m.backgroundPosterColor = zapp.viewUtils.transposeUIBColor(styles["background_color"], "#ffffff")
 
     m.updateFocusControls()
   end function
