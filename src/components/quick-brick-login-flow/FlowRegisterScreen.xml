@@ -19,6 +19,7 @@
         color='{{=zapp_viewUtils_UIBColor("background_color")}}' />
     <mv_Poster
         id='backgroundPoster'
+        blendColor='{{backgroundPosterColor}}'
         style='{{=zapp_viewUtils_UIBBackgroundPoster("background")}}' />
     <mv_Poster
         id='logoPoster'
