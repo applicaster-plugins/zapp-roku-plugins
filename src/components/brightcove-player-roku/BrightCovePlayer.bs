@@ -31,11 +31,36 @@ function _applyStyle(styles, localizations, assets)
 end function
 
 function playItem(item, playMode = "default")
-  m.vm.playItem(item)
+  if item.playMode = "inline"
+    item = setUrlForInlineMode(item)
+  end if
+  m.vm.playItem(item, playMode)
 end function
 
-function stopItem(args = invalid)
-  m.vm.stopItem()
+function setUrlForInlineMode(item)
+  itemJson = item.json
+  if asString(itemJson.content.teaser, invalid) <> invalid
+    mc.setOrAddNodeField(item, "URL", itemJson.content.teaser)
+  else if asString(itemJson.extensions.preview_playback, invalid) <> invalid
+    mc.setOrAddNodeField(item, "URL", itemJson.extensions.preview_playback)
+  end if
+  mc.setOrAddNodeField(item, "TITLE", "")
+  mc.setOrAddNodeField(item, "STREAMFORMAT", "")
+  return item
+end function
+
+function setInlineView(targetView, isFullScreen, isMuted)
+  'targetView.appendChild(m.videoNode)
+  if m.top <> invalid
+    m.top.videoPlayerHeight = targetView.height
+    m.top.videoPlayerWidth = targetView.width
+  end if
+end function
+
+function stopItem(navBarFocused = false)
+  if navBarFocused
+    m.vm.stopItem()
+  end if
 end function
 
 function onGainedFocus(isSelfFocused)

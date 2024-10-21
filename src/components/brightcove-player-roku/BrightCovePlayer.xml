@@ -6,6 +6,14 @@
 
   <interface>
     <field
+        id='videoPlayerHeight'
+        value='1080'
+        type='integer' />
+    <field
+        id='videoPlayerWidth'
+        value='1920'
+        type='integer' />
+    <field
         id='videoNodeSeek'
         alwaysnotify='true'
         type='integer' />
@@ -17,6 +25,7 @@
         id='nextVideoPlay'
         alwaysnotify='false'
         type='boolean' />
+    <function name='setInlineView' />
 
   </interface>
   <children>
