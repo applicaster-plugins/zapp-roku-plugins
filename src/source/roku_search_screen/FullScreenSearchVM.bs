@@ -55,6 +55,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
   private minCharacters = 3
   private searchQueryName = "q"
   private isShowingContent = false
+  private searchHaveResults = false
   private direction = 1
   private lastRowIndex = -1
   private rowTarget = invalid
@@ -71,6 +72,9 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
   private backgroundBorderPoster = invalid
   private backgroundPoster = invalid
   private buttonMenu = invalid
+
+  @inject("analyticsManager")
+  private analytics
 
   public function new(riversJson)
     super(riversJson, "FullScreenSearchVM")
@@ -314,7 +318,9 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
 
     if item <> invalid and item.itemType <> "placeholder"
       m.log.info("selected item: ", item.id)
-      m.executeContentSelection(m.createSelectionFromContent(item, m.results))
+      selection = m.createSelectionFromContent(item, m.results)
+      m.sendSearchTapCellEvent(selection, index)
+      m.executeContentSelection(selection)
       m.isShowingContent = true
     else
       m.log.warn("selected non-selectable item")
@@ -355,6 +361,10 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
       m.setScreenContainerVisible(true)
       m.isLoading = false
       m.applySearchFilterDefaultState()
+      if m.searchHaveResults
+        m.sendSearchCanceledEvent()
+      end if
+      m.searchHaveResults = false
     end if
 
   end function
@@ -427,10 +437,11 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
 
   public override function onFeedResult(result)
     m.log.method("onFeedResult")
-
     m.toggleLoadingDataTask(false)
     m.isLoading = false
     results = result.data
+    m.sendSearchExecutedEvent(results.getChildCount())
+
     if result.isOk and results <> invalid
       m.setContentStyle(results)
       m.nextUrl = zapp.collectionRowUtils.getNextUrl(result.data.json)
@@ -439,8 +450,16 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
       m.feed = result.data
       m.isMoreAvailable = m.nextUrl <> invalid and m.nextUrl <> ""
       m.isFilterVisible = m.numItems > 0
+      if m.numItems <= 0
+        m.searchHaveResults = false
+        m.sendSearchNoResultEvent()
+      else
+        m.searchHaveResults = true
+      end if
     else
       results = createObject("roSGNode", "ZPEntry")
+      m.searchHaveResults = false
+      m.sendSearchNoResultEvent()
     end if
 
     mc.setOrAddNodeField(results, "target", m.rowTarget)
@@ -530,6 +549,45 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
 
   private function canLoadMore()
     return m.results <> invalid and m.isPaginationSupported and m.direction = 1 and m.isMoreAvailable and m.state <> "loading" and m.lastRowIndex > m.numRows - m.loadNextOffset
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Analytic Events
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function sendSearchExecutedEvent(numItems)
+    analyticsProperties = m.setDefaultProperties()
+    analyticsProperties.append({
+      "result_count": numItems
+    })
+    m.sendAnalyticsEvent(zapp.analytics.EventType.searchExecuted, analyticsProperties, m.getScreenProperties())
+  end function
+
+  private function sendSearchNoResultEvent()
+    analyticsProperties = m.setDefaultProperties()
+    m.sendAnalyticsEvent(zapp.analytics.EventType.searchNoResultFound, analyticsProperties, m.getScreenProperties())
+  end function
+
+  private function sendSearchTapCellEvent(selection, index)
+    analyticsProperties = m.setDefaultProperties()
+    cellProperties = m.getCellProperties(selection, index)
+    analyticsProperties.append({
+      "tap_cell": cellProperties
+    })
+    m.sendAnalyticsEvent(zapp.analytics.EventType.searchTapCell, analyticsProperties, invalid, invalid, cellProperties)
+  end function
+
+  private function sendSearchCanceledEvent()
+    analyticsProperties = m.setDefaultProperties()
+    m.sendAnalyticsEvent(zapp.analytics.EventType.searchCanceled, analyticsProperties, m.getScreenProperties())
+  end function
+
+  private function setDefaultProperties()
+    return {
+      "query_length": len(m.searchText.trim())
+      "query_text": m.searchText
+      "event_timestamp": createObject("roDateTime").toISOString()
+    }
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
