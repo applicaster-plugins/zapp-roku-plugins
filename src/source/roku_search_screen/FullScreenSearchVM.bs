@@ -56,6 +56,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
   private searchQueryName = "q"
   private isShowingContent = false
   private searchHaveResults = false
+  private itemWasSelected = false
   private direction = 1
   private lastRowIndex = -1
   private rowTarget = invalid
@@ -313,6 +314,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
 
   public function onSelectItem(index)
     m.log.info("onSelecteItem", index)
+    m.itemWasSelected = true
 
     item = m.results.getChild(index)
 
@@ -361,10 +363,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
       m.setScreenContainerVisible(true)
       m.isLoading = false
       m.applySearchFilterDefaultState()
-      if m.searchHaveResults
-        m.sendSearchCanceledEvent()
-      end if
-      m.searchHaveResults = false
+      m.checkIfSearchWasCanceled()
     end if
 
   end function
@@ -551,6 +550,14 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
     return m.results <> invalid and m.isPaginationSupported and m.direction = 1 and m.isMoreAvailable and m.state <> "loading" and m.lastRowIndex > m.numRows - m.loadNextOffset
   end function
 
+  private function checkIfSearchWasCanceled()
+    if m.searchHaveResults and not m.itemWasSelected
+      m.sendSearchCanceledEvent()
+    end if
+    m.searchHaveResults = false
+    m.itemWasSelected = false
+  end function
+
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ Analytic Events
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -668,6 +675,7 @@ class FullScreenSearchVM extends zapp.uib.ComponentVM
 
     m.cancelWaitTimer(m.searchDelayTask)
     m.cancelTask(m.loadDataTask)
+    m.checkIfSearchWasCanceled()
     m.loadDataTask = invalid
     m.searchDelayTask = invalid
   end function
