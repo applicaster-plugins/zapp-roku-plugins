@@ -356,6 +356,7 @@ namespace zapp.tests
     function _(text)
       loadDataTask = { "id": "loadDataTask" }
       searchDelayTask = { "id": "searchDelayTask" }
+      m.vm.searchHaveResults = true
       m.vm.searchDelayTask = searchDelayTask
       m.vm.loadDataTask = loadDataTask
 
@@ -363,10 +364,12 @@ namespace zapp.tests
       m.expectCalled(m.vm.cancelTask(loadDataTask))
       m.expectNotCalled(m.vm.waitAFrame)
       m.expectCalled(m.vm.applySearchFilterDefaultState())
+      m.expectCalled(m.vm.sendSearchCanceledEvent())
 
       m.vm.onSearchTextChange(text)
 
       m.assertEqual(m.vm.searchDelayTask, searchDelayTask)
+      m.assertEqual(m.vm.searchHaveResults, false)
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
