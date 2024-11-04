@@ -11,6 +11,8 @@ class MuxVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
   private envKey = ""
   private isEnabled = false
   private userIdStorageKey = ""
+  private accountSection = ""
+  private accountKey = ""
 
 
   public function new(plugin = invalid)
@@ -21,6 +23,9 @@ class MuxVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
     m.envKey = plugin.getStringValue("env_key")
     m.isEnabled = plugin.getBoolValue("enabled")
     m.userIdStorageKey = plugin.getStringValue("user_identity_storage_key", "quick-brick-login-flow.access-token")
+    parts = m.userIdStorageKey.split(".")
+    m.accountSection = asString(parts[0])
+    m.accountKey = asString(parts[1])
   end function
 
   private function getPlugin(plugin = invalid)
@@ -46,6 +51,7 @@ class MuxVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
         m.muxTask = m.createInstance(m.taskName)
         m.muxTask.setField("video", videoNode)
         m.muxTask.setField("isLogsEnabled", m.log.enabled)
+        m.muxTask.setField("userID", m.getAccountId())
         muxConfig = {
           env_key: m.envKey,
         }
@@ -104,6 +110,10 @@ class MuxVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ Private Methods
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function getAccountId()
+    return m.getSessionStoreValue(m.accountSection, m.accountKey, false)
+  end function
 
   private function createMapper(plugin) as zapp.analytics.AnalyticsEventMapper
     return new zapp.analytics.AnalyticsEventMapper(asAny(plugin.json.configuration_json.events_mapper))
