@@ -1,0 +1,122 @@
+import "pkg:/source/lib/BaseClass.bs"
+import "pkg:/source/video/analytics/BaseVideoAnalyticsPlugin.bs"
+import "pkg:/source/video/analytics/VideoAnalyticsEvent.bs"
+import "pkg:/source/analytics/AnalyticsEventMapper.bs"
+
+class MuxVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
+
+  private analyticsMapper as zapp.analytics.AnalyticsEventMapper
+  private muxTask = invalid
+  private taskName = "MuxTask"
+  private envKey = ""
+  private isEnabled = false
+  private userIdStorageKey = ""
+  private accountSection = ""
+  private accountKey = ""
+
+
+  public function new(plugin = invalid)
+    super("MuxVideoAnalytics")
+    plugin = m.getPlugin(plugin)
+    m.analyticsMapper = m.createMapper(plugin)
+    m.taskName = plugin.getStringValue("task_name", "MuxTask")
+    m.envKey = plugin.getStringValue("env_key")
+    m.isEnabled = plugin.getBoolValue("enabled")
+    m.userIdStorageKey = plugin.getStringValue("user_identity_storage_key", "quick-brick-login-flow.access-token")
+    parts = m.userIdStorageKey.split(".")
+    m.accountSection = asString(parts[0])
+    m.accountKey = asString(parts[1])
+  end function
+
+  private function getPlugin(plugin = invalid)
+    if plugin = invalid
+      pluginManager = new zapp.PluginManager()
+      plugin = pluginManager.getPluginById("zapp-analytics-plugin-mux")
+    end if
+
+    return plugin
+  end function
+
+
+  public override function videoInit(videoNode, contentNode) as void
+    super.videoInit(videoNode, contentNode)
+    if m.isEnabled and m.envKey <> ""
+      m.log.info("video starting", contentNode.title)
+
+      m.contentNode = contentNode
+      m.muxTask = m.getInstance("muxAnalyticsTask")
+
+      if m.muxTask = invalid
+        m.log.warn("Creating new Mux Task")
+        m.muxTask = m.createInstance(m.taskName)
+        m.muxTask.setField("video", videoNode)
+        m.muxTask.setField("isLogsEnabled", m.log.enabled)
+        m.muxTask.setField("userID", m.getAccountId())
+        muxConfig = {
+          env_key: m.envKey,
+        }
+        m.muxTask.setField("config", muxConfig)
+        m.muxTask.control = "RUN"
+        m.setInstance("muxAnalyticsTask", m.muxTask)
+      end if
+    end if
+  end function
+
+  public override function videoEnd() as void
+    super.videoEnd()
+    m.log.info("video session ending")
+
+    m.muxTask = m.getInstance("muxAnalyticsTask")
+
+    if m.muxTask <> invalid
+      m.log.info("Stopping Mux Task")
+      m.muxTask.taskState = "stop"
+      m.muxTask.control = "done"
+      m.muxTask = invalid
+      m.setInstance("muxAnalyticsTask", m.muxTask)
+    else
+      m.log.warn("No Mux Task to stop")
+    end if
+  end function
+
+  public override function adBreakStart() as void
+    super.adBreakStart()
+  end function
+
+  public override function adBreakEnd()
+    super.adBreakEnd()
+  end function
+
+  public override function adTrackingEvent(eventType, rafCtx) as void
+    super.adTrackingEvent(eventType, rafCtx)
+    m.log.method("adTrackingEvent")
+    if m.muxTask <> invalid
+      if asString(rafCtx.type) = "PodComplete" or asString(rafCtx.type) = "Complete"
+        m.muxTask.setField("view", "end")
+      else if asString(rafCtx.type) = "PodStart"
+        m.muxTask.setField("view", "start")
+      end if
+
+      if asString(rafCtx.adserver, invalid) <> invalid
+        m.muxTask.setField("rafEvent", { obj: { adurl: rafCtx.adserver }, eventType: eventType, ctx: rafCtx })
+      end if
+    end if
+  end function
+
+  public override function onVideoAnalyticsEvent(event as zapp.video.VideoAnalyticsEvent)
+
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Private Methods
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function getAccountId()
+    return m.getSessionStoreValue(m.accountSection, m.accountKey, false)
+  end function
+
+  private function createMapper(plugin) as zapp.analytics.AnalyticsEventMapper
+    return new zapp.analytics.AnalyticsEventMapper(asAny(plugin.json.configuration_json.events_mapper))
+  end function
+
+end class
