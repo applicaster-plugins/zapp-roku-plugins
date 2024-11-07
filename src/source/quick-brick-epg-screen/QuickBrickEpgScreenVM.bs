@@ -237,15 +237,25 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
           m.channelItem = m.timeGridContent.createChild("ContentNode")
           m.channelItem.title = channelData.title
           m.channelItem.HDSMALLICONURL = asString(channelData.json.images.image_base)
-          actuallUrl = m.substituteIdInUrl(programData.source, m.channelItem, channelData, asAA(programData.mapping), isoTime)
+          actualUrl = m.substituteIdInUrl(programData.source, m.channelItem, channelData, asAA(programData.mapping), isoTime)
+          id = asString(m.channelItem.id)
           m.taskCount++
-          m.loadProgramTask = m.executeloadTaskWithUrlAndMapping("1", m.onLoadProgramsResponse, actuallUrl, 0, "value", m.channelItem, programData)
+          m.loadProgramTask = m.executeloadTaskWithUrlAndMapping(id, m.onLoadProgramsResponse, actualUrl, 0, "value", m.channelItem, programData)
         end for
       end if
     else
       m.log.error("Failed to load channels data")
       m.state = "error"
     end if
+  end function
+
+  private function getChannelId(timeGridContent, id)
+    for each channel in timeGridContent.getChildren(-1, 0)
+      if channel.id = id
+        return channel
+      end if
+    end for
+    return timeGridContent.getChild(0)
   end function
 
   private function onLoadProgramsResponse(result)
@@ -258,7 +268,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       programsData = result.data
       programsCount = programsData.getChildCount() - 1
       for each programData in programsData.getChildren(-1, 0)
-        programItem = m.channelItem.createChild("ContentNode")
+        channelItem = m.getChannelId(m.timeGridContent, result.id)
+        programItem = channelItem.createChild("ContentNode")
         programItem.PLAYSTART = m.parseDateStringToSeconds(programData.json.extensions.start_time)
         programItem.PLAYDURATION = m.parseDateStringToSeconds(programData.json.extensions.end_time) - m.parseDateStringToSeconds(programData.json.extensions.start_time)
         programText = zapp.viewUtils.textToTextTransformFormat(programData.title, styles.label1_text_transform)
