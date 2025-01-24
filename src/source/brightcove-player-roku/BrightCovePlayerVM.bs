@@ -269,6 +269,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
       id: asString(item.id)
       length: zapp.viewUtils.getUIBInt(itemExtensions, "duration", 60)
       account_id: m.accountId
+      drmParams: asAA(item.drmParams)
     }
 
     if m.rafIsEnabled
