@@ -306,7 +306,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     if m.taskCount = 0
       m.setField("content", m.timeGridContent)
       currentTime = CreateObject("roDateTime").asSeconds()
-      m.contentStartTime = currentTime
+      m.contentStartTime = currentTime - 1200
       m.currentTimeGridLeftEdgeTime = m.contentStartTime
       m.content = m.timeGridContent
       m.log.info("content for Epg", m.timeGridContent)
@@ -1139,8 +1139,13 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     iso8601 = Left(dateString, 19)
     iso8601.replace("/", "-")
     zoneOffset = Right(dateString, 4)
-    zoneOffsetHH = Left(zoneOffset, 2)
-    zoneOffsetMM = Right(zoneOffset, 2)
+    if zoneOffset.endsWith("Z")
+      zoneOffsetHH = "0"
+      zoneOffsetMM = "0"
+    else
+      zoneOffsetHH = Left(zoneOffset, 2)
+      zoneOffsetMM = Right(zoneOffset, 2)
+    end if
     zoneOffsetSign = 1
 
     if dateString.instr(20, "+") > 0
@@ -1158,18 +1163,23 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   end function
 
   private function substituteIdInUrl(url as string, channelItem, channelData, mapping, isoTime) as string
-    matches = m.regex.match(url)
+    matches = m.regex.matchAll(url)
     key = "id"
+    value = ""
 
     if matches.count() > 0 and mapping.count() > 0
-      key = matches[1]
-      if mapping[key].property <> invalid
-        value = mc.getPath(channelData.json, mapping[key].property)
-      else
-        value = mc.getPath(channelData, key)
-      end if
+      for each match in matches
+        key = match[1]
+        if mapping[key].property <> invalid
+          value = mc.getPath(channelData.json, mapping[key].property)
+        else
+          value = mc.getPath(channelData, key)
+        end if
+        url = url.replace(`{{${key}}}`, value)
+      end for
     else
       value = mc.getPath(channelData, key)
+      url = url.replace(`{{${key}}}`, value)
     end if
 
     channelItem.id = value
@@ -1183,7 +1193,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       concat = "?"
     end if
 
-    return `${url}${concat}start_time=${isoTime}`.replace(`{{${key}}}`, value)
+    return `${url}${concat}start_time=${isoTime}`
   end function
 
   private function toggleNavigationMenuFocus()

@@ -466,6 +466,14 @@ namespace zapp.plugins.tests
       m.assertEqual(`${result}`, `${1695830400}`)
     end function
 
+    @it("parse date string to seconds 2")
+    function _()
+      result = m.vm.parseDateStringToSeconds("2025-01-27T09:38:38.711Z")
+
+      m.assertEqual(`${result}`, `${1737970718}`)
+    end function
+
+
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("onKeyPressUp")
