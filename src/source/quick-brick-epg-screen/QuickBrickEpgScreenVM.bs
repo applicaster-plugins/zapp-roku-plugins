@@ -61,7 +61,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   private isHeaderUpdatingOnFocus = false
   private timeout = invalid
   private loadChannelTask = invalid
-  private loadProgramTask = invalid
+  private loadProgramTask = []
   private focusRectangle = invalid
   private channelItem = invalid
   private timeGridContent = invalid
@@ -240,7 +240,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
           actualUrl = m.substituteIdInUrl(programData.source, m.channelItem, channelData, asAA(programData.mapping), isoTime)
           id = asString(m.channelItem.id)
           m.taskCount++
-          m.loadProgramTask = m.executeloadTaskWithUrlAndMapping(id, m.onLoadProgramsResponse, actualUrl, 0, "value", m.channelItem, programData)
+          task = m.executeloadTaskWithUrlAndMapping(id, m.onLoadProgramsResponse, actualUrl, 0, "value", m.channelItem, programData)
+          m.loadProgramTask.push(task)
         end for
       end if
     else
@@ -381,21 +382,24 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     m.log.info("selected index", index)
     item = m.menuButtons[index]
 
+    for each task in m.loadProgramTask
+      task.control = "stop"
+    end for
+
     if item <> invalid
-      if m.taskCount = 0 and m.programState = "ready"
-        currentTime = CreateObject("roDateTime")
-        currentDayIndex = currentTime.getDayOfWeek()
+      m.loadProgramTask = []
+      currentTime = CreateObject("roDateTime")
+      currentDayIndex = currentTime.getDayOfWeek()
 
 
-        dayDifference = m.dayDifferenceCalculation(index, currentDayIndex, item)
-        timezone = currentTime.GetTimeZoneOffset() * 60
-        hours = currentTime.GetHours() * 3600
-        minutes = currentTime.GetMinutes() * 60
-        targetTime = currentTime.asSeconds() + (m.dayInSeconds * dayDifference) - hours - minutes + timezone
-        m.leftEdgeTargetTime = targetTime
-        m.setIsoTime(targetTime)
-        m.setEpgContent(m.riversJsonData.data)
-      end if
+      dayDifference = m.dayDifferenceCalculation(index, currentDayIndex, item)
+      timezone = currentTime.GetTimeZoneOffset() * 60
+      hours = currentTime.GetHours() * 3600
+      minutes = currentTime.GetMinutes() * 60
+      targetTime = currentTime.asSeconds() + (m.dayInSeconds * dayDifference) - hours - minutes + timezone
+      m.leftEdgeTargetTime = targetTime
+      m.setIsoTime(targetTime)
+      m.setEpgContent(m.riversJsonData.data)
     end if
   end function
 
