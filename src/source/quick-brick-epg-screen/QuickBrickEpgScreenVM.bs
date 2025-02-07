@@ -54,6 +54,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
 
   private jwtUtil = new zapp.JWTUtil()
   private nowIndicatorTimer as mc.types.node
+  private todayContent = invalid
   private liveAsset = ""
   private isNowNextMode = false
   private dayInSeconds = 86400
@@ -73,6 +74,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   private currentTimeGridLeftEdgeTime = 0
   private parser = new zapp.pipes.Parser()
 
+  private timeGridState = "loading"
   private regex = invalid
   private focusIds = []
   private riversJsonData = invalid
@@ -211,6 +213,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
 
     if asString(data.channels_source.source) <> ""
       m.state = "loading"
+      m.timeGridState = "loading"
       m.loadChannelTask = m.executeloadTaskWithUrl("1", m.onLoadMoreResponse, data.channels_source.source, 0)
     end if
   end function
@@ -264,6 +267,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     m.programsData = []
     styles = m.riversJsonData.styles
     m.programState = "loading"
+    m.timeGrid.channelNoDataText = "Loading..."
     if asBoolean(result.isOk)
       m.channelCount++
       programsData = result.data
@@ -278,7 +282,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
         mc.setOrAddNodeField(programItem, "content", programData.json.content)
         mc.setOrAddNodeField(programItem, "type", programData.json.type)
         programItem.id = programData.id
-        programItem.genre = asString(programData.json.genre)
+        'programItem.genre = asString(programData.json.genre)
         programItem.shortDescriptionLine1 = asString(programData.json.summary)
         'programItem.HDSMALLICONURL = "pkg:/images/playButton.png"
         m.programsData.push(programItem)
@@ -304,29 +308,42 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     end if
     m.taskCount--
 
-    if m.taskCount = 0
-      m.setField("content", m.timeGridContent)
-      currentTime = CreateObject("roDateTime").asSeconds()
-      m.contentStartTime = currentTime - 1200
-      m.currentTimeGridLeftEdgeTime = m.contentStartTime
-      m.content = m.timeGridContent
-      m.log.info("content for Epg", m.timeGridContent)
-      numRows = zapp.viewUtils.getUIBInt(m.riversJsonData.styles, "time_grid_visible_row", 6)
-      channelCount = m.timeGridContent.getChildCount()
-      if channelCount < numRows
-        m.timeGrid.numRows = channelCount
-      end if
-
-      m.setNowBarIndicatorPosition()
-
-      m.state = "ready"
-      m.programState = "ready"
-    end if
+    m.applyDataOnTaskComplete()
 
     if m.isUsingButtons and not m.isNowNextMode and not m.buttonsIsReady
       m.createCustomItems()
       m.updateMenuItems()
     end if
+  end function
+
+  private function applyDataOnTaskComplete()
+    if m.leftEdgeTargetTime = 0 and m.todayContent = invalid and m.taskCount = 0
+      m.todayContent = m.timeGridContent
+    end if
+    m.setField("content", m.timeGridContent)
+    currentTime = CreateObject("roDateTime").asSeconds()
+    m.contentStartTime = currentTime - 1200
+    m.currentTimeGridLeftEdgeTime = m.contentStartTime
+    m.content = m.timeGridContent
+    m.log.info("content for Epg", m.timeGridContent)
+    numRows = zapp.viewUtils.getUIBInt(m.riversJsonData.styles, "time_grid_visible_row", 6)
+    channelCount = m.timeGridContent.getChildCount()
+    if channelCount < numRows
+      m.timeGrid.numRows = channelCount
+    end if
+
+    m.setNowBarIndicatorPosition()
+    if m.taskCount = 0
+      m.timeGrid.channelNoDataText = "No Data Available"
+      m.waitAFrame(m.allDataLoaded, 0.2)
+    end if
+    m.state = "ready"
+    m.programState = "ready"
+  end function
+
+  private function allDataLoaded()
+    m.log.method("allDataLoaded")
+    m.timeGridState = "ready"
   end function
 
   private function setNowBarIndicatorPosition()
@@ -366,8 +383,12 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     m.selectProgram(programIndex)
   end function
 
-  public function onChannelFocused(channelIndex)
+  public function onChannelFocused(channelIndex) as void
     m.log.info("onChannelFocused", channelIndex)
+    if m.programFocused < 0 and channelIndex = 0 and m.timeGridState = "loading"
+      m.timeGrid.jumpToChannel = m.channelFocused
+      return
+    end if
     m.channelFocused = channelIndex
   end function
 
@@ -388,35 +409,31 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
 
     if item <> invalid
       m.loadProgramTask = []
-      currentTime = CreateObject("roDateTime")
-      currentDayIndex = currentTime.getDayOfWeek()
-
-
-      dayDifference = m.dayDifferenceCalculation(index, currentDayIndex, item)
-      timezone = currentTime.GetTimeZoneOffset() * 60
-      hours = currentTime.GetHours() * 3600
-      minutes = currentTime.GetMinutes() * 60
-      targetTime = currentTime.asSeconds() + (m.dayInSeconds * dayDifference) - hours - minutes + timezone
-      m.leftEdgeTargetTime = targetTime
-      m.setIsoTime(targetTime)
-      m.setEpgContent(m.riversJsonData.data)
+      if index = 0 and m.todayContent <> invalid
+        m.leftEdgeTargetTime = 0
+        m.setField("content", invalid)
+        m.content = m.todayContent
+        m.timeGridContent = invalid
+        m.timeGridContent = m.todayContent
+        m.applyDataOnTaskComplete()
+        m.timeGrid.jumpToTime = 0
+      else
+        currentTime = CreateObject("roDateTime")
+        if index = 0
+          targetTime = currentTime.asSeconds()
+          m.leftEdgeTargetTime = 0
+        else
+          dayDifference = index
+          timezone = currentTime.GetTimeZoneOffset() * 60
+          hours = currentTime.GetHours() * 3600
+          minutes = currentTime.GetMinutes() * 60
+          targetTime = currentTime.asSeconds() + (m.dayInSeconds * dayDifference) - hours - minutes + timezone
+          m.leftEdgeTargetTime = targetTime
+        end if
+        m.setIsoTime(int(targetTime))
+        m.setEpgContent(m.riversJsonData.data)
+      end if
     end if
-  end function
-
-  private function dayDifferenceCalculation(index, currentDayIndex, item)
-
-    newIndex = item.index
-    if index = 0
-      dayDifference = 0
-    else
-      dayDifference = newIndex - currentDayIndex
-    end if
-
-    if dayDifference < 0
-      dayDifference = abs(newIndex - 7)
-    end if
-
-    return dayDifference
   end function
 
   function changingCurrentDayLabel()
@@ -431,12 +448,32 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     if i <> -1 and j <> -1
       focusedItem = m.timeGridContent.getChild(i).getChild(j)
       if focusedItem <> invalid and focusedItem.PLAYSTART + 100 > endDay
-        dt.FromSeconds(focusedItem.PLAYSTART - (dt.GetTimeZoneOffset() * 60))
-        dayOfTheWeek = dt.GetDayOfWeek() + 1
-        m.timeGridDayText = mc.getPath(m.localizations, `button_${dayOfTheWeek}_title`, dt.GetWeekday())
+        dt.FromSeconds(focusedItem.PLAYSTART + 100 - (dt.GetTimeZoneOffset() * 60))
+        dayOfTheWeek = dt.GetDayOfWeek()
+        index = m.getDayLocalizationIndex(dayOfTheWeek)
+        m.timeGridDayText = mc.getPath(m.localizations, `button_${index}_title`, dt.GetWeekday())
       else
         m.timeGridDayText = asString(m.localizations.button_1_title, "Today")
       end if
+    end if
+  end function
+
+  function getDayLocalizationIndex(dayOfWeek as integer) as integer
+    dayMapping = {
+      "0": 8, ' Sunday -> button_8_title
+      "1": 2, ' Monday -> button_2_title
+      "2": 3, ' Tuesday -> button_3_title
+      "3": 4, ' Wednesday -> button_4_title
+      "4": 5, ' Thursday -> button_5_title
+      "5": 6, ' Friday -> button_6_title
+      "6": 7 ' Saturday -> button_7_title
+    }
+    key = dayOfWeek.tostr()
+
+    if dayMapping.DoesExist(key)
+      return dayMapping[key]
+    else
+      return 1 ' Default to Today (button_1_title)
     end if
   end function
 
