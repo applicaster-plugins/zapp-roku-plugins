@@ -29,6 +29,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
   private itemToPlay = invalid
   private playerItem = invalid
   private nextVideoIsInvalid = invalid
+  private viewerIdStorageKey = ""
   private baseUrl = "https://edge.api.brightcove.com/playback/v1"
 
   public function new(view)
@@ -39,11 +40,19 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
     m.accountId = mc.getPath(view.riversJson, "general.account_id", "")
     m.sdkPath = mc.getPath(view.riversJson, "general.sdk_url", "https://players.brightcove.net/roku-sdk/1/roku-sdk.pkg")
     m.rafIsEnabled = asBoolean(view.riversJson.general.raf_enabled)
+    m.viewerIdStorageKey = mc.getPath(view.riversJson, "general.viewer_identifier_storage_key", "quick-brick-login-flow.account_token")
   end function
 
   override function initialize()
     super.initialize()
     m.createPlayer()
+  end function
+
+  private function getAccountId()
+    parts = m.viewerIdStorageKey.split(".")
+    accountSection = parts.slice(0, parts.count() - 1).join(".")
+    accountKey = asString(parts[parts.count() - 1])
+    return m.getSessionStoreValue(accountSection, accountKey, false)
   end function
 
   private function createPlayer()
@@ -128,7 +137,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
       playerId: ""
       playerName: ""
       accountId: ""
-      user: ""
+      user: m.getAccountId()
       destination: ""
       source: ""
       eventOut: {} ' read-only
