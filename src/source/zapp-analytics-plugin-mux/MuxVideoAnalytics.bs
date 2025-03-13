@@ -10,6 +10,7 @@ class MuxVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
   private taskName = "MuxTask"
   private envKey = ""
   private isEnabled = false
+  private customDimensionProperties = invalid
   private userIdStorageKey = ""
   private accountSection = ""
   private accountKey = ""
@@ -26,6 +27,13 @@ class MuxVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
     parts = m.userIdStorageKey.split(".")
     m.accountSection = asString(parts[0])
     m.accountKey = asString(parts[1])
+
+    m.customDimensionProperties = {}
+    for i = 1 to 10
+      key = `custom_dimension_${i.ToStr()}`
+      path = "json.configuration_json." + key
+      m.customDimensionProperties[key] = mc.getPath(plugin, path, "")
+    end for
   end function
 
   private function getPlugin(plugin = invalid)
@@ -43,6 +51,12 @@ class MuxVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
     if m.isEnabled and m.envKey <> ""
       m.log.info("video starting", contentNode.title)
 
+      muxConfig = { env_key: m.envKey }
+      for i = 1 to 10
+        key = "custom_" + i.toStr()
+        muxConfig[key] = mc.getPath(contentNode.json, m.customDimensionProperties["custom_dimension_" + i.toStr()], "")
+      end for
+
       m.contentNode = contentNode
       m.muxTask = m.getInstance("muxAnalyticsTask")
 
@@ -52,12 +66,11 @@ class MuxVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
         m.muxTask.setField("video", videoNode)
         m.muxTask.setField("isLogsEnabled", m.log.enabled)
         m.muxTask.setField("userID", m.getAccountId())
-        muxConfig = {
-          env_key: m.envKey,
-        }
         m.muxTask.setField("config", muxConfig)
         m.muxTask.control = "RUN"
         m.setInstance("muxAnalyticsTask", m.muxTask)
+      else
+        m.muxTask.setField("config", muxConfig)
       end if
     end if
   end function
