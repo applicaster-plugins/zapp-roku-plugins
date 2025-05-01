@@ -39,7 +39,7 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
   public lastNameText = ""
   public lastName = ""
   public passwordText = "" ' text that is shown - this can be "*****"
-  public password = "" ' actula value, which coul be "abcde"
+  public password = "" ' actual value, which could be "abcde"
 
   public errorText = ""
   public isErrorShowing = false
@@ -207,7 +207,7 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
       m.preScreenFocusId = m.focusId
     end if
 
-    m.unobserveNodeField(m.currentScreen, "state", m.onsubScreenStateChange)
+    m.unobserveNodeField(m.currentScreen, "state", m.onSubScreenStateChange)
 
     m.isSubScreenVisible = screen <> invalid
     m.isMainGroupVisible = screen = invalid
@@ -215,7 +215,7 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
 
     if screen <> invalid
       m.currentScreen = screen
-      m.onsubScreenStateChange(m.currentScreen.state)
+      m.onSubScreenStateChange(m.currentScreen.state)
       m.observeNodeField(m.currentScreen, "state", m.onSubScreenStateChange)
       m.setFocusId("screenContainer")
     else
@@ -338,6 +338,9 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
     if result <> invalid and result.state = "valid"
       m.log.info("Register successful")
       m.dismiss("success")
+    else if result <> invalid and result.state = "pending"
+      m.log.info("Register email pending, redirecting to login screen")
+      m.dismiss("pending")
     else
       m.state = "ready"
       if result <> invalid and result.message <> invalid
@@ -410,7 +413,7 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
 
   public function isCapturingAnyKeyPress(key, press)
     'do not anyone escape this screen!
-    if press and key = "back" and not mc.getPath(m.riversJson, "general.isflowBlocker", true)
+    if press and key = "back" and not mc.getPath(m.riversJson, "general.isFlowBlocker", true)
       return false
     else
       return true
