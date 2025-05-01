@@ -41,6 +41,7 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
   private focusIds = ["usernameInput", "passwordInput", "loginButton"]
   private maxDebugAccounts = 1
   private debugAccountId = 0
+  private errorTextField = invalid
 
   private authTask
   private channelStore
@@ -60,6 +61,7 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
     super(riversJson, "FlowLoginScreenVM")
     m.focusId = "usernameInput"
     m.skipKey = asString(m.riversJson.data.skip_login_if_key_exists)
+    m.errorTextField = m.getMField("errorText")
     m.processStyles(m.riversJson.styles)
   end function
 
@@ -92,7 +94,6 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
     m.passwordPlaceholderText = m.passwordText
 
     inputStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "general_input", "textInputPlaceholder")
-
     m.inputStyle = inputStyle
 
     m.loginButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "button", "custom", m.localizations.login_button_text)
@@ -110,6 +111,15 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
     m.updateFocusControls()
   end function
 
+  function setPendingTextStyle(pending, styles)
+    if pending
+      m.errorTextField.color = zapp.viewUtils.transposeUIBColor(styles["info_error_color"], "#ffffff")
+      m.errorText = asString(m.localizations.login_pending_verification_text, "Please check your Email to verify your account")
+    else
+      m.errorTextField.color = zapp.viewUtils.transposeUIBColor(styles["error_color"], "#ffffff")
+    end if
+  end function
+
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ callbacks
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -120,6 +130,7 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
     if not m.isLoading and m.isCredsValid
       m.processLogin()
     else if not m.isCredsValid
+      m.errorTextField.color = zapp.viewUtils.transposeUIBColor(m.riversJson.styles["error_color"], "#ffffff")
       m.errorText = asString(m.localizations.error_text, "Please enter your email address and password")
       m.isErrorShowing = true
       m.setFocus(m.getMField("top"))
@@ -164,14 +175,14 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
   '++ sub screen support
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  function toggleSubScreen(screen)
+  function toggleSubScreen(screen, pending = false)
     m.log.method("toggleSubScreen")
 
     if m.focusId <> "screenContainer"
       m.preScreenFocusId = m.focusId
     end if
 
-    m.unobserveNodeField(m.currentScreen, "state", m.onsubScreenStateChange)
+    m.unobserveNodeField(m.currentScreen, "state", m.onSubScreenStateChange)
 
     m.isSubScreenVisible = screen <> invalid
     m.isMainGroupVisible = screen = invalid
@@ -179,11 +190,13 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
 
     if screen <> invalid
       m.currentScreen = screen
-      m.onsubScreenStateChange(m.currentScreen.state)
+      m.onSubScreenStateChange(m.currentScreen.state)
       m.observeNodeField(m.currentScreen, "state", m.onSubScreenStateChange)
       m.setFocusId("screenContainer")
     else
+      m.isErrorShowing = pending
       m.setFocusId(m.preScreenFocusId)
+      m.setPendingTextStyle(pending, m.riversJson.styles)
     end if
 
   end function
@@ -197,6 +210,8 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
 
     else if state = "success" or state = "cancel"
       m.toggleSubScreen(invalid)
+    else if state = "pending"
+      m.toggleSubScreen(invalid, true)
     end if
   end function
 
@@ -274,6 +289,7 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
       else
         m.errorText = "Unknown error"
       end if
+      m.errorTextField.color = zapp.viewUtils.transposeUIBColor(m.riversJson.styles["error_color"], "#ffffff")
       m.isErrorShowing = true
       m.isLoginButtonEnabled = true
       m.setFocus(m.getMField("top"))
@@ -335,7 +351,7 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
 
   public function isCapturingAnyKeyPress(key, press)
     'do not anyone escape this screen!
-    if press and key = "back" and not mc.getPath(m.riversJson, "general.isflowBlocker", true)
+    if press and key = "back" and not mc.getPath(m.riversJson, "general.isFlowBlocker", true)
       return false
     else
       return true
