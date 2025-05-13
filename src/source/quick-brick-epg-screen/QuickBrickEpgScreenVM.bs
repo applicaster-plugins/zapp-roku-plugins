@@ -516,7 +516,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     m.log.info("set timeGrid style")
 
     plugin = m.plugin
-    if asAA(plugin.json.configuration_json, invalid) = invalid
+    if asAA(plugin.json.configuration_json).count() = 0
       plugin.json = {
         "configuration_json": {}
       }
