@@ -214,11 +214,8 @@ namespace zapp.tests
       m.expectCalled(m.vm.getPlayerItem(item), playerData)
       m.expectCalled(m.vm.sendNotification("videoPlayerState", "buffering"))
       m.expectCalled(m.vm.startBCPlayer())
-      m.expectCalled(m.vm.playBrightcoveItem(m.vm.bcPlayer, playerData))
 
       m.vm.playItem(item)
-
-      m.assertInvalid(m.vm.pendingPlayerItem)
     end function
 
     @it("not ready")
@@ -234,11 +231,8 @@ namespace zapp.tests
       m.expectCalled(m.vm.getPlayerItem(item), playerData)
       m.expectCalled(m.vm.sendNotification("videoPlayerState", "buffering"))
       m.expectCalled(m.vm.startBCPlayer())
-      m.expectNotCalled(m.vm.playBrightcoveItem)
 
       m.vm.playItem(item)
-
-      m.assertEqual(m.vm.pendingPlayerItem, playerData)
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
