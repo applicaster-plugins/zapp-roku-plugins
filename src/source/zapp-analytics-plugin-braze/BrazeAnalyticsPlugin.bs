@@ -1,0 +1,81 @@
+import "pkg:/source/analytics/BaseAnalyticsPlugin.bs"
+import "pkg:/source/video/analytics/VideoAnalyticsEvent.bs"
+import "pkg:/source/video/analytics/AnalyticsEvent.bs"
+import "pkg:/source/zapp-analytics-plugin-braze/BrazeSDK.brs"
+
+class BrazeAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
+
+  private brazeTask = invalid
+  private taskName = "BrazeTask"
+  private isPluginEnabled = false
+  private apiKey = ""
+  private dataEndpoint = "https://sdk.iad-01.braze.com/"
+  private heartBeatFreq = 5
+
+  public function new(plugin = invalid)
+    super("BrazeAnalyticsPlugin", m.getPlugin(plugin))
+
+    m.isPluginEnabled = m.plugin.getBoolValue("enabled")
+    m.apiKey = m.plugin.getStringValue("api_key")
+    m.dataEndpoint = m.plugin.getStringValue("braze_endpoint")
+    m.heartBeatFreq = m.plugin.getIntValue("heartbeat_freq_in_seconds", 5)
+
+    config = {}
+    config_fields = BrazeConstants().BRAZE_CONFIG_FIELDS
+    config[config_fields.API_KEY] = m.apiKey
+    config[config_fields.ENDPOINT] = m.dataEndpoint
+    config[config_fields.HEARTBEAT_FREQ_IN_SECONDS] = m.heartBeatFreq
+    m.brazeTask = m.getInstance("brazeAnalyticsTask")
+
+    if m.brazeTask = invalid
+      m.log.warn("Creating new Mux Task")
+      m.brazeTask = m.createInstance(m.taskName)
+      mc.setOrAddNodeField(m.brazeTask, "brazeConfig", config)
+      m.brazeTask.control = "RUN"
+      m.setInstance("brazeAnalyticsTask", m.brazeTask)
+    else
+      m.brazeTask.setField("brazeConfig", config)
+    end if
+
+  end function
+
+  private function getPlugin(plugin = invalid)
+    if plugin = invalid
+      pluginManager = new zapp.PluginManager()
+      plugin = pluginManager.getPluginById("zapp-analytics-plugin-braze")
+    end if
+
+    return plugin
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ overridden methods
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public override function onVideoAnalyticsEvent(event as zapp.analytics.AnalyticsEvent) as void
+    m.log.info("this plugin does not have a google analtyics task, using the shared instance")
+    m.processAnalyticsEvent(event)
+  end function
+
+  protected override function _identify(pluginId, traits = {}, options = {}, isFromLogout = false) as boolean
+    m.log.info("identify", pluginId)
+    return true
+  end function
+
+  private function identifyAsAnonymous()
+    m.log.info("identifying as anonymous user")
+  end function
+
+  protected override function _trackVideoEvent(event as zapp.video.VideoAnalyticsEvent)
+    m.processAnalyticsEvent(event)
+  end function
+
+  protected override function _processAnalyticsEvent(event as zapp.analytics.AnalyticsEvent)
+    m.log.info("processAnalyticsEvent")
+    if m.brazeTask <> invalid
+      'brazeInstance = getBrazeInstance(m.brazeTask)
+      'brazeInstance.logEvent(event.id, event.properties)
+    end if
+  end function
+
+end class
