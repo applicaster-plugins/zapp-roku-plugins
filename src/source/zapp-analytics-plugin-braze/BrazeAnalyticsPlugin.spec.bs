@@ -1,0 +1,126 @@
+namespace zapp.tests
+
+  @tags("public", "analytics", "video")
+  @suite
+  class MuxVideoAnalyticsTests extends tests.BaseTestSuite
+    private config
+    private plugin
+    private pluginData
+
+    protected override function beforeEach()
+      super.beforeEach()
+      m.config = {
+        "account_code": "#ac"
+        "is_debug": 1
+        "task_name": "Node"
+      }
+
+
+      m.pluginData = new zapp.BasePlugin({ "configuration_json": m.config, "identifier": "youbora" })
+
+      m.plugin = new MuxVideoAnalytics(m.pluginData)
+    end function
+
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("videoInit")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("no task")
+    @params({ "id" : "content", title: "t1" }, false)
+    @params({ "id" : "content", title: "t2" }, false)
+    @params({ "id" : "content", title: "t2", json: { extensions : { LIVE: false } } }, false)
+    @params({ "id" : "content", title: "t2", json: { extensions : { LIVE: invalid } } }, false)
+    @params({ "id" : "content", title: "t2", json: { extensions : { LIVE: true } } }, true)
+    function _(content, expectedLive)
+      videoNode = { "id": "videoNode" }
+      task = { "id": "task" }
+      m.plugin.contentMetricPath = {
+        "isLive": "LIVE"
+      }
+      m.plugin.envKey = "valid"
+      m.plugin.isEnabled = true
+      m.plugin.taskName = "MuxTask"
+      m.plugin.buildConfig = {
+        "app_name": "appN",
+        "version_name": "vn",
+        "build_version": "bv",
+      }
+
+      m.expectCalled(m.plugin.getInstance("muxAnalyticsTask"), invalid)
+
+      m.plugin.videoInit(videoNode, content)
+
+      m.assertEqual(m.plugin.muxTask.control, "run")
+    end function
+
+    @it("task previously existed")
+    @params({ "id" : "content", title: "t1" }, false)
+    @params({ "id" : "content", title: "t2" }, false)
+    @params({ "id" : "content", title: "t2", json: { extensions : { LIVE: false } } }, false)
+    @params({ "id" : "content", title: "t2", json: { extensions : { LIVE: invalid } } }, false)
+    @params({ "id" : "content", title: "t2", json: { extensions : { LIVE: true } } }, true)
+    function _(content, expectedLive)
+      videoNode = { "id": "videoNode" }
+      task = { "id": "task" }
+      m.plugin.muxTask = { "id": "task" }
+      m.plugin.isEnabled = true
+      m.plugin.envKey = "valid"
+      m.plugin.contentMetricPath = {
+        "isLive": "LIVE"
+      }
+      m.plugin.buildConfig = {
+        "app_name": "appN",
+        "version_name": "vn",
+        "build_version": "bv",
+      }
+
+      m.expectCalled(m.plugin.getInstance("muxAnalyticsTask"), task)
+      m.expectNone(m.plugin, "createInstance")
+      m.expectNone(m.plugin, "setInstance")
+
+      m.plugin.videoInit(videoNode, content)
+
+      m.assertEqual(m.plugin.muxTask, task)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("videoEnd")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("invalid task does not crash")
+    function _()
+      m.expectCalled(m.plugin.getInstance("muxAnalyticsTask"), invalid)
+
+      m.plugin.videoEnd()
+    end function
+
+    @it("stopevent called on end")
+    function _()
+      m.plugin.youboraTask = { "id": "task" }
+      youboraTask = { "id": "task" }
+
+      m.expectCalled(m.plugin.getInstance("muxAnalyticsTask"), youboraTask)
+
+      m.plugin.videoEnd()
+
+      m.assertEqual(youboraTask.taskState, "stop")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("adTrackingEvent")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("task")
+    function _()
+      m.plugin.muxTask = { "id": "task" }
+      rafCtx = { "id": "raf", "adserver": "adUrl" }
+      obj = { "obj": { "adurl": "adUrl" }, "eventType": "end", ctx: rafCtx }
+
+      m.expectCalled(m.plugin.muxTask.setField("rafEvent", obj), obj)
+
+      m.plugin.adTrackingEvent("end", rafCtx)
+    end function
+
+  end class
+end namespace
