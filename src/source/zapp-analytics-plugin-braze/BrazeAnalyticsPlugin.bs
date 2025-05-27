@@ -12,6 +12,9 @@ class BrazeAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
   private dataEndpoint = "https://sdk.iad-01.braze.com/"
   private heartBeatFreq = 5
 
+  @inject("currentSelection")
+  private currentSelection
+
   public function new(plugin = invalid)
     super("BrazeAnalyticsPlugin", m.getPlugin(plugin))
 
@@ -59,11 +62,43 @@ class BrazeAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
 
   protected override function _identify(pluginId, traits = {}, options = {}, isFromLogout = false) as boolean
     m.log.info("identify", pluginId)
+    if m.isPluginEnabled
+
+      if pluginId <> invalid
+        accountInfo = m.getSessionStoreValue(pluginId, "user_id")
+      else
+        accountInfo = invalid
+      end if
+
+      m.log.info("identify accountInfo", accountInfo)
+
+      if accountInfo <> invalid
+        if asString(accountInfo, invalid) <> invalid
+          m.log.info("identifying analytics with the userId", accountInfo, "for plugin:", pluginId)
+          m.log.info("recrating GoogleAnalyticsTask with the userId", accountInfo, "for plugin:", pluginId)
+          m.setUserId(accountInfo)
+        else
+          m.log.error("identify called; but there id was empty!")
+          m.identifyAsAnonymous()
+        end if
+      else
+        m.log.warn("identify called; but there is no logged in user; point to unidentify, to get anonymous analytics")
+        m.identifyAsAnonymous()
+      end if
+    end if
     return true
   end function
 
   private function identifyAsAnonymous()
     m.log.info("identifying as anonymous user")
+    m.setUserId(invalid)
+  end function
+
+  function setUserId(accountInfoId)
+    if m.brazeTask <> invalid and accountInfoId <> invalid
+      brazeInstance = getBrazeInstance(m.brazeTask)
+      brazeInstance.setUserId(accountInfoId)
+    end if
   end function
 
   protected override function _trackVideoEvent(event as zapp.video.VideoAnalyticsEvent)
@@ -73,9 +108,31 @@ class BrazeAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
   protected override function _processAnalyticsEvent(event as zapp.analytics.AnalyticsEvent)
     m.log.info("processAnalyticsEvent")
     if m.brazeTask <> invalid
-      'brazeInstance = getBrazeInstance(m.brazeTask)
-      'brazeInstance.logEvent(event.id, event.properties)
+      brazeInstance = getBrazeInstance(m.brazeTask)
+      if event.id.startsWith("purchase")
+        item = m.getInstance("currentStoreItemSelected")
+        purchaseData = {
+          purchaseName: asString(item.json.rokuproduct.code)
+          currency: asString(item.json.rokuproduct.currency, "USD")
+          price: asFloat(item.json.rokuproduct.cost)
+          quantity: asInteger(item.json.rokuproduct.quantity, 1)
+        }
+        event.purchaseData = purchaseData
+        m.logBrazePurchase(brazeInstance, event, event.properties)
+      else
+        brazeInstance.logEvent(event.id, event.properties)
+      end if
     end if
   end function
 
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ private methods
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  function logBrazePurchase(brazeInstance, purchase, properties)
+    brazeInstance.logPurchase(purchase.purchasedata.purchaseName, purchase.purchasedata.currency, purchase.purchasedata.price, purchase.purchasedata.quantity, properties)
+  end function
+
+
 end class
+
