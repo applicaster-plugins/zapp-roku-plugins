@@ -18,7 +18,7 @@ namespace zapp.tests
 
       m.pluginData = new zapp.BasePlugin({ "configuration_json": m.config, "identifier": "youbora" })
 
-      m.plugin = new MuxVideoAnalytics(m.pluginData)
+      m.plugin = new BrazeAnalyticsPlugin(m.pluginData)
     end function
 
 
