@@ -31,7 +31,7 @@ class BrazeAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
     m.brazeTask = m.getInstance("brazeAnalyticsTask")
 
     if m.brazeTask = invalid
-      m.log.warn("Creating new Mux Task")
+      m.log.warn("Creating new braze Task")
       m.brazeTask = m.createInstance(m.taskName)
       mc.setOrAddNodeField(m.brazeTask, "brazeConfig", config)
       m.brazeTask.control = "RUN"
@@ -75,7 +75,7 @@ class BrazeAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
       if accountInfo <> invalid
         if asString(accountInfo, invalid) <> invalid
           m.log.info("identifying analytics with the userId", accountInfo, "for plugin:", pluginId)
-          m.log.info("recrating GoogleAnalyticsTask with the userId", accountInfo, "for plugin:", pluginId)
+          m.log.info("recrating BrazeAnalyticsPlugin with the userId", accountInfo, "for plugin:", pluginId)
           m.setUserId(accountInfo)
         else
           m.log.error("identify called; but there id was empty!")
