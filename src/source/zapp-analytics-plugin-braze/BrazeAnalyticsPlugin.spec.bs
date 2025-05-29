@@ -1,0 +1,89 @@
+namespace zapp.tests
+
+  @tags("public", "analytics", "braze")
+  @suite
+  class BrazeAnalyticsPluginTests extends tests.BaseTestSuite
+    private config
+    private plugin
+    private pluginData
+
+    protected override function beforeEach()
+      super.beforeEach()
+      m.config = {
+        "api_key": "test_api_key",
+        "braze_endpoint": "https://sdk.iad-01.braze.com/",
+        "heartbeat_freq_in_seconds": 5
+      }
+
+      m.pluginData = new zapp.BasePlugin({ "configuration_json": m.config, "identifier": "braze" })
+      m.plugin = new BrazeAnalyticsPlugin(m.pluginData)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("_identify")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("return true if isEnabled = false")
+    function _()
+      pluginId = { "id": "pluginId" }
+      traits = { "id": "traits" }
+      options = { "id": "options" }
+      isFromLogout = false
+      m.plugin.isPluginEnabled = false
+
+      result = m.plugin._identify(pluginId, traits, options, isFromLogout)
+
+      m.assertTrue(result)
+    end function
+
+    @it("return true if accountInfo = invalid and send anonymous user")
+    function _()
+      pluginId = invalid
+      traits = { "id": "traits" }
+      options = { "id": "options" }
+      isFromLogout = false
+      m.plugin.isPluginEnabled = true
+
+      m.expectCalled(m.plugin.identifyAsAnonymous())
+
+      result = m.plugin._identify(pluginId, traits, options, isFromLogout)
+
+      m.assertTrue(result)
+    end function
+
+    @it("call anonymous user analytic")
+    function _()
+      pluginId = { "id": "pluginId" }
+      traits = { "id": "traits" }
+      options = { "id": "options" }
+      isFromLogout = false
+      m.plugin.isPluginEnabled = true
+      accountInfo = invalid
+
+      m.expectCalled(m.plugin.getSessionStoreValue(pluginId, "user_id"), accountInfo)
+      m.expectCalled(m.plugin.identifyAsAnonymous())
+
+      result = m.plugin._identify(pluginId, traits, options, isFromLogout)
+
+      m.assertTrue(result)
+    end function
+
+    @it("set braze userID task ")
+    function _()
+      pluginId = { "id": "pluginId" }
+      traits = { "id": "traits" }
+      options = { "id": "options" }
+      isFromLogout = false
+      m.plugin.isPluginEnabled = true
+      accountInfo = "accountInfo"
+
+      m.expectCalled(m.plugin.getSessionStoreValue(pluginId, "user_id"), accountInfo)
+      m.expectCalled(m.plugin.setUserId(accountInfo))
+
+      result = m.plugin._identify(pluginId, traits, options, isFromLogout)
+
+      m.assertTrue(result)
+    end function
+
+  end class
+end namespace
