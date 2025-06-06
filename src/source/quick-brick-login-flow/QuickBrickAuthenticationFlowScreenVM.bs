@@ -152,8 +152,18 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
       m.navigateToHomeScreen()
     else if action = "go_to_screen"
       screenId = asString(m.riversJson.navigations.id)
-
       m.navigateToScreenById(screenId)
+    end if
+
+    m.setAdditionalAuthActionIfRequired()
+  end function
+
+  private function setAdditionalAuthActionIfRequired()
+    authenticationAction = m.getInstance("authenticationPluginAction")
+    if authenticationAction <> invalid
+      m.log.info("additional action after authentication")
+      zapp.appService.callAppControllerFunc("actionListChange", authenticationAction)
+      m.setInstance("authenticationPluginAction", invalid)
     end if
   end function
 
