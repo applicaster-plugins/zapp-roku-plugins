@@ -1,3 +1,5 @@
+import "pkg:/source/roku_modules/maestro/core/MIOC.brs"
+
 function BrazeConstants() as object
   SDK_DATA = {
     SDK_VERSION: "2.2.0"
@@ -280,13 +282,13 @@ function BrazeInit(config as object, messagePort as object)
         version = di.GetOsVersion()
         version = version.major + "." + version.minor + "." + version.revision + "." + version.build
         m.cachedDeviceInfo = {
-          model : di.GetModelDetails().ModelNumber,
-          ad_tracking_enabled : not di.IsRIDADisabled(),
-          roku_ad_id : di.GetRIDA(),
+          model: di.GetModelDetails().ModelNumber,
+          ad_tracking_enabled: not di.IsRIDADisabled(),
+          roku_ad_id: di.GetRIDA(),
           ' roku_channel_client_id : di.GetChannelClientId(),
-          time_zone : di.GetTimeZone(),
-          locale : di.GetCurrentLocale(),
-          os_version : version
+          time_zone: di.GetTimeZone(),
+          locale: di.GetCurrentLocale(),
+          os_version: version
         }
 
         ' Add the resolution
@@ -924,7 +926,7 @@ function BrazeInit(config as object, messagePort as object)
       end if
       hex = stri(s, 16)
       ' 0 pad if needed
-      if hex.Len() < 8 then hex = String(8-hex.Len(), "0") + hex
+      if hex.Len() < 8 then hex = string(8 - hex.Len(), "0") + hex
       ' Swap the alpha to the end
       return "0x" + Right(hex, 6) + Left(hex, 2)
     end function,
@@ -1158,14 +1160,14 @@ function BrazeInit(config as object, messagePort as object)
       end for
       request.EnableEncodings(true)
       request.AddHeader("X-Braze-Api-Key", Braze()._privateApi.config[BrazeConstants().BRAZE_CONFIG_FIELDS.API_KEY])
-      if (request.AsyncPostFromString(FormatJson(postJson)))
-        while (true)
+      if request.AsyncPostFromString(FormatJson(postJson))
+        while true
           msg = wait(0, port)
-          if (type(msg) = "roUrlEvent")
+          if type(msg) = "roUrlEvent"
             code = msg.GetResponseCode()
             return msg.getString()
           end if
-          if (msg = invalid)
+          if msg = invalid
             request.AsyncCancel()
             return invalid
           end if
@@ -1533,7 +1535,13 @@ function Braze() as object
 end function
 
 function getBrazeTask() as object
-  return GetGlobalAA().brazeTask
+
+  brazeTask = GetGlobalAA().brazeTask
+
+  if brazeTask = invalid
+    brazeTask = mioc.getInstance("brazeAnalyticsTask")
+  end if
+  return brazeTask
 end function
 
 ' An internal method to allow us to return Feature Flags with the convenience methods
@@ -1733,7 +1741,7 @@ function getBrazeInstance(task as object) as object
     end function,
 
     refreshFeatureFlags: function() as void
-      m.callInstanceMethod("refreshFeatureFlags", { })
+      m.callInstanceMethod("refreshFeatureFlags", {})
     end function,
 
     getAllFeatureFlags: function() as object
