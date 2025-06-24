@@ -279,6 +279,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
         programItem.PLAYDURATION = m.parseDateStringToSeconds(programData.json.extensions.end_time) - m.parseDateStringToSeconds(programData.json.extensions.start_time)
         programText = zapp.viewUtils.textToTextTransformFormat(programData.title, styles.label1_text_transform)
         programItem.TITLE = programText
+        mc.setOrAddNodeField(programItem, "json", programData.json)
         mc.setOrAddNodeField(programItem, "content", programData.json.content)
         mc.setOrAddNodeField(programItem, "type", programData.json.type)
         programItem.id = programData.id
@@ -943,6 +944,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
           program = channelItem.getChild(programIndex)
           if program <> invalid
             newEntry = m.parser.parseEntry(program)
+            mc.setOrAddNodeField(newEntry, "json", program.json)
             selection = m.createSelectionFromContent(newEntry)
             selection.playMode = "default"
             m.executeContentSelection(selection)
