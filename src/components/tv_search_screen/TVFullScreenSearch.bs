@@ -1,0 +1,17 @@
+import "pkg:/source/tv_search_screen/TVFullScreenSearchVM.bs"
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Initialization
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function Init()
+  m.top.isFullScreen = true
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Overridden
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function createVM()
+  return new TVFullScreenSearchVM(m.top.riversJson)
+end function

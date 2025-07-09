@@ -1,0 +1,82 @@
+<?xml version='1.0' encoding='utf-8'?>
+<component
+  name='ZTVFullScreenSearch'
+  extends='UIBScreen'
+  vm='TVFullScreenSearchVM'>
+
+  <interface>
+  </interface>
+
+  <children>
+    <mv_DynamicContainer
+      id='screenContainer'
+      isDestroyingChildViewsOnRemoval='true'
+      visible='{{isScreenContainerVisible}}'
+      setNextView='{{currentScreen}}' />
+
+    <mv_LayoutGroup
+      id='searchFlowLayout'
+      horizAlignment='custom'
+      layoutDirection='vert'>
+
+      <Rectangle
+        id='keyboardBackgroundRectangle'
+        color='#ffffff00'>
+        <ZUltimateActionButton
+          id='keyboard'
+          labelXOffset='9'
+          item='{{keyboardItem}}'
+          text='{{searchTextInput}}'
+          selected='{(onNameButtonSelected(value))}' />
+      </Rectangle>
+
+      <Poster
+        id='backgroundBorderPoster'
+        visible='{{isFilterVisible}}'>
+        <Poster id='backgroundPoster'>
+          <Menu
+            id='menu'
+            buttons='{{menubuttons}}'
+            style='{{:menuStyle}}'
+            selectedIndex='{(onSelectedIndexChange(value))}'
+            focusIndex='{(onFocusIndexChange(value))}'
+            jumpToIndex='{{jumpToIndex}}'
+            jumpSelectToIndex='{{jumpSelectToIndex}}'
+            isFootprintOnSelectOnly='true'
+            buttonSize='{{=zapp_viewUtils_UIBSize("tab_bar_item", 300, 0)}}'
+            translation='{{buttonTranslation}}'
+            buttonSpacing='{{:buttonSpacing}}'
+            showBarUnderSelectedItem='true'
+            alwaysShowUnderBar='true'
+            isDynamic='{{:isButtonDynamic}}'
+            barColor='{{=zapp_viewUtils_UIBColor("tab_bar_item_default_underline_color")}}'
+            focusBarColor='{{=zapp_viewUtils_UIBColor("tab_bar_item_focused_underline_color")}}'
+            footprintBarColor='{{=zapp_viewUtils_UIBColor("tab_bar_item_selected_underline_color")}}'
+            highlightedFootprintBarColor='{{=zapp_viewUtils_UIBColor("tab_bar_item_selected_focused_underline_color")}}'
+            barHeight='{{=zapp_viewUtils_UIBInt("tab_bar_item_underline_thickness", 6)}}'
+            borderHeight='{{=zapp_viewUtils_UIBInt("tab_bar_item_border_width")}}' />
+        </Poster>
+      </Poster>
+
+    </mv_LayoutGroup>
+    <z_MultiContainer
+      id='grid'
+      isAnimated='true'
+      animationDuration='0.3'
+      children='{{components}}'
+      index='{{componentIndex}}'
+      yOffsets='{{componentYOffsets}}'
+      visible='{{isGridVisible}}'
+      needsRecalculating='{{needsRecalculating}}' />
+
+    <LoadingIndicator
+      id='loadingIndicator'
+      width='1920'
+      height='1080'
+      isActive='{{isLoading}}'
+      backgroundVisible='false'
+      translation='[0,0]'
+      text='' />
+
+  </children>
+</component>
