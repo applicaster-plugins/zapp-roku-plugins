@@ -639,8 +639,9 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
   '++ callbacks
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  private function onUsernameKeyboardDialogDismissal(text)
-    m.log.method("onKeyboardDialogDismissal")
+  private function onSearchKeyboardDialogDismissal(text)
+    m.log.method("onSearchKeyboardDialogDismissal", text)
+
     if text.trim() = ""
       m.searchText = ""
       m.searchTextInput = asString(m.localizations.placeholder_message, "Search")
@@ -654,9 +655,10 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
     m.onSearchTextChange(text)
   end function
 
-  public function onNameButtonSelected(value)
+  public function onSearchButtonSelected(value)
+    m.log.info("onSearchButtonSelected", value)
     palette = zapp.viewUtils.getUIBKeyboardDialogPalette(m.riversJson.styles, "keyboard")
-    m.showKeyboardDialog("Enter your search", m.searchText, "onUsernameKeyboardDialogDismissal", false, "none", palette)
+    m.showKeyboardDialog("Enter your search", m.searchText, "onSearchKeyboardDialogDismissal", false, "none", palette)
   end function
 
   public function onSearchTextChange(text)

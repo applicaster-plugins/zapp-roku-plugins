@@ -8,6 +8,12 @@
   </interface>
 
   <children>
+    <Rectangle
+      id='backgroundRectangle'
+      height='1080'
+      width='1920'
+      color='{{=zapp_viewUtils_UIBColor("screen_background_color", "#00000000")}}'
+    />
     <mv_DynamicContainer
       id='screenContainer'
       isDestroyingChildViewsOnRemoval='true'
@@ -27,7 +33,7 @@
           labelXOffset='9'
           item='{{keyboardItem}}'
           text='{{searchTextInput}}'
-          selected='{(onNameButtonSelected(value))}' />
+          selected='{(onSearchButtonSelected(value))}' />
       </Rectangle>
 
       <Poster
