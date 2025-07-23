@@ -111,6 +111,7 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
       m.searchData = asAA(riversJson.data)
       m.filterData = m.searchData
     end if
+    m.setFocusId("keyboard")
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -346,7 +347,7 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
     m.components = newComponents
     m.moveableComponents = newMoveableComponents
     m.componentYOffsets = componentYOffsets
-
+    m.isDisplayedInDynamicContainer = true
     for each comp in m.components
       m.observeNodeField(comp, "state", zapp.GeneralScreenUtils.onChildComponentStateChange)
     end for
@@ -386,12 +387,16 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
       search_label_letter_spacing: zapp.viewUtils.getUIBInt(styles, "search_label_samsung_letter_spacing")
       search_label_alignment: mc.getPath(styles, "search_label_text_alignment", "center")
       search_label_transform: mc.getPath(styles, "search_label_text_transform", "uppercase")
+      search_label_margin_top: zapp.viewUtils.getUIBInt(styles, "search_label_margin_top")
+      search_label_margin_bottom: zapp.viewUtils.getUIBInt(styles, "search_label_margin_bottom")
+      search_label_margin_left: zapp.viewUtils.getUIBInt(styles, "search_label_margin_left")
+      search_label_margin_right: zapp.viewUtils.getUIBInt(styles, "search_label_margin_right")
     }
-
     textStyle = zapp.viewUtils.makeUIBButtonStyle(textStyleFormat, "search_label", invalid, invalid, false, "vert", true)
 
     itemStyle = {
       text: textStyle
+      textAlign: textStyleFormat.search_label_alignment
       menuList: {
         marginStyle: zapp.viewUtils.makeUIBMargin(styles, "menu_list")
         paddingStyle: zapp.viewUtils.makeUIBPadding(styles, "menu_list")
@@ -416,6 +421,7 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
       }
 
       icon: {
+        isEnabled: asBoolean(styles.search_icon_asset_enabled)
         assetWidth: zapp.viewUtils.getUIBInt(styles, "search_icon_asset_width")
         assetHeight: zapp.viewUtils.getUIBInt(styles, "search_icon_asset_height")
         marginStyle: zapp.viewUtils.makeUIBMargin(styles, "search_icon_asset")
@@ -439,6 +445,7 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
       positioning = [zapp.viewUtils.getUIBInt(styles, "search_bar_x_position"), zapp.viewUtils.getUIBInt(styles, "search_bar_y_position")]
       keyboard.translation = positioning
       keyboard.width = zapp.viewUtils.getUIBInt(styles, "search_bar_width", 1672)
+      keyboard.text = menuItem.title
       keyboard.style = itemStyle
     end if
   end function
@@ -734,7 +741,7 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
 
     if isActive
       m.riversJson.data = m.searchData
-      'm.riversJson.data.source = "https://www.rifftrax.com/api/v2/appsearch.json?term=the"
+
       for each item in m.components
         mc.setOrAddNodeField(item.riversJson, "componentValues", componentValues)
         json = item.riversJson
