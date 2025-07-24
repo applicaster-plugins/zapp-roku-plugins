@@ -62,6 +62,8 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
   private backgroundBorderPoster = invalid
   private backgroundPoster = invalid
   private buttonMenu = invalid
+  private tabComponentPaddings = invalid
+  private tabIsLoaded = false
 
   'keyboard dialog mixin
   private showKeyboardDialog = zapp.keyboardDialogMixin.showKeyboardDialog
@@ -490,6 +492,7 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
 
     m.textTransform = asString(styles.text_transform, "uppercase")
     m.buttonSpacing = zapp.viewUtils.getUIBInt(styles, "tab_bar_gutter")
+    m.tabComponentPaddings = zapp.viewUtils.makeUIBPadding(m.riversJson.styles, "component")
 
     m.setMenuStyle(styles, buttonType)
     m.setMenuGroupStyle(styles, buttonType)
@@ -516,12 +519,12 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
 
   private function adjustPoster(poster as mc.types.node, style as mc.types.assocarray, borderSize as integer, cornerRadius as integer, prefix as string, isBorder as boolean)
     if isBorder
-      poster.width = style.width + borderSize
+      poster.width = mc.clamp(style.width + borderSize, 0, 1920)
       poster.height = style.height + borderSize
       poster.translation = style.translation
       zapp.viewUtils.drawImageBorder(poster, zapp.viewUtils.setPosterStyleForDraw(poster.width, 0, cornerRadius, borderSize))
     else
-      poster.width = style.width - borderSize
+      poster.width = style.width - (borderSize * 2)
       poster.height = style.height - borderSize
       poster.translation = [borderSize, borderSize]
       posterCornerRadius = mc.clamp(cornerRadius - borderSize, 0, cornerRadius)
@@ -533,27 +536,34 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
 
   private function setButtonAlignment()
     tabBarAlignment = asString(m.riversJson.styles.tab_bar_alignment, "left")
+    componentPaddings = m.tabComponentPaddings
     menu = m.buttonMenu
     componentWidth = menu.boundingRect().width
-    containerWidth = m.backgroundBorderPoster.width
+    containerWidth = m.backgroundBorderPoster.width - componentPaddings.paddingLeft - componentPaddings.paddingRight
+    yOffset = menu.translation[1] + componentPaddings.paddingTop
     if tabBarAlignment = "right"
-      m.buttonTranslation = [containerWidth - componentWidth, menu.translation[1]]
+      m.buttonTranslation = [componentPaddings.paddingLeft + containerWidth - componentWidth, yOffset]
     else if tabBarAlignment = "center"
-      m.buttonTranslation = [(containerWidth * 0.5) - (componentWidth * 0.5), menu.translation[1]]
+      m.buttonTranslation = [componentPaddings.paddingLeft + (containerWidth * 0.5) - (componentWidth * 0.5), yOffset]
+    else
+      m.buttonTranslation = [componentPaddings.paddingLeft, yOffset]
     end if
   end function
 
   private function setDynamicSizeIfNeeded()
     dynamicGroupSize = asString(m.riversJson.styles.tab_bar_display_mode) <> "fixed"
 
+    componentPaddings = m.tabComponentPaddings
     menu = m.buttonMenu
     borderSize = zapp.viewUtils.getUIBInt(m.riversJson.styles, "tab_bar_border_w")
-    m.backgroundPoster.height = menu.boundingRect().height
-    m.backgroundBorderPoster.height = menu.boundingRect().height + (2 * borderSize)
+    height = menu.boundingRect().height + componentPaddings.paddingTop + componentPaddings.paddingBottom
+    m.backgroundPoster.height = height
+    m.backgroundBorderPoster.height = height + (2 * borderSize)
 
     if dynamicGroupSize
-      m.backgroundPoster.width = menu.boundingRect().width
-      m.backgroundBorderPoster.width = menu.boundingRect().width + (2 * borderSize)
+      width = menu.boundingRect().width + componentPaddings.paddingLeft + componentPaddings.paddingRight
+      m.backgroundPoster.width = width
+      m.backgroundBorderPoster.width = width + (2 * borderSize)
     end if
   end function
 
@@ -584,6 +594,7 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
       m.applySearchFilterDefaultState()
       m.setButtonAlignment()
       m.setDynamicSizeIfNeeded()
+      m.tabIsLoaded = true
     end if
   end function
 
@@ -982,7 +993,7 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
     m.searchText = ""
     m.applySearchFilterDefaultState()
 
-    if m.isSearchFilterEnabled
+    if m.isSearchFilterEnabled and not m.tabIsLoaded
       m.riversJson.data = m.filterData
       m.executeloadDataTask("componentFeed", m.createButtonsWithFeed, invalid, 0)
     end if
