@@ -24,7 +24,10 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
   public jumpSelectToIndex = 0
   public buttonSpacing = 5
   public buttonTranslation = [0, 0]
+  public buttonContainerTranslation = [0, 0]
+  public labelXOffset = 0
   public isButtonDynamic = false
+  public isDynamicGroupSize = false
 
   'keyboard styles
   public keyboardItem = invalid
@@ -59,6 +62,7 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
   private savedIndex = 0
   private selectedFilterIndex = 0
   private isFilterFocusable = false
+  private searchFlowLayout = invalid
   private backgroundBorderPoster = invalid
   private backgroundPoster = invalid
   private buttonMenu = invalid
@@ -91,6 +95,7 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
   public function new(riversJson)
     super(riversJson, "TVFullScreenSearchVM")
     riversJson = zapp.platformAlignmentUtils.transformTVSearchToRoku(riversJson)
+    m.searchFlowLayout = m.getMField("searchFlowLayout")
     m.backgroundBorderPoster = m.getMField("backgroundBorderPoster")
     m.backgroundPoster = m.getMField("backgroundPoster")
     m.buttonMenu = m.getMField("menu")
@@ -480,13 +485,16 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
   function processTabStyles(styles as mc.types.assocarray)
     textHorizAlign = asString(styles.tab_bar_item_alignment, "center")
     m.isButtonDynamic = asString(styles.tab_bar_item_size) <> "fixed"
+    m.isDynamicGroupSize = asString(styles.tab_bar_display_mode) <> "fixed"
 
     buttonType = "custom"
     if m.isButtonDynamic
       buttonType = "customLeft"
     else if textHorizAlign = "left"
+      m.labelXOffset = -24
       buttonType = "customLeft"
     else if textHorizAlign = "right"
+      m.labelXOffset = -24
       buttonType = "customRight"
     end if
 
@@ -510,6 +518,11 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
     menuGroupStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "tab_bar", buttonType, "", true, m.layoutDirection, true)
     borderSize = zapp.viewUtils.getUIBInt(styles, "tab_bar_border_w")
     cornerRadius = zapp.viewUtils.getUIBInt(styles, "tab_bar_border_radius")
+    backgroundcolor = asString(menuGroupStyle.normal.backgroundcolor, "#00000000")
+    backgroundBorderColor = asString(menuGroupStyle.normal.backgroundbordercolor, "#00000000")
+
+    m.setBackgroundVisibility(backgroundcolor, m.backgroundPoster)
+    m.setBackgroundVisibility(backgroundBorderColor, m.backgroundBorderPoster)
 
     if m.backgroundPoster <> invalid
       m.adjustPoster(m.backgroundPoster, menuGroupStyle, borderSize, cornerRadius, "", false)
@@ -517,42 +530,61 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
     end if
   end function
 
+  function setBackgroundVisibility(color, background)
+    if color.endsWith("00")
+      background.uri = "transparent"
+    end if
+  end function
+
   private function adjustPoster(poster as mc.types.node, style as mc.types.assocarray, borderSize as integer, cornerRadius as integer, prefix as string, isBorder as boolean)
     if isBorder
-      poster.width = mc.clamp(style.width + borderSize, 0, 1920)
+      clampWidth = m.isDynamicGroupSize ? 1920 : style.width
+      poster.width = mc.clamp(style.width + borderSize, 0, clampWidth)
       poster.height = style.height + borderSize
       poster.translation = style.translation
-      zapp.viewUtils.drawImageBorder(poster, zapp.viewUtils.setPosterStyleForDraw(poster.width, 0, cornerRadius, borderSize))
+      if poster.uri <> "transparent"
+        zapp.viewUtils.drawImageBorder(poster, zapp.viewUtils.setPosterStyleForDraw(poster.width, 0, cornerRadius, borderSize))
+      end if
     else
       poster.width = style.width - (borderSize * 2)
       poster.height = style.height - borderSize
       poster.translation = [borderSize, borderSize]
       posterCornerRadius = mc.clamp(cornerRadius - borderSize, 0, cornerRadius)
-      zapp.viewUtils.drawImage(poster, zapp.viewUtils.setPosterStyleForDraw(poster.width, 0, posterCornerRadius, borderSize))
+      if poster.uri <> "transparent"
+        zapp.viewUtils.drawImage(poster, zapp.viewUtils.setPosterStyleForDraw(poster.width, 0, posterCornerRadius, borderSize))
+      end if
     end if
 
     poster.blendColor = style.normal[`background${prefix}color`]
   end function
 
   private function setButtonAlignment()
+    topMargin = zapp.viewUtils.getUIBInt(m.riversJson.styles, "component_margin_top")
     tabBarAlignment = asString(m.riversJson.styles.tab_bar_alignment, "left")
     componentPaddings = m.tabComponentPaddings
+    componentMargin = asAA(m.menuStyle.marginStyle)
     menu = m.buttonMenu
-    componentWidth = menu.boundingRect().width
-    containerWidth = m.backgroundBorderPoster.width - componentPaddings.paddingLeft - componentPaddings.paddingRight
+    componentWidth = 1920
+    containerWidth = m.backgroundBorderPoster.width
+    innerContainerWidth = m.backgroundPoster.width
+    menuWidth = menu.boundingRect().width
     yOffset = menu.translation[1] + componentPaddings.paddingTop
+    menuYOffset = yOffset + asInteger(componentMargin.marginTop)
     if tabBarAlignment = "right"
-      m.buttonTranslation = [componentPaddings.paddingLeft + containerWidth - componentWidth, yOffset]
+      m.buttonContainerTranslation = [componentWidth - containerWidth, yOffset]
+      m.buttonTranslation = [innerContainerWidth - menuWidth - componentPaddings.paddingRight + asInteger(componentMargin.marginRight), menuYOffset]
     else if tabBarAlignment = "center"
-      m.buttonTranslation = [componentPaddings.paddingLeft + (containerWidth * 0.5) - (componentWidth * 0.5), yOffset]
+      m.buttonContainerTranslation = [(componentWidth * 0.5) - (containerWidth * 0.5), yOffset]
+      m.buttonTranslation = [(innerContainerWidth * 0.5) - (menuWidth * 0.5) + componentPaddings.paddingLeft - componentPaddings.paddingRight + asInteger(componentMargin.marginLeft), menuYOffset]
     else
-      m.buttonTranslation = [componentPaddings.paddingLeft, yOffset]
+      m.buttonContainerTranslation = [0, yOffset]
+      m.buttonTranslation = [componentPaddings.paddingLeft + asInteger(componentMargin.marginLeft), menuYOffset]
     end if
+
+    m.searchFlowLayout.itemSpacings = [topMargin, 0]
   end function
 
   private function setDynamicSizeIfNeeded()
-    dynamicGroupSize = asString(m.riversJson.styles.tab_bar_display_mode) <> "fixed"
-
     componentPaddings = m.tabComponentPaddings
     menu = m.buttonMenu
     borderSize = zapp.viewUtils.getUIBInt(m.riversJson.styles, "tab_bar_border_w")
@@ -560,7 +592,7 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
     m.backgroundPoster.height = height
     m.backgroundBorderPoster.height = height + (2 * borderSize)
 
-    if dynamicGroupSize
+    if m.isDynamicGroupSize
       width = menu.boundingRect().width + componentPaddings.paddingLeft + componentPaddings.paddingRight
       m.backgroundPoster.width = width
       m.backgroundBorderPoster.width = width + (2 * borderSize)
@@ -584,7 +616,7 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
 
         menuButtons.push({
           id: id
-          title: item.title
+          title: text
           entry: item
         })
         i++
@@ -592,8 +624,8 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
       m.menuButtons = menuButtons
       m.isFilterFocusable = m.menuButtons.count() > 0
       m.applySearchFilterDefaultState()
-      m.setButtonAlignment()
       m.setDynamicSizeIfNeeded()
+      m.setButtonAlignment()
       m.tabIsLoaded = true
     end if
   end function
@@ -780,13 +812,17 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
     m.toggleLoadingDataTask(false)
     m.isLoading = false
     results = result.data
-    m.sendSearchExecutedEvent(results.getChildCount())
+    if results <> invalid
+      m.sendSearchExecutedEvent(results.getChildCount())
+    else
+      m.sendSearchExecutedEvent(0)
+    end if
 
     if result.isOk and results <> invalid
       m.setContentStyle(results)
       numItems = result.data.getChildCount()
       m.feed = result.data
-      m.isFilterVisible = numItems > 0
+      m.isFilterVisible = numItems > 0 and m.isSearchFilterEnabled
       if numItems <= 0
         m.searchHaveResults = false
         m.sendSearchNoResultEvent()
