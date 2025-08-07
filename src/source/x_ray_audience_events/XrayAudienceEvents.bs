@@ -22,6 +22,7 @@ namespace zapp.video.analytics
     private executionTimer = invalid
     private isActive = false
     private listOfEvents = {}
+    private pendingEvents = {}
 
     @injectClass("zapp.URI")
     private uri
@@ -102,22 +103,36 @@ namespace zapp.video.analytics
 
     private function sendEventByTimerOrMaxEventCount()
       if m.eventBatch = m.maxEventCount
-        m.executionEvents()
+        m.executionEvents(m.listOfEvents)
         m.eventBatch = 0
       else
         if m.isActive = false
-          m.executionTimer = m.waitAFrame(m.executionEvents, 5)
+          original = m.listOfEvents
+          m.pendingEvents = { events: [] }
+
+          for each evt in original.events
+            m.pendingEvents.events.push(evt)
+          end for
+          m.executionTimer = m.waitAFrame(m.executeEventByTimer, 5)
           m.isActive = true
         end if
       end if
     end function
 
-    private function executionEvents()
+    private function executeEventByTimer()
+      m.executionEvents(m.pendingEvents)
+    end function
+
+    private function executionEvents(listOfEvents)
       m.log.info("sendXrayAudienceEvents with quantiti of ", m.eventBatch)
       m.createTask("NetworkTask", {
         "url": m.eventURL,
         "method": "POST",
-        "params": m.listOfEvents
+        "headers": {
+          "Content-type": "application/json",
+          "accept": "application/json"
+        },
+        "params": listOfEvents
       })
       m.defaultValueAfterExecute()
     end function
