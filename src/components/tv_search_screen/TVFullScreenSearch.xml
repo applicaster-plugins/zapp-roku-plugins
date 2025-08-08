@@ -72,7 +72,8 @@
             footprintBarColor='{{=zapp_viewUtils_UIBColor("tab_bar_item_selected_underline_color")}}'
             highlightedFootprintBarColor='{{=zapp_viewUtils_UIBColor("tab_bar_item_selected_focused_underline_color")}}'
             barHeight='{{=zapp_viewUtils_UIBInt("tab_bar_item_underline_thickness", 6)}}'
-            borderHeight='{{=zapp_viewUtils_UIBInt("tab_bar_item_border_width")}}' />
+            borderHeight='{{=zapp_viewUtils_UIBInt("tab_bar_item_border_width")}}'
+            borderCornerRadius='{{=zapp_viewUtils_UIBInt("tab_bar_item_border_radius")}}' />
         </Poster>
       </Poster>
 

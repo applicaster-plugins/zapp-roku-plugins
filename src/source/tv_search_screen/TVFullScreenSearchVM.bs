@@ -511,6 +511,7 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
     menuStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "tab_bar_item", buttonType, "", true, layoutDirection, true)
     menuStyle.layoutDirection = layoutDirection
     menuStyle.menuTextPadding = zapp.viewUtils.makeUIBPadding(styles, "tab_bar_item")
+    menuStyle.isBorderGenerated = true
     m.menuStyle = menuStyle
   end function
 
