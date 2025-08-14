@@ -569,7 +569,7 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
     containerWidth = m.backgroundBorderPoster.width
     innerContainerWidth = m.backgroundPoster.width
     menuWidth = menu.boundingRect().width
-    yOffset = menu.translation[1] + componentPaddings.paddingTop
+    yOffset = componentPaddings.paddingTop
     menuYOffset = yOffset + asInteger(componentMargin.marginTop)
     if tabBarAlignment = "right"
       m.buttonContainerTranslation = [componentWidth - containerWidth, yOffset]
