@@ -172,7 +172,7 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
         notificationScreenId = `isGroupComponentLoaded${m.screenId}_${m.savedIndex}`
         m.observeNotification(notificationScreenId, m.resultOfComponentRespond)
         screenIdIndex = `${m.screenId}_${m.savedIndex}`
-        groupComponentObject = m.createGroupComponent(component, screenIdIndex, true)
+        groupComponentObject = m.createGroupComponent(component, screenIdIndex, m.screenState, true)
         exit for
       else
         m.uiComponents.push(component)
@@ -189,8 +189,8 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
     return new SmartComponentVM(componentJson, screenId)
   end function
 
-  private function createGroupComponent(componentJson, screenId, isSearch)
-    return new GroupComponentVM(componentJson, screenId, isSearch)
+  private function createGroupComponent(componentJson, screenId, screenState, isSearch)
+    return new GroupComponentVM(componentJson, screenId, screenState, isSearch)
   end function
 
   function resultOfComponentRespond(componentItems as mc.types.assocarray)
