@@ -1,0 +1,324 @@
+namespace zapp.tests
+  @tags("public", "vm")
+  @suite
+  class TVFullScreenSearchVMTests extends tests.BaseTestSuite
+    private riversJson
+    private vm
+
+    protected override function beforeEach()
+      super.beforeEach()
+      mioc.setInstances({
+        "user": { "isLoggedIn": false }
+        "locale": "en"
+      })
+
+      m.riversJson = {
+        data: { source: "#myLink" }
+        styles: {
+          search_min_chars: 4
+          search_label_placeholder_font_color: "#aaa"
+          search_label_font_color: "#bbb"
+          search_label_focused_font_color: "#ccc"
+          search_label_samsung_font_family: "medium"
+          search_label_samsung_font_size: 30
+          search_label_samsung_line_height: 32
+          search_label_samsung_letter_spacing: 1
+          search_label_text_alignment: "center"
+          search_label_text_transform: "uppercase"
+          tab_bar_item_alignment: "center"
+          tab_bar_item_size: "fixed"
+          tab_bar_gutter: 10
+          tab_bar_direction: "horiz"
+        }
+        ui_components: [
+          { data: { source: "#myLink" } }
+        ]
+        general: {
+          fallback: "fallbackScreen"
+          enable_search_filters: false
+        }
+        localizations: {
+          en: {
+            placeholder_message: "Search"
+          }
+        }
+      }
+      m.vm = new TVFullScreenSearchVM(m.riversJson)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("constructor")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("constructor sets focusId")
+    function _()
+      m.assertEqual(m.vm.focusId, "keyboard")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("processStyles")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("parses minCharacters from styles")
+    function _()
+      m.assertEqual(m.vm.minCharacters, 4)
+    end function
+
+    @it("sets keyboardItem placeholder from localizations")
+    function _()
+      m.assertEqual(m.vm.keyboardItem.title, "Search")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("reset")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("reset sets state and calls applySearchFilterDefaultState")
+    function _()
+      m.expectCalled(m.vm.setGridVisible(false))
+      m.expectCalled(m.vm.setScreenContainerVisible(true))
+      m.expectCalled(m.vm.applySearchFilterDefaultState())
+      m.vm.reset()
+      m.assertNodeEmpty(m.vm.results)
+      m.assertEmpty(m.vm.searchText)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onShow")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("calls reset if not showing content and searchText is short")
+    function _()
+      m.vm.isShowingContent = false
+      m.vm.isFirstLoadComplete = false
+      m.vm.searchText = ""
+      m.vm.minCharacters = 3
+      m.expectCalled(m.vm.reset())
+      m.expectCalled(m.vm.showFirstScreen())
+      m.expectCalled(m.vm.trackScreen())
+      m.vm.onShow()
+      m.assertFalse(m.vm.isShowingContent)
+    end function
+
+    @it("does not call reset if already showing content")
+    function _()
+      m.vm.isShowingContent = true
+      m.vm.isFirstLoadComplete = true
+      m.expectNotCalled(m.vm.reset())
+      m.expectNotCalled(m.vm.showFirstScreen())
+      m.expectCalled(m.vm.trackScreen())
+      m.vm.onShow()
+      m.assertFalse(m.vm.isShowingContent)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("setScreenContainerVisible")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("sets isScreenContainerVisible correctly")
+    @params(false, true, true, "keyboard", {}, true)
+    @params(true, false, false, "grid", {}, false)
+    function _(isGridVisible, isScreenContainerVisible, visible, focusId, currentscreen, expected)
+      m.vm.isGridVisible = isGridVisible
+      m.vm.isScreenContainerVisible = isScreenContainerVisible
+      m.vm.focusId = focusId
+      m.vm.currentscreen = currentscreen
+      m.vm.setScreenContainerVisible(visible)
+      m.assertEqual(m.vm.isScreenContainerVisible, expected)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onKeyPressUp")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("onKeyPressUp menu")
+    @params("menu", true, "keyboard")
+    @params("keyboard", false, "keyboard")
+    function _(currentKey, isFilterFocusable, expectedKey)
+      m.vm.focusId = currentKey
+      m.vm.isFilterFocusable = isFilterFocusable
+
+      m.vm.onKeyPressUp()
+      m.assertEqual(m.vm.focusId, expectedKey)
+    end function
+
+    @it("onKeyPressUp grid")
+    @params("grid", true, "menu")
+    @params("grid", false, "keyboard")
+    function _(currentKey, isFilterFocusable, expectedKey)
+      m.vm.focusId = currentKey
+      m.vm.isFilterFocusable = isFilterFocusable
+
+      m.expectCalled(m.vm.selectPreviousComponent(true), false)
+
+      m.vm.onKeyPressUp()
+      m.assertEqual(m.vm.focusId, expectedKey)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("isCapturingAnyKeyPress")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("captures up key press")
+    @params("keyboard", "up", "keyboard", false)
+    @params("grid", "up", "grid", true)
+    function _(focusId, key, expectedFocusId, expectedResult)
+      m.vm.focusId = focusId
+
+      result = m.vm.isCapturingAnyKeyPress(key, true)
+
+      m.assertEqual(result, expectedResult)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("setGridVisible")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("setGridVisible")
+    @params(true, 2, true)
+    @params(false, 2, false)
+    @params(false, 0, false)
+    function _(visible, numItems, isGridVisible)
+      m.vm.results = createObject("roSGNode", "ZPEntry")
+
+      for i = 0 to numItems - 1
+        m.vm.results.createChild("ZPEntry")
+      end for
+
+      m.vm.setGridVisible(visible)
+
+      m.assertEqual(m.vm.isGridVisible, isGridVisible)
+    end function
+
+    @it("sets isGridVisible and resets results if false")
+    function _()
+      m.vm.results = createObject("roSGNode", "ZPEntry")
+      m.vm.setGridVisible(false)
+      m.assertFalse(m.vm.isGridVisible)
+      m.assertNodeEmpty(m.vm.results)
+    end function
+
+    @it("keeps isGridVisible true if set to true")
+    function _()
+      m.vm.results = createObject("roSGNode", "ZPEntry")
+      m.vm.setGridVisible(true)
+      m.assertTrue(m.vm.isGridVisible)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("perform search")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("performSearch")
+    @params("s1", 0, { "search": "s1" })
+    @params("s2", 1, { "search": "s2" })
+    @params("s3  ", 1, { "search": "s3" })
+    @params("   s4  ", 2, { "search": "s4" })
+    function _(text, loadDepth, expected)
+      m.vm.searchText = text
+      m.vm.loadDepth = loadDepth
+
+      m.expectCalled(m.vm.toggleLoadingDataTask(true, expected, loadDepth))
+      m.expectCalled(m.vm.setGridVisible(true))
+
+      m.vm.performSearch(text)
+
+      m.assertTrue(m.vm.isLoading)
+
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onSearchTextChange")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("onSearchTextChange")
+    @params("one")
+    @params("one2")
+    @params("one2three")
+    function _(text)
+      loadDataTask = { "id": "loadDataTask" }
+      searchDelayTask = { "id": "searchDelayTask" }
+      m.vm.searchDelayTask = searchDelayTask
+      m.vm.loadDataTask = loadDataTask
+      m.vm.minCharacters = 3
+      newDelayTask = { "id": "newDelayTask" }
+
+      m.expectCalled(m.vm.cancelWaitTimer(searchDelayTask))
+      m.expectCalled(m.vm.cancelTask(loadDataTask))
+      m.expectCalled(m.vm.waitAFrame(m.vm.onSearchDelayComplete, 0.5), newDelayTask)
+      m.expectNotCalled(m.vm.applySearchFilterDefaultState())
+
+      m.vm.onSearchTextChange(text)
+
+      m.assertEqual(m.vm.searchDelayTask, newDelayTask)
+    end function
+
+    @it("no serch scenarios")
+    @params("o")
+    @params("aa")
+    @params(" aa")
+    @params(" aa ")
+    @params("aa  ")
+    function _(text)
+      loadDataTask = { "id": "loadDataTask" }
+      searchDelayTask = { "id": "searchDelayTask" }
+      m.vm.searchHaveResults = true
+      m.vm.searchDelayTask = searchDelayTask
+      m.vm.loadDataTask = loadDataTask
+
+      m.expectCalled(m.vm.cancelWaitTimer(searchDelayTask))
+      m.expectCalled(m.vm.cancelTask(loadDataTask))
+      m.expectNotCalled(m.vm.waitAFrame)
+      m.expectCalled(m.vm.applySearchFilterDefaultState())
+      m.expectCalled(m.vm.sendSearchCanceledEvent())
+
+      m.vm.onSearchTextChange(text)
+
+      m.assertEqual(m.vm.searchDelayTask, searchDelayTask)
+      m.assertEqual(m.vm.searchHaveResults, false)
+    end function
+
+    @it("starts search delay when enough characters")
+    function _()
+      m.vm.minCharacters = 3
+      m.vm.searchDelayTask = invalid
+      m.vm.loadDataTask = invalid
+      m.expectCalled(m.vm.cancelWaitTimer(invalid))
+      m.expectCalled(m.vm.cancelTask(invalid))
+      m.expectCalled(m.vm.waitAFrame(m.vm.onSearchDelayComplete, 0.5))
+      m.vm.onSearchTextChange("abcd")
+      m.assertTrue(m.vm.isShowingContent)
+    end function
+
+    @it("resets state when not enough characters")
+    function _()
+      m.vm.minCharacters = 5
+      m.vm.searchHaveResults = true
+      m.expectCalled(m.vm.cancelWaitTimer(invalid))
+      m.expectCalled(m.vm.cancelTask(invalid))
+      m.expectCalled(m.vm.applySearchFilterDefaultState())
+      m.expectCalled(m.vm.sendSearchCanceledEvent())
+      m.vm.onSearchTextChange("abc")
+      m.assertFalse(m.vm.isShowingContent)
+      m.assertFalse(m.vm.searchHaveResults)
+    end function
+
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onSearchDelayComplete")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("onSearchDelayComplete")
+    @params("one")
+    @params("two")
+    @params("three")
+    function _(text)
+      m.expectOnce(m.vm, "performSearch", [text])
+      m.vm.searchText = text
+
+      m.vm.onSearchDelayComplete()
+
+    end function
+
+  end class
+end namespace
