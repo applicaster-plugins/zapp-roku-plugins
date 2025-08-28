@@ -12,6 +12,9 @@ class BrazeAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
   private apiKey = ""
   private dataEndpoint = "https://sdk.iad-01.braze.com/"
   private heartBeatFreq = 5
+  private userIdStorageKey = ""
+  private accountSection = ""
+  private accountKey = ""
 
   @inject("currentSelection")
   private currentSelection
@@ -23,6 +26,22 @@ class BrazeAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
     m.apiKey = m.plugin.getStringValue("api_key")
     m.dataEndpoint = m.plugin.getStringValue("braze_endpoint")
     m.heartBeatFreq = m.plugin.getIntValue("heartbeat_freq_in_seconds", 5)
+    m.userIdStorageKey = plugin.getStringValue("user_identity_storage_key", "quick-brick-login-flow.user_id")
+
+    if m.userIdStorageKey.inStr("applicaster.v2") = 0
+      m.accountSection = zapp.pipes.Namespaces.default
+      parts = m.userIdStorageKey.split(".")
+      m.accountKey = asString(parts[parts.count() - 1])
+    else
+      resolverKeyParts = m.userIdStorageKey.split(".")
+      if resolverKeyParts.count() = 2
+        m.accountSection = asString(resolverKeyParts[0])
+        m.accountKey = asString(resolverKeyParts[1])
+      else
+        m.accountSection = asString(resolverKeyParts[0] + "." + resolverKeyParts[1])
+        m.accountKey = asString(resolverKeyParts[resolverKeyParts.count() - 1])
+      end if
+    end if
 
     config = {}
     config_fields = BrazeConstants().BRAZE_CONFIG_FIELDS
@@ -69,7 +88,7 @@ class BrazeAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
     if m.isPluginEnabled
 
       if pluginId <> invalid
-        accountInfo = m.getSessionStoreValue(pluginId, "user_id")
+        accountInfo = m.getAccountId()
       else
         accountInfo = invalid
       end if
@@ -91,6 +110,10 @@ class BrazeAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
       end if
     end if
     return true
+  end function
+
+  private function getAccountId()
+    return m.getSessionStoreValue(m.accountSection, m.accountKey, false)
   end function
 
   private function identifyAsAnonymous()
