@@ -118,7 +118,7 @@ class BrazeAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
 
   private function identifyAsAnonymous()
     m.log.info("identifying as anonymous user")
-    m.setUserId(invalid)
+    m.setUserId("")
   end function
 
   function setUserId(accountInfoId)
