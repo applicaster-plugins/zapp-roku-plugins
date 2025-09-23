@@ -26,7 +26,7 @@ class BrazeAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
     m.apiKey = m.plugin.getStringValue("api_key")
     m.dataEndpoint = m.plugin.getStringValue("braze_endpoint")
     m.heartBeatFreq = m.plugin.getIntValue("heartbeat_freq_in_seconds", 5)
-    m.userIdStorageKey = plugin.getStringValue("user_identity_storage_key", "quick-brick-login-flow.user_id")
+    m.userIdStorageKey = m.plugin.getStringValue("user_identity_storage_key", "quick-brick-login-flow.user_id")
 
     if m.userIdStorageKey.inStr("applicaster.v2") = 0
       m.accountSection = zapp.pipes.Namespaces.default
