@@ -60,6 +60,9 @@ class BrazeAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
       m.observeNodeField(m.brazeTask, "brazeInAppMessage", m.onInAppMessageTriggered, "value")
       m.observeNodeField(m.brazeTask, "brazeFeatureFlagsUpdated", m.onFeatureFlagChanges, "value")
     else
+      if m.brazeInstance = invalid
+        m.brazeInstance = getBrazeInstance(m.brazeTask)
+      end if
       m.brazeTask.setField("brazeConfig", config)
     end if
 
