@@ -639,8 +639,9 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       timeGrid.programBackgroundBitmapUri = "empty"
     else
       if asBoolean(style.isPlatformAlignment)
-        blendColor = zapp.viewUtils.transposeUIBColor(style.program_live_background_color, "#FFFFFF")
+        blendColor = zapp.viewUtils.transposeUIBColor(style.program_live_background_color, "#FFFFFFFF")
         cornerRadius = zapp.viewUtils.getUIBInt(style, "grid_item_corner_radius")
+        timeGrid.programBackgroundBitmapUri = "empty"
         zapp.viewUtils.drawImage(timeGrid, zapp.viewUtils.setPosterStyleForDraw(timeGrid.itemSize[0], timeGrid.itemSize[1], 0), false, "programBackgroundBitmapUri", blendColor, 10)
       else
         timeGrid.programBackgroundBitmapUri = asString(style.guide_item_asset_background_uri, "pkg:/images/timeGridBackground.9.png")
@@ -685,7 +686,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
         timeGrid.clippingRect = [0, clippingY * percentOfOffset - 20, 1920, 1920]
       end if
     else
-      timeGrid.timeBarHeight = timebarFontLabelHeight + 24 + timeBarBottomPadding
+      timeGrid.timeBarHeight = timebarFontLabelHeight + timeBarBottomPadding + 68 + (timebarFontSize - 20)
       clippingY = timeGrid.clippingRect.y
       halfTimeBar = timeGrid.timeBarHeight / 2
       percentOfOffset = halfTimeBar / abs(clippingY)
@@ -696,6 +697,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     end if
 
     if timeBarColor <> invalid
+      timeGrid.timeBarBitmapUri = "empty"
       zapp.viewUtils.drawImage(timeGrid, zapp.viewUtils.setPosterStyleForDraw(1920, abs(timeGrid.clippingRect.y), 0), false, "timeBarBitmapUri", timeBarColor)
     else
       timeGrid.timeBarBitmapUri = asString(style.time_bar_background_url, ":")
@@ -774,6 +776,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       ratioValue = aspectRatio.split("x")
       channelAssetWidth = channelAssetHeight * ratioValue[0].toInt() / ratioValue[1].toInt()
       channelInfoWidth = channelAssetWidth + channelPaddingLeft + channelPaddingRight
+      timeGrid.channelInfoBackgroundBitmapUri = "empty"
       zapp.viewUtils.drawImage(timeGrid, zapp.viewUtils.setPosterStyleForDraw(channelInfoWidth, timeGridHeight, cornerRadius), false, "channelInfoBackgroundBitmapUri", blendColor)
     else
       channelAssetWidth = 0
