@@ -329,7 +329,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     end if
     m.setField("content", m.timeGridContent)
     currentTime = CreateObject("roDateTime").asSeconds()
-    m.contentStartTime = currentTime - 1200
+    m.contentStartTime = currentTime - 200
     m.currentTimeGridLeftEdgeTime = m.contentStartTime
     m.content = m.timeGridContent
     m.log.info("content for Epg", m.timeGridContent)
