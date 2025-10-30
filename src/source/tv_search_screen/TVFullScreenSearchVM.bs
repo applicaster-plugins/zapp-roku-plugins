@@ -7,6 +7,7 @@ import "pkg:/source/mixin/KeyboardDialogMixin.bs"
 import "pkg:/source/roku_group_component/GroupComponentVM.bs"
 import "pkg:/source/quick-brick-smart-component/SmartComponentVM.bs"
 import "pkg:/source/lib/GeneralScreenUtils.bs"
+import "pkg:/source/roku_modules/maestro/core/Notification.brs"
 
 class TVFullScreenSearchVM extends zapp.uib.ScreenVM
 
@@ -131,56 +132,30 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
 
   private function includeAdditionalComponentIfNeeded(index = 0, refresh = true) as void
     riversCount = m.riversJson.ui_components.count()
-    proceedCreating = false
-
-    if index >= riversCount
-      m.isLoading = false
-      return
-    end if
-
-    if m.newLazyComponents.count() > 0
-      batchSize = m.lazyLoadingBatchSize
-      m.isLazyLoading = true
-    else
-      batchSize = m.batchSize
-    end if
-
-    if refresh
-      m.uiComponents = []
-      groupComponentObject = invalid
-    end if
+    groupComponentObject = invalid
+    m.savedIndex = riversCount
 
     for i = index to riversCount - 1 step 1
-
-      if m.uiComponents.count() > batchSize
-        proceedCreating = true
-        exit for
-      end if
-
       component = m.riversJson.ui_components[i]
-
+      position = (asInteger(component.position) + 10) * 100
+      component.position = position
       if component.component_type = "quick-brick-smart-component"
         m.log.info("super component found, including it")
-        m.savedIndex = i
         notificationScreenId = `isSmartComponentLoaded${m.screenId}`
         m.observeNotification(notificationScreenId, m.resultOfComponentRespond)
-        smartComponentObject = m.createSmartComponent(component, m.screenId)
-        exit for
+        SmartComponentObject = m.createSmartComponent(component, m.screenId)
       else if component.component_type = "group-qb"
         m.log.info("group component found, including it")
-        m.savedIndex = i
-        notificationScreenId = `isGroupComponentLoaded${m.screenId}_${m.savedIndex}`
+        notificationScreenId = `isGroupComponentLoaded${m.screenId}`
         m.observeNotification(notificationScreenId, m.resultOfComponentRespond)
-        screenIdIndex = `${m.screenId}_${m.savedIndex}`
-        groupComponentObject = m.createGroupComponent(component, screenIdIndex, m.screenState, true)
-        exit for
+        groupComponentObject = m.createGroupComponent(component, m.screenId, m.screenState, i, true)
       else
         m.uiComponents.push(component)
-        m.savedIndex = i
+        m.savedIndex -= 1
       end if
     end for
 
-    if m.uiComponents.count() = riversCount and groupComponentObject = invalid or (m.savedIndex = 0 and m.errorComponentIndex.count() + m.uiComponents.count() >= riversCount) or proceedCreating
+    if m.uiComponents.count() = riversCount and groupComponentObject = invalid or (m.savedIndex = 0 and m.errorComponentIndex.count() + m.uiComponents.count() >= riversCount)
       m.proceedCreatingContentSearch()
     end if
   end function
@@ -189,28 +164,27 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
     return new SmartComponentVM(componentJson, screenId)
   end function
 
-  private function createGroupComponent(componentJson, screenId, screenState, isSearch)
-    return new GroupComponentVM(componentJson, screenId, screenState, isSearch)
+  private function createGroupComponent(componentJson, screenId, screenState, positionIndex, isSearch = true)
+    return new GroupComponentVM(componentJson, screenId, screenState, positionIndex, isSearch)
   end function
 
   function resultOfComponentRespond(componentItems as mc.types.assocarray)
-    m.unObserveNotification(componentItems.name)
+    m.savedIndex -= 1
     data = asArray(componentItems.data)
 
     if data.count() = 0
       m.log.error("No items found in component")
       m.errorComponentIndex.push(m.savedIndex)
     else
-      m.log.error("Found some items")
+      m.log.info("Found some items")
       for each item in data
         m.uiComponents.push(item)
       end for
     end if
 
-    if m.savedIndex = m.riversJson.ui_components.count() - 1
+    if m.savedIndex <= 0
+      m.uiComponents.sortBy("position")
       m.proceedCreatingContentSearch()
-    else
-      m.includeAdditionalComponentIfNeeded(m.savedIndex + 1, false)
     end if
   end function
 
@@ -253,22 +227,23 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
           componentTopPadding = zapp.viewUtils.getUIBInt(componentJson, "styles.component_padding_top", 0)
           componentMargins = zapp.viewUtils.makeUIBMargin(componentJson.styles, "component")
           componentPaddings = zapp.viewUtils.makeUIBPadding(componentJson.styles, "component")
-          containerOffset = zapp.viewUtils.getUIBInt(componentJson, "styles.multi_container_y_offset", 200) + zapp.viewUtils.getUIBInt(componentJson, "styles.top_margin", 0)
-          containerHeightOverride = zapp.viewUtils.getUIBInt(componentJson, "styles.multi_container_force_height", 0) + zapp.viewUtils.getUIBInt(componentJson, "styles.bottom_margin", 0)
+          containerOffset = zapp.viewUtils.getUIBInt(componentJson, "styles.multi_container_y_offset", 0) + zapp.viewUtils.getUIBInt(componentJson, "styles.top_margin", 0)
 
           previousComponent = newMoveableComponents[componentIndex - 2]
           if previousComponent <> invalid and asString(previousComponent.riversJson.component_type) = "group-info-qb"
             containerOffset += previousComponent.groupHeight
           end if
 
-
           rowBackgroundColor = zapp.viewUtils.transposeUIBColor(componentJson.styles.component_background_color, "#ffffff00")
           zapp.viewUtils.setBackgroundColor(rowRepeater, "rowBackgroundVisible", "rowBackgroundColor", rowBackgroundColor)
 
+          containerHeightOverride = zapp.viewUtils.getUIBInt(componentJson, "styles.multi_container_force_height", 0) + zapp.viewUtils.getUIBInt(componentJson, "styles.bottom_margin", 0)
           component.isDisplayedInSearch = true
           component.containerYOffset = containerOffset
           rowRepeater.groupBottomMargin = zapp.viewUtils.getUIBInt(componentJson, "styles.group_bottom_margin", 0)
           rowRepeater.groupTopPadding = groupTopPadding
+          rowRepeater.groupXYOffset = asArray(componentJson.styles.groupXYOffset, [0, 0])
+          rowRepeater.groupXYDimension = asArray(componentJson.styles.groupXYDimension, [0, 0, 0])
           rowRepeater.componentPaddings = componentPaddings
           rowRepeater.componentTopPadding = componentTopPadding
           rowRepeater.componentMargins = componentMargins
@@ -326,7 +301,7 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
         if not (component.isFullScreen = true or component.isBackgroundView = true)
           groupTopPadding = zapp.viewUtils.getUIBInt(componentJson, "styles.group_top_padding", 0)
           componentPaddings = zapp.viewUtils.makeUIBPadding(componentJson.styles, "component")
-          containerOffset = zapp.viewUtils.getUIBInt(componentJson, "styles.multi_container_y_offset", 200) + zapp.viewUtils.getUIBInt(componentJson, "styles.top_margin", 0)
+          containerOffset = zapp.viewUtils.getUIBInt(componentJson, "styles.multi_container_y_offset", 0) + zapp.viewUtils.getUIBInt(componentJson, "styles.top_margin", 0)
           containerHeightOverride = zapp.viewUtils.getUIBInt(componentJson, "styles.multi_container_force_height", 0) + zapp.viewUtils.getUIBInt(componentJson, "styles.bottom_margin", 0)
 
           previousComponent = newMoveableComponents[componentIndex - 2]
@@ -793,16 +768,15 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
         item.riversJson = json
         item.isDataRefreshRequired = true
         item.visible = false
+        if asString(json.component_type) = "group-info-qb"
+          m.sendNotification(mc.createNotification("isInfoReloadRequired", componentValues))
+        end if
       end for
-      if mc.getPath(m.riversJson, "data.source", "").trim() <> ""
-        m.load()
-        m.loadDataTask = m.executeloadDataTask("componentFeed", m.onFeedResult, componentValues, depth)
-      else
-        m.log.error("tried to load entry without a link")
-        m.onFeedResult({ isOK: false, data: invalid })
-      end if
-    end if
 
+      m.sendNotification(mc.createNotification("isComponentReloadRequired", true))
+      m.load()
+      m.loadDataTask = m.executeloadDataTask("componentFeed", m.onFeedResult, componentValues, depth)
+    end if
 
     '// all visible false if empty then visible true
     m.isLoading = m.loadDataTask <> invalid
@@ -813,39 +787,23 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
     m.toggleLoadingDataTask(false)
     m.isLoading = false
     results = result.data
-    if results <> invalid
-      m.sendSearchExecutedEvent(results.getChildCount())
-    else
-      m.sendSearchExecutedEvent(0)
-    end if
 
     if result.isOk and results <> invalid
+      m.sendSearchAnalyticsEvent(results)
       m.setContentStyle(results)
       numItems = result.data.getChildCount()
       m.feed = result.data
       m.isFilterVisible = numItems > 0 and m.isSearchFilterEnabled
       if numItems <= 0
-        m.searchHaveResults = false
         m.sendSearchNoResultEvent()
       else
-        m.searchHaveResults = true
       end if
     else
       results = createObject("roSGNode", "ZPEntry")
-      m.searchHaveResults = false
+      m.sendSearchAnalyticsEvent(results)
       m.sendSearchNoResultEvent()
     end if
-    components = m.components
-    for each item in components
-      if asString(item.riversJson.component_type) = "empty_group_component"
-        item.visible = not m.searchHaveResults
-      else
-        item.visible = m.searchHaveResults
-      end if
-    end for
 
-    m.components = components
-    m.needsRecalculating = true
     m.results = results
     m.setGridVisible(true)
     m.setScreenContainerVisible(false)
@@ -855,6 +813,14 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
     m.isFilterVisible = false
     m.jumpSelectToIndex = 0
     m.onSelectedIndexChange(0)
+  end function
+
+  private function updateOverallState(isContentPresent = true)
+    m.log.info("onChildComponentStateChange Search")
+    m.searchHaveResults = isContentPresent
+    components = m.components
+    m.components = components
+    m.needsRecalculating = true
   end function
 
   private function setScreenContainerVisible(visible)
@@ -918,6 +884,9 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
         m.log.info("skipping to previous focusable component at index", newIndex)
         exit for
       end if
+      if i = 0
+        newIndex = -1
+      end if
     end for
     return newIndex
   end function
@@ -926,13 +895,20 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
     if m.searchHaveResults and not m.itemWasSelected
       m.sendSearchCanceledEvent()
     end if
-    m.searchHaveResults = false
     m.itemWasSelected = false
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ Analytic Events
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function sendSearchAnalyticsEvent(results)
+    if results <> invalid
+      m.sendSearchExecutedEvent(results.getChildCount())
+    else
+      m.sendSearchExecutedEvent(0)
+    end if
+  end function
 
   private function sendSearchExecutedEvent(numItems)
     analyticsProperties = m.setDefaultProperties()
@@ -983,6 +959,10 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
     else if m.focusId = "grid"
       if m.selectPreviousComponent(true)
         m.componentIndex = m.findPreviousFocusable(m.componentIndex)
+        if m.componentIndex < 0
+          m.onKeyPressUp()
+          return true
+        end if
       end if
     end if
     return false
@@ -993,7 +973,10 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
       if m.isFilterFocusable and m.isFilterVisible
         m.setFocusId("menu")
         return true
-      else if m.isGridVisible and m.results.getChildCount() > 0
+      else if m.isGridVisible and m.searchHaveResults
+        if m.componentIndex < 0
+          m.componentIndex = m.findNextFocusable(0)
+        end if
         m.setFocusId("grid")
         return true
       else if m.isScreenContainerVisible
@@ -1053,6 +1036,7 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
   protected override function onShow() as void
     m.log.method("onShow")
     m.trackScreen()
+    m.toggleNavMenuVisible(true)
     if not m.isShowingContent and len(m.searchText.trim()) < m.minCharacters
       m.reset()
     end if
