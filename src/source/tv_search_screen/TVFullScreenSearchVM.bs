@@ -1002,6 +1002,8 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
   function isCapturingAnyKeyPress(key as string, press as boolean) as boolean
     if key = "up" and m.focusId = "keyboard"
       return false
+    else if key = "back"
+      return false
     end if
     return true
   end function
