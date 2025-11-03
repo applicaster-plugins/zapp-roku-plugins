@@ -762,8 +762,8 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
       m.riversJson.data = m.searchData
 
       for each item in m.components
-        mc.setOrAddNodeField(item.riversJson, "componentValues", componentValues)
         json = item.riversJson
+        mc.setOrAddNodeField(json, "componentValues", componentValues)
         mc.setPath(json, "componentValues", componentValues)
         item.riversJson = json
         item.isDataRefreshRequired = true
