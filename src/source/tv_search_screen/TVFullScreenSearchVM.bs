@@ -57,6 +57,7 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
   private nameOfParentScreen = ""
 
   private localizations = invalid
+  private isSearchScreen = true
   private isSearchFilterEnabled = false
   private textTransform = "uppercase"
   private focusedFilterIndex = 0
