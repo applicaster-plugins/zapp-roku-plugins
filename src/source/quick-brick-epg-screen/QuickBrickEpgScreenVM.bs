@@ -28,6 +28,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   public menuStyle = {}
   public menuPosition = [960, 584]
   public buttonSize = [700, 100]
+  public borderCornerRadius = 0
+  public isDynamic = false
   public indicatorVisible = false
   public indicatorOpacity = 1
   public indicatorTranslation = [0, 0]
@@ -88,6 +90,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   private isUsingButtons = true
   private cellStyle
   private dateTime
+  private channelMapPath = "image_base"
 
   private showAnim
   private hideAnim
@@ -116,6 +119,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   public function new(riversJson)
     super(riversJson, "QuickBrickEpgScreenVM")
     m.plugin = m.plugins.getPluginById("quick-brick-epg-screen")
+    riversJson = zapp.platformAlignmentUtils.transformTVEPGtoRoku(riversJson)
 
     m.focusId = "TimeGrid"
     m.timeGrid = m.getMField("TimeGrid")
@@ -239,7 +243,9 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
         for each channelData in channelsData.getChildren(-1, 0)
           m.channelItem = m.timeGridContent.createChild("ContentNode")
           m.channelItem.title = channelData.title
-          m.channelItem.HDSMALLICONURL = asString(channelData.json.images.image_base)
+          m.channelItem.HDSMALLICONURL = mc.getPath(channelData.json, `images.${m.channelMapPath}`)
+
+
           actualUrl = m.substituteIdInUrl(programData.source, m.channelItem, channelData, asAA(programData.mapping), isoTime)
           id = asString(m.channelItem.id)
           m.taskCount++
@@ -323,11 +329,11 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     end if
     m.setField("content", m.timeGridContent)
     currentTime = CreateObject("roDateTime").asSeconds()
-    m.contentStartTime = currentTime - 1200
+    m.contentStartTime = currentTime - 200
     m.currentTimeGridLeftEdgeTime = m.contentStartTime
     m.content = m.timeGridContent
     m.log.info("content for Epg", m.timeGridContent)
-    numRows = zapp.viewUtils.getUIBInt(m.riversJsonData.styles, "time_grid_visible_row", 6)
+    numRows = zapp.viewUtils.getUIBInt(m.riversJsonData.styles, "time_grid_visible_row", 5)
     channelCount = m.timeGridContent.getChildCount()
     if channelCount < numRows
       m.timeGrid.numRows = channelCount
@@ -531,49 +537,54 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     m.nowNextSection(timeGrid, plugin, style)
     m.programItemSection(timeGrid, plugin, style)
     m.channelInfoSection(timeGrid, plugin, style)
-    m.timeBarSection(timeGrid, plugin, style)
+    m.timeBarSection(timeGrid, timeGridGroup, plugin, style)
     m.nowBarSection(timeGrid, plugin, style)
-    m.setNowBarIndicatorStyle(timeGrid, plugin, style)
+    m.setNowBarIndicatorStyle(timeGrid, style)
   end function
 
-  private function setNowBarIndicatorStyle(timeGrid, plugin, style)
+  private function setNowBarIndicatorStyle(timeGrid, style)
     contentWidth = timeGrid.itemSize[0] - timeGrid.channelInfoWidth
-    nowBarBadgeYposition = plugin.getIntValue("time_bar_indicator_y", 0)
+    nowBarBadgeYposition = zapp.viewUtils.getUIBInt(style, "time_bar_indicator_y", 0)
+    nowBarBadgeYoffset = zapp.viewUtils.getUIBInt(style, "time_bar_indicator_offset", 50)
 
     m.cachedTimeGridValue = {
-      "yPosition": nowBarBadgeYposition - 50
+      "yPosition": nowBarBadgeYposition - nowBarBadgeYoffset
       "contentWidth": timeGrid.itemSize[0] - timeGrid.channelInfoWidth
       "pixelPerSecond": contentWidth / timeGrid.duration
       "xPosition": timeGrid.channelInfoWidth
     }
 
-    timebarFontSize = plugin.getIntValue("time_bar_badge_label_font_size", 12)
+    timebarFontSize = zapp.viewUtils.getUIBInt(style, "time_bar_badge_label_font_size", 12)
     timebarFontName = mc.getString(style, "time_bar_badge_label_font_name", "medium")
     fontColor = zapp.viewUtils.transposeUIBColor(style.time_bar_badge_label_font_color, "#FFFFFF")
     font = m.resolveFont(timebarFontName, timebarFontSize)
-    nowBarWidth = plugin.getIntValue("time_bar_badge_width", 2)
-    nowBarHeight = plugin.getIntValue("time_bar_badge_height", 500)
-    nowBarBadgeWidth = plugin.getIntValue("time_bar_now_badge_width", 70)
-    nowBarBadgeHeight = plugin.getIntValue("time_bar_now_badge_height", 35)
+    nowBarWidth = zapp.viewUtils.getUIBInt(style, "time_bar_badge_width", 3)
+    nowBarHeight = zapp.viewUtils.getUIBInt(style, "time_bar_badge_height", 900)
+    nowBarBadgeWidth = zapp.viewUtils.getUIBInt(style, "time_bar_now_badge_width", 70)
+    nowBarBadgeHeight = zapp.viewUtils.getUIBInt(style, "time_bar_now_badge_height", 35)
     nowBarLabelBadgeBackground = zapp.viewUtils.getPosterUri(asString(style.time_bar_now_badge_background_url), "pkg:/images/nowIndicator.9.png", "nowBarLabelBadge")
-    nowBarText = asString(m.localizations.now_label_text, "Now")
 
     nowBarBlendColor = zapp.viewUtils.transposeUIBColor(style.time_bar_badge_background_color, "")
     verticalTimelineColor = zapp.viewUtils.transposeUIBColor(style.time_bar_badge_vertival_background_color, "#808080")
-
-    style = {
+    nowBarText = zapp.viewUtils.textToTextTransformFormat(asString(m.localizations.now_label_text, "Now"), asString(style.time_bar_badge_text_transform, "default"))
+    badgePadding = zapp.viewUtils.makeUIBPadding(style, "time_bar_badge")
+    badgeStyle = {
       "fontColor": fontColor
       "font": font
+      "badgePadding": badgePadding
+      "isDynamic": asBoolean(style.isPlatformAlignment)
       "nowBarText": nowBarText
       "nowBarBadgeWidth": nowBarBadgeWidth
       "nowBarBadgeHeight": nowBarBadgeHeight
+      "nowBarBadgeLineHeight": zapp.viewUtils.getUIBInt(style, "time_bar_badge_label_line_height", 0)
       "nowBarWidth": nowBarWidth
       "nowBarLabelBadgeBackground": nowBarLabelBadgeBackground
       "nowBarHeight": nowBarHeight
       "verticalTimelineColor": verticalTimelineColor
       "nowBarBlendColor": nowBarBlendColor
+      "nowBarBadgeCornerRadius": zapp.viewUtils.getUIBInt(style, "time_bar_badge_corner_radius", 0)
     }
-    m.nowIndicatorStyle = style
+    m.nowIndicatorStyle = badgeStyle
   end function
 
   private function defaultValues(timeGrid, plugin, style)
@@ -606,7 +617,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
 
     timeGridHeight = plugin.getIntValue("time_grid_item_size", 125)
     timeGridGroup.translation = [xPosition, yPosition]
-    timeGrid.numRows = plugin.getIntValue("time_grid_visible_row", 6)
+    timeGrid.numRows = plugin.getIntValue("time_grid_visible_row", 5)
     timeGrid.itemSize = [1920 - xPosition, timeGridHeight]
     timeGrid.focusBitmapUri = "pkg:/images/SearchFocusBackground2.9.png"
   end function
@@ -627,7 +638,14 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     if m.isNowNextMode
       timeGrid.programBackgroundBitmapUri = "empty"
     else
-      timeGrid.programBackgroundBitmapUri = asString(style.guide_item_asset_background_uri, "pkg:/images/timeGridBackground.9.png")
+      if asBoolean(style.isPlatformAlignment)
+        blendColor = zapp.viewUtils.transposeUIBColor(style.program_live_background_color, "#FFFFFFFF")
+        cornerRadius = zapp.viewUtils.getUIBInt(style, "grid_item_corner_radius")
+        timeGrid.programBackgroundBitmapUri = "empty"
+        zapp.viewUtils.drawImage(timeGrid, zapp.viewUtils.setPosterStyleForDraw(timeGrid.itemSize[0], timeGrid.itemSize[1], 0), false, "programBackgroundBitmapUri", blendColor, 10)
+      else
+        timeGrid.programBackgroundBitmapUri = asString(style.guide_item_asset_background_uri, "pkg:/images/timeGridBackground.9.png")
+      end if
     end if
     timeGrid.focusBitmapBlendColor = zapp.viewUtils.transposeUIBColor(style.program_background_color, "#FFFFFF")
     timeGrid.programTitleColor = zapp.viewUtils.transposeUIBColor(style.label1_live_font_color, "#FFFFFF")
@@ -636,9 +654,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     timeGrid.programTitleFont = m.resolveFont(programFontName, programFontSize)
   end function
 
-
-
-  private function timeBarSection(timeGrid, plugin, style)
+  private function timeBarSection(timeGrid, timeGridGroup, plugin, style)
     titleDayLabel = m.getMField("titleLabel")
     nowLabel = m.getMField("NowLabel")
     nextLabel = m.getMField("NextLabel")
@@ -654,23 +670,45 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
 
     timebarFontSize = plugin.getIntValue("time_bar_label_font_size", 12)
     timebarFontName = mc.getString(style, "time_bar_label_font_name", "medium")
+    timebarFontLabelHeight = zapp.viewUtils.getUIBInt(style, "time_bar_label_samsung_line_height")
+
+    timeBarColor = zapp.viewUtils.transposeUIBColor(style.time_bar_background_color, invalid)
 
     timeGrid.pastTimeScreenBlendColor = "#3D80FF"
     timeGrid.timeLabelOffset = timeBarLeftPadding
-    timeGrid.timeBarBitmapUri = asString(style.time_bar_background_url, ":")
-    timeGrid.timeBarHeight = timebarFontSize + 140 - timeBarTopPadding + timeBarBottomPadding
-    clippingY = timeGrid.clippingRect.y
-    halfTimeBar = timeGrid.timeBarHeight / 2
-    percentOfOffset = halfTimeBar / abs(clippingY)
+    if not asBoolean(style.isPlatformAlignment)
+      timeGrid.timeBarHeight = timebarFontSize + 140 - timeBarTopPadding + timeBarBottomPadding
+      clippingY = timeGrid.clippingRect.y
+      halfTimeBar = timeGrid.timeBarHeight / 2
+      percentOfOffset = halfTimeBar / abs(clippingY)
 
-    if halfTimeBar - timebarFontSize >= abs(clippingY)
-      timeGrid.clippingRect = [0, clippingY * percentOfOffset - 20, 1920, 1920]
+      if halfTimeBar - timebarFontSize >= abs(clippingY)
+        timeGrid.clippingRect = [0, clippingY * percentOfOffset - 20, 1920, 1920]
+      end if
+    else
+      timeGrid.timeBarHeight = timebarFontLabelHeight + timeBarBottomPadding + 68 + (timebarFontSize - 20)
+      clippingY = timeGrid.clippingRect.y
+      halfTimeBar = timeGrid.timeBarHeight / 2
+      percentOfOffset = halfTimeBar / abs(clippingY)
+
+      if halfTimeBar - timebarFontLabelHeight >= abs(clippingY)
+        timeGrid.clippingRect = [0, clippingY * percentOfOffset - 20, 1920, 1920]
+      end if
     end if
+
+    if timeBarColor <> invalid
+      timeGrid.timeBarBitmapUri = "empty"
+      zapp.viewUtils.drawImage(timeGrid, zapp.viewUtils.setPosterStyleForDraw(1920, abs(timeGrid.clippingRect.y), 0), false, "timeBarBitmapUri", timeBarColor)
+    else
+      timeGrid.timeBarBitmapUri = asString(style.time_bar_background_url, ":")
+    end if
+
     fontColor = zapp.viewUtils.transposeUIBColor(style.time_bar_label_font_color, "#FFFFFF")
     font = m.resolveFont(timebarFontName, timebarFontSize)
 
-
+    timeGridGroup.translation = [timeGridGroup.translation[0], timeGridGroup.translation[1] + abs(timeGrid.clippingRect.y)]
     timeGrid.timeLabelColor = m.isNowNextMode ?"#FFFFFF00" : fontColor
+    timeGrid.timeLabelFont = font
     timeGrid.timeLabelFont = font
     titleDayLabel.color = fontColor
     titleDayLabel.font = font
@@ -716,19 +754,44 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   end function
 
   private function channelInfoSection(timeGrid, plugin, style)
-    channelAssetHeight = plugin.getIntValue("channel_asset_height")
-    channelPaddingTop = plugin.getIntValue("channel_padding_top")
-    channelPaddingRight = plugin.getIntValue("channel_padding_right")
-    channelPaddingBottom = plugin.getIntValue("channel_padding_bottom")
-    channelPaddingLeft = plugin.getIntValue("channel_padding_left")
-    channelAssetAspectRatio = plugin.getStringValue("channel_asset_aspect_ratio")
-    channelCustomAssetAspectRatio = plugin.getStringValue("channel_asset_aspect_ratio_custom")
-    timeGridHeight = plugin.getIntValue("time_grid_item_size", 125)
-    channelInfoWidth = plugin.getIntValue("channel_list_width", 245)
+    channelAssetHeight = zapp.viewUtils.getUIBInt(style, "channel_asset_height")
+    channelPaddingTop = zapp.viewUtils.getUIBInt(style, "channel_padding_top")
+    channelPaddingRight = zapp.viewUtils.getUIBInt(style, "channel_padding_right")
+    channelPaddingBottom = zapp.viewUtils.getUIBInt(style, "channel_padding_bottom")
+    channelPaddingLeft = zapp.viewUtils.getUIBInt(style, "channel_padding_left")
+    channelAssetAspectRatio = mc.getString(style, "channel_asset_aspect_ratio")
+    channelCustomAssetAspectRatio = mc.getString(style, "channel_asset_aspect_ratio_custom")
+    timeGridHeight = zapp.viewUtils.getUIBInt(style, "time_grid_item_size", 125)
+    cornerRadius = zapp.viewUtils.getUIBInt(style, "channel_corner_radius")
 
+    if asBoolean(style.isPlatformAlignment)
+
+      blendColor = zapp.viewUtils.transposeUIBColor(style.channel_background_color, invalid)
+
+      m.channelMapPath = mc.getPath(style, "image_key", "image_base")
+      aspectRatio = channelAssetAspectRatio
+      if aspectRatio = "other"
+        aspectRatio = channelCustomAssetAspectRatio
+      end if
+      ratioValue = aspectRatio.split("x")
+      channelAssetWidth = channelAssetHeight * ratioValue[0].toInt() / ratioValue[1].toInt()
+      channelInfoWidth = channelAssetWidth + channelPaddingLeft + channelPaddingRight
+      timeGrid.channelInfoBackgroundBitmapUri = "empty"
+      zapp.viewUtils.drawImage(timeGrid, zapp.viewUtils.setPosterStyleForDraw(channelInfoWidth, timeGridHeight, cornerRadius), false, "channelInfoBackgroundBitmapUri", blendColor)
+    else
+      channelAssetWidth = 0
+      channelInfoWidth = zapp.viewUtils.getUIBInt(style, "channel_list_width", 245)
+      channelInfoBackgroundBitmapUri = asString(style.channel_background_item_uri, "pkg:/images/timeGridBackground.9.png")
+      if channelInfoBackgroundBitmapUri = ""
+        timeGrid.channelInfoBackgroundBitmapUri = "pkg:/images/timeGridBackground.9.png"
+      else
+        timeGrid.channelInfoBackgroundBitmapUri = channelInfoBackgroundBitmapUri
+      end if
+    end if
 
     m.channelGuideItem.channelGuideSettings = {
       "channelAssetHeight": channelAssetHeight
+      "channelAssetWidth": channelAssetWidth
       "channelPaddingTop": channelPaddingTop
       "channelPaddingRight": channelPaddingRight
       "channelPaddingBottom": channelPaddingBottom
@@ -737,14 +800,10 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       "channelCustomAssetAspectRatio": channelCustomAssetAspectRatio
       "channelInfoWidth": channelInfoWidth
       "channelInfoHeight": timeGridHeight
+      "isDynamic": asBoolean(style.isPlatformAlignment)
+      "channelInfoCornerRadius": cornerRadius
     }
 
-    channelInfoBackgroundBitmapUri = asString(style.channel_background_item_uri, "pkg:/images/timeGridBackground.9.png")
-    if channelInfoBackgroundBitmapUri = ""
-      timeGrid.channelInfoBackgroundBitmapUri = "pkg:/images/timeGridBackground.9.png"
-    else
-      timeGrid.channelInfoBackgroundBitmapUri = channelInfoBackgroundBitmapUri
-    end if
     timeGrid.channelInfoWidth = channelInfoWidth
   end function
 
@@ -858,11 +917,16 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
 
   private function setButtonStyles(styles)
     m.isUsingButtons = zapp.viewUtils.getUIBBool(styles, "epg_filter_button_enable") and not asBoolean(styles.grid_item_show)
-    m.menuStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "epg_filter_button", "custom", "")
+    menuStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "epg_filter_button", "custom", "", false, "vert", true)
+    menuStyle.menuTextPadding = zapp.viewUtils.makeUIBPadding(styles, "day_filter")
+    menuStyle.isBorderGenerated = true
+    m.borderCornerRadius = zapp.viewUtils.getUIBInt(styles, "epg_filter_button_corner_radius")
+    m.menuStyle = menuStyle
     m.menuStyle.normal.delete("text")
     m.menuPosition = zapp.viewUtils.makeUIBPosition(styles, "epg_filter_button", 960, 200)
-    m.buttonSize = zapp.viewUtils.makeUIBSize(styles, "epg_filter_button", 100, 100)
+    m.buttonSize = zapp.viewUtils.makeUIBSize(styles, "epg_filter_button", 0, 0)
     m.buttonSpacing = zapp.viewUtils.getUIBInt(styles, "epg_filter_button_spacing", 5)
+    m.isDynamic = asBoolean(styles.isPlatformAlignment)
     mc.setOrAddNodeField(m.menuStyle, "layoutDirection", "horiz")
     m.titleTextStyle = zapp.viewUtils.makeUIBTextStyle(styles, "title")
   end function
@@ -1131,6 +1195,13 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     m.menuButtons = items
     m.jumpToIndex = 0
     m.buttonsIsReady = true
+
+    if asBoolean(m.riversJson.styles.isPlatformAlignment)
+      timeGridGroup = m.getMField("TimeGridGroup")
+      menu = m.getMField("menu")
+      yPosition = m.menuPosition[1] + menu.boundingRect().height + asInteger(menu.style.marginstyle.marginbottom) + abs(m.timeGrid.clippingRect.y)
+      timeGridGroup.translation = [m.menuPosition[0], yPosition]
+    end if
   end function
 
   private function toggleUpdateTimer(active as boolean)
