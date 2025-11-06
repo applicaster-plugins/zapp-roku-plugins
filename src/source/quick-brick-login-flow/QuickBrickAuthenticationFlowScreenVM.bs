@@ -193,7 +193,11 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
   end function
 
   private function isLoggedIn()
-    return m.getInstance("user").loggedInServices[m.providerId] = true
+    user = m.getInstance("user")
+    if user.loggedInServices <> invalid
+      return user.loggedInServices[m.providerId] = true
+    end if
+    return false
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
