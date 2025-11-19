@@ -2,6 +2,8 @@ import "pkg:/source/lib/BaseClass.bs"
 import "pkg:/source/video/analytics/BaseVideoAnalyticsPlugin.bs"
 import "pkg:/source/video/analytics/VideoAnalyticsEvent.bs"
 import "pkg:/source/analytics/AnalyticsEventMapper.bs"
+import "pkg:/source/lib/APIUtils.bs"
+import "pkg:/source/zapp-pipes/EntryLoader.bs"
 
 class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
   ' Example Config:
@@ -58,6 +60,13 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
   private isUsingAdvancedVideoAnalytics = false
   private contentMetricPath = {}
 
+  private liveMetadataTimer as mc.types.node
+  private currentLiveMetadata = invalid
+  private liveMetadataUrl = ""
+  private livePollInterval = 60 ' Configurable; could pull from plugin
+  private contentLoader = new zapp.pipes.EntryLoader()
+
+
   @inject("buildConfig")
   private buildConfig
 
@@ -77,6 +86,8 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
     m.contentMetricPath = {
       "cdn": plugin.getStringValue("cdn")
       "title": plugin.getStringValue("title")
+      "live_title": plugin.getStringValue("live_title")
+      "live_content_id": plugin.getStringValue("live_content_id")
       "isLive": plugin.getStringValue("is_live")
       "contentId": plugin.getStringValue("content_id")
       "contentProgram": plugin.getStringValue("content_program")
@@ -91,6 +102,10 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
       "customDimension4": plugin.getStringValue("custom_dimension_4")
       "customDimension5": plugin.getStringValue("custom_dimension_5")
       "customDimension6": plugin.getStringValue("custom_dimension_6")
+      "customDimension7": plugin.getStringValue("custom_dimension_7")
+      "customDimension8": plugin.getStringValue("custom_dimension_8")
+      "customDimension9": plugin.getStringValue("custom_dimension_9")
+      "customDimension10": plugin.getStringValue("custom_dimension_10")
       "contentPlaybackType": plugin.getStringValue("content_playback_type")
       "contentTVShow": plugin.getStringValue("content_tv_show")
       "contentResource": plugin.getStringValue("content_resource")
@@ -108,13 +123,25 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
     return plugin
   end function
 
-
   public override function videoStart(videoNode, contentNode) as void
     super.videoStart(videoNode, contentNode)
     m.log.info("video starting", contentNode.title)
 
     m.contentNode = contentNode
     videoOptions = m.setVideoOptions(contentNode)
+    if asBoolean(videoOptions.content.isLive)
+      extensions = asAA(contentNode.json.extensions)
+      liveMetadataConfig = mc.getPath(extensions, "liveMetadataConfig", {})
+      m.liveMetadataUrl = mc.getPath(liveMetadataConfig, "updateUrl", "")
+      m.livePollInterval = mc.getPath(liveMetadataConfig, "updateInterval", 0)
+
+      if m.liveMetadataUrl <> "" and m.livePollInterval > 0
+        m.log.debug("Setting up live metadata polling", liveMetadataConfig)
+        m.onLiveMetadataTimer() ' Initial fetch
+      else
+        m.log.warn("No liveMetadataUrl configured - skipping polling")
+      end if
+    end if
     m.youboraTask = m.getInstance("youboraAnalyticsTask")
 
     if m.youboraTask = invalid
@@ -160,6 +187,12 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
     else
       m.log.warn("No Youbora Task to stop")
     end if
+  end function
+
+  public override function videoLiveIntervalHeartbeat() as void
+    super.videoLiveIntervalHeartbeat()
+    m.log.info("video live interval heartbeat")
+    m.onLiveMetadataTimer()
   end function
 
   public override function screenOpen(contentNode) as void
@@ -228,15 +261,23 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
     contentMetricPath = m.contentMetricPath
     contentNodeJson = asAA(contentNode.json)
     videoOptions = {}
+    isLive = mc.getPath(contentNodeJson, contentMetricPath.isLive, false)
+    id = mc.getPath(contentNodeJson, contentMetricPath.contentId, "")
+    title = mc.getPath(contentNodeJson, contentMetricPath.title, contentNode.title)
+    if isLive
+      id = mc.getPath(contentNodeJson, contentMetricPath.live_content_id, id)
+      title = mc.getPath(contentNodeJson, contentMetricPath.live_title, title)
+    else
+    end if
     videoOptions.content = {
-      "title": mc.getPath(contentNodeJson, contentMetricPath.title, contentNode.title)
+      "title": title
       "cdn": mc.getPath(contentNodeJson, contentMetricPath.cdn, "")
       "name": `${m.buildConfig.app_name}`
       "user_id": asString(m.user)
       "app_release_version": `${m.buildConfig.version_name} ${m.buildConfig.build_version}`
       "app_version_number": m.buildConfig.version_name
-      "isLive": mc.getPath(contentNodeJson, contentMetricPath.isLive, false)
-      "id": mc.getPath(contentNodeJson, contentMetricPath.contentId, "")
+      "isLive": isLive
+      "id": id
       "program": mc.getPath(contentNodeJson, contentMetricPath.contentProgram, "")
       "channel": mc.getPath(contentNodeJson, contentMetricPath.contentChannel, "")
       "type": mc.getPath(contentNodeJson, contentMetricPath.contentType, "")
@@ -249,6 +290,10 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
       "customDimension4": mc.getPath(contentNodeJson, contentMetricPath.customDimension4, "")
       "customDimension5": mc.getPath(contentNodeJson, contentMetricPath.customDimension5, "")
       "customDimension6": mc.getPath(contentNodeJson, contentMetricPath.customDimension6, "")
+      "customDimension7": mc.getPath(contentNodeJson, contentMetricPath.customDimension7, "")
+      "customDimension8": mc.getPath(contentNodeJson, contentMetricPath.customDimension8, "")
+      "customDimension9": mc.getPath(contentNodeJson, contentMetricPath.customDimension9, "")
+      "customDimension10": mc.getPath(contentNodeJson, contentMetricPath.customDimension10, "")
       "playbackType": mc.getPath(contentNodeJson, contentMetricPath.contentPlaybackType, "")
       "tvShow": mc.getPath(contentNodeJson, contentMetricPath.contentTVShow, "")
       "contentResource": mc.getPath(contentNodeJson, contentMetricPath.contentResource, "")
@@ -265,6 +310,59 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
 
   private function createMapper(plugin) as zapp.analytics.AnalyticsEventMapper
     return new zapp.analytics.AnalyticsEventMapper(asAny(plugin.json.configuration_json.events_mapper))
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ live metadata support
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function onLiveMetadataTimer()
+    if m.liveMetadataUrl <> ""
+      m.log.info("Fetching live metadata from", m.liveMetadataUrl)
+      data = zapp.APIUtils.createDataForLoader({}, invalid, m.liveMetadataUrl)
+      result = m.contentLoader.loadFeed(data, 0)
+      if result.getChildCount() > 0
+        m.onLiveMetadataFetched(result.getChild(0))
+      end if
+    end if
+  end function
+
+  private function onLiveMetadataFetched(result)
+    if asAA(result.json, invalid) <> invalid
+      m.log.info("Live metadata changed - updating Youbora")
+      m.updateLiveMetadata(result)
+    end if
+  end function
+
+  private function updateLiveMetadata(metadata)
+    m.log.info("Updating Youbora with new live metadata")
+    m.youboraTask = m.getInstance("youboraAnalyticsTask")
+    contentMetricPath = m.contentMetricPath
+    metadataJson = asAA(metadata.json)
+    id = mc.getPath(metadataJson, contentMetricPath.contentId, "")
+    liveID = mc.getPath(metadataJson, contentMetricPath.live_content_id, id)
+    title = mc.getPath(metadataJson, contentMetricPath.title)
+    liveTitle = mc.getPath(metadataJson, contentMetricPath.live_title, title)
+
+    updatedOptions = m.setVideoOptions(m.contentNode)
+    updatedOptions.content.id = liveID
+    updatedOptions.content.title = liveTitle
+    updatedOptions.name = "metadataUpdate"
+
+    if m.youboraTask = invalid
+      m.log.warn("Creating new Youbora Task")
+      m.youboraTask = m.createInstance(m.taskName, m.videoNode, "youboraAnalyticsTask")
+      m.youboraTask.videoplayer = m.videoNode
+      m.log.info("Sending payload to Youbora ", updatedOptions)
+      m.youboraTask.options = updatedOptions
+      m.youboraTask.control = "RUN"
+      m.setInstance("youboraAnalyticsTask", m.youboraTask)
+    else
+      m.youboraTask.videoplayer = m.videoNode
+      m.youboraTask.options = updatedOptions
+    end if
+
+    m.youboraTask.event = { handler: "videoEvent", params: updatedOptions }
   end function
 
 end class
