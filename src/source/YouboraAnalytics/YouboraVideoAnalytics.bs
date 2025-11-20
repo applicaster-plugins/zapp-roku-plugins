@@ -267,7 +267,8 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
     if isLive
       id = mc.getPath(contentNodeJson, contentMetricPath.live_content_id, id)
       title = mc.getPath(contentNodeJson, contentMetricPath.live_title, title)
-    else
+      videoOptions.waitForMetadata = "true"
+      videoOptions.pendingMetadata = ["content.id", "content.title"]
     end if
     videoOptions.content = {
       "title": title
@@ -348,6 +349,8 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
     updatedOptions.content.id = liveID
     updatedOptions.content.title = liveTitle
     updatedOptions.name = "metadataUpdate"
+    updatedOptions.waitForMetadata = "true"
+    updatedOptions.pendingMetadata = ["content.id", "content.title"]
 
     if m.youboraTask = invalid
       m.log.warn("Creating new Youbora Task")
