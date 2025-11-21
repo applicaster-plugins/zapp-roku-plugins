@@ -144,7 +144,7 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
         m.log.info("super component found, including it")
         notificationScreenId = `isSmartComponentLoaded${m.screenId}`
         m.observeNotification(notificationScreenId, m.resultOfComponentRespond)
-        SmartComponentObject = m.createSmartComponent(component, m.screenId)
+        SmartComponentObject = m.createSmartComponent(component, m.screenId, i)
       else if component.component_type = "group-qb"
         m.log.info("group component found, including it")
         notificationScreenId = `isGroupComponentLoaded${m.screenId}`
@@ -161,8 +161,8 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
     end if
   end function
 
-  private function createSmartComponent(componentJson, screenId)
-    return new SmartComponentVM(componentJson, screenId)
+  private function createSmartComponent(componentJson, screenId, positionIndex)
+    return new SmartComponentVM(componentJson, screenId, positionIndex)
   end function
 
   private function createGroupComponent(componentJson, screenId, screenState, positionIndex, isSearch = true)
