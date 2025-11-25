@@ -8,6 +8,7 @@ import "pkg:/source/roku_group_component/GroupComponentVM.bs"
 import "pkg:/source/quick-brick-smart-component/SmartComponentVM.bs"
 import "pkg:/source/lib/GeneralScreenUtils.bs"
 import "pkg:/source/roku_modules/maestro/core/Notification.brs"
+import "pkg:/source/lib/ComponentsTypeEnum.bs"
 
 class TVFullScreenSearchVM extends zapp.uib.ScreenVM
 
@@ -140,12 +141,12 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
       component = m.riversJson.ui_components[i]
       position = (asInteger(component.position) + 10) * 100
       component.position = position
-      if component.component_type = "quick-brick-smart-component"
+      if component.component_type = zapp.componentsType.Type.smartComponent
         m.log.info("super component found, including it")
         notificationScreenId = `isSmartComponentLoaded${m.screenId}`
         m.observeNotification(notificationScreenId, m.resultOfComponentRespond)
         SmartComponentObject = m.createSmartComponent(component, m.screenId, i)
-      else if component.component_type = "group-qb"
+      else if component.component_type = zapp.componentsType.Type.groupComponent
         m.log.info("group component found, including it")
         notificationScreenId = `isGroupComponentLoaded${m.screenId}`
         m.observeNotification(notificationScreenId, m.resultOfComponentRespond)
@@ -203,13 +204,14 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
     for each componentJson in m.uiComponents
       mc.setOrAddNodeField(componentJson.styles, "isPlatformAlignment", true)
       component = m.uiBuilderFactory@.createComponent(componentJson.id, componentJson.component_type, { screenState: m.screenState })
+      componentJsonType = mc.getPath(componentJson, "component_type")
       componentIndex++
 
       if component <> invalid and (component.subtype() = "ZUIBHorizontalList" or component.subtype() = "ZUIBList")
 
         m.log.info("this component is repeater compatible - adding it to repeater")
 
-        if mc.getPath(componentJson, "component_type") = "horizontal_list_qb"
+        if componentJsonType = zapp.componentsType.Type.horizontalList
           componentJson = zapp.platformAlignmentUtils.transformSamsungHorizontalListToRoku(componentJson, generalScreenStyle)
           forceNewRepeater = true
         end if
@@ -231,7 +233,7 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
           containerOffset = zapp.viewUtils.getUIBInt(componentJson, "styles.multi_container_y_offset", 0) + zapp.viewUtils.getUIBInt(componentJson, "styles.top_margin", 0)
 
           previousComponent = newMoveableComponents[componentIndex - 2]
-          if previousComponent <> invalid and asString(previousComponent.riversJson.component_type) = "group-info-qb"
+          if previousComponent <> invalid and asString(previousComponent.riversJson.component_type) = zapp.componentsType.Type.groupInfo
             containerOffset += previousComponent.groupHeight
           end if
 
@@ -260,11 +262,11 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
 
       else if component <> invalid
         m.log.info("creating non repeated component")
-        if mc.getPath(componentJson, "component_type") = "grid-qb"
+        if componentJsonType = zapp.componentsType.Type.gridQb
           componentJson = zapp.platformAlignmentUtils.transformSamsungGridToRoku(componentJson, generalScreenStyle)
-        else if mc.getPath(componentJson, "component_type") = "hero-qb"
+        else if componentJsonType = zapp.componentsType.Type.heroQb
           componentJson = zapp.platformAlignmentUtils.transformSamsungHeroToRoku(componentJson, generalScreenStyle)
-        else if mc.getPath(componentJson, "component_type") = "gallery-qb"
+        else if componentJsonType = zapp.componentsType.Type.galleryQb
           componentJson = zapp.platformAlignmentUtils.transformSamsungGalleryToRoku(componentJson, generalScreenStyle)
         end if
         'bs:disable-next-line
@@ -292,10 +294,10 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
           newMoveableComponents.push(component)
         end if
 
-        if asString(component.riversJson.component_type) = "group-info-qb"
+        if asString(component.riversJson.component_type) = zapp.componentsType.Type.groupInfo
           component.isFocusable = false
           mc.setOrAddNodeField(component, "isGroupInfo", true)
-        else if asString(component.riversJson.component_type) = "empty_group_component"
+        else if asString(component.riversJson.component_type) = zapp.componentsType.Type.emptyGroupComponent
           component.isFocusable = false
         end if
 
@@ -306,7 +308,7 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
           containerHeightOverride = zapp.viewUtils.getUIBInt(componentJson, "styles.multi_container_force_height", 0) + zapp.viewUtils.getUIBInt(componentJson, "styles.bottom_margin", 0)
 
           previousComponent = newMoveableComponents[componentIndex - 2]
-          if previousComponent <> invalid and asString(previousComponent.riversJson.component_type) = "group-info-qb"
+          if previousComponent <> invalid and asString(previousComponent.riversJson.component_type) = zapp.componentsType.Type.groupInfo
             containerOffset += previousComponent.groupHeight
           end if
 
@@ -769,7 +771,7 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
         item.riversJson = json
         item.isDataRefreshRequired = true
         item.visible = false
-        if asString(json.component_type) = "group-info-qb"
+        if asString(json.component_type) = zapp.componentsType.Type.groupInfo
           m.sendNotification(mc.createNotification("isInfoReloadRequired", componentValues))
         end if
       end for
