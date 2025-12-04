@@ -269,13 +269,16 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
 
   public function getPlayerItem(item)
     itemExtensions = asAA(item.json.extensions)
+    brightCoveVideoData = asAA(itemExtensions.brightcove)
+    itemId = asString(item.id)
+
     currentPlayItem = {
       url: asString(item.url)
       title: asString(item.title)
       'streamFormat: asString(item.streamformat)
       playStart: asInteger(item.playstart)
-      video_id: asString(item.id)
-      id: asString(item.id)
+      video_id: asString(brightCoveVideoData.video_id, itemId)
+      id: itemId
       length: zapp.viewUtils.getUIBInt(itemExtensions, "duration", 60)
       account_id: m.accountId
       drmParams: asAA(item.drmParams)
@@ -305,6 +308,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
 
   private function stopBcPlayer()
     if m.bcPlayer <> invalid and asBoolean(m.bcPlayer.on.sdkReady)
+      m.log.info("stopBcPlayer")
       m.bcPlayer.callFunc("close")
       m.bcPlayer = invalid
     end if
