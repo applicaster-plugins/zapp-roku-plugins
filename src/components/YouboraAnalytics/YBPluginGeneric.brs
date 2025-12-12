@@ -689,8 +689,16 @@ function isExtraMetadataReady()
   if options["pendingMetadata"] <> invalid and options["waitForMetadata"] = "true" then
     pendingParams = options["pendingMetadata"]
     for i = 0 to pendingParams.count() - 1
-      if options[pendingParams[i]] = invalid then
-        return false
+      paramsParts = pendingParams[i].Split(".")
+      if paramsParts.count() > 1
+        contentPart = options[paramsParts[0]]
+        if contentPart[paramsParts[1]] = invalid
+          return false
+        end if
+      else
+        if options[pendingParams[i]] = invalid then
+          return false
+        end if
       end if
     end for
   end if

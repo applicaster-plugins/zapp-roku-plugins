@@ -133,5 +133,53 @@ namespace zapp.tests
       m.assertEqual(m.plugin.youboraTask.adevent, { "id": "raf" })
     end function
 
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("updateLiveMetadata")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("updates live metadata")
+    function _()
+      m.plugin.youboraTask = { "id": "task" }
+      youboraTask = { "id": "task" }
+      metadata = {
+        "json": {
+          "extensions": {
+            "LIVE": true,
+            "id": "content",
+            "title": "t1"
+          }
+        }
+      }
+      m.plugin.buildConfig = {
+        "app_name": "appN",
+        "version_name": "vn",
+        "build_version": "bv",
+      }
+      m.plugin.contentNode = {
+        "id": "content",
+        "title": "t2",
+        "json": {
+          "extensions": {
+            "LIVE": true
+          }
+        }
+      }
+      m.plugin.contentMetricPath = {
+        "contentId": "extensions.id",
+        "live_title": "extensions.title",
+        "live_content_id": "extensions.id",
+        "title": "title",
+        "isLive": "extensions.LIVE"
+      }
+      m.expectCalled(m.plugin.getInstance("youboraAnalyticsTask"), youboraTask)
+
+      m.plugin.updateLiveMetadata(metadata)
+
+      m.assertEqual(youboraTask.options.content.id, "content")
+      m.assertEqual(youboraTask.options.content.title, "t1")
+      m.assertEqual(youboraTask.options.content.isLive, true)
+      m.assertEqual(youboraTask.event.handler, "videoEvent")
+    end function
+
   end class
 end namespace

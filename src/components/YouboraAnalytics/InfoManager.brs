@@ -103,7 +103,12 @@ function InfoManager(plugin, options = invalid)
   end function
 
   this.getIsLive = function()
-    islive = m.options["content.isLive"]
+    content = m.options.content
+    if content <> invalid
+      islive = content.isLive
+    else
+      islive = m.options["content.isLive"]
+    end if
 
     if islive = invalid
       islive = m.plugin.getIsLive()
