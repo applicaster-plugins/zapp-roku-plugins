@@ -135,8 +135,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
       applicationID: ""
       env: ""
       playerId: ""
-      playerName: ""
-      accountId: ""
+      playerName: "ap-roku"
       user: m.getAccountId()
       destination: ""
       source: ""
@@ -217,6 +216,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
       end if
       m.log.method("play brightcove Item ", item.id)
       m.top = m.getMField("top")
+
       m.currentItem = item
       m.playMode = playMode
       m.playerItem = m.getPlayerItem(m.currentItem)
@@ -245,15 +245,55 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
     end if
   end function
 
+  function onGetVideoResponse(data)
+    if data.code >= 200 and data.code < 300
+      videoMetadata = data.body
+      if type(videoMetadata) = "roString"
+        videoMetadata = parseJson(videoMetadata)
+      end if
+      sources = videoMetadata.sources
+      keySystem = asString(m.playerItem.drmParams.keySystem)
+      videoMetadata.sources = m.getModifiedSources(sources, keySystem)
+      m.bcPlayer.callFunc("load", videoMetadata)
+    end if
+  end function
+
+  function getModifiedSources(sources, keySystem)
+    if sources <> invalid and sources.count() > 0 and keySystem <> ""
+      for i = sources.count() - 1 to 0 step -1
+        item = sources[i]
+        for each drm in item.key_systems
+          if drm.Instr(0, keySystem) = -1
+            item.key_systems.delete(drm)
+          end if
+        end for
+        if item.key_systems.count() = 0
+          sources.delete(i)
+        end if
+      end for
+    end if
+    return sources
+  end function
+
   function playBrightcoveItem(bcPlayer, playerItem, isCustom = true)
     if bcPlayer <> invalid
       m.log.method("playBrightcoveItem")
-
       m.state = "playing"
       bcPlayer.control = "stop"
       bcPlayer.content = invalid
-      bcPlayer.callFunc("loadCustom", playerItem)
-      bcPlayer.control = "play"
+      if asString(m.currentItem.json.extensions.brightcove.video_id, invalid) = invalid
+        bcPlayer.callFunc("loadCustom", playerItem)
+        bcPlayer.control = "play"
+      else
+        responseNode = bcPlayer.callFunc("getVideo", playerItem.video_id, {
+          autoload: false,
+        })
+        if responseNode <> invalid
+          m.unobserveNodeField(responseNode, "response", m.onGetVideoResponse)
+          m.observeNodeField(responseNode, "response", m.onGetVideoResponse)
+        end if
+      end if
+
       if m.playMode = "default"
         m.setFocus(bcPlayer)
         bcPlayer.width = 1920
@@ -278,7 +318,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
       'streamFormat: asString(item.streamformat)
       playStart: asInteger(item.playstart)
       video_id: asString(brightCoveVideoData.video_id, itemId)
-      id: itemId
+      id: asString(brightCoveVideoData.video_id, itemId)
       length: zapp.viewUtils.getUIBInt(itemExtensions, "duration", 60)
       account_id: m.accountId
       drmParams: asAA(item.drmParams)
