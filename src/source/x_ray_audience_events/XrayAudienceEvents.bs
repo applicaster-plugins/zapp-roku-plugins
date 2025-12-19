@@ -23,6 +23,8 @@ namespace zapp.video.analytics
     private isActive = false
     private listOfEvents = {}
     private pendingEvents = {}
+    private enabledCrashLogs = false
+    private crashEventsURL = "https://track.applicaster.com/crashes/v1/"
 
     @injectClass("zapp.URI")
     private uri
@@ -36,6 +38,10 @@ namespace zapp.video.analytics
       plugin = pluginManager.getPluginById("x-ray-audience-events")
       m.userIdStorageKey = plugin.getStringValue("user_identity_storage_key", "quick-brick-login-flow.access-token")
       m.enabled = plugin.getBoolValue("enabled")
+
+      crashPlugin = pluginManager.getPluginById("xray_logging_plugin")
+      m.enabledCrashLogs = crashPlugin.getBoolValue("crash_tracker_enabled")
+      m.crashEventsURL = crashPlugin.getStringValue("crash_tracker_url", "https://track.applicaster.com/crashes/v1/")
 
       m.initialize()
 
@@ -88,9 +94,65 @@ namespace zapp.video.analytics
       m.sendXrayAudienceEvents(event)
     end function
 
+    private function createAndSendCrashEvent(crashType as string, params as mc.types.assocarray)
+      event = m.eventFactory.createEvent(crashType, 0, invalid, params)
+      m.sendXrayAudienceCrashEvents(event)
+    end function
+
+    function sendSoftCrashEvent(eventType as string, message as string)
+      m.log.info("sending soft crash event")
+      params = {
+        event_type: eventType
+        message: message
+      }
+      m.createAndSendCrashEvent("soft_crash", params)
+    end function
+
+    function sendHardCrashEvent(eventType = "" as string, message = "" as string)
+      m.log.info("hard crash event triggered")
+      launchArgs = m.getMField("top").getScene().launchArgs
+      crashLogs = asString(launchArgs.crashLog)
+      if crashLogs.len() > 0
+        m.log.info("sending hard crash event with logs")
+        params = {
+          message: crashLogs.replace("\", "\\")
+        }
+        m.createAndSendCrashEvent("hard_crash", params)
+      else if eventType.len() > 0 and message.len() > 0
+        m.log.info("sending hard crash event with custom message")
+        params = {
+          event_type: eventType
+          message: message
+        }
+        m.createAndSendCrashEvent("hard_crash", params)
+      end if
+    end function
+
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     '++ Private Methods
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    private function sendXrayAudienceCrashEvents(event)
+      if m.enabledCrashLogs
+        m.log.info("sendXrayAudienceCrashEvents with id ", event.id)
+        listOfEvents = {
+          "events": [
+            event.properties
+          ]
+        }
+        m.createTask("NetworkTask", {
+          "url": m.crashEventsURL,
+          "method": "POST",
+          "headers": {
+            "Content-type": "application/json",
+            "accept": "application/json"
+          },
+          "params": listOfEvents
+        })
+      else
+        m.log.info("XrayAudienceEvents crash logging is disabled.")
+      end if
+    end function
 
     private function sendXrayAudienceEvents(event)
       m.log.info("sendXrayAudienceEvents with id ", event.id)
