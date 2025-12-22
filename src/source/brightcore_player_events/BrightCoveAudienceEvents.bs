@@ -14,7 +14,7 @@ namespace zapp.video.analytics
 
     private eventFactory as zapp.video.analytics.BrightCoveEventsFactory
     private enabled = false
-    private eventURL = "http://metrics.brightcove.com/tracker"
+    private eventURL = "https://metrics.brightcove.com/v2/tracker"
     private contentNode = invalid
     private userIdStorageKey = ""
     private accountId = ""
