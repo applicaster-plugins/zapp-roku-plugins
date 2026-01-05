@@ -421,17 +421,19 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
   end function
 
   function seekOnSkipOverlay(seekValue)
-    if m.rafStarted
-      if m.videoNode <> invalid
-        m.videoNode.control = "pause"
-        m.videoNode.getChild(0).seekMode = "accurate"
-        m.videoNode.seek = seekValue + 0.5
-        m.videoNode = m.bcPlayer.getChild(3)
+    if m.bcPlayer <> invalid
+      if m.rafStarted
+        if m.videoNode <> invalid
+          m.videoNode.control = "pause"
+          m.videoNode.getChild(0).seekMode = "accurate"
+          m.videoNode.seek = seekValue + 0.5
+          m.videoNode = m.bcPlayer.getChild(3)
+        end if
+      else
+        m.bcPlayer.control = "pause"
+        m.bcPlayer.seekMode = "accurate"
+        m.bcPlayer.seek = seekValue + 0.5
       end if
-    else
-      m.bcPlayer.control = "pause"
-      m.bcPlayer.seekMode = "accurate"
-      m.bcPlayer.seek = seekValue + 0.5
     end if
   end function
 
