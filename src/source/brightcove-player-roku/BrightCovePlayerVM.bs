@@ -267,7 +267,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
             item.key_systems.delete(drm)
           end if
         end for
-        if item.key_systems.count() = 0
+        if item.key_systems <> invalid and item.key_systems.count() = 0
           sources.delete(i)
         end if
       end for
