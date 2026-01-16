@@ -63,6 +63,7 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
   private textTransform = "uppercase"
   private focusedFilterIndex = 0
   private savedIndex = 0
+  private savedIndexLoading = 0
   private selectedFilterIndex = 0
   private isFilterFocusable = false
   private searchFlowLayout = invalid
@@ -135,7 +136,7 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
   private function includeAdditionalComponentIfNeeded(index = 0, refresh = true) as void
     riversCount = m.riversJson.ui_components.count()
     groupComponentObject = invalid
-    m.savedIndex = riversCount
+    m.savedIndexLoading = riversCount
 
     for i = index to riversCount - 1 step 1
       component = m.riversJson.ui_components[i]
@@ -153,11 +154,11 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
         groupComponentObject = m.createGroupComponent(component, m.screenId, m.screenState, i, true)
       else
         m.uiComponents.push(component)
-        m.savedIndex -= 1
+        m.savedIndexLoading -= 1
       end if
     end for
 
-    if m.uiComponents.count() = riversCount and groupComponentObject = invalid or (m.savedIndex = 0 and m.errorComponentIndex.count() + m.uiComponents.count() >= riversCount)
+    if m.uiComponents.count() = riversCount and groupComponentObject = invalid or (m.savedIndexLoading = 0 and m.errorComponentIndex.count() + m.uiComponents.count() >= riversCount)
       m.proceedCreatingContentSearch()
     end if
   end function
@@ -171,12 +172,12 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
   end function
 
   function resultOfComponentRespond(componentItems as mc.types.assocarray)
-    m.savedIndex -= 1
+    m.savedIndexLoading -= 1
     data = asArray(componentItems.data)
 
     if data.count() = 0
       m.log.error("No items found in component")
-      m.errorComponentIndex.push(m.savedIndex)
+      m.errorComponentIndex.push(m.savedIndexLoading)
     else
       m.log.info("Found some items")
       for each item in data
@@ -184,7 +185,7 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
       end for
     end if
 
-    if m.savedIndex <= 0
+    if m.savedIndexLoading <= 0
       m.uiComponents.sortBy("position")
       m.proceedCreatingContentSearch()
     end if
@@ -244,6 +245,7 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
           component.isDisplayedInSearch = true
           component.containerYOffset = containerOffset
           rowRepeater.groupBottomMargin = zapp.viewUtils.getUIBInt(componentJson, "styles.group_bottom_margin", 0)
+          rowRepeater.isDisplayedInSearch = true
           rowRepeater.groupTopPadding = groupTopPadding
           rowRepeater.groupXYOffset = asArray(componentJson.styles.groupXYOffset, [0, 0])
           rowRepeater.groupXYDimension = asArray(componentJson.styles.groupXYDimension, [0, 0, 0])
@@ -276,6 +278,7 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
         m.log.info("component type is ", component.subtype())
 
         component.screenState = m.screenState
+        component.isDisplayedInSearch = true
         component@.initializeWithRiversJson(componentJson)
         component.visible = true
 
@@ -312,7 +315,6 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
             containerOffset += previousComponent.groupHeight
           end if
 
-          component.isDisplayedInSearch = true
           component.groupBottomMargin = zapp.viewUtils.getUIBInt(componentJson, "styles.group_bottom_margin", 0)
           component.groupXYDimension = asArray(componentJson.styles.groupXYDimension, [0, 0, 0])
           component.groupTopPadding = groupTopPadding
@@ -656,7 +658,7 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public override function load()
-    m.state = "ready"
+    m.state = "loading"
     m.isLoading = false
     zapp.GeneralScreenUtils.load()
   end function
@@ -776,7 +778,7 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
         end if
       end for
 
-      m.sendNotification(mc.createNotification("isComponentReloadRequired", true))
+      m.sendNotification(mc.createNotification("isComponentReloadRequired", { "isSearch": true, isOk: true }))
       m.load()
       m.loadDataTask = m.executeloadDataTask("componentFeed", m.onFeedResult, componentValues, depth)
     end if
