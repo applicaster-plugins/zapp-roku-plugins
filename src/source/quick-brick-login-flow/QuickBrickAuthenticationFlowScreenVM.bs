@@ -19,6 +19,9 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
   public function new(riversJson)
     super(riversJson, "QuickBrickAuthenticationFlowScreenVM")
     m.focusId = "usernameInput"
+    if riversJson.type = "zapp_login_plugin_oauth_tv_2_0"
+      m.riversJson = zapp.platformAlignmentUtils.transformTVLoginToRoku(riversJson)
+    end if
     m.processStyles(m.riversJson)
   end function
 

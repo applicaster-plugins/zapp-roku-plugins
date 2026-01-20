@@ -1,0 +1,1060 @@
+import "pkg:/source/lib/ViewUtils.bs"
+import "pkg:/source/roku_modules/maestro/core/Utils.brs"
+import "pkg:/source/UIBuilder/view/ComponentVM.bs"
+import "pkg:/source/UIBuilder/view/ScreenVM.bs"
+import "pkg:/source/zapp-controls/CollectionRowUtils.bs"
+import "pkg:/source/mixin/KeyboardDialogMixin.bs"
+import "pkg:/source/roku_group_component/GroupComponentVM.bs"
+import "pkg:/source/quick-brick-smart-component/SmartComponentVM.bs"
+import "pkg:/source/lib/GeneralScreenUtils.bs"
+import "pkg:/source/roku_modules/maestro/core/Notification.brs"
+import "pkg:/source/lib/ComponentsTypeEnum.bs"
+
+class TVFullScreenSearchVM extends zapp.uib.ScreenVM
+
+  ' screen container
+  public currentScreen = invalid
+  public isScreenContainerVisible = false
+
+  'menu styles
+  public menuButtons = []
+  public menuStyle = {}
+  public jumpToIndex = -1
+  public isShowingScreenOnFocus = true
+  public layoutDirection = "horiz"
+  public isFilterVisible = false
+  public jumpSelectToIndex = 0
+  public buttonSpacing = 5
+  public buttonTranslation = [0, 0]
+  public buttonContainerTranslation = [0, 0]
+  public labelXOffset = 0
+  public isButtonDynamic = false
+  public isDynamicGroupSize = false
+
+  'keyboard styles
+  public keyboardItem = invalid
+  public searchText = ""
+  public searchTextInput = ""
+
+  'grid styles
+  public isGridVisible = false
+  public components = []
+  public moveableComponents = []
+  public componentIndex = 0
+  public needsRecalculating = false
+  public componentYOffsets = []
+
+  private results = invalid
+  private isFirstLoadComplete = false
+  private fallbackScreen = invalid
+  private searchDelayTask = invalid
+  private loadMoreTask = invalid
+  private minCharacters = 3
+  private isShowingContent = false
+  private searchHaveResults = false
+  private itemWasSelected = false
+  private searchData = ""
+  private filterData = ""
+  private nameOfParentScreen = ""
+
+  private localizations = invalid
+  private isSearchScreen = true
+  private isSearchFilterEnabled = false
+  private textTransform = "uppercase"
+  private focusedFilterIndex = 0
+  private savedIndex = 0
+  private savedIndexLoading = 0
+  private selectedFilterIndex = 0
+  private isFilterFocusable = false
+  private searchFlowLayout = invalid
+  private backgroundBorderPoster = invalid
+  private backgroundPoster = invalid
+  private buttonMenu = invalid
+  private tabComponentPaddings = invalid
+  private tabIsLoaded = false
+
+  'keyboard dialog mixin
+  private showKeyboardDialog = zapp.keyboardDialogMixin.showKeyboardDialog
+  private _onKeyboardDialogButtonSelected = zapp.keyboardDialogMixin.onKeyboardDialogButtonSelected
+  private _closeKeyboardDialog = zapp.keyboardDialogMixin.closeKeyboardDialog
+  private setTextFromKeyboard = zapp.keyboardDialogMixin.setTextFromKeyboard
+
+  ' DynamicContainer Mixin
+  private uiBuilderFactory = invalid
+  private currentComponents = []
+  private newLazyComponents = []
+  private newLazyMoveableComponents = []
+  private newLazyComponentsYOffsets = []
+  private isLazyLoading = false
+  private lazyLoadingBatchSize = 5
+  private batchSize = 15
+  private isRefreshNeeded = true
+  private uiComponents = []
+  private errorComponentIndex = []
+  private screenId = ""
+
+  @inject("analyticsManager")
+  private analytics
+
+  public function new(riversJson)
+    super(riversJson, "TVFullScreenSearchVM")
+    riversJson = zapp.platformAlignmentUtils.transformTVSearchToRoku(riversJson)
+    m.searchFlowLayout = m.getMField("searchFlowLayout")
+    m.backgroundBorderPoster = m.getMField("backgroundBorderPoster")
+    m.backgroundPoster = m.getMField("backgroundPoster")
+    m.buttonMenu = m.getMField("menu")
+    m.uiBuilderFactory = zapp.uib.mixin.getComponentFactory()
+
+    m.focusId = "keyboard"
+    m.setScreenLocalizations(riversJson.localizations)
+    m.processStyles(riversJson.styles)
+    m.processTabStyles(riversJson.styles)
+    m.setGridVisible(false)
+    m.setScreenContainerVisible(true)
+
+    m.fallbackScreen = asString(riversJson.general.fallback)
+    m.isSearchFilterEnabled = zapp.viewUtils.getUIBBool(riversJson.general, "enable_search_filters", false)
+
+    if m.isSearchFilterEnabled
+      m.searchData = asAA(riversJson.ui_components[0].data, riversJson.data)
+      m.filterData = asAA(riversJson.data)
+    else
+      m.searchData = asAA(riversJson.data)
+      m.filterData = m.searchData
+    end if
+    m.setFocusId("keyboard")
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ DynamicContainer Mixin
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public override function createContent()
+    m.includeAdditionalComponentIfNeeded()
+  end function
+
+  private function includeAdditionalComponentIfNeeded(index = 0, refresh = true) as void
+    riversCount = m.riversJson.ui_components.count()
+    groupComponentObject = invalid
+    m.savedIndexLoading = riversCount
+
+    for i = index to riversCount - 1 step 1
+      component = m.riversJson.ui_components[i]
+      position = (asInteger(component.position) + 10) * 100
+      component.position = position
+      if component.component_type = zapp.componentsType.Type.smartComponent
+        m.log.info("super component found, including it")
+        notificationScreenId = `isSmartComponentLoaded${m.screenId}`
+        m.observeNotification(notificationScreenId, m.resultOfComponentRespond)
+        SmartComponentObject = m.createSmartComponent(component, m.screenId, m.screenState, i)
+      else if component.component_type = zapp.componentsType.Type.groupComponent
+        m.log.info("group component found, including it")
+        notificationScreenId = `isGroupComponentLoaded${m.screenId}`
+        m.observeNotification(notificationScreenId, m.resultOfComponentRespond)
+        groupComponentObject = m.createGroupComponent(component, m.screenId, m.screenState, i, true)
+      else
+        m.uiComponents.push(component)
+        m.savedIndexLoading -= 1
+      end if
+    end for
+
+    if m.uiComponents.count() = riversCount and groupComponentObject = invalid or (m.savedIndexLoading = 0 and m.errorComponentIndex.count() + m.uiComponents.count() >= riversCount)
+      m.proceedCreatingContentSearch()
+    end if
+  end function
+
+  private function createSmartComponent(componentJson, screenId, screenState, positionIndex)
+    return new SmartComponentVM(componentJson, screenId, screenState, positionIndex)
+  end function
+
+  private function createGroupComponent(componentJson, screenId, screenState, positionIndex, isSearch = true)
+    return new GroupComponentVM(componentJson, screenId, screenState, positionIndex, isSearch)
+  end function
+
+  function resultOfComponentRespond(componentItems as mc.types.assocarray)
+    m.savedIndexLoading -= 1
+    data = asArray(componentItems.data)
+
+    if data.count() = 0
+      m.log.error("No items found in component")
+      m.errorComponentIndex.push(m.savedIndexLoading)
+    else
+      m.log.info("Found some items")
+      for each item in data
+        m.uiComponents.push(item)
+      end for
+    end if
+
+    if m.savedIndexLoading <= 0
+      m.uiComponents.sortBy("position")
+      m.proceedCreatingContentSearch()
+    end if
+  end function
+
+  private function proceedCreatingContentSearch()
+    m.log.method("createContent")
+    newComponents = []
+    newMoveableComponents = []
+    componentYOffsets = []
+    rowRepeater = invalid
+
+    repeaterCount = 0
+    componentIndex = 0
+    generalScreenStyle = asAA(m.riversJson.styles)
+
+    for each componentJson in m.uiComponents
+      mc.setOrAddNodeField(componentJson.styles, "isPlatformAlignment", true)
+      component = m.uiBuilderFactory@.createComponent(componentJson.id, componentJson.component_type, { screenState: m.screenState })
+      componentJsonType = mc.getPath(componentJson, "component_type")
+      componentIndex++
+
+      if component <> invalid and (component.subtype() = "ZUIBHorizontalList" or component.subtype() = "ZUIBList")
+
+        m.log.info("this component is repeater compatible - adding it to repeater")
+
+        if componentJsonType = zapp.componentsType.Type.horizontalList
+          componentJson = zapp.platformAlignmentUtils.transformSamsungHorizontalListToRoku(componentJson, generalScreenStyle)
+          forceNewRepeater = true
+        end if
+        if rowRepeater = invalid
+
+          m.log.info("there was no repeater, creating...")
+          repeaterCount++
+          rowRepeater = m.createInstance("RowRepeater", invalid, "repeater" + str(repeaterCount).trim())
+          rowRepeater.screenState = m.screenState
+          isPlatformAlignment = asBoolean(componentJson.styles.isPlatformAlignment)
+
+          rowRepeater.containerClippingOffsets = m.getClippingOffsets(componentJson.styles)
+          repeaterRows = []
+
+          groupTopPadding = zapp.viewUtils.getUIBInt(componentJson, "styles.group_top_padding", 0)
+          componentTopPadding = zapp.viewUtils.getUIBInt(componentJson, "styles.component_padding_top", 0)
+          componentMargins = zapp.viewUtils.makeUIBMargin(componentJson.styles, "component")
+          componentPaddings = zapp.viewUtils.makeUIBPadding(componentJson.styles, "component")
+          containerOffset = zapp.viewUtils.getUIBInt(componentJson, "styles.multi_container_y_offset", 0) + zapp.viewUtils.getUIBInt(componentJson, "styles.top_margin", 0)
+
+          previousComponent = newMoveableComponents[componentIndex - 2]
+          if previousComponent <> invalid and asString(previousComponent.riversJson.component_type) = zapp.componentsType.Type.groupInfo
+            containerOffset += previousComponent.groupHeight
+          end if
+
+          rowBackgroundColor = zapp.viewUtils.transposeUIBColor(componentJson.styles.component_background_color, "#ffffff00")
+          zapp.viewUtils.setBackgroundColor(rowRepeater, "rowBackgroundVisible", "rowBackgroundColor", rowBackgroundColor)
+
+          containerHeightOverride = zapp.viewUtils.getUIBInt(componentJson, "styles.multi_container_force_height", 0) + zapp.viewUtils.getUIBInt(componentJson, "styles.bottom_margin", 0)
+          component.isDisplayedInSearch = true
+          component.containerYOffset = containerOffset
+          rowRepeater.groupBottomMargin = zapp.viewUtils.getUIBInt(componentJson, "styles.group_bottom_margin", 0)
+          rowRepeater.isDisplayedInSearch = true
+          rowRepeater.groupTopPadding = groupTopPadding
+          rowRepeater.groupXYOffset = asArray(componentJson.styles.groupXYOffset, [0, 0])
+          rowRepeater.groupXYDimension = asArray(componentJson.styles.groupXYDimension, [0, 0, 0])
+          rowRepeater.componentPaddings = componentPaddings
+          rowRepeater.componentTopPadding = componentTopPadding
+          rowRepeater.componentMargins = componentMargins
+          rowRepeater.containerYOffset = component.containerYOffset
+          rowRepeater.containerHeightOverride = containerHeightOverride
+          rowRepeater.rowList.translation = [0, groupTopPadding + componentTopPadding + asInteger(componentMargins.marginTop)]
+          componentYOffsets.push(component.containerYOffset)
+        end if
+
+        component.riversJson = componentJson
+        'bs:disable-next-line
+        repeaterRows.push(component)
+
+      else if component <> invalid
+        m.log.info("creating non repeated component")
+        if componentJsonType = zapp.componentsType.Type.gridQb
+          componentJson = zapp.platformAlignmentUtils.transformSamsungGridToRoku(componentJson, generalScreenStyle)
+        else if componentJsonType = zapp.componentsType.Type.heroQb
+          componentJson = zapp.platformAlignmentUtils.transformSamsungHeroToRoku(componentJson, generalScreenStyle)
+        else if componentJsonType = zapp.componentsType.Type.galleryQb
+          componentJson = zapp.platformAlignmentUtils.transformSamsungGalleryToRoku(componentJson, generalScreenStyle)
+        end if
+        'bs:disable-next-line
+        zapp.GeneralScreenUtils.finishRepeater(rowRepeater, newComponents, newMoveableComponents, repeaterRows)
+        rowRepeater = invalid
+
+        m.log.info("component type is ", component.subtype())
+
+        component.screenState = m.screenState
+        component.isDisplayedInSearch = true
+        component@.initializeWithRiversJson(componentJson)
+        component.visible = true
+
+        backgroundColor = zapp.viewUtils.transposeUIBColor(componentJson.styles.group_color, "#ffffff00")
+        rowBackgroundColor = zapp.viewUtils.transposeUIBColor(componentJson.styles.component_background_color, "#ffffff00")
+        childBackgroundColor = zapp.viewUtils.transposeUIBColor(componentJson.styles.child_background_color, "#ffffff00")
+        zapp.viewUtils.setBackgroundColor(component, "backgroundVisible", "backgroundColor", backgroundColor)
+        zapp.viewUtils.setBackgroundColor(component, "rowBackgroundVisible", "rowBackgroundColor", rowBackgroundColor)
+        zapp.viewUtils.setBackgroundColor(component, "childBackgroundVisible", "childBackgroundColor", childBackgroundColor)
+
+        component.groupBottomMargin = zapp.viewUtils.getUIBInt(componentJson, "styles.group_bottom_margin", 0)
+        component.componentMargins = zapp.viewUtils.makeUIBMargin(componentJson.styles, "component")
+
+        newComponents.push(component)
+        if component.isBackgroundView <> true
+          newMoveableComponents.push(component)
+        end if
+
+        if asString(component.riversJson.component_type) = zapp.componentsType.Type.groupInfo
+          component.isFocusable = false
+          mc.setOrAddNodeField(component, "isGroupInfo", true)
+        else if asString(component.riversJson.component_type) = zapp.componentsType.Type.emptyGroupComponent
+          component.isFocusable = false
+        end if
+
+        if not (component.isFullScreen = true or component.isBackgroundView = true)
+          groupTopPadding = zapp.viewUtils.getUIBInt(componentJson, "styles.group_top_padding", 0)
+          componentPaddings = zapp.viewUtils.makeUIBPadding(componentJson.styles, "component")
+          containerOffset = zapp.viewUtils.getUIBInt(componentJson, "styles.multi_container_y_offset", 0) + zapp.viewUtils.getUIBInt(componentJson, "styles.top_margin", 0)
+          containerHeightOverride = zapp.viewUtils.getUIBInt(componentJson, "styles.multi_container_force_height", 0) + zapp.viewUtils.getUIBInt(componentJson, "styles.bottom_margin", 0)
+
+          previousComponent = newMoveableComponents[componentIndex - 2]
+          if previousComponent <> invalid and asString(previousComponent.riversJson.component_type) = zapp.componentsType.Type.groupInfo
+            containerOffset += previousComponent.groupHeight
+          end if
+
+          component.groupBottomMargin = zapp.viewUtils.getUIBInt(componentJson, "styles.group_bottom_margin", 0)
+          component.groupXYDimension = asArray(componentJson.styles.groupXYDimension, [0, 0, 0])
+          component.groupTopPadding = groupTopPadding
+          component.componentPaddings = componentPaddings
+          component.containerYOffset = zapp.viewUtils.getUIBInt(componentJson, "styles.multi_container_clipping_offset_h")
+          component.containerHeightOverride = containerHeightOverride
+          componentYOffsets.push(containerOffset)
+        end if
+      else
+        m.log.error("could not instantiate component for this json")
+      end if
+    end for
+
+    'bs:disable-next-line
+    zapp.GeneralScreenUtils.finishRepeater(rowRepeater, newComponents, newMoveableComponents, repeaterRows)
+
+    m.components = newComponents
+    m.moveableComponents = newMoveableComponents
+    m.componentYOffsets = componentYOffsets
+    m.isDisplayedInDynamicContainer = true
+    for each comp in m.components
+      m.observeNodeField(comp, "state", zapp.GeneralScreenUtils.onChildComponentStateChange)
+    end for
+
+    m.log.info(">>>>", m.components.count())
+    if m.components.count() > 0
+      m.log.info("view is init'd")
+      m.state = "initialized"
+      zapp.GeneralScreenUtils.selectFirstComponent()
+      m.load()
+    else
+      m.state = "error"
+    end if
+
+  end function
+
+  private function selectNextComponent(isCheck = false)
+    return zapp.GeneralScreenUtils.selectNextComponent(isCheck)
+  end function
+
+  private function selectPreviousComponent(isCheck = false)
+    return zapp.GeneralScreenUtils.selectPreviousComponent(isCheck)
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Set Styles
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  function processStyles(styles)
+    textStyleFormat = {
+      search_label_placeholder_color: mc.getPath(styles, "search_label_placeholder_font_color")
+      search_label_color: mc.getPath(styles, "search_label_font_color")
+      search_label_highlighted_color: mc.getPath(styles, "search_label_focused_font_color")
+      search_label_font_name: mc.getPath(styles, "search_label_roku_font_family")
+      search_label_font_size: zapp.viewUtils.getUIBInt(styles, "search_label_roku_font_size")
+      search_label_line_height: zapp.viewUtils.getUIBInt(styles, "search_label_roku_line_height")
+      search_label_letter_spacing: zapp.viewUtils.getUIBInt(styles, "search_label_roku_letter_spacing")
+      search_label_alignment: mc.getPath(styles, "search_label_text_alignment", "center")
+      search_label_transform: mc.getPath(styles, "search_label_text_transform", "uppercase")
+      search_label_margin_top: zapp.viewUtils.getUIBInt(styles, "search_label_margin_top")
+      search_label_margin_bottom: zapp.viewUtils.getUIBInt(styles, "search_label_margin_bottom")
+      search_label_margin_left: zapp.viewUtils.getUIBInt(styles, "search_label_margin_left")
+      search_label_margin_right: zapp.viewUtils.getUIBInt(styles, "search_label_margin_right")
+    }
+    textStyle = zapp.viewUtils.makeUIBButtonStyle(textStyleFormat, "search_label", invalid, invalid, false, "vert", true)
+
+    itemStyle = {
+      text: textStyle
+      textAlign: textStyleFormat.search_label_alignment
+      menuList: {
+        marginStyle: zapp.viewUtils.makeUIBMargin(styles, "menu_list")
+        paddingStyle: zapp.viewUtils.makeUIBPadding(styles, "menu_list")
+        openColorBg: zapp.viewUtils.transposeUIBColor(styles.menu_list_open_background_color)
+        openColorBr: zapp.viewUtils.transposeUIBColor(styles.menu_list_open_border_color)
+        closedColorBg: zapp.viewUtils.transposeUIBColor(styles.menu_list_closed_background_color)
+        closedColorBr: zapp.viewUtils.transposeUIBColor(styles.menu_list_closed_border_color)
+        borderWidth: zapp.viewUtils.getUIBInt(styles, "menu_list_border_width")
+        cornerRadius: zapp.viewUtils.getUIBInt(styles, "menu_list_corner_radius")
+        alignment: mc.getPath(styles, "menu_list_alignment", "center")
+      }
+      itemMenuBackground: {
+        placeholderBg: zapp.viewUtils.transposeUIBColor(styles.search_bar_background_placeholder_color)
+        normalBg: zapp.viewUtils.transposeUIBColor(styles.search_bar_background_color)
+        highlightedBg: zapp.viewUtils.transposeUIBColor(styles.search_bar_background_focus_color)
+        placeholderBr: zapp.viewUtils.transposeUIBColor(styles.border_placeholder_color)
+        normalBr: zapp.viewUtils.transposeUIBColor(styles.border_color)
+        highlightedBr: zapp.viewUtils.transposeUIBColor(styles.border_focus_color)
+        borderWidth: zapp.viewUtils.getUIBInt(styles, "border_thickness")
+        cornerRadiusBr: zapp.viewUtils.getUIBInt(styles, "search_bar_background_border_radius")
+        paddingStyle: zapp.viewUtils.makeUIBPadding(styles, "search_bar")
+      }
+
+      icon: {
+        isEnabled: asBoolean(styles.search_icon_asset_enabled)
+        assetWidth: zapp.viewUtils.getUIBInt(styles, "search_icon_asset_width")
+        assetHeight: zapp.viewUtils.getUIBInt(styles, "search_icon_asset_height")
+        marginStyle: zapp.viewUtils.makeUIBMargin(styles, "search_icon_asset")
+      }
+      underLineIndicator: m.getIndicatorStyle(styles, "indicator_bottom")
+    }
+
+    m.minCharacters = zapp.viewUtils.getUIBInt(styles, "search_min_chars", 3)
+
+    menuItem = createObject("roSGNode", "MenuItemContent")
+    menuItem.isSelectable = false
+    menuItem.isPlaceholder = true
+    menuItem.title = asString(m.localizations.placeholder_message, "Search")
+    m.searchTextInput = asString(m.localizations.placeholder_message, "Search")
+
+    m.setMenuItemAssets(menuItem, styles)
+    m.keyboardItem = menuItem
+
+    keyboard = m.getMField("keyboard")
+    if keyboard <> invalid
+      positioning = [zapp.viewUtils.getUIBInt(styles, "search_bar_x_position"), zapp.viewUtils.getUIBInt(styles, "search_bar_y_position")]
+      keyboard.translation = positioning
+      keyboard.width = zapp.viewUtils.getUIBInt(styles, "search_bar_width", 1672)
+      keyboard.text = menuItem.title
+      keyboard.style = itemStyle
+    end if
+  end function
+
+  private function getIndicatorStyle(styles, prefix)
+    return {
+      isEnabled: true
+      placeholderColor: zapp.viewUtils.transposeUIBColor(styles[`${prefix}_placeholder_color`])
+      color: zapp.viewUtils.transposeUIBColor(styles[`${prefix}_color`])
+      focusedColor: zapp.viewUtils.transposeUIBColor(styles[`${prefix}_focus_color`])
+      selectedColor: "#00000000"
+      focusedSelectedColor: "#00000000"
+      cornerRadius: zapp.viewUtils.getUIBInt(styles, `${prefix}_corner_radius`)
+      marginStyle: zapp.viewUtils.makeUIBMargin(styles, prefix)
+      thickness: zapp.viewUtils.getUIBInt(styles, `${prefix}_thickness`)
+    }
+  end function
+
+  private function setMenuItemAssets(menuItem, assets)
+    isEnabled = asBoolean(assets.search_icon_asset_enabled)
+    if isEnabled
+      menuItem.placeholderUri = zapp.viewUtils.getPosterUri(assets.search_icon_asset_placeholder)
+      menuItem.uri = zapp.viewUtils.getPosterUri(assets.search_icon_asset)
+      menuItem.highlightedUri = zapp.viewUtils.getPosterUri(assets.search_icon_asset_focus, "", "focused")
+      menuItem.footprintUri = zapp.viewUtils.getPosterUri(assets.icon_image_selected, "", "selected")
+      menuItem.highlightedFootprintUri = zapp.viewUtils.getPosterUri(assets.icon_image_focused_selected)
+    end if
+  end function
+
+  function processTabStyles(styles as mc.types.assocarray)
+    textHorizAlign = asString(styles.tab_bar_item_alignment, "center")
+    m.isButtonDynamic = asString(styles.tab_bar_item_size) <> "fixed"
+    m.isDynamicGroupSize = asString(styles.tab_bar_display_mode) <> "fixed"
+
+    buttonType = "custom"
+    if m.isButtonDynamic
+      buttonType = "customLeft"
+    else if textHorizAlign = "left"
+      m.labelXOffset = -24
+      buttonType = "customLeft"
+    else if textHorizAlign = "right"
+      m.labelXOffset = -24
+      buttonType = "customRight"
+    end if
+
+    m.textTransform = asString(styles.text_transform, "uppercase")
+    m.buttonSpacing = zapp.viewUtils.getUIBInt(styles, "tab_bar_gutter")
+    m.tabComponentPaddings = zapp.viewUtils.makeUIBPadding(m.riversJson.styles, "component")
+
+    m.setMenuStyle(styles, buttonType)
+    m.setMenuGroupStyle(styles, buttonType)
+  end function
+
+  private function setMenuStyle(styles as mc.types.assocarray, buttonType as string)
+    layoutDirection = asString(styles.tab_bar_direction, "horiz")
+    menuStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "tab_bar_item", buttonType, "", true, layoutDirection, true)
+    menuStyle.layoutDirection = layoutDirection
+    menuStyle.menuTextPadding = zapp.viewUtils.makeUIBPadding(styles, "tab_bar_item")
+    menuStyle.isBorderGenerated = true
+    m.menuStyle = menuStyle
+  end function
+
+  private function setMenuGroupStyle(styles as mc.types.assocarray, buttonType as string)
+    menuGroupStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "tab_bar", buttonType, "", true, m.layoutDirection, true)
+    borderSize = zapp.viewUtils.getUIBInt(styles, "tab_bar_border_w")
+    cornerRadius = zapp.viewUtils.getUIBInt(styles, "tab_bar_border_radius")
+    backgroundcolor = asString(menuGroupStyle.normal.backgroundcolor, "#00000000")
+    backgroundBorderColor = asString(menuGroupStyle.normal.backgroundbordercolor, "#00000000")
+
+    m.setBackgroundVisibility(backgroundcolor, m.backgroundPoster)
+    m.setBackgroundVisibility(backgroundBorderColor, m.backgroundBorderPoster)
+
+    if m.backgroundPoster <> invalid
+      m.adjustPoster(m.backgroundPoster, menuGroupStyle, borderSize, cornerRadius, "", false)
+      m.adjustPoster(m.backgroundBorderPoster, menuGroupStyle, borderSize, cornerRadius, "Border", true)
+    end if
+  end function
+
+  function setBackgroundVisibility(color, background)
+    if color.endsWith("00")
+      background.uri = "transparent"
+    end if
+  end function
+
+  private function adjustPoster(poster as mc.types.node, style as mc.types.assocarray, borderSize as integer, cornerRadius as integer, prefix as string, isBorder as boolean)
+    if isBorder
+      clampWidth = m.isDynamicGroupSize ? 1920 : style.width
+      poster.width = mc.clamp(style.width + borderSize, 0, clampWidth)
+      poster.height = style.height + borderSize
+      poster.translation = style.translation
+      if poster.uri <> "transparent"
+        zapp.viewUtils.drawImageBorder(poster, zapp.viewUtils.setPosterStyleForDraw(poster.width, 0, cornerRadius, borderSize))
+      end if
+    else
+      poster.width = style.width - (borderSize * 2)
+      poster.height = style.height - borderSize
+      poster.translation = [borderSize, borderSize]
+      posterCornerRadius = mc.clamp(cornerRadius - borderSize, 0, cornerRadius)
+      if poster.uri <> "transparent"
+        zapp.viewUtils.drawImage(poster, zapp.viewUtils.setPosterStyleForDraw(poster.width, 0, posterCornerRadius, borderSize))
+      end if
+    end if
+
+    poster.blendColor = style.normal[`background${prefix}color`]
+  end function
+
+  private function setButtonAlignment()
+    topMargin = zapp.viewUtils.getUIBInt(m.riversJson.styles, "component_margin_top")
+    tabBarAlignment = asString(m.riversJson.styles.tab_bar_alignment, "left")
+    componentPaddings = m.tabComponentPaddings
+    componentMargin = asAA(m.menuStyle.marginStyle)
+    menu = m.buttonMenu
+    componentWidth = 1920
+    containerWidth = m.backgroundBorderPoster.width
+    innerContainerWidth = m.backgroundPoster.width
+    menuWidth = menu.boundingRect().width
+    yOffset = componentPaddings.paddingTop
+    menuYOffset = yOffset + asInteger(componentMargin.marginTop)
+    if tabBarAlignment = "right"
+      m.buttonContainerTranslation = [componentWidth - containerWidth, yOffset]
+      m.buttonTranslation = [innerContainerWidth - menuWidth - componentPaddings.paddingRight + asInteger(componentMargin.marginRight), menuYOffset]
+    else if tabBarAlignment = "center"
+      m.buttonContainerTranslation = [(componentWidth * 0.5) - (containerWidth * 0.5), yOffset]
+      m.buttonTranslation = [(innerContainerWidth * 0.5) - (menuWidth * 0.5) + componentPaddings.paddingLeft - componentPaddings.paddingRight + asInteger(componentMargin.marginLeft), menuYOffset]
+    else
+      m.buttonContainerTranslation = [0, yOffset]
+      m.buttonTranslation = [componentPaddings.paddingLeft + asInteger(componentMargin.marginLeft), menuYOffset]
+    end if
+
+    m.searchFlowLayout.itemSpacings = [topMargin, 0]
+  end function
+
+  private function setDynamicSizeIfNeeded()
+    componentPaddings = m.tabComponentPaddings
+    menu = m.buttonMenu
+    borderSize = zapp.viewUtils.getUIBInt(m.riversJson.styles, "tab_bar_border_w")
+    height = menu.boundingRect().height + componentPaddings.paddingTop + componentPaddings.paddingBottom
+    m.backgroundPoster.height = height
+    m.backgroundBorderPoster.height = height + (2 * borderSize)
+
+    if m.isDynamicGroupSize
+      width = menu.boundingRect().width + componentPaddings.paddingLeft + componentPaddings.paddingRight
+      m.backgroundPoster.width = width
+      m.backgroundBorderPoster.width = width + (2 * borderSize)
+    end if
+  end function
+
+  private function setScreenLocalizations(localization)
+    language = m.getInstance("languageCode") ?? "en"
+    m.localizations = asAA(localization[language])
+  end function
+
+  private function createButtonsWithFeed(entry as mc.types.node)
+    if asBoolean(entry.isOk)
+      data = entry.data
+      menuButtons = []
+      i = 0
+      for each item in data.getChildren(-1, 0)
+        id = "item" + str(i).trim()
+        text = item.title
+        text = zapp.viewUtils.textToTextTransformFormat(text, m.riversJson.styles.text_transform)
+
+        menuButtons.push({
+          id: id
+          title: text
+          entry: item
+        })
+        i++
+      end for
+      m.menuButtons = menuButtons
+      m.isFilterFocusable = m.menuButtons.count() > 0
+      m.applySearchFilterDefaultState()
+      m.setDynamicSizeIfNeeded()
+      m.setButtonAlignment()
+      m.tabIsLoaded = true
+    end if
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Screen Management
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function showFirstScreen()
+    screen = m.getScreen(m.fallbackScreen)
+    if screen <> invalid
+      m.setScreenParent(screen)
+      screen.isFirstScreen = true
+      m.toggleSubScreen(screen)
+    end if
+  end function
+
+  private function setScreenParent(screen as mc.types.node)
+    parent = screen.getParent()
+    m.nameOfParentScreen = asString(parent.name)
+  end function
+
+  function toggleSubScreen(screen)
+    m.log.method("toggleSubScreen")
+
+    m.unobserveNodeField(m.currentScreen, "state", m.onSubScreenStateChange)
+
+    m.currentScreen = invalid
+
+    if screen <> invalid
+      m.currentScreen = screen
+      m.onSubScreenStateChange(m.currentScreen.state)
+      m.observeNodeField(m.currentScreen, "state", m.onSubScreenStateChange)
+    end if
+
+  end function
+
+  private function onSubScreenStateChange(state as string)
+    if state = "initialized"
+      m.isScreenContainerVisible = true
+      m.isGridVisible = false
+      m.currentScreen.visible = true
+      m.isFirstLoadComplete = true
+    end if
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ overridden
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public override function load()
+    m.state = "loading"
+    m.isLoading = false
+    zapp.GeneralScreenUtils.load()
+  end function
+
+  public function checkCredsValid()
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ callbacks
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function onSearchKeyboardDialogDismissal(text)
+    m.log.method("onSearchKeyboardDialogDismissal", text)
+
+    if text.trim() = ""
+      m.searchText = ""
+      m.searchTextInput = asString(m.localizations.placeholder_message, "Search")
+      m.keyboardItem.isPlaceholder = true
+    else
+      m.searchTextInput = text
+      m.searchText = text
+      m.keyboardItem.isPlaceholder = false
+    end if
+    m.setTextFromKeyboard("searchText", text)
+    m.onSearchTextChange(text)
+  end function
+
+  public function onSearchButtonSelected(value)
+    m.log.info("onSearchButtonSelected", value)
+    palette = zapp.viewUtils.getUIBKeyboardDialogPalette(m.riversJson.styles, "keyboard")
+    m.showKeyboardDialog("Enter your search", m.searchText, "onSearchKeyboardDialogDismissal", false, "none", palette)
+  end function
+
+  public function onSearchTextChange(text)
+    m.log.info("text is now", text, "waiting before searching")
+
+    m.searchText = text
+    m.cancelWaitTimer(m.searchDelayTask)
+    m.cancelTask(m.loadDataTask)
+
+    if len(m.searchText.trim()) >= m.minCharacters
+      m.searchDelayTask = m.waitAFrame(m.onSearchDelayComplete, 0.5)
+      m.isShowingContent = true
+    else
+      m.log.verbose("too few chars. ignoring")
+      m.setGridVisible(false)
+      m.setScreenContainerVisible(true)
+      m.isLoading = false
+      m.applySearchFilterDefaultState()
+      m.checkIfSearchWasCanceled()
+    end if
+  end function
+
+  public function onSearchDelayComplete()
+    m.log.method("onSearchDelayComplet")
+    m.searchDelayTask = invalid
+    m.log.verbose("search debounce complete, executing search with", m.searchText)
+    m.performSearch(m.searchText)
+  end function
+
+  public function onSelectedIndexChange(index as integer)
+    m.log.info("selected index", index)
+    m.selectedFilterIndex = index
+    m.screenState.originEntry = asAA(m.menuButtons[m.selectedFilterIndex].entry)
+
+    if len(m.searchText.trim()) >= m.minCharacters
+      m.toggleLoadingDataTask(true, { "search": m.searchText.trim().encodeUriComponent() }, m.loadDepth)
+    end if
+  end function
+
+  public function onFocusIndexChange(index)
+    m.log.info("focused index", index, "isShowingScreenOnFocus", m.isShowingScreenOnFocus)
+    m.savedIndex = index
+    m.waitAFrame(m.onFocusIndexChangeComplete, 0.1)
+  end function
+
+  function onFocusIndexChangeComplete()
+    m.focusedFilterIndex = m.savedIndex
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ search api invocation
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function performSearch(text)
+    m.log.method("performSearch")
+
+    m.isLoading = true
+    m.setGridVisible(true)
+
+    searchText = text.trim().encodeUriComponent()
+
+    m.toggleLoadingDataTask(true, { "search": searchText }, m.loadDepth)
+  end function
+
+  public override function toggleLoadingDataTask(isActive, componentValues = invalid, depth = 1)
+    m.log.info("toggleLoadingDataTask", isActive)
+    m.loadDataTaskTimer = new zapp.DebugTimer("VM.Feed" + m.name)
+
+    if m.loadDataTask <> invalid
+      m.cancelTask(m.loadDataTask)
+      m.loadDataTask = invalid
+    end if
+
+    if isActive
+      m.riversJson.data = m.searchData
+
+      for each item in m.components
+        json = item.riversJson
+        mc.setOrAddNodeField(json, "componentValues", componentValues)
+        mc.setPath(json, "componentValues", componentValues)
+        item.riversJson = json
+        item.isDataRefreshRequired = true
+        item.visible = false
+        if asString(json.component_type) = zapp.componentsType.Type.groupInfo
+          m.sendNotification(mc.createNotification("isInfoReloadRequired", componentValues))
+        end if
+      end for
+
+      m.sendNotification(mc.createNotification("isComponentReloadRequired", { "isSearch": true, isOk: true }))
+      m.load()
+      m.loadDataTask = m.executeloadDataTask("componentFeed", m.onFeedResult, componentValues, depth)
+    end if
+
+    '// all visible false if empty then visible true
+    m.isLoading = m.loadDataTask <> invalid
+  end function
+
+  public override function onFeedResult(result)
+    m.log.method("onFeedResult")
+    m.toggleLoadingDataTask(false)
+    m.isLoading = false
+    results = result.data
+
+    if result.isOk and results <> invalid
+      m.sendSearchAnalyticsEvent(results)
+      m.setContentStyle(results)
+      numItems = result.data.getChildCount()
+      m.feed = result.data
+      m.isFilterVisible = numItems > 0 and m.isSearchFilterEnabled
+      if numItems <= 0
+        m.sendSearchNoResultEvent()
+      else
+      end if
+    else
+      results = createObject("roSGNode", "ZPEntry")
+      m.sendSearchAnalyticsEvent(results)
+      m.sendSearchNoResultEvent()
+    end if
+
+    m.results = results
+    m.setGridVisible(true)
+    m.setScreenContainerVisible(false)
+  end function
+
+  private function applySearchFilterDefaultState()
+    m.isFilterVisible = false
+    m.jumpSelectToIndex = 0
+    m.onSelectedIndexChange(0)
+  end function
+
+  private function updateOverallState(isContentPresent = true)
+    m.log.info("onChildComponentStateChange Search")
+    m.searchHaveResults = isContentPresent
+    components = m.components
+    m.components = components
+    m.needsRecalculating = true
+  end function
+
+  private function setScreenContainerVisible(visible)
+    if not m.isGridVisible
+      m.isScreenContainerVisible = true and m.currentscreen <> invalid and visible
+    else
+      m.isScreenContainerVisible = false
+    end if
+
+    if not m.isGridVisible and m.focusId = "grid"
+      m.setFocusId("keyboard")
+      m.isScreenContainerVisible = true and m.currentscreen <> invalid
+    end if
+  end function
+
+  private function setGridVisible(isGridVisible)
+    m.isGridVisible = isGridVisible
+
+    if not m.isGridVisible
+      m.results = createObject("roSGNode", "ZPEntry")
+    end if
+
+    if not m.isGridVisible and m.focusId = "grid"
+      m.setFocusId("keyboard")
+    end if
+  end function
+
+  private function setContentStyle(content)
+    m.log.method("setContentStyle")
+
+    if m.style <> invalid
+      cellStyle = m.style.cell
+      cellStyle.dataMap = m.style.dataMap
+      cellStyle.delete("translation")
+      mc.setOrAddNodeField(content, "_style", cellStyle)
+      mc.setOrAddNodeField(content, "_styleId", m.style.id)
+    else
+      m.log.error("Cannot set content: there is no cell style set")
+    end if
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Private Methods
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function findNextFocusable(newIndex)
+    for i = newIndex + 1 to m.moveableComponents.count() - 1
+      if m.moveableComponents[i].isFocusable and m.moveableComponents[i].visible
+        newIndex = i
+        m.log.info("skipping to next focusable component at index", newIndex)
+        exit for
+      end if
+    end for
+    return newIndex
+  end function
+
+  private function findPreviousFocusable(newIndex)
+    for i = newIndex - 1 to 0 step -1
+      if m.moveableComponents[i].isFocusable and m.moveableComponents[i].visible
+        newIndex = i
+        m.log.info("skipping to previous focusable component at index", newIndex)
+        exit for
+      end if
+      if i = 0
+        newIndex = -1
+      end if
+    end for
+    return newIndex
+  end function
+
+  private function checkIfSearchWasCanceled()
+    if m.searchHaveResults and not m.itemWasSelected
+      m.sendSearchCanceledEvent()
+    end if
+    m.itemWasSelected = false
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Analytic Events
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function sendSearchAnalyticsEvent(results)
+    if results <> invalid
+      m.sendSearchExecutedEvent(results.getChildCount())
+    else
+      m.sendSearchExecutedEvent(0)
+    end if
+  end function
+
+  private function sendSearchExecutedEvent(numItems)
+    analyticsProperties = m.setDefaultProperties()
+    analyticsProperties.append({
+      "result_count": numItems
+    })
+    m.sendAnalyticsEvent(zapp.analytics.EventType.searchExecuted, analyticsProperties, m.getScreenProperties())
+  end function
+
+  private function sendSearchNoResultEvent()
+    analyticsProperties = m.setDefaultProperties()
+    m.sendAnalyticsEvent(zapp.analytics.EventType.searchNoResultFound, analyticsProperties, m.getScreenProperties())
+  end function
+
+  private function sendSearchTapCellEvent(selection, index)
+    analyticsProperties = m.setDefaultProperties()
+    cellProperties = m.getCellProperties(selection, index)
+    analyticsProperties.append({
+      "tap_cell": cellProperties
+    })
+    m.sendAnalyticsEvent(zapp.analytics.EventType.searchTapCell, analyticsProperties, invalid, invalid, cellProperties)
+  end function
+
+  private function sendSearchCanceledEvent()
+    analyticsProperties = m.setDefaultProperties()
+    m.sendAnalyticsEvent(zapp.analytics.EventType.searchCanceled, analyticsProperties, m.getScreenProperties())
+  end function
+
+  private function setDefaultProperties()
+    return {
+      "query_length": len(m.searchText.trim())
+      "query_text": m.searchText
+      "event_timestamp": createObject("roDateTime").toISOString()
+    }
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ keyboard
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  override function onKeyPressUp() as boolean
+    if m.isFilterFocusable and m.focusId = "grid" and not m.selectPreviousComponent(true)
+      m.setFocusId("menu")
+      return true
+    else if m.focusId = "menu" or (m.focusId = "grid" and not m.selectPreviousComponent(true)) or m.focusId = "screenContainer"
+      m.setFocusId("keyboard")
+      return true
+    else if m.focusId = "grid"
+      if m.selectPreviousComponent(true)
+        m.componentIndex = m.findPreviousFocusable(m.componentIndex)
+        if m.componentIndex < 0
+          m.onKeyPressUp()
+          return true
+        end if
+      end if
+    end if
+    return false
+  end function
+
+  function onKeyPressDown() as boolean
+    if m.focusId = "keyboard"
+      if m.isFilterFocusable and m.isFilterVisible
+        m.setFocusId("menu")
+        return true
+      else if m.isGridVisible and m.searchHaveResults
+        if m.componentIndex < 0
+          m.componentIndex = m.findNextFocusable(0)
+        end if
+        m.setFocusId("grid")
+        return true
+      else if m.isScreenContainerVisible
+        m.setFocusId("screenContainer")
+        return true
+      end if
+    else if m.focusId = "menu"
+      if m.isGridVisible
+        m.setFocusId("grid")
+        return true
+      else if m.isScreenContainerVisible
+        m.setFocusId("screenContainer")
+        return true
+      end if
+    else if m.focusId = "grid"
+      if m.selectNextComponent(true)
+        m.componentIndex = m.findNextFocusable(m.componentIndex)
+      end if
+    end if
+    return false
+  end function
+
+  function isCapturingAnyKeyPress(key as string, press as boolean) as boolean
+    if key = "up" and m.focusId = "keyboard"
+      return false
+    else if key = "back"
+      return false
+    end if
+    return true
+  end function
+
+  override function reset()
+    m.results = createObject("roSGNode", "ZPEntry")
+    m.setGridVisible(false)
+    m.setScreenContainerVisible(true)
+    m.searchText = ""
+    m.applySearchFilterDefaultState()
+
+    if m.isSearchFilterEnabled and not m.tabIsLoaded
+      m.riversJson.data = m.filterData
+      m.executeloadDataTask("componentFeed", m.createButtonsWithFeed, invalid, 0)
+    end if
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ lifecycle
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  protected override function onHide()
+    super.onHide()
+
+    m.cancelWaitTimer(m.searchDelayTask)
+    m.cancelTask(m.loadDataTask)
+    m.checkIfSearchWasCanceled()
+    m.loadDataTask = invalid
+    m.searchDelayTask = invalid
+  end function
+
+  protected override function onShow() as void
+    m.log.method("onShow")
+    m.trackScreen()
+    m.toggleNavMenuVisible(true)
+    if not m.isShowingContent and len(m.searchText.trim()) < m.minCharacters
+      m.reset()
+    end if
+
+    if m.isFirstLoadComplete
+      m.log.info("search fallbackScreen already loaded")
+    else
+      m.showFirstScreen()
+    end if
+
+    m.isShowingContent = false
+  end function
+
+end class

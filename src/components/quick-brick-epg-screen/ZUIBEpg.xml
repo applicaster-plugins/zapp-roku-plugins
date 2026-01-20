@@ -102,13 +102,15 @@
         translation='{{:menuPosition}}'>
       <Menu
           id='menu'
-          buttons='{{menubuttons}}'
+          buttons='{{menuButtons}}'
           style='{{:menuStyle}}'
           isFootprintOnSelectOnly='true'
           selectedIndex='{(onSelectedIndexChangeMenu(value))}'
           jumpToIndex='{{jumpToIndex}}'
           buttonSize='{{:buttonSize}}'
+          isDynamic='{{:isDynamic}}'
           layoutDirection='horiz'
+          borderCornerRadius='{{:borderCornerRadius}}'
           buttonSpacing='{{:buttonSpacing}}' />
     </LayoutGroup>
 

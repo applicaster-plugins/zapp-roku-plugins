@@ -12,24 +12,35 @@ end function
 
 function updateMaskSize()
   channelGuideSettings = mioc.getInstance("channelGuideItem").channelGuideSettings
+  if channelGuideSettings.isDynamic
+    setDynamicStyling(channelGuideSettings)
+  else
+    yPadding = channelGuideSettings.channelPaddingTop
+    xPadding = channelGuideSettings.channelPaddingLeft - channelGuideSettings.channelPaddingRight
 
-  yPadding = channelGuideSettings.channelPaddingTop
-  xPadding = channelGuideSettings.channelPaddingLeft - channelGuideSettings.channelPaddingRight
+    m.photoRectangle.maskSize = [m.top.width - 120, m.top.height - 10]
+    m.programFrame.width = m.top.width - 120
+    m.programFrame.height = m.top.height - 10
 
-  m.photoRectangle.maskSize = [m.top.width - 120, m.top.height - 10]
-  m.programFrame.width = m.top.width - 120
-  m.programFrame.height = m.top.height - 10
-
-  aspectRatio = channelGuideSettings.channelAssetAspectRatio
-  if aspectRatio = "other"
-    aspectRatio = channelGuideSettings.channelCustomAssetAspectRatio
+    aspectRatio = channelGuideSettings.channelAssetAspectRatio
+    if aspectRatio = "other"
+      aspectRatio = channelGuideSettings.channelCustomAssetAspectRatio
+    end if
+    ratioValue = aspectRatio.split("x")
+    m.channelPoster.height = channelGuideSettings.channelAssetHeight
+    channelAssetWidth = m.channelPoster.height * ratioValue[0].toInt() / ratioValue[1].toInt()
+    m.channelPoster.width = channelAssetWidth
+    xPosition = (channelAssetWidth / 2) + xPadding
+    m.photoRectangle.translation = [xPosition, yPadding]
   end if
-  ratioValue = aspectRatio.split("x")
+end function
+
+function setDynamicStyling(channelGuideSettings)
   m.channelPoster.height = channelGuideSettings.channelAssetHeight
-  channelAssetWidth = m.channelPoster.height * ratioValue[0].toInt() / ratioValue[1].toInt()
-  m.channelPoster.width = channelAssetWidth
-  xPosition = (channelAssetWidth / 2) + xPadding
-  m.photoRectangle.translation = [xPosition, yPadding]
+  m.channelPoster.width = channelGuideSettings.channelAssetWidth
+  m.channelPoster.translation = [channelGuideSettings.channelPaddingLeft, channelGuideSettings.channelPaddingTop]
+  channelInfoCornerRadius = asInteger(channelGuideSettings.channelInfoCornerRadius)
+  m.photoRectangle.bitmapSizeAndRadius = [m.top.width, m.top.height, channelInfoCornerRadius, channelInfoCornerRadius]
 end function
 
 function OnContentChangeForChannel()
