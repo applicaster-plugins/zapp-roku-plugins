@@ -190,6 +190,13 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
       if m.bcPlayer <> invalid
         m.bcPlayer.state = "finished"
       end if
+    else if asString(eventName.error) = "The video metadata doesn't contain any supported source data."
+      m.log.error("no supported source data found in video metadata")
+      if asString(m.currentItem.json.extensions.brightcove.video_id, invalid) <> invalid
+        m.log.info("loading custom since no supported source data found")
+        m.bcPlayer.callFunc("loadCustom", m.playerItem)
+        m.bcPlayer.control = "play"
+      end if
     end if
   end function
 
