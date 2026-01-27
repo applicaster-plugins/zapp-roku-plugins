@@ -365,12 +365,12 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
 
   function processStyles(styles)
     textStyleFormat = {
-      search_label_placeholder_color: mc.getPath(styles, "search_label_placeholder_font_color")
-      search_label_color: mc.getPath(styles, "search_label_font_color")
-      search_label_highlighted_color: mc.getPath(styles, "search_label_focused_font_color")
+      search_label_placeholder_color: mc.getPath(styles, "search_label_placeholder_font_color", "#9e9e9eff")
+      search_label_color: mc.getPath(styles, "search_label_font_color","#efefefff")
+      search_label_highlighted_color: mc.getPath(styles, "search_label_focused_font_color","#111111ff")
       search_label_font_name: mc.getPath(styles, "search_label_roku_font_family")
-      search_label_font_size: zapp.viewUtils.getUIBInt(styles, "search_label_roku_font_size")
-      search_label_line_height: zapp.viewUtils.getUIBInt(styles, "search_label_roku_line_height")
+      search_label_font_size: zapp.viewUtils.getUIBInt(styles, "search_label_roku_font_size", 33)
+      search_label_line_height: zapp.viewUtils.getUIBInt(styles, "search_label_roku_line_height", 50)
       search_label_letter_spacing: zapp.viewUtils.getUIBInt(styles, "search_label_roku_letter_spacing")
       search_label_alignment: mc.getPath(styles, "search_label_text_alignment", "center")
       search_label_transform: mc.getPath(styles, "search_label_text_transform", "uppercase")
