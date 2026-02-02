@@ -32,15 +32,22 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
   private viewerIdStorageKey = ""
   private baseUrl = "https://edge.api.brightcove.com/playback/v1"
 
+  @injectClass("zapp.PluginManager")
+  private plugins
+
+
   public function new(view)
     super("BrightCovelayerVM")
     m.view = view
-
-    m.policyKey = mc.getPath(view.riversJson, "general.policy_key", "")
-    m.accountId = mc.getPath(view.riversJson, "general.account_id", "")
+    plugin = m.plugins.getPluginById("quick-brick-player-brightcove")
+    pluginPolicyKey = plugin.getStringValue("policy_key", "")
+    pluginAccountId = plugin.getStringValue("account_id", "")
+    pluginViewerIdStorageKey = plugin.getStringValue("viewer_identifier_storage_key", "")
+    m.policyKey = pluginPolicyKey <> "" ? pluginPolicyKey : mc.getPath(view.riversJson, "general.policy_key", "")
+    m.accountId = pluginAccountId <> "" ? pluginAccountId : mc.getPath(view.riversJson, "general.account_id", "")
     m.sdkPath = mc.getPath(view.riversJson, "general.sdk_url", "https://players.brightcove.net/roku-sdk/1/roku-sdk.pkg")
     m.rafIsEnabled = asBoolean(view.riversJson.general.raf_enabled)
-    m.viewerIdStorageKey = mc.getPath(view.riversJson, "general.viewer_identifier_storage_key", "quick-brick-login-flow.account_token")
+    m.viewerIdStorageKey = pluginViewerIdStorageKey <> "" ? pluginViewerIdStorageKey : mc.getPath(view.riversJson, "general.viewer_identifier_storage_key", "quick-brick-login-flow.account_token")
   end function
 
   override function initialize()
