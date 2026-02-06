@@ -105,6 +105,11 @@ class SegmentAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
 
       if pluginId <> invalid
         accountInfo = m.getSessionStoreValue(pluginId, "account", true)
+        if asString(accountInfo.email) = "" and mioc.getInstance("user").isLoggedIn
+          accountInfo = zapp.mixin.getSessionNamespace(zapp.pipes.Namespaces.userAccount)
+          mc.setOrAddNodeField(accountInfo, "id", accountInfo.user_id)
+          traits.append(accountInfo)
+        end if
       else
         accountInfo = invalid
       end if
