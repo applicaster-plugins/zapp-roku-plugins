@@ -177,7 +177,7 @@ sub _SegmentAnalytics_track(event as string, properties = invalid as dynamic, op
   }
 
   m._addValidFieldToAA(data, "properties", properties)
-  m._addValidFieldsToAA(data, ["userId", "anonymousId", "context", "integrations", "messageId", "timestamp"], options)
+  m._addValidFieldsToAA(data, ["userId", "anonymousId", "context", "integrations", "messageId", "timestamp", "originalTimestamp"], options)
 
   if not m._checkValidId(data) then return
 
@@ -337,22 +337,22 @@ function _SegmentAnalytics_checkValidId(data as dynamic) as boolean
   hasUserId = false
   hasAnonId = false
 
- if data.userId <> invalid and (type(data.userId) = "roString" or type(data.userId) = "String") then
-   hasUserId = data.userId.len() > 0
- end if
+  if data.userId <> invalid and (type(data.userId) = "roString" or type(data.userId) = "String") then
+    hasUserId = data.userId.len() > 0
+  end if
 
- if data.anonymousId <> invalid and (type(data.anonymousId) <> "roString" or type(data.anonymousId) <> "String") then
-   hasAnonId = data.anonymousId.len() > 0
- end if
+  if data.anonymousId <> invalid and (type(data.anonymousId) <> "roString" or type(data.anonymousId) <> "String") then
+    hasAnonId = data.anonymousId.len() > 0
+  end if
 
- if not hasUserId and not hasAnonId then
-   callType = "unknown"
-   if not data.type = invalid and (type(data.type) = "roString" or type(data.type) = "String")
-     callType = data.type
-   end if
-   m._log("No user or anonymous id found in [" + callType + "] call", "ERROR")
-   return false
- end if
+  if not hasUserId and not hasAnonId then
+    callType = "unknown"
+    if not data.type = invalid and (type(data.type) = "roString" or type(data.type) = "String")
+      callType = data.type
+    end if
+    m._log("No user or anonymous id found in [" + callType + "] call", "ERROR")
+    return false
+  end if
 
   return true
 end function

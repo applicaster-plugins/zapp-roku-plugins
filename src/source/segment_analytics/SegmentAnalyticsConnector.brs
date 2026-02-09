@@ -114,7 +114,9 @@ sub _SegmentAnalyticsConnector_callEvent(name as string, payload as object)
 
   if payload.options.timestamp = invalid
     dateTime = createObject("roDateTime")
-    payload.options.timestamp = dateTime.ToIsoString()
+    iso = dateTime.ToIsoString()
+    payload.options.timestamp = iso
+    payload.options.originalTimestamp = iso
   end if
   m._task.event = { name: name, payload: payload }
 end sub
