@@ -172,11 +172,11 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
 
     m.observeNodeField(bcPlayer.on, "sdkReady", m.onSDKReady)
     m.observeNodeField(bcPlayer.on, "start", m.onPlayerStart)
-    m.observeNodeField(bcPlayer.on, "play", m.onPlayerStateChange)
-    m.observeNodeField(bcPlayer.on, "pause", m.onPlayerStateChange)
-    m.observeNodeField(bcPlayer.on, "finished", m.onPlayerStateChange)
-    m.observeNodeField(bcPlayer.on, "buffering", m.onPlayerStateChange)
-    m.observeNodeField(bcPlayer.on, "error", m.onPlayerStateChange)
+    m.observeNodeField(bcPlayer.on, "play", m.onBrightcovePlayerStateChange)
+    m.observeNodeField(bcPlayer.on, "pause", m.onBrightcovePlayerStateChange)
+    m.observeNodeField(bcPlayer.on, "finished", m.onBrightcovePlayerStateChange)
+    m.observeNodeField(bcPlayer.on, "buffering", m.onBrightcovePlayerStateChange)
+    m.observeNodeField(bcPlayer.on, "error", m.onBrightcovePlayerStateChange)
     m.observeNodeField(bcPlayer.on, "close", m.onPlayerClose)
     m.observeNodeField(bcPlayer.on, "load", m.onPlayerLoadContent)
     m.observeNodeField(bcPlayer, "position", m.onPlayerCurrentTimeChange)
@@ -260,7 +260,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
   end function
 
   function onGetVideoResponse(data)
-    if data.code >= 200 and data.code < 300
+    if not asBoolean(data.aborted) and data.code >= 200 and data.code < 300
       videoMetadata = data.body
       if type(videoMetadata) = "roString"
         videoMetadata = parseJson(videoMetadata)
@@ -268,6 +268,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
       sources = videoMetadata.sources
       keySystem = asString(m.playerItem.drmParams.keySystem)
       videoMetadata.sources = m.getModifiedSources(sources, keySystem)
+      videoMetadata.playStart = m.currentItem.playStart
       m.bcPlayer.callFunc("load", videoMetadata)
     end if
   end function
@@ -372,7 +373,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
   '++ Player callbacks
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  private function onPlayerStateChange(state) as void
+  private function onBrightcovePlayerStateChange(state) as void
     m.log.info("player state change", state)
     stateReason = asString(state.reason)
     m.sendNotification("videoPlayerState", stateReason)
