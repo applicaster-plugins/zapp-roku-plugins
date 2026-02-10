@@ -14,6 +14,7 @@ class SegmentAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
   private isIdentifyingOnLogout
   private library
   private segmentTask
+  private defaultTraits = {}
   private defaultOptions = {}
   private defaultProperties = {}
   private screenHeartBeatTimer = invalid
@@ -105,6 +106,11 @@ class SegmentAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
 
       if pluginId <> invalid
         accountInfo = m.getSessionStoreValue(pluginId, "account", true)
+        if asString(accountInfo.email) = "" and mioc.getInstance("user").isLoggedIn
+          accountInfo = zapp.mixin.getSessionNamespace(zapp.pipes.Namespaces.userAccount)
+          mc.setOrAddNodeField(accountInfo, "id", accountInfo.user_id)
+          traits.append(accountInfo)
+        end if
       else
         accountInfo = invalid
       end if
@@ -121,6 +127,7 @@ class SegmentAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
           m.log.info("identifying analytics with the userId", accountInfo.id, "for plugin:", pluginId)
           m.log.info("using traits", formatJson(traits))
           'hard coded for now
+          m.defaultTraits = traits
           m.library.identify(m.hash(accountInfo.id), traits, options)
         else
           m.log.error("identify called; but the id was empty!")
@@ -167,9 +174,11 @@ class SegmentAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
         m.start() '/restart the plugin
         m.defaultOptions = m.getDefaultOptions()
       end if
+      m.defaultTraits = m.getDefaultTraits()
 
       options.append(m.defaultOptions)
       properties.append(m.defaultProperties)
+      properties.append(m.defaultTraits)
 
       m.log.info("TRACK OPTIONS ", options)
 
@@ -189,6 +198,7 @@ class SegmentAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
     properties = event.properties
     options = asAA(event.options)
     options.append(m.defaultOptions)
+    options.context = m.getTrackContext()
     m.library.track(eventName, properties, options)
   end function
 
@@ -219,6 +229,39 @@ class SegmentAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ private impl
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function getTrackContext() as object
+    ctx = {
+      "channel": "mobile"
+    }
+    constants = m.getInstance("constants")
+    if constants <> invalid
+      di = constants.deviceInfo
+      if di <> invalid
+        ctx.app = {
+          "name": "Roku"
+          "version": asString(constants.appVersion)
+        }
+        ctx.device = {
+          "type": "tv"
+          "model": asString(constants.deviceModel)
+          "name": asString(di.modelName)
+          "version": asString(constants.osVersion)
+        }
+        if di.uiResolution <> invalid
+          ctx.screen = {
+            "width": di.uiResolution.width
+            "height": di.uiResolution.height
+          }
+        end if
+      end if
+    end if
+    traits = m.getDefaultTraits()
+    if traits <> invalid and traits.count() > 0
+      ctx.traits = traits
+    end if
+    return ctx
+  end function
 
   private function toggleHeartbeat(isActive)
     m.cancelWaitTimer(m.heartbeatTimer)
@@ -252,6 +295,16 @@ class SegmentAnalyticsPlugin extends zapp.analytics.BaseAnalyticsPlugin
     options = {}
     options["anonymousId"] = m.applicasterDeviceId
     return options
+  end function
+
+  private function getDefaultTraits()
+    traits = {}
+    if mioc.getInstance("user").isLoggedIn
+      accountInfo = zapp.mixin.getSessionNamespace(zapp.pipes.Namespaces.userAccount)
+      mc.setOrAddNodeField(accountInfo, "id", accountInfo.user_id)
+      traits.append(accountInfo)
+    end if
+    return traits
   end function
 
   private function getDefaultProperties()
