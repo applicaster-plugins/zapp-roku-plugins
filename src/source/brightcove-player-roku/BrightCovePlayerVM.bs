@@ -23,6 +23,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
   private sdkPath
   private bcAPI
   private rafIsEnabled = false
+  private rafUrl = ""
   private rafStarted = false
   private sdkIsReady = false
   private playerStarted = false
@@ -47,6 +48,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
     m.accountId = pluginAccountId <> "" ? pluginAccountId : mc.getPath(view.riversJson, "general.account_id", "")
     m.sdkPath = mc.getPath(view.riversJson, "general.sdk_url", "https://players.brightcove.net/roku-sdk/1/roku-sdk.pkg")
     m.rafIsEnabled = asBoolean(view.riversJson.general.raf_enabled)
+    m.rafUrl = mc.getPath(view.riversJson, "general.raf_url", "")
     m.viewerIdStorageKey = pluginViewerIdStorageKey <> "" ? pluginViewerIdStorageKey : mc.getPath(view.riversJson, "general.viewer_identifier_storage_key", "quick-brick-login-flow.account_token")
   end function
 
@@ -269,6 +271,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
       keySystem = asString(m.playerItem.drmParams.keySystem)
       videoMetadata.sources = m.getModifiedSources(sources, keySystem)
       videoMetadata.playStart = m.currentItem.playStart
+      videoMetadata.adsData = asAA(m.playerItem.adsData)
       m.bcPlayer.callFunc("load", videoMetadata)
     end if
   end function
@@ -349,7 +352,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
   end function
 
   private function getAdUrl(item)
-    return mc.getString(item, "json.extensions.video_ads", invalid)
+    return mc.getString(item, "json.extensions.video_ads", m.rafUrl)
   end function
 
   public function stopItem()
