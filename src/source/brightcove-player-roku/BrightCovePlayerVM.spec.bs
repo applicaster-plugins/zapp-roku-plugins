@@ -118,62 +118,6 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("onPlayerStateChange")
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    @it("onPlayerStateChange - other")
-    @params({ reason : "stalling" })
-    @params({ reason : "paused" })
-    @params({ reason : "playing" })
-    @params({ reason : "none" })
-    @params({ reason : "setup" })
-    function _(state)
-      m.vm.state = "playing"
-      m.vm.bcPlayer = m.player
-
-      m.expectCalled(m.vm.sendNotification("videoPlayerState", state.reason))
-
-      m.vm.onPlayerStateChange(state)
-    end function
-
-    @it("error")
-    function _()
-      m.vm.state = "playing"
-      m.vm.bcPlayer = m.player
-      state = { reason: "error" }
-
-      m.expectCalled(m.vm.sendNotification("videoPlayerState", state.reason))
-      m.expectCalled(m.vm.errorResult())
-
-      m.vm.onPlayerStateChange(state)
-    end function
-
-    @it("error finished")
-    function _()
-      m.vm.state = "playing"
-      m.vm.bcPlayer = m.player
-      state = { reason: "finished", errorCode: 1 }
-
-      m.expectCalled(m.vm.sendNotification("videoPlayerState", state.reason))
-      m.expectCalled(m.vm.errorResult())
-
-      m.vm.onPlayerStateChange(state)
-    end function
-
-    @it("finished")
-    function _()
-      m.vm.state = "playing"
-      m.vm.bcPlayer = m.player
-      m.vm.playerStarted = true
-      state = { reason: "finished", errorCode: 0 }
-
-      m.expectCalled(m.vm.sendNotification("videoPlayerState", state.reason))
-      m.expectCalled(m.vm.finishResult())
-
-      m.vm.onPlayerStateChange(state)
-    end function
-
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("errorResult")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -204,6 +148,7 @@ namespace zapp.tests
     function _()
       item = { "id": "a" }
       playerData = { "id": "playerData" }
+      m.vm.playerStopped = true
       m.vm.sdkIsReady = true
       m.vm.state = "ready"
       m.vm.bcPlayer = m.player
@@ -214,17 +159,15 @@ namespace zapp.tests
       m.expectCalled(m.vm.getPlayerItem(item), playerData)
       m.expectCalled(m.vm.sendNotification("videoPlayerState", "buffering"))
       m.expectCalled(m.vm.startBCPlayer())
-      m.expectCalled(m.vm.playBrightcoveItem(m.vm.bcPlayer, playerData))
 
       m.vm.playItem(item)
-
-      m.assertInvalid(m.vm.pendingPlayerItem)
     end function
 
     @it("not ready")
     function _()
       item = { "id": "a" }
       playerData = { "id": "playerData" }
+      m.vm.playerStopped = true
       m.vm.sdkIsReady = true
       m.vm.state = "ready"
       m.vm.bcPlayer = invalid
@@ -234,7 +177,6 @@ namespace zapp.tests
       m.expectCalled(m.vm.getPlayerItem(item), playerData)
       m.expectCalled(m.vm.sendNotification("videoPlayerState", "buffering"))
       m.expectCalled(m.vm.startBCPlayer())
-      m.expectNotCalled(m.vm.playBrightcoveItem)
 
       m.vm.playItem(item)
 
@@ -252,6 +194,7 @@ namespace zapp.tests
       m.vm.playMode = "default"
       m.vm.state = "ready"
       m.vm.bcPlayer = m.player
+      m.vm.currentItem = { "json": { "extensions": { "brightcove": { "video_id": invalid } } } }
       m.vm.playerFunctions = m.player.BrightcoveFunctions
 
       m.expectCalled(m.vm.setFocus(m.player))
@@ -286,26 +229,414 @@ namespace zapp.tests
       m.assertTrue(m.vm.view.isPlaybackFinished)
     end function
 
-    @it("do not stop item if sdk is not ready")
+    @it("rejects when account id or policy key is missing")
     function _()
-      m.player = {
-        "on": {
-          sdkReady: false
-        }
-        "BrightcoveFunctions": { "CLOSE": "close", "LOAD": "loadCustom", }
-      }
-      m.vm.state = "playing"
-      m.vm.bcPlayer = m.player
-      m.expectNotCalled(m.vm.bcPlayer.callFunc)
+      m.vm.playerStopped = true
+      m.vm.bcPlayer = { "on": { "error": { "message": invalid } } }
+      m.vm.accountId = ""
+      m.vm.policyKey = "pk"
+      item = { "id": "a" }
 
-      m.vm.stopItem()
+      m.expectCalled(m.vm.removeChildrenAfterIndex(m.vm.view, 0))
 
-      m.assertEqual(m.vm.pendingPlayerItem, invalid)
-      m.assertEqual(m.vm.currentItem, invalid)
-      m.assertEqual(m.vm.state, "ready")
-      m.assertTrue(m.vm.view.isPlaybackFinished)
+      m.vm.playItem(item)
+
+      m.assertEqual(m.view.playbackResult.state, "error")
+      m.assertEqual(m.view.playbackResult.message, "Account id is missing")
+      m.assertTrue(m.view.isPlaybackFinished)
+      m.assertEqual(m.vm.state, "error")
     end function
 
+    @it("rejects when policy key is missing")
+    function _()
+      m.vm.playerStopped = true
+      m.vm.bcPlayer = { "on": { "error": { "message": invalid } } }
+      m.vm.accountId = "aid"
+      m.vm.policyKey = ""
+      item = { "id": "a" }
+
+      m.expectCalled(m.vm.removeChildrenAfterIndex(m.vm.view, 0))
+
+      m.vm.playItem(item)
+
+      m.assertEqual(m.view.playbackResult.state, "error")
+      m.assertEqual(m.view.playbackResult.message, "Account id is missing")
+      m.assertTrue(m.view.isPlaybackFinished)
+    end function
+
+    @it("rejects invalid item")
+    function _()
+      m.vm.playerStopped = true
+      m.vm.bcPlayer = { "on": { "error": { "message": invalid } } }
+      m.vm.accountId = "aid"
+      m.vm.policyKey = "pk"
+
+      m.expectCalled(m.vm.removeChildrenAfterIndex(m.vm.view, 0))
+
+      m.vm.playItem(invalid)
+
+      m.assertEqual(m.view.playbackResult.state, "error")
+      m.assertEqual(m.view.playbackResult.message, "Item is invalid")
+      m.assertTrue(m.view.isPlaybackFinished)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("getPlayerItem")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns player item with brightcove extensions")
+    function _()
+      item = {
+        id: "item-1"
+        url: "https://example.com/video.mp4"
+        title: "Test Video"
+        playstart: 10
+        json: {
+          extensions: {
+            brightcove: { video_id: "bc-123" }
+            duration: 90
+          }
+        }
+        drmParams: {}
+      }
+      m.vm.accountId = "aid"
+      m.vm.rafIsEnabled = false
+
+      result = m.vm.getPlayerItem(item)
+
+      m.assertEqual(result.video_id, "bc-123")
+      m.assertEqual(result.id, "bc-123")
+      m.assertEqual(result.url, "https://example.com/video.mp4")
+      m.assertEqual(result.title, "Test Video")
+      m.assertEqual(result.playStart, 10)
+      m.assertEqual(result.account_id, "aid")
+      m.assertInvalid(result.adsData)
+    end function
+
+    @it("getPlayerItem includes adsData when raf is enabled")
+    function _()
+      m.vm.rafIsEnabled = true
+      m.vm.rafUrl = "https://ads.example.com/vmap"
+      item = {
+        id: "item-1"
+        url: ""
+        title: "Ad Video"
+        json: { extensions: { brightcove: { video_id: "bc-456" } } }
+        drmParams: {}
+      }
+
+      result = m.vm.getPlayerItem(item)
+
+      m.assertNotInvalid(result.adsData)
+      m.assertEqual(result.adsData.type, "csai")
+      m.assertEqual(result.adsData.vmap, "https://ads.example.com/vmap")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onVideoResponse")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("on success updates playerItem url and plays")
+    function _()
+      m.vm.bcPlayer = m.player
+      m.vm.playerItem = { url: "", video_id: "v1" }
+      data = {
+        isOk: true,
+        data: { sources: [{ src: "https://cdn.example.com/master.m3u8" }] }
+      }
+
+      m.expectCalled(m.vm.playBrightcoveItem(m.vm.bcPlayer, m.vm.playerItem))
+
+      m.vm.onVideoResponse(data)
+
+      m.assertEqual(m.vm.playerItem.url, "https://cdn.example.com/master.m3u8")
+    end function
+
+    @it("on failure calls errorResult")
+    function _()
+      m.vm.bcPlayer = { "on": { "error": { "message": invalid } } }
+      data = { isOk: false }
+
+      m.vm.onVideoResponse(data)
+
+      m.assertEqual(m.view.playbackResult.state, "error")
+      m.assertEqual(m.view.playbackResult.message, "Error loading video")
+      m.assertTrue(m.view.isPlaybackFinished)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onGetVideoResponse")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("on success loads video metadata into player")
+    function _()
+      m.vm.bcPlayer = { ssai: { enabled: false } }
+      m.vm.currentItem = { playStart: 0 }
+      m.vm.playerItem = {
+        drmParams: {
+          keySystem: "widevine"
+        },
+        adsData: invalid
+      }
+      data = {
+        aborted: false,
+        code: 200,
+        body: { sources: [{ src: "https://example.com/v.mp4" }] }
+      }
+      m.expectCalled(m.vm.bcPlayer.callFunc("load", data.body))
+
+      m.vm.onGetVideoResponse(data)
+
+      m.assertEqual(m.vm.bcPlayer.ssai.enabled, false)
+    end function
+
+    @it("does not load when aborted or bad status code")
+    function _()
+      loadCalled = { value: false }
+      bcPlayerMock = { ssai: { enabled: false }
+      }
+      m.vm.bcPlayer = bcPlayerMock
+      m.vm.currentItem = { playStart: 0 }
+      m.vm.playerItem = { drmParams: {}, adsData: invalid }
+
+      m.vm.onGetVideoResponse({ aborted: true, code: 200, body: {} })
+      m.assertFalse(loadCalled.value)
+
+      m.vm.onGetVideoResponse({ aborted: false, code: 404, body: {} })
+      m.assertFalse(loadCalled.value)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("getModifiedSources")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns sources unchanged when keySystem empty or sources invalid")
+    function _()
+      sources = [{ src: "a", key_systems: {} }]
+
+      m.assertEqual(m.vm.getModifiedSources(invalid, "widevine"), invalid)
+      m.assertEqual(m.vm.getModifiedSources([], "widevine"), [])
+      m.assertEqual(m.vm.getModifiedSources(sources, ""), sources)
+    end function
+
+    @it("filters key_systems by keySystem and removes source when none match")
+    function _()
+      sources = [
+        { src: "a", key_systems: { "widevine": {}, "playready": {} } },
+        { src: "b", key_systems: { "playready": {} } }
+      ]
+
+      result = m.vm.getModifiedSources(sources, "widevine")
+
+      m.assertEqual(result.count(), 1)
+      m.assertNotInvalid(result[0].key_systems["widevine"])
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("checkForSSAI")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("enables SSAI when first source has vmap")
+    function _()
+      m.vm.bcPlayer = { ssai: { enabled: false } }
+      videoMetadata = { sources: [{ vmap: "https://vmap.example.com" }] }
+
+      m.vm.checkForSSAI(videoMetadata)
+
+      m.assertTrue(m.vm.bcPlayer.ssai.enabled)
+    end function
+
+    @it("does not enable SSAI when vmap is empty")
+    function _()
+      m.vm.bcPlayer = { ssai: { enabled: false } }
+      videoMetadata = { sources: [{ vmap: "" }] }
+
+      m.vm.checkForSSAI(videoMetadata)
+
+      m.assertFalse(m.vm.bcPlayer.ssai.enabled)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("finishResult")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("sets finished result and state")
+    function _()
+      m.vm.finishResult()
+
+      m.assertEqual(m.view.playbackResult.state, "finished")
+      m.assertEqual(m.view.playbackResult.message, "")
+      m.assertTrue(m.view.isPlaybackFinished)
+      m.assertEqual(m.vm.state, "ready")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("makeResult")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns result object with state and message")
+    function _()
+      m.assertEqual(m.vm.makeResult("finished", ""), { "state": "finished", "message": "" })
+      m.assertEqual(m.vm.makeResult("error", "msg"), { "state": "error", "message": "msg" })
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("errorResult with message")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("uses passed message when bcPlayer error message is missing")
+    function _()
+      m.vm.bcPlayer = { "on": { "error": { "message": invalid } } }
+
+      m.vm.errorResult("Account id is missing")
+
+      m.assertEqual(m.view.playbackResult.message, "Account id is missing")
+      m.assertEqual(m.view.playbackResult.state, "error")
+      m.assertEqual(m.vm.state, "error")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onPlayerClose")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("sets playerStopped and plays itemToPlay when set")
+    function _()
+      m.vm.playerStopped = false
+      m.vm.itemToPlay = { "id": "next" }
+      m.vm.playMode = "default"
+
+      m.expectCalled(m.vm.playItem(m.vm.itemToPlay, m.vm.playMode))
+
+      m.vm.onPlayerClose({})
+
+      m.assertTrue(m.vm.playerStopped)
+    end function
+
+    @it("does not call playItem when itemToPlay is invalid")
+    function _()
+      m.vm.playerStopped = false
+      m.vm.itemToPlay = invalid
+
+      m.expectNotCalled(m.vm.playItem)
+
+      m.vm.onPlayerClose({})
+
+      m.assertTrue(m.vm.playerStopped)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onPlayerCurrentTimeChange")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("updates view position")
+    function _()
+      m.vm.onPlayerCurrentTimeChange(120)
+
+      m.assertEqual(m.view.position, 120)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onPlayerCurrentDurationChange")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("updates view duration when greater than zero")
+    function _()
+      m.vm.onPlayerCurrentDurationChange(300)
+
+      m.assertEqual(m.view.duration, 300)
+    end function
+
+    @it("does not update view duration when zero")
+    function _()
+      m.view.duration = 100
+      m.vm.onPlayerCurrentDurationChange(0)
+
+      m.assertEqual(m.view.duration, 100)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onBrightcovePlayerStateChange")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("sends videoPlayerState notification")
+    function _()
+      m.expectCalled(m.vm.sendNotification("videoPlayerState", "playing"))
+
+      m.vm.onBrightcovePlayerStateChange({ reason: "playing", data: { errorCode: -1 } })
+    end function
+
+    @it("calls finishResult when finished with errorCode 0 and playerStarted")
+    function _()
+      m.vm.view.nextVideoPlay = false
+      m.vm.playerStarted = true
+
+      m.expectCalled(m.vm.sendNotification("videoPlayerState", "finished"))
+
+      m.vm.onBrightcovePlayerStateChange({ reason: "finished", errorCode: 0 })
+
+      m.assertEqual(m.view.playbackResult.state, "finished")
+      m.assertTrue(m.view.isPlaybackFinished)
+      m.assertEqual(m.vm.state, "ready")
+    end function
+
+    @it("calls errorResult when state is error")
+    function _()
+      m.vm.bcPlayer = { "on": { "error": { "message": "Player error" } } }
+
+      m.expectCalled(m.vm.sendNotification("videoPlayerState", "error"))
+
+      m.vm.onBrightcovePlayerStateChange({ reason: "error" })
+
+      m.assertEqual(m.view.playbackResult.state, "error")
+      m.assertTrue(m.view.isPlaybackFinished)
+      m.assertEqual(m.vm.state, "error")
+    end function
+
+    @it("calls errorResult when finished with non-zero errorCode")
+    function _()
+      m.vm.playerStarted = true
+      m.vm.bcPlayer = { "on": { "error": { "message": "Playback failed" } } }
+
+      m.expectCalled(m.vm.sendNotification("videoPlayerState", "finished"))
+
+      m.vm.onBrightcovePlayerStateChange({ reason: "finished", errorCode: 1 })
+
+      m.assertEqual(m.view.playbackResult.state, "error")
+      m.assertEqual(m.view.playbackResult.message, "Playback failed")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onBrightcoveNextVideoNotificationMessage")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("sets nextVideoIsInvalid from notification data")
+    function _()
+      m.vm.nextVideoIsInvalid = invalid
+
+      m.vm.onBrightcoveNextVideoNotificationMessage({ data: true })
+
+      m.assertEqual(m.vm.nextVideoIsInvalid, true)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("isCapturingAnyKeyPress")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("calls stopItem on back key when press or rafStarted")
+    function _()
+      m.vm.rafStarted = true
+
+      m.expectCalled(m.vm.stopItem())
+
+      m.vm.isCapturingAnyKeyPress("back", false)
+    end function
+
+    @it("sends isVideoControlsOkayPressed on OK key")
+    function _()
+      m.expectCalled(m.vm.sendNotification(mc.createNotification("isVideoControlsOkayPressed", true)))
+
+      m.vm.isCapturingAnyKeyPress("OK", true)
+    end function
 
   end class
 end namespace
