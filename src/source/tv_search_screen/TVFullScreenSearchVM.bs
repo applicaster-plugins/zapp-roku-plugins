@@ -321,6 +321,7 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
           component.componentPaddings = componentPaddings
           component.containerYOffset = zapp.viewUtils.getUIBInt(componentJson, "styles.multi_container_clipping_offset_h")
           component.containerHeightOverride = containerHeightOverride
+          component.containerCachedOffset = containerOffset
           componentYOffsets.push(containerOffset)
         end if
       else

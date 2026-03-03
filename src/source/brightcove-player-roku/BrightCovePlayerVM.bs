@@ -151,6 +151,15 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
       eventOut: {} ' read-only
     })
 
+    ssai = bcPlayer.ssai
+    ssai.setFields({
+      enabled: false
+      enableDiscontinuities: true
+      adMeasurements: {}
+      bcovToken: ""
+      macros: {}
+    })
+
     csai = bcPlayer.csai
     csai.setFields({
       enabled: true
@@ -184,6 +193,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
     m.observeNodeField(bcPlayer, "position", m.onPlayerCurrentTimeChange)
     m.observeNodeField(bcPlayer, "duration", m.onPlayerCurrentDurationChange)
     m.observeNodeField(bcPlayer.csai, "event", m.onCSAIEvent)
+    m.observeNodeField(bcPlayer.ssai, "event", m.onSSAIEvent)
     m.observeNodeField(m.view, "videoNodeSeek", m.seekOnSkipOverlay)
 
     m.bcPlayer = bcPlayer
@@ -262,9 +272,11 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
   end function
 
   function onGetVideoResponse(data)
+    m.log.info("get video response", data)
     if not asBoolean(data.aborted) and data.code >= 200 and data.code < 300
       videoMetadata = data.body
       if type(videoMetadata) = "roString"
+        m.log.info("videoMetadata is string - parsing video metadata")
         videoMetadata = parseJson(videoMetadata)
       end if
       sources = videoMetadata.sources
@@ -272,12 +284,22 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
       videoMetadata.sources = m.getModifiedSources(sources, keySystem)
       videoMetadata.playStart = m.currentItem.playStart
       videoMetadata.adsData = asAA(m.playerItem.adsData)
+      m.checkForSSAI(videoMetadata)
       m.bcPlayer.callFunc("load", videoMetadata)
+    end if
+  end function
+
+  function checkForSSAI(videoMetadata)
+    firstVideoSource = videoMetadata.sources[0]
+    if firstVideoSource <> invalid and asString(firstVideoSource.vmap) <> ""
+      m.log.info("enabling SSAI since VMAP url is present in video metadata")
+      m.bcPlayer.ssai.enabled = true
     end if
   end function
 
   function getModifiedSources(sources, keySystem)
     if sources <> invalid and sources.count() > 0 and keySystem <> ""
+      m.log.info("modifying sources for key system", keySystem)
       for i = sources.count() - 1 to 0 step -1
         item = sources[i]
         for each drm in item.key_systems
@@ -303,9 +325,8 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
         bcPlayer.callFunc("loadCustom", playerItem)
         bcPlayer.control = "play"
       else
-        responseNode = bcPlayer.callFunc("getVideo", playerItem.video_id, {
-          autoload: false,
-        })
+        getRequestVideoParams = m.getVideoNodeParams()
+        responseNode = bcPlayer.callFunc("getVideo", playerItem.video_id, getRequestVideoParams)
         if responseNode <> invalid
           m.unobserveNodeField(responseNode, "response", m.onGetVideoResponse)
           m.observeNodeField(responseNode, "response", m.onGetVideoResponse)
@@ -349,6 +370,17 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
       }
     end if
     return currentPlayItem
+  end function
+
+  private function getVideoNodeParams()
+    getRequestVideoParams = {
+      autoload: false,
+    }
+    if asString(m.currentItem.json.extensions.brightcove.ad_config_id) <> ""
+      getRequestVideoParams.append({ ad_config_id: asString(m.currentItem.json.extensions.brightcove.ad_config_id) })
+      'if we insert empty ad_config_id, the player will not start the video , so only insert this param if it's present in the item metadata
+    end if
+    return getRequestVideoParams
   end function
 
   private function getAdUrl(item)
@@ -487,6 +519,10 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
       m.finishResult()
       m.stopItem()
     end if
+  end function
+
+  function onSSAIEvent(ev)
+    ? "SSAI Event: " ev
   end function
 
   function isCapturingAnyKeyPress(key, press) as boolean
