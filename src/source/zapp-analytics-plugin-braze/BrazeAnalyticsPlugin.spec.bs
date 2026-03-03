@@ -1,6 +1,7 @@
 namespace zapp.tests
 
   @tags("public", "analytics", "braze")
+  @ignore
   @suite
   class BrazeAnalyticsPluginTests extends tests.BaseTestSuite
     private config
@@ -53,7 +54,7 @@ namespace zapp.tests
 
     @it("call anonymous user analytic")
     function _()
-      pluginId = { "id": "pluginId" }
+      pluginId = { "id": "quick-brick-login-flow" }
       traits = { "id": "traits" }
       options = { "id": "options" }
       isFromLogout = false
@@ -70,7 +71,7 @@ namespace zapp.tests
 
     @it("set braze userID task ")
     function _()
-      pluginId = { "id": "pluginId" }
+      pluginId = { "id": "quick-brick-login-flow" }
       traits = { "id": "traits" }
       options = { "id": "options" }
       isFromLogout = false

@@ -132,6 +132,8 @@ namespace zapp.tests
     @it("in progress")
     function _()
       m.vm.isLoading = true
+      m.vm.errorTextField = { "color": "" }
+
       m.expectNone(m.vm, "processLogin")
       m.expectOnce(m.vm, "setFocus")
 
@@ -142,6 +144,8 @@ namespace zapp.tests
     function _()
       m.vm.isLoading = false
       m.vm.isCredsValid = false
+      m.vm.errorTextField = { "color": "" }
+
       m.expectOnce(m.vm, "setFocus")
       m.expectNone(m.vm, "processLogin")
 
@@ -462,6 +466,8 @@ namespace zapp.tests
     @params({ "state": "error", "message": "m" }, "m")
     function onLoginComplete_fail(result, expectedMessage)
       m.vm.state = "loading"
+      m.vm.errorTextField = { "color": "" }
+
       m.expectNone(m.vm, "dismiss")
       m.expectOnce(m.vm, "setFocus")
 
