@@ -138,7 +138,7 @@ namespace zapp.tests
       m.plugin.eventBatch = 4
       m.plugin.maxEventCount = 4
 
-      m.expectCalled(m.plugin.executionEvents())
+      m.expectCalled(m.plugin.executionEvents(m.plugin.listOfEvents))
 
       m.plugin.sendEventByTimerOrMaxEventCount()
     end function
@@ -149,7 +149,7 @@ namespace zapp.tests
       m.plugin.eventBatch = 1
       m.plugin.maxEventCount = 4
 
-      m.expectCalled(m.plugin.waitAFrame(m.plugin.executionEvents, 5))
+      m.expectCalled(m.plugin.waitAFrame(m.plugin.executeEventByTimer, 5))
 
       m.plugin.sendEventByTimerOrMaxEventCount()
 
@@ -168,11 +168,15 @@ namespace zapp.tests
       m.expectCalled(m.plugin.createTask("NetworkTask", {
         "url": m.plugin.eventURL,
         "method": "POST",
+        "headers": {
+          "Content-type": "application/json",
+          "accept": "application/json"
+        },
         "params": m.plugin.listOfEvents
       }))
       m.expectCalled(m.plugin.defaultValueAfterExecute())
 
-      m.plugin.executionEvents()
+      m.plugin.executionEvents(m.plugin.listOfEvents)
     end function
 
   end class
