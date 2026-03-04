@@ -29,14 +29,15 @@ namespace zapp.tests
     @it("no task")
     @params({ "id" : "content", title: "t1" }, false)
     @params({ "id" : "content", title: "t2" }, false)
-    @params({ "id" : "content", title: "t2", json: { extensions : { LIVE: false } } }, false)
-    @params({ "id" : "content", title: "t2", json: { extensions : { LIVE: invalid } } }, false)
-    @params({ "id" : "content", title: "t2", json: { extensions : { LIVE: true } } }, true)
+    @params({ "id" : "content", title: "t2", json: { LIVE: false } }, false)
+    @params({ "id" : "content", title: "t2", json: { LIVE: invalid } }, false)
+    @params({ "id" : "content", title: "t2", json: { LIVE: true } }, true)
     function _(content, expectedLive)
       videoNode = { "id": "videoNode" }
       task = { "id": "task" }
       m.plugin.contentMetricPath = {
         "isLive": "LIVE"
+        "title": content.title
       }
       m.plugin.taskName = "YBPluginRokuVideo"
       m.plugin.buildConfig = {
@@ -64,15 +65,16 @@ namespace zapp.tests
     @it("task previously existed")
     @params({ "id" : "content", title: "t1" }, false)
     @params({ "id" : "content", title: "t2" }, false)
-    @params({ "id" : "content", title: "t2", json: { extensions : { LIVE: false } } }, false)
-    @params({ "id" : "content", title: "t2", json: { extensions : { LIVE: invalid } } }, false)
-    @params({ "id" : "content", title: "t2", json: { extensions : { LIVE: true } } }, true)
+    @params({ "id" : "content", title: "t2", json: { LIVE: false } }, false)
+    @params({ "id" : "content", title: "t2", json: { LIVE: invalid } }, false)
+    @params({ "id" : "content", title: "t2", json: { LIVE: true } }, true)
     function _(content, expectedLive)
       videoNode = { "id": "videoNode" }
       task = { "id": "task" }
       m.plugin.config = { "isConfigSet": true }
       m.plugin.contentMetricPath = {
         "isLive": "LIVE"
+        "title": content.title
       }
       m.plugin.buildConfig = {
         "app_name": "appN",
