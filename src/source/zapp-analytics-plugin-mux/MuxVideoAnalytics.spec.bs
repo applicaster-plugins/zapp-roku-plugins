@@ -74,8 +74,22 @@ namespace zapp.tests
         "version_name": "vn",
         "build_version": "bv",
       }
+      muxConfig = {
+        "env_key": "valid",
+        "custom_1": "",
+        "custom_2": "",
+        "custom_3": "",
+        "custom_4": "",
+        "custom_5": "",
+        "custom_6": "",
+        "custom_7": "",
+        "custom_8": "",
+        "custom_9": "",
+        "custom_10": "",
+      }
 
       m.expectCalled(m.plugin.getInstance("muxAnalyticsTask"), task)
+      m.expectCalled(m.plugin.setMuxField(muxConfig))
       m.expectNone(m.plugin, "createInstance")
       m.expectNone(m.plugin, "setInstance")
 

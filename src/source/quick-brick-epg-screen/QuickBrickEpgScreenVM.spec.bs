@@ -34,6 +34,11 @@ namespace zapp.plugins.tests
         "styles": {
           "cell": "cell"
         }
+        "localizations": {
+          "en": {
+            "buttons": "Localized buttons"
+          }
+        }
         "json": {
           "configuration_json": {
             "localizations": {
@@ -119,8 +124,8 @@ namespace zapp.plugins.tests
       m.vm.programState = "invalid"
 
 
-      m.expectNotCalled(m.vm.setIsoTime)
-      m.expectNotCalled(m.vm.setEpgContent)
+      m.expectCalled(m.vm.setIsoTime)
+      m.expectCalled(m.vm.setEpgContent)
 
       m.vm.onSelectedIndexChangeMenu(0)
     end function
@@ -140,16 +145,11 @@ namespace zapp.plugins.tests
       ]
       m.vm.taskCount = 0
       m.vm.programState = "ready"
-      dayDifference = 0
       currentTime = CreateObject("roDateTime")
-      timezone = currentTime.GetTimeZoneOffset() * 60
-      hours = currentTime.GetHours() * 3600
-      minutes = currentTime.GetMinutes() * 60
 
-      currentDayIndex = currentTime.getDayOfWeek()
-      targetTime = currentTime.asSeconds() + (86400 * dayDifference) - hours - minutes + timezone
+      targetTime = currentTime.asSeconds()
 
-      m.expectCalled(m.vm.setIsoTime(targetTime))
+      m.expectCalled(m.vm.setIsoTime(int(targetTime)))
       m.expectCalled(m.vm.setEpgContent("riversData"))
 
       m.vm.onSelectedIndexChangeMenu(0)
@@ -415,6 +415,8 @@ namespace zapp.plugins.tests
         "style": "style"
       }
       m.vm.timeGrid = { "id": "timeGrid" }
+      timeGridGroup = {}
+
 
       m.expectCalled(m.vm.getMField("TimeGridGroup"), {})
       m.expectCalled(m.vm.defaultValues(m.vm.timeGrid, m.vm.plugin, style))
@@ -422,9 +424,9 @@ namespace zapp.plugins.tests
       m.expectCalled(m.vm.nowNextSection(m.vm.timeGrid, m.vm.plugin, style))
       m.expectCalled(m.vm.programItemSection(m.vm.timeGrid, m.vm.plugin, style))
       m.expectCalled(m.vm.channelInfoSection(m.vm.timeGrid, m.vm.plugin, style))
-      m.expectCalled(m.vm.timeBarSection(m.vm.timeGrid, m.vm.plugin, style))
+      m.expectCalled(m.vm.timeBarSection(m.vm.timeGrid, timeGridGroup, m.vm.plugin, style))
       m.expectCalled(m.vm.nowBarSection(m.vm.timeGrid, m.vm.plugin, style))
-      m.expectCalled(m.vm.setNowBarIndicatorStyle(m.vm.timeGrid, m.vm.plugin, style))
+      m.expectCalled(m.vm.setNowBarIndicatorStyle(m.vm.timeGrid, style))
 
       m.vm.epgHardcodedStyle(style)
     end function
@@ -470,7 +472,7 @@ namespace zapp.plugins.tests
     function _()
       result = m.vm.parseDateStringToSeconds("2025-01-27T09:38:38.711Z")
 
-      m.assertEqual(`${result}`, `${1737970718}`)
+      m.assertEqual(`${int(result)}`, `${int(1737970718)}`)
     end function
 
 

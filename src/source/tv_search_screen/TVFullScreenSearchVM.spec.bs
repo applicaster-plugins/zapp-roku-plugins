@@ -3,6 +3,8 @@ namespace zapp.tests
   @suite
   class TVFullScreenSearchVMTests extends tests.BaseTestSuite
     private riversJson
+    private backgroundPoster
+    private backgroundBorderPoster
     private vm
 
     protected override function beforeEach()
@@ -43,6 +45,9 @@ namespace zapp.tests
           }
         }
       }
+      m.backgroundPoster = {}
+      m.backgroundBorderPoster = {}
+
       m.vm = new TVFullScreenSearchVM(m.riversJson)
     end function
 
@@ -93,9 +98,10 @@ namespace zapp.tests
       m.vm.isFirstLoadComplete = false
       m.vm.searchText = ""
       m.vm.minCharacters = 3
+      m.expectCalled(m.vm.trackScreen())
+      m.expectCalled(m.vm.toggleNavMenuVisible(true))
       m.expectCalled(m.vm.reset())
       m.expectCalled(m.vm.showFirstScreen())
-      m.expectCalled(m.vm.trackScreen())
       m.vm.onShow()
       m.assertFalse(m.vm.isShowingContent)
     end function
@@ -105,6 +111,7 @@ namespace zapp.tests
       m.vm.isShowingContent = true
       m.vm.isFirstLoadComplete = true
       m.expectNotCalled(m.vm.reset())
+      m.expectCalled(m.vm.toggleNavMenuVisible(true))
       m.expectNotCalled(m.vm.showFirstScreen())
       m.expectCalled(m.vm.trackScreen())
       m.vm.onShow()
@@ -275,7 +282,6 @@ namespace zapp.tests
       m.vm.onSearchTextChange(text)
 
       m.assertEqual(m.vm.searchDelayTask, searchDelayTask)
-      m.assertEqual(m.vm.searchHaveResults, false)
     end function
 
     @it("starts search delay when enough characters")
@@ -300,7 +306,6 @@ namespace zapp.tests
       m.expectCalled(m.vm.sendSearchCanceledEvent())
       m.vm.onSearchTextChange("abc")
       m.assertFalse(m.vm.isShowingContent)
-      m.assertFalse(m.vm.searchHaveResults)
     end function
 
 

@@ -36,7 +36,9 @@ namespace zapp.tests
       videoNode = { "id": "videoNode" }
       task = { "id": "task" }
       m.plugin.contentMetricPath = {
-        "isLive": "LIVE"
+        "isLive": "extensions.LIVE"
+        "title": ""
+        "live_title": "_"
       }
       m.plugin.taskName = "YBPluginRokuVideo"
       m.plugin.buildConfig = {
@@ -55,7 +57,6 @@ namespace zapp.tests
       m.assertEqual(task.videoplayer, videoNode)
       m.assertEqual(task.control, "RUN")
       m.assertEqual(task.event, { handler: "play" })
-      m.assertEqual(task.event, { handler: "play" })
       m.assertEqual(task.options.content.isLive, expectedLive)
       m.assertEqual(task.options.content.title, content.title)
 
@@ -72,7 +73,9 @@ namespace zapp.tests
       task = { "id": "task" }
       m.plugin.config = { "isConfigSet": true }
       m.plugin.contentMetricPath = {
-        "isLive": "LIVE"
+        "isLive": "extensions.LIVE"
+        "title": ""
+        "live_title": "_"
       }
       m.plugin.buildConfig = {
         "app_name": "appN",
