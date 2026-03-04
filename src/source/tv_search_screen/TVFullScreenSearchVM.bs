@@ -503,10 +503,10 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
     backgroundcolor = asString(menuGroupStyle.normal.backgroundcolor, "#00000000")
     backgroundBorderColor = asString(menuGroupStyle.normal.backgroundbordercolor, "#00000000")
 
-    m.setBackgroundVisibility(backgroundcolor, m.backgroundPoster)
-    m.setBackgroundVisibility(backgroundBorderColor, m.backgroundBorderPoster)
-
     if m.backgroundPoster <> invalid
+      m.setBackgroundVisibility(backgroundcolor, m.backgroundPoster)
+      m.setBackgroundVisibility(backgroundBorderColor, m.backgroundBorderPoster)
+
       m.adjustPoster(m.backgroundPoster, menuGroupStyle, borderSize, cornerRadius, "", false)
       m.adjustPoster(m.backgroundBorderPoster, menuGroupStyle, borderSize, cornerRadius, "Border", true)
     end if

@@ -45,6 +45,9 @@ class MuxVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
     return plugin
   end function
 
+  private function setMuxField(muxConfig)
+    m.muxTask.setField("config", muxConfig)
+  end function
 
   public override function videoInit(videoNode, contentNode) as void
     super.videoInit(videoNode, contentNode)
@@ -70,7 +73,7 @@ class MuxVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
         m.muxTask.control = "RUN"
         m.setInstance("muxAnalyticsTask", m.muxTask)
       else
-        m.muxTask.setField("config", muxConfig)
+        m.setMuxField(muxConfig)
       end if
     end if
   end function
