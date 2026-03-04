@@ -234,6 +234,7 @@ namespace zapp.tests
 
 
       m.expectNotCalled(m.plugin.getDefaultOptions)
+      m.expectCalled(m.plugin.getDefaultTraits(), {})
       m.expectCalled(m.plugin.processAnalyticsEvent(event))
 
       m.plugin._trackEvent(eventName, eventActionName, eventProperties, eventOptions)
@@ -258,6 +259,7 @@ namespace zapp.tests
       }
 
       m.expectCalled(m.plugin.getDefaultOptions, defaultOptions)
+      m.expectCalled(m.plugin.getDefaultTraits(), {})
       m.expectCalled(m.plugin.processAnalyticsEvent(event))
 
       m.plugin._trackEvent(eventName, eventActionName, eventProperties, eventOptions)
