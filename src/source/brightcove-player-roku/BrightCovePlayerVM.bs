@@ -283,7 +283,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
       keySystem = asString(m.playerItem.drmParams.keySystem)
       videoMetadata.sources = m.getModifiedSources(sources, keySystem)
       videoMetadata.playStart = m.currentItem.playStart
-      videoMetadata.adsData = asAA(m.playerItem.adsData)
+
       m.checkForSSAI(videoMetadata)
       m.bcPlayer.callFunc("load", videoMetadata)
     end if
@@ -294,6 +294,8 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
     if firstVideoSource <> invalid and asString(firstVideoSource.vmap) <> ""
       m.log.info("enabling SSAI since VMAP url is present in video metadata")
       m.bcPlayer.ssai.enabled = true
+    else
+      videoMetadata.adsData = asAA(m.playerItem.adsData)
     end if
   end function
 
@@ -377,7 +379,9 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
       autoload: false,
     }
     if asString(m.currentItem.json.extensions.brightcove.ad_config_id) <> ""
-      getRequestVideoParams.append({ ad_config_id: asString(m.currentItem.json.extensions.brightcove.ad_config_id) })
+      getRequestVideoParams.params = {
+        "ad_config_id": asString(m.currentItem.json.extensions.brightcove.ad_config_id)
+      }
       'if we insert empty ad_config_id, the player will not start the video , so only insert this param if it's present in the item metadata
     end if
     return getRequestVideoParams
@@ -488,6 +492,8 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
   end function
 
   function onCSAIEvent(ev)
+    ? "onCSAIEvent Event: " ev
+
     eventName = asString(ev.event)
     if eventName = "start"
       video = m.getVideoNode()
