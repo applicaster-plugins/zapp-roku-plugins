@@ -448,12 +448,14 @@ namespace zapp.tests
 
     @it("does not enable SSAI when vmap is empty")
     function _()
+      m.vm.playerItem = { adsData: { type: "csai", vmap: "https://ads.example.com/vmap" } }
       m.vm.bcPlayer = { ssai: { enabled: false } }
       videoMetadata = { sources: [{ vmap: "" }] }
 
       m.vm.checkForSSAI(videoMetadata)
 
       m.assertFalse(m.vm.bcPlayer.ssai.enabled)
+      m.assertEqual(videoMetadata.adsData.type, "csai")
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
