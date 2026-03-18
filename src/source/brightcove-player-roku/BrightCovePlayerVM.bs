@@ -80,6 +80,9 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
 
     if status = "ready"
       m.sdkIsReady = true
+      if m.pendingPlayerItem <> invalid
+        m.playItem(m.pendingPlayerItem, m.playMode)
+      end if
     else if status = "error"
       m.log.error("sdk failed to load")
       m.state = "error"
@@ -162,7 +165,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
 
     csai = bcPlayer.csai
     csai.setFields({
-      enabled: true
+      enabled: false
       useCSAS: true
       closeOnFinish: true
       maxRequests: 1
@@ -247,9 +250,13 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
       m.playMode = playMode
       m.playerItem = m.getPlayerItem(m.currentItem)
 
-      m.sendNotification("videoPlayerState", "buffering")
-      m.startBCPlayer()
-      m.log.info("playing with player item", formatJson(m.playerItem))
+      if m.sdkIsReady
+        m.sendNotification("videoPlayerState", "buffering")
+        m.startBCPlayer()
+        m.log.info("playing with player item", formatJson(m.playerItem))
+      else
+        m.bcPlayer = invalid
+      end if
 
       if m.bcPlayer = invalid
         m.log.warn("player is not ready yet; setting this item as pending")

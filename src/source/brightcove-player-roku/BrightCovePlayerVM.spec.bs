@@ -112,6 +112,21 @@ namespace zapp.tests
     function _()
       m.vm.sdkIsReady = false
 
+      m.expectNotCalled(m.vm.playItem)
+
+      m.vm.onSDKLoadStatusChange("ready")
+
+      m.assertEqual(m.vm.sdkIsReady, true)
+    end function
+
+    @it("onLoadSDKStatusChange ready and pendingPlayerItem exist")
+    function _()
+      m.vm.playMode = "default"
+      m.vm.sdkIsReady = false
+      m.vm.pendingPlayerItem = { "id": "playerData" }
+
+      m.expectCalled(m.vm.playItem(m.vm.pendingPlayerItem, "default"))
+
       m.vm.onSDKLoadStatusChange("ready")
 
       m.assertEqual(m.vm.sdkIsReady, true)
