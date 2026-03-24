@@ -112,7 +112,7 @@ namespace zapp.video.analytics
       m.log.info("hard crash event triggered")
       launchArgs = m.getMField("top").getScene().launchArgs
       crashLogs = asString(launchArgs.crashLog)
-      if crashLogs.len() > 0
+      if crashLogs.len() > 0 and asString(launchArgs.lastExitOrTerminationReason) <> "EXIT_USER_NAV"
         m.log.info("sending hard crash event with logs")
         params = {
           message: crashLogs.replace("\", "\\")
