@@ -152,11 +152,19 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
   public function onRegisterButtonSelected()
     m.isShowingRegisterScreen = true
     screen = m.createSubScreen("FlowRegisterScreen")
+    m.sendLoginFlowAnalytics(zapp.analytics.EventType.loginFlowActionClicked, {
+      "action_type ": "signup",
+      "provider ": m.providerId
+    })
     m.toggleSubScreen(screen)
   end function
 
   public function onForgotPasswordButtonSelected()
     screen = m.createSubScreen("FlowForgotPasswordScreen")
+    m.sendLoginFlowAnalytics(zapp.analytics.EventType.loginFlowActionClicked, {
+      "action_type ": "forgot_password",
+      "provider ": m.providerId
+    })
     m.toggleSubScreen(screen)
   end function
 
@@ -242,6 +250,10 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
 
   public function processLogin()
     m.log.info("logging in")
+    m.sendLoginFlowAnalytics(zapp.analytics.EventType.loginFlowActionClicked, {
+      "action_type ": "login",
+      "provider ": m.providerId
+    })
 
     if m.isCredsValid
       creds = m.createInstance("AuthenticationCredentials")
@@ -266,6 +278,11 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
 
       m.authTask = m.createAuthTask("execLogIn", m.providerId, m.onLoginComplete, creds)
 
+      m.sendLoginFlowAnalytics(zapp.analytics.EventType.loginFlowAuthStarted, {
+        "auth_mode": "remote_form",
+        "provider ": m.providerId
+      })
+
       m.isLoginButtonEnabled = false
       m.isLoading = true
       m.errorText = ""
@@ -279,10 +296,18 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
 
     if result <> invalid and result.state = "valid"
       m.log.info("logged in successful")
+      m.sendLoginFlowAnalytics(zapp.analytics.EventType.loginFlowAuthSucceeded, {
+        "auth_mode": "remote_form",
+        "provider ": m.providerId
+      })
       m.signalAppLaunchDialog(true)
       m.dismiss("success")
-
     else
+      m.sendLoginFlowAnalytics(zapp.analytics.EventType.loginFlowAuthFailed, {
+        "auth_mode ": "remote_form",
+        "provider": m.providerId,
+        "failure_type": asString(result.message, "Unknown error")
+      })
       m.state = "ready"
       if result <> invalid and result.message <> invalid
         m.errorText = result.message
@@ -311,6 +336,10 @@ class FlowLoginScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ private
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function sendLoginFlowAnalytics(eventType, data)
+    m.sendAnalyticsEvent(eventType, data, m.getScreenProperties())
+  end function
 
   function updateFocusControls()
     m.focusIds = ["usernameInput", "passwordInput", "loginButton"]
