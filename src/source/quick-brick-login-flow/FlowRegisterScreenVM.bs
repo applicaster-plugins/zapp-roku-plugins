@@ -127,6 +127,10 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
     m.log.method("onLoginButtonSelected")
     m.isShowingLoginScreen = true
     screen = m.createSubScreen("FlowLoginScreen")
+    m.sendLoginFlowAnalytics(zapp.analytics.EventType.loginFlowActionClicked, {
+      "action_type ": "login",
+      "provider ": m.providerId
+    })
     m.toggleSubScreen(screen)
   end function
 
@@ -285,7 +289,10 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
 
   public function register()
     m.log.info("registering")
-
+    m.sendLoginFlowAnalytics(zapp.analytics.EventType.loginFlowActionClicked, {
+      "action_type ": "signup",
+      "provider ": m.providerId
+    })
     if m.isCredsValid
       creds = m.createInstance("AuthenticationCredentials")
       languageCode = mioc.getInstance("languageCode") ?? "en"
@@ -309,6 +316,10 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
 
       m.authTask = m.createAuthTask("execRegister", m.providerId, m.onRegisterComplete, creds)
 
+      m.sendLoginFlowAnalytics(zapp.analytics.EventType.loginFlowAuthStarted, {
+        "auth_mode": "signup",
+        "provider ": m.providerId
+      })
       m.isRegisterButtonEnabled = false
       m.isLoading = true
       m.errorText = ""
@@ -337,11 +348,24 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
 
     if result <> invalid and result.state = "valid"
       m.log.info("Register successful")
+      m.sendLoginFlowAnalytics(zapp.analytics.EventType.loginFlowAuthSucceeded, {
+        "auth_mode": "signup",
+        "provider ": m.providerId
+      })
       m.dismiss("success")
     else if result <> invalid and result.state = "pending"
       m.log.info("Register email pending, redirecting to login screen")
+      m.sendLoginFlowAnalytics(zapp.analytics.EventType.loginFlowAuthSucceeded, {
+        "auth_mode": "signup",
+        "provider ": m.providerId
+      })
       m.dismiss("pending")
     else
+      m.sendLoginFlowAnalytics(zapp.analytics.EventType.loginFlowAuthFailed, {
+        "auth_mode ": "signup",
+        "provider": m.providerId,
+        "failure_type": asString(result.message, "Unknown error")
+      })
       m.state = "ready"
       if result <> invalid and result.message <> invalid
         m.errorText = result.message
@@ -360,6 +384,10 @@ class FlowRegisterScreenVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   '++ Private Methods
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  private function sendLoginFlowAnalytics(eventType, data)
+    m.sendAnalyticsEvent(eventType, data, m.getScreenProperties())
+  end function
 
   function updateFocusControls()
     m.focusIds = ["usernameInput", "firstNameInput", "lastNameInput", "passwordInput", "registerButton"]
