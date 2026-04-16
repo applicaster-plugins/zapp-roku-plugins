@@ -46,7 +46,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
     pluginViewerIdStorageKey = plugin.getStringValue("viewer_identifier_storage_key", "")
     m.policyKey = pluginPolicyKey <> "" ? pluginPolicyKey : mc.getPath(view.riversJson, "general.policy_key", "")
     m.accountId = pluginAccountId <> "" ? pluginAccountId : mc.getPath(view.riversJson, "general.account_id", "")
-    m.sdkPath = mc.getPath(view.riversJson, "general.sdk_url", "https://players.brightcove.net/roku-sdk/1/roku-sdk.pkg")
+    m.sdkPath = plugin.getStringValue("sdk_url", "https://players.brightcove.net/roku-sdk/2/roku-sdk.pkg")
     m.rafIsEnabled = asBoolean(view.riversJson.general.raf_enabled)
     m.rafUrl = mc.getPath(view.riversJson, "general.raf_url", "")
     m.viewerIdStorageKey = pluginViewerIdStorageKey <> "" ? pluginViewerIdStorageKey : mc.getPath(view.riversJson, "general.viewer_identifier_storage_key", "quick-brick-login-flow.account_token")
