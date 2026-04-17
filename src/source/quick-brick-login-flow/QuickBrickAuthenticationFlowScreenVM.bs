@@ -64,6 +64,12 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
     else if currentItem = invalid
       return true
     end if
+
+    isLoginForced = m.checkIfLoginIsForced()
+    if isLoginForced
+      m.log.info("login is being forced for this item")
+      return true
+    end if
     return m.checkIfCurrentItemRequiresAuthentication(currentItem.json)
   end function
 
@@ -245,6 +251,11 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
       return true
     end if
     return false
+  end function
+
+  private function checkIfLoginIsForced()
+    isForcingLogin = m.getTopField("isForcingLogin")
+    return isForcingLogin and not m.isLoggedIn()
   end function
 
   public function isCapturingAnyKeyPress(key, press)
