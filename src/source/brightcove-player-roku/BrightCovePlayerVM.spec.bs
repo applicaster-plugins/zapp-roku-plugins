@@ -198,52 +198,6 @@ namespace zapp.tests
       m.assertEqual(m.vm.pendingPlayerItem, playerData)
     end function
 
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("playBrightcoveItem")
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    @it("playBrightcoveItem")
-    function _()
-      playerData = { "id": "playerData" }
-
-      m.vm.playMode = "default"
-      m.vm.state = "ready"
-      m.vm.bcPlayer = m.player
-      m.vm.currentItem = { "json": { "extensions": { "brightcove": { "video_id": invalid } } } }
-      m.vm.playerFunctions = m.player.BrightcoveFunctions
-
-      m.expectCalled(m.vm.setFocus(m.player))
-      m.expectCalled(m.player.callFunc(m.player.BrightcoveFunctions.LOAD, playerData))
-
-      m.vm.playBrightcoveItem(m.player, playerData)
-
-      m.assertEqual(m.vm.bcPlayer.control, "play")
-      m.assertEqual(m.vm.state, "playing")
-    end function
-
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    @describe("stopItem")
-    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    @it("stopItem")
-    function _()
-      m.vm.state = "playing"
-      m.vm.bcPlayer = m.player
-      m.vm.bcPlayer = {
-        "on": {
-          sdkReady: true
-        }
-      }
-      m.expectCalled(m.vm.bcPlayer.callFunc(m.player.BrightcoveFunctions.CLOSE), invalid)
-
-      m.vm.stopItem()
-
-      m.assertEqual(m.vm.pendingPlayerItem, invalid)
-      m.assertEqual(m.vm.currentItem, invalid)
-      m.assertEqual(m.vm.state, "ready")
-      m.assertTrue(m.vm.view.isPlaybackFinished)
-    end function
-
     @it("rejects when account id or policy key is missing")
     function _()
       m.vm.playerStopped = true
@@ -293,6 +247,88 @@ namespace zapp.tests
       m.assertEqual(m.view.playbackResult.state, "error")
       m.assertEqual(m.view.playbackResult.message, "Item is invalid")
       m.assertTrue(m.view.isPlaybackFinished)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("playBrightcoveItem")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("playBrightcoveItem")
+    function _()
+      playerData = { "id": "playerData" }
+
+      m.vm.playMode = "default"
+      m.vm.state = "ready"
+      m.vm.bcPlayer = m.player
+      m.vm.currentItem = { "json": { "extensions": { "brightcove": { "video_id": invalid } } } }
+      m.vm.playerFunctions = m.player.BrightcoveFunctions
+
+      m.expectCalled(m.vm.setFocus(m.player))
+      m.expectCalled(m.player.callFunc(m.player.BrightcoveFunctions.LOAD, playerData))
+
+      m.vm.playBrightcoveItem(m.player, playerData)
+
+      m.assertEqual(m.vm.bcPlayer.control, "play")
+      m.assertEqual(m.vm.state, "playing")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("stopItem")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("stopItem")
+    function _()
+      m.vm.state = "playing"
+      m.vm.bcPlayer = m.player
+      m.expectCalled(m.vm.bcPlayer.callFunc(m.player.BrightcoveFunctions.CLOSE), invalid)
+
+      m.vm.stopItem()
+
+      m.assertEqual(m.vm.pendingPlayerItem, invalid)
+      m.assertEqual(m.vm.currentItem, invalid)
+      m.assertEqual(m.vm.state, "ready")
+      m.assertTrue(m.vm.view.isPlaybackFinished)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("stopBcPlayer")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("closes player when SDK v1 and sdkReady is true")
+    function _()
+      m.vm.isSdkV2 = false
+      m.vm.bcPlayer = m.player
+      m.expectCalled(m.vm.bcPlayer.callFunc(m.player.BrightcoveFunctions.CLOSE), invalid)
+
+      m.vm.stopBcPlayer()
+
+      m.assertInvalid(m.vm.bcPlayer)
+    end function
+
+    @it("does not close when SDK v1 and sdkReady is false")
+    function _()
+      m.vm.isSdkV2 = false
+      m.vm.bcPlayer = m.player
+      m.player.on.sdkReady = false
+      m.expectNotCalled(m.vm.bcPlayer.callFunc(m.player.BrightcoveFunctions.CLOSE))
+
+      m.vm.stopBcPlayer()
+
+      m.assertNotInvalid(m.vm.bcPlayer)
+      m.player.on.sdkReady = true
+    end function
+
+    @it("closes when SDK v2 even if sdkReady is false")
+    function _()
+      m.vm.isSdkV2 = true
+      m.vm.bcPlayer = m.player
+      m.player.on.sdkReady = false
+      m.expectCalled(m.vm.bcPlayer.callFunc(m.player.BrightcoveFunctions.CLOSE), invalid)
+
+      m.vm.stopBcPlayer()
+
+      m.assertInvalid(m.vm.bcPlayer)
+      m.player.on.sdkReady = true
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -356,7 +392,7 @@ namespace zapp.tests
       m.vm.bcPlayer = m.player
       m.vm.playerItem = { url: "", video_id: "v1" }
       data = {
-        isOk: true,
+        isok: true,
         data: { sources: [{ src: "https://cdn.example.com/master.m3u8" }] }
       }
 
@@ -370,7 +406,7 @@ namespace zapp.tests
     @it("on failure calls errorResult")
     function _()
       m.vm.bcPlayer = { "on": { "error": { "message": invalid } } }
-      data = { isOk: false }
+      data = { isok: false }
 
       m.vm.onVideoResponse(data)
 
@@ -398,7 +434,12 @@ namespace zapp.tests
         code: 200,
         body: { sources: [{ src: "https://example.com/v.mp4" }] }
       }
-      m.expectCalled(m.vm.bcPlayer.callFunc("load", data.body))
+      expectedMetadata = {
+        sources: data.body.sources
+        playStart: 0
+        adsData: {}
+      }
+      m.expectCalled(m.vm.bcPlayer.callFunc("load", expectedMetadata))
 
       m.vm.onGetVideoResponse(data)
 
@@ -437,14 +478,14 @@ namespace zapp.tests
     @it("filters key_systems by keySystem and removes source when none match")
     function _()
       sources = [
-        { src: "a", key_systems: { "widevine": {}, "playready": {} } },
-        { src: "b", key_systems: { "playready": {} } }
+        { src: "a", key_systems: { "com.widevine.alpha": {}, "com.microsoft.playready": {} } },
+        { src: "b", key_systems: { "com.microsoft.playready": {} } }
       ]
 
       result = m.vm.getModifiedSources(sources, "widevine")
 
       m.assertEqual(result.count(), 1)
-      m.assertNotInvalid(result[0].key_systems["widevine"])
+      m.assertNotInvalid(result[0].key_systems["com.widevine.alpha"])
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
