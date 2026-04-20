@@ -31,6 +31,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
   private playerItem = invalid
   private nextVideoIsInvalid = invalid
   private viewerIdStorageKey = ""
+  private isSdkV2 = false
   private baseUrl = "https://edge.api.brightcove.com/playback/v1"
 
   @injectClass("zapp.PluginManager")
@@ -50,6 +51,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
     m.rafIsEnabled = asBoolean(view.riversJson.general.raf_enabled)
     m.rafUrl = mc.getPath(view.riversJson, "general.raf_url", "")
     m.viewerIdStorageKey = pluginViewerIdStorageKey <> "" ? pluginViewerIdStorageKey : mc.getPath(view.riversJson, "general.viewer_identifier_storage_key", "quick-brick-login-flow.account_token")
+    m.isSdkV2 = m.isBrightcoveSdkV2OrNewer()
   end function
 
   override function initialize()
@@ -62,6 +64,17 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
     accountSection = parts.slice(0, parts.count() - 1).join(".")
     accountKey = asString(parts[parts.count() - 1])
     return m.getSessionStoreValue(accountSection, accountKey, false)
+  end function
+
+  private function isBrightcoveSdkV2OrNewer() as boolean
+    segs = lcase(asString(m.sdkPath)).split("/")
+    for i = 0 to segs.count() - 2
+      if segs[i] = "roku-sdk"
+        major = int(val(segs[i + 1]))
+        return major >= 2
+      end if
+    end for
+    return false
   end function
 
   private function createPlayer()
@@ -110,7 +123,11 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
         m.playBrightcoveItem(m.bcPlayer, m.playerItem)
       end if
     else
-      m.stopBcPlayer()
+      if m.isSdkV2
+        m.stopItem()
+      else
+        m.stopBcPlayer()
+      end if
     end if
   end function
 
@@ -118,7 +135,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
     m.log.info("creating player")
     bcPlayer = m.view.createChild("bcLib:bcPlayer")
 
-    bcPlayer.setFields({
+    playerInitFields = {
       streamPreference: ["hls", "dash", "mp4"],
       drmPreference: ["widevine", "playready", "none"],
       width: asInteger(m.view.videoPlayerWidth, 1920), ' current UI width
@@ -128,13 +145,18 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
       env: "production",
       watermarkToken: "",
       spinnerConfig: {},
-      closeOnBack: "hard",
-      closeOnFinished: "hard",
       retryOnError: true,
       enableDialogs: false,
       bufferTimeout: 0,
       loading: false
-    })
+    }
+    if m.isSdkV2
+      playerInitFields.closeOnBack = "hard"
+      playerInitFields.closeOnFinished = "hard"
+    else
+      playerInitFields.closeOnBack = true
+    end if
+    bcPlayer.setFields(playerInitFields)
 
     bcPlayer.spinnerConfig = {
       url: "noImage"
@@ -164,20 +186,23 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
     })
 
     csai = bcPlayer.csai
-    csai.setFields({
+    csaiBase = {
       enabled: false
-      useCSAS: true
-      closeOnFinish: true
       maxRequests: 1
-      enableJIT: true
-      enableInPodStitching: true
       adMeasurements: {}
       adConstraints: {
         maxHeight: 1080
         maxWidth: 1920
         maxBitrate: 100000
       }
-    })
+    }
+    if not m.isSdkV2
+      csaiBase.useCSAS = true
+      csaiBase.closeOnFinish = true
+      csaiBase.enableJIT = true
+      csaiBase.enableInPodStitching = true
+    end if
+    csai.setFields(csaiBase)
 
     bcPlayer.credentials = {
       account_id: m.accountId,
@@ -403,12 +428,19 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
     m.stopBcPlayer()
     m.pendingPlayerItem = invalid
     m.currentItem = invalid
+    m.itemToPlay = invalid
+    m.view.isPlaybackFinished = false
     m.view.isPlaybackFinished = true
     m.state = "ready"
   end function
 
-  private function stopBcPlayer()
-    if m.bcPlayer <> invalid and asBoolean(m.bcPlayer.on.sdkReady)
+  private function stopBcPlayer() as void
+    if m.bcPlayer = invalid
+      return
+    end if
+    ' SDK 2.x may clear or change on.sdkReady after startup; v1 relied on sdkReady before close.
+    canClose = m.isSdkV2 or asBoolean(m.bcPlayer.on.sdkReady)
+    if canClose
       m.log.info("stopBcPlayer")
       m.bcPlayer.callFunc("close")
       m.bcPlayer = invalid
@@ -514,7 +546,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
       video = m.getVideoNode()
       m.observeNodeField(video, "position", m.onPlayerCurrentTimeChange)
       m.sendNotification("adBreak", "finished")
-    else if eventName = "raf-position"
+    else if eventName = "raf-position" or eventName = "raf-progress"
       video = m.getVideoNode()
       video.duration = video.pauseBufferEnd
       m.onPlayerCurrentDurationChange(video.pauseBufferEnd)
