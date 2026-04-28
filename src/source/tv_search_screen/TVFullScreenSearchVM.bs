@@ -779,7 +779,6 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
         end if
       end for
 
-      m.sendNotification(mc.createNotification("isComponentReloadRequired", { "isSearch": true, isOk: true }))
       m.load()
       m.loadDataTask = m.executeloadDataTask("componentFeed", m.onFeedResult, componentValues, depth)
     end if
