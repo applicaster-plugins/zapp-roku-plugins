@@ -38,6 +38,7 @@
 
     <Group
         id='TimeGridGroup'
+        visible='{{contentIsLoaded}}'
         translation='[0,500]'>
       <TimeGrid
           id='TimeGrid'
