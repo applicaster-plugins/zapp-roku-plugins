@@ -766,6 +766,7 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
 
     if isActive
       m.riversJson.data = m.searchData
+      m.isGridVisible = false
 
       for each item in m.components
         json = item.riversJson
@@ -773,7 +774,6 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
         mc.setPath(json, "componentValues", componentValues)
         item.riversJson = json
         item.isDataRefreshRequired = true
-        item.visible = false
         if asString(json.component_type) = zapp.componentsType.Type.groupInfo
           m.sendNotification(mc.createNotification("isInfoReloadRequired", componentValues))
         end if
@@ -826,6 +826,11 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
     m.searchHaveResults = isContentPresent
     components = m.components
     m.components = components
+    m.waitAFrame(m.updateOverallStateComplete, 0.5)
+  end function
+
+  private function updateOverallStateComplete()
+    m.needsRecalculating = false
     m.needsRecalculating = true
   end function
 
