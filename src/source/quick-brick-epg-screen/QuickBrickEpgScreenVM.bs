@@ -41,6 +41,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
   public isDetailsVisible = false
   public headerItem = invalid
   public headerStyle = invalid
+  public contentIsLoaded = false
 
   'public content = m.createSGNode("CollectionRow")
   public channelIndex = -1
@@ -332,6 +333,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     m.contentStartTime = currentTime - 200
     m.currentTimeGridLeftEdgeTime = m.contentStartTime
     m.content = m.timeGridContent
+    m.contentIsLoaded = true
     m.log.info("content for Epg", m.timeGridContent)
     numRows = zapp.viewUtils.getUIBInt(m.riversJsonData.styles, "time_grid_visible_row", 5)
     channelCount = m.timeGridContent.getChildCount()
