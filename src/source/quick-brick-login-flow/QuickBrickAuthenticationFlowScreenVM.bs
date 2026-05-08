@@ -16,6 +16,10 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
   private skipTypes = ""
   private skipKey = ""
   private flowType = "signup"
+  private date = new zapp.Date()
+
+  @inject("authenticationData")
+  private authDataNode
 
   public function new(riversJson)
     super(riversJson, "QuickBrickAuthenticationFlowScreenVM")
@@ -46,8 +50,13 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
       m.log.info("skip key set")
       m.dismiss("success")
     else if m.isLoggedIn()
-      m.log.info("user is logged in, no need to show")
-      m.dismiss("success")
+      if m.isQuickBrickAuthTokenExpired()
+        m.log.info("user appears logged in but stored token expired; forcing refresh via verify")
+        m.refreshLogin()
+      else
+        m.log.info("user is logged in, no need to show")
+        m.dismiss("success")
+      end if
     else
       m.log.info("user not logged in - attemping refreshing")
       m.refreshLogin()
@@ -213,6 +222,13 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
       return user.loggedInServices[m.providerId] = true
     end if
     return false
+  end function
+
+  private function isQuickBrickAuthTokenExpired()
+    authDataExpireTime = asInteger(m.authDataNode.authenticatedProvider.expireTime)
+    expireTime = m.date.getSecondsUntil(authDataExpireTime)
+    m.log.info("auth data expires in", expireTime)
+    return expireTime <= 0
   end function
 
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
