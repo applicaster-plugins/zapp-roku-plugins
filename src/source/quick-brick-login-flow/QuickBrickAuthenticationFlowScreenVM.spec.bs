@@ -74,51 +74,89 @@ namespace zapp.tests
     @describe("load")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    @it("dismisses if login is not required")
+    @it("sets loading state, sends log flush, returns true, dismisses when login is not required")
     function _()
+      m.expectOnce(m.vm, "sendHttpLogsNow", [])
+      m.expectOnce(m.vm, "sendXrayLogsNow", [])
+
       m.expectCalled(m.vm.isLoginRequired(), false)
       m.expectCalled(m.vm.dismiss("success"))
 
       m.expectNotCalled(m.vm.isKeyToSkipSet)
+      m.expectNotCalled(m.vm.isLoggedIn)
+      m.expectNotCalled(m.vm.isQuickBrickAuthTokenExpired)
       m.expectNotCalled(m.vm.refreshLogin)
 
-      m.vm.load()
+      m.assertTrue(m.vm.load())
+      m.assertEqual(m.vm.state, "loading")
     end function
 
-    @it("dismisses if logged in")
+    @it("dismisses when logged in and Quick Brick auth token is not expired")
     function _()
+      m.expectOnce(m.vm, "sendHttpLogsNow", [])
+      m.expectOnce(m.vm, "sendXrayLogsNow", [])
+
       m.expectCalled(m.vm.isLoginRequired(), true)
       m.expectCalled(m.vm.isKeyToSkipSet(), false)
       m.expectCalled(m.vm.isLoggedIn(), true)
+      m.expectCalled(m.vm.isQuickBrickAuthTokenExpired(), false)
       m.expectCalled(m.vm.dismiss("success"))
 
       m.expectNotCalled(m.vm.refreshLogin)
 
-      m.vm.load()
+      m.assertTrue(m.vm.load())
+      m.assertEqual(m.vm.state, "loading")
     end function
 
-    @it("dismisses if isKeyToSkipSet")
+    @it("refreshes when logged in but Quick Brick auth token is expired")
     function _()
+      m.expectOnce(m.vm, "sendHttpLogsNow", [])
+      m.expectOnce(m.vm, "sendXrayLogsNow", [])
+
+      m.expectCalled(m.vm.isLoginRequired(), true)
+      m.expectCalled(m.vm.isKeyToSkipSet(), false)
+      m.expectCalled(m.vm.isLoggedIn(), true)
+      m.expectCalled(m.vm.isQuickBrickAuthTokenExpired(), true)
+      m.expectCalled(m.vm.refreshLogin())
+
+      m.expectNotCalled(m.vm.dismiss)
+
+      m.assertTrue(m.vm.load())
+      m.assertEqual(m.vm.state, "loading")
+    end function
+
+    @it("dismisses when skip key is set even if login would otherwise be required")
+    function _()
+      m.expectOnce(m.vm, "sendHttpLogsNow", [])
+      m.expectOnce(m.vm, "sendXrayLogsNow", [])
+
       m.expectCalled(m.vm.isLoginRequired(), true)
       m.expectCalled(m.vm.isKeyToSkipSet(), true)
       m.expectCalled(m.vm.dismiss("success"))
 
       m.expectNotCalled(m.vm.isLoggedIn)
+      m.expectNotCalled(m.vm.isQuickBrickAuthTokenExpired)
       m.expectNotCalled(m.vm.refreshLogin)
 
-      m.vm.load()
+      m.assertTrue(m.vm.load())
+      m.assertEqual(m.vm.state, "loading")
     end function
 
-    @it("otherwise refreshes")
+    @it("refreshes when login is required, skip key is not set, and user is not logged in")
     function _()
+      m.expectOnce(m.vm, "sendHttpLogsNow", [])
+      m.expectOnce(m.vm, "sendXrayLogsNow", [])
+
       m.expectCalled(m.vm.isLoginRequired(), true)
       m.expectCalled(m.vm.isKeyToSkipSet(), false)
       m.expectCalled(m.vm.isLoggedIn(), false)
       m.expectCalled(m.vm.refreshLogin())
 
+      m.expectNotCalled(m.vm.isQuickBrickAuthTokenExpired)
       m.expectNotCalled(m.vm.dismiss)
 
-      m.vm.load()
+      m.assertTrue(m.vm.load())
+      m.assertEqual(m.vm.state, "loading")
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -133,16 +171,21 @@ namespace zapp.tests
     @params({ json: { extensions: { requires_authentication: false } } }, { id: "currentItem" }, false, false)
     @params({ json: { extensions: { requires_authentication: false } } }, { id: "currentItem" }, true, false)
     function _(item, currentSelection, getMatchesTypeForItem, isLoginRequired)
-      currentItem = { "id": "currentItem" }
 
       m.expectCalled(m.vm.getInstance("currentSelection", "currentItem"), item)
       m.expectCalled(m.vm.getInstance("currentSelection"), currentSelection)
-      m.expectCalled(m.vm.getMatchesTypeForItem(currentItem), getMatchesTypeForItem)
+      m.expectCalled(m.vm.getMatchesTypeForItem(currentSelection), getMatchesTypeForItem)
+
+      ' When isForcingLogin is false, checkIfLoginIsForced short-circuits and never calls isLoggedIn()
+      reachesForcedLoginCheck = item <> invalid and not (currentSelection <> invalid and getMatchesTypeForItem)
+      if reachesForcedLoginCheck
+        m.expectCalled(m.vm.getTopField("isForcingLogin"), false)
+      end if
 
       m.assertEqual(m.vm.isLoginRequired(), isLoginRequired)
     end function
 
-    @it("returns false if currentSelection invalid")
+    @it("returns true when current item and currentSelection are invalid")
     @params(invalid, invalid, false, true)
     function _(item, currentSelection, getMatchesTypeForItem, isLoginRequired)
 
