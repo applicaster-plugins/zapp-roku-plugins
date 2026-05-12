@@ -39,7 +39,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
 
 
   public function new(view)
-    super("BrightCovelayerVM")
+    super("BrightCovePlayerVM")
     m.view = view
     plugin = m.plugins.getPluginById("quick-brick-player-brightcove")
     pluginPolicyKey = plugin.getStringValue("policy_key", "")
@@ -78,6 +78,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
   end function
 
   private function createPlayer()
+    m.log.info("creating brightcove player")
     m.state = "creatingPlayer"
     m.brightcorePlayerSDK = m.view.createChild("ComponentLibrary")
     m.brightcorePlayerSDK.id = "bcLib"
@@ -233,6 +234,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   function onPlayerLoadContent(eventName)
+    m.log.info("content loaded", eventName)
     if m.currentItem = invalid and m.playMode <> "default"
       if m.bcPlayer <> invalid
         m.bcPlayer.state = "finished"
@@ -253,6 +255,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
   end function
 
   public function playItem(item, playMode = "default") as void
+    m.log.method("playItem", item.id, "playMode", playMode, "playerStopped", m.playerStopped)
     if m.playerStopped
       m.removeChildrenAfterIndex(m.view, 0)
       m.bcPlayer = invalid
@@ -290,11 +293,20 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
     else
       m.itemToPlay = item
       m.playMode = playMode
-      m.stopBcPlayer()
+      if m.isSdkV2 and m.sdkIsReady and not asBoolean(m.nextVideoIsInvalid)
+        m.currentItem = item
+        m.playMode = playMode
+        m.playerItem = m.getPlayerItem(m.currentItem)
+
+        m.playBrightcoveItem(m.bcPlayer, m.playerItem)
+      else
+        m.stopBcPlayer()
+      end if
     end if
   end function
 
   function onVideoResponse(data)
+    m.log.info("video response received")
     if asBoolean(data.isok)
       m.playerItem.url = asString(data.data.sources[0].src)
       m.playBrightcoveItem(m.bcPlayer, m.playerItem)
@@ -435,13 +447,16 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
   end function
 
   private function stopBcPlayer() as void
+    m.log.method("stopBcPlayer")
+    m.playerStopped = true
+
     if m.bcPlayer = invalid
       return
     end if
     ' SDK 2.x may clear or change on.sdkReady after startup; v1 relied on sdkReady before close.
     canClose = m.isSdkV2 or asBoolean(m.bcPlayer.on.sdkReady)
     if canClose
-      m.log.info("stopBcPlayer")
+      m.log.info("stopBcPlayer sdk2")
       m.bcPlayer.callFunc("close")
       m.bcPlayer = invalid
     end if
