@@ -408,6 +408,30 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
     'm.selectProgram(programIndex)
   end function
 
+  '//TODO: do we need to change focus style on live program?
+  function isLiveCellInFocus(programIndex)
+    style = m.riversJsonData.styles
+    if m.channelFocused <> -1
+      channelItem = m.content.getChild(m.channelFocused)
+      if channelItem <> invalid
+        liveIndex = m.getLiveProgramIndexForChannel(channelItem)
+        if programIndex = liveIndex
+          program = channelItem.getChild(programIndex)
+          if program <> invalid
+            m.timeGrid.focusBitmapBlendColor = zapp.viewUtils.transposeUIBColor(style.program_background_color, "#FFFFFF")
+            m.timeGrid.programTitleFocusedColor = zapp.viewUtils.transposeUIBColor(style.label1_live_focused_font_color, "#FFFFFF")
+          end if
+        else
+          m.timeGrid.focusBitmapBlendColor = zapp.viewUtils.transposeUIBColor(style.program_future_focused_background_color, "#FFFFFF")
+          m.timeGrid.programTitleFocusedColor = zapp.viewUtils.transposeUIBColor(style.label1_future_focused_font_color, "#FFFFFF")
+        end if
+      end if
+    else
+      m.timeGrid.focusBitmapBlendColor = zapp.viewUtils.transposeUIBColor(style.program_future_focused_background_color, "#FFFFFF")
+      m.timeGrid.programTitleFocusedColor = zapp.viewUtils.transposeUIBColor(style.label1_future_focused_font_color, "#FFFFFF")
+    end if
+  end function
+
   public function onSelectedIndexChangeMenu(index)
     m.log.info("selected index", index)
     item = m.menuButtons[index]
@@ -641,7 +665,7 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       timeGrid.programBackgroundBitmapUri = "empty"
     else
       if asBoolean(style.isPlatformAlignment)
-        blendColor = zapp.viewUtils.transposeUIBColor(style.program_live_background_color, "#FFFFFFFF")
+        blendColor = zapp.viewUtils.transposeUIBColor(style.program_future_background_color, "#FFFFFFFF")
         cornerRadius = zapp.viewUtils.getUIBInt(style, "grid_item_corner_radius")
         timeGrid.programBackgroundBitmapUri = "empty"
         zapp.viewUtils.drawImage(timeGrid, zapp.viewUtils.setPosterStyleForDraw(timeGrid.itemSize[0], timeGrid.itemSize[1], 0), false, "programBackgroundBitmapUri", blendColor, 10)
@@ -650,8 +674,8 @@ class QuickBrickEpgScreenVM extends zapp.uib.ScreenVM
       end if
     end if
     timeGrid.focusBitmapBlendColor = zapp.viewUtils.transposeUIBColor(style.program_background_color, "#FFFFFF")
-    timeGrid.programTitleColor = zapp.viewUtils.transposeUIBColor(style.label1_live_font_color, "#FFFFFF")
-    timeGrid.programTitleFocusedColor = zapp.viewUtils.transposeUIBColor(style.label1_live_focused_font_color, "#FFFFFF")
+    timeGrid.programTitleColor = zapp.viewUtils.transposeUIBColor(style.label1_future_font_color, "#FFFFFF")
+    timeGrid.programTitleFocusedColor = zapp.viewUtils.transposeUIBColor(style.label1_future_focused_font_color, "#FFFFFF")
     timeGrid.programHorizMargin = programLeftPadding + programRightPadding
     timeGrid.programTitleFont = m.resolveFont(programFontName, programFontSize)
   end function
