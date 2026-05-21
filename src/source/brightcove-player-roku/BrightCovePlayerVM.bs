@@ -307,9 +307,15 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
 
   function onVideoResponse(data)
     m.log.info("video response received")
-    if asBoolean(data.isok)
-      m.playerItem.url = asString(data.data.sources[0].src)
-      m.playBrightcoveItem(m.bcPlayer, m.playerItem)
+    if asBoolean(data.isOk)
+      url = asString(data.data.sources[0].src)
+      if url <> ""
+        m.log.info("video url found in response, playing video")
+        m.playerItem.url = url
+        m.playBrightcoveItem(m.bcPlayer, m.playerItem)
+      else
+        m.errorResult("Error loading video")
+      end if
     else
       m.errorResult("Error loading video")
     end if
