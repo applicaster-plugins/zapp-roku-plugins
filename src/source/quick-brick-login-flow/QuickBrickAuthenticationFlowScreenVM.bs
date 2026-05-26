@@ -15,6 +15,7 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
   private authTask as mc.types.node
   private skipTypes = ""
   private skipKey = ""
+  private logoutKey = "someKey"
   private flowType = "signup"
   private date = new zapp.Date()
 
@@ -50,7 +51,10 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
       m.log.info("skip key set")
       m.dismiss("success")
     else if m.isLoggedIn()
-      if m.isQuickBrickAuthTokenExpired()
+      if m.isLogoutKeySet()
+        m.log.info("user is logged in and logout key is set")
+        m.showLogoutScreen()
+      else if m.isQuickBrickAuthTokenExpired()
         m.log.info("user appears logged in but stored token expired; forcing refresh via verify")
         m.refreshLogin()
       else
@@ -115,6 +119,14 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
     }, m.getScreenProperties())
   end function
 
+  private function showLogoutScreen()
+    m.log.info("showing logout screen")
+    screen = m.createSubScreen("FlowLogoutScreen")
+    screen.isDisplayedInDynamicContainer = true
+    m.setScreenParent(screen)
+    m.toggleSubScreen(screen)
+  end function
+
   private function createSubScreen(screenType as string)
     screen = m.createInstance(screenType, invalid, `${screenType}`)
     if screen <> invalid
@@ -158,6 +170,8 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
       m.toggleSubScreen(invalid)
       m.toggleNavMenuVisible(true, true)
       m.dismiss("cancel")
+    else if state = "loading" or state = "ready"
+      m.state = state
     end if
   end function
 
@@ -257,6 +271,10 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
     return false
   end function
 
+  private function isLogoutKeySet()
+    return m.getTopField("isLogoutScreen")
+  end function
+
   private function getMatchesTypeForItem(currentSelection)
     return currentSelection@.getMatchesType(m.skipTypes)
   end function
@@ -275,6 +293,10 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
   end function
 
   public function isCapturingAnyKeyPress(key, press)
+    if m.isDisplayedInDynamicContainer and press and (key = "left" or key = "up" or key = "back")
+      return false
+    end if
+
     'do not anyone escape this screen!
     if press and key = "back" and not mc.getPath(m.riversJson, "general.isflowBlocker", true)
       return false
@@ -285,6 +307,10 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
 
   public function onKeyPressBack() as boolean
     m.log.method("onKeyPressBack", m.focusId)
+    if m.isDisplayedInDynamicContainer
+      return false
+    end if
+
     if m.isSubScreenVisible <> invalid and m.isSubScreenVisible
       'this should be caught by the subscreen
       return true
@@ -299,6 +325,14 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
     end if
 
     return true
+  end function
+
+  public override function onKeyPressLeft() as boolean
+    return not m.isDisplayedInDynamicContainer
+  end function
+
+  public override function onKeyPressUp() as boolean
+    return not m.isDisplayedInDynamicContainer
   end function
 
 end class

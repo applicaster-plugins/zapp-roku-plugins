@@ -1,0 +1,20 @@
+import "pkg:/source/quick-brick-login-flow/FlowLogoutScreenVM.bs"
+import "pkg:/source/roku_modules/maestro/mx/VMTransformFunctions.brs"
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Initialization
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function init()
+  m.top.isForcingMenuHidden = true
+  initializeView(m.top.findNode("logoutGroup"))
+end function
+
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+'++ Overridden methods
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+function createVM()
+  vm = new FlowLogoutScreenVM(m.top.riversJson)
+  return vm
+end function

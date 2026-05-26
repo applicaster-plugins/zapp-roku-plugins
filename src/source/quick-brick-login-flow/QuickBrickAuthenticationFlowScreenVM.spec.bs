@@ -70,6 +70,37 @@ namespace zapp.tests
       m.assertEqual(m.vm.focusId, "usernameInput")
     end function
 
+    @it("does not handle back when displayed in dynamic container")
+    function _()
+      m.vm.isDisplayedInDynamicContainer = true
+      m.expectNotCalled(m.vm.dismiss)
+      m.expectNotCalled(m.vm.exitApp)
+
+      m.assertFalse(m.vm.onKeyPressBack())
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("dynamic container key capture")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("lets parent tabs handle navigation keys inside dynamic container")
+    @params("left")
+    @params("up")
+    @params("back")
+    function _(key)
+      m.vm.isDisplayedInDynamicContainer = true
+
+      m.assertFalse(m.vm.isCapturingAnyKeyPress(key, true))
+    end function
+
+    @it("does not handle left or up inside dynamic container")
+    function _()
+      m.vm.isDisplayedInDynamicContainer = true
+
+      m.assertFalse(m.vm.onKeyPressLeft())
+      m.assertFalse(m.vm.onKeyPressUp())
+    end function
+
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("load")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -99,10 +130,30 @@ namespace zapp.tests
       m.expectCalled(m.vm.isLoginRequired(), true)
       m.expectCalled(m.vm.isKeyToSkipSet(), false)
       m.expectCalled(m.vm.isLoggedIn(), true)
+      m.expectCalled(m.vm.isLogoutKeySet(), false)
       m.expectCalled(m.vm.isQuickBrickAuthTokenExpired(), false)
       m.expectCalled(m.vm.dismiss("success"))
 
       m.expectNotCalled(m.vm.refreshLogin)
+
+      m.assertTrue(m.vm.load())
+      m.assertEqual(m.vm.state, "loading")
+    end function
+
+    @it("shows logout screen when logged in and logout key is set")
+    function _()
+      m.expectOnce(m.vm, "sendHttpLogsNow", [])
+      m.expectOnce(m.vm, "sendXrayLogsNow", [])
+
+      m.expectCalled(m.vm.isLoginRequired(), true)
+      m.expectCalled(m.vm.isKeyToSkipSet(), false)
+      m.expectCalled(m.vm.isLoggedIn(), true)
+      m.expectCalled(m.vm.isLogoutKeySet(), true)
+      m.expectCalled(m.vm.showLogoutScreen())
+
+      m.expectNotCalled(m.vm.isQuickBrickAuthTokenExpired)
+      m.expectNotCalled(m.vm.refreshLogin)
+      m.expectNotCalled(m.vm.dismiss)
 
       m.assertTrue(m.vm.load())
       m.assertEqual(m.vm.state, "loading")
@@ -116,6 +167,7 @@ namespace zapp.tests
       m.expectCalled(m.vm.isLoginRequired(), true)
       m.expectCalled(m.vm.isKeyToSkipSet(), false)
       m.expectCalled(m.vm.isLoggedIn(), true)
+      m.expectCalled(m.vm.isLogoutKeySet(), false)
       m.expectCalled(m.vm.isQuickBrickAuthTokenExpired(), true)
       m.expectCalled(m.vm.refreshLogin())
 
@@ -157,6 +209,39 @@ namespace zapp.tests
 
       m.assertTrue(m.vm.load())
       m.assertEqual(m.vm.state, "loading")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("showLogoutScreen")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("creates and displays logout screen")
+    function _()
+      screen = { "id": "logoutScreen" }
+
+      m.expectCalled(m.vm.createSubScreen("FlowLogoutScreen"), screen)
+      m.expectCalled(m.vm.setScreenParent(screen))
+      m.expectCalled(m.vm.toggleSubScreen(screen))
+
+      m.vm.showLogoutScreen()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("isLogoutKeySet")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns true when hardcoded logout key exists")
+    function _()
+      m.expectCalled(m.vm.getSessionStoreValue("quick-brick-login-flow", "someKey"), "value")
+
+      m.assertTrue(m.vm.isLogoutKeySet())
+    end function
+
+    @it("returns false when hardcoded logout key is missing")
+    function _()
+      m.expectCalled(m.vm.getSessionStoreValue("quick-brick-login-flow", "someKey"), invalid)
+
+      m.assertFalse(m.vm.isLogoutKeySet())
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

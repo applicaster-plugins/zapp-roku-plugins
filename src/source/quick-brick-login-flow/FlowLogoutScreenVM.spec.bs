@@ -1,0 +1,241 @@
+namespace zapp.tests
+  @tags("public", "auth", "vm")
+  @suite("FlowLogoutScreenVMTests")
+  class FlowLogoutScreenVMTests extends tests.BaseTestSuite
+    private riversJson
+    private vm
+
+    protected override function beforeEach()
+      super.beforeEach()
+
+      m.riversJson = {
+        "id": "flowLogoutScreen"
+        "styles": {
+          "background_color": "#000000ff"
+        }
+        "localizations": {
+          "sign_out_title": "Logout"
+        }
+      }
+
+      m.vm = new FlowLogoutScreenVM(m.riversJson)
+      m.vm.initialize()
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("constructor")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("sets initial focus and logout text")
+    function _()
+      m.assertEqual(m.vm.focusId, "logoutButton")
+      m.assertEqual(m.vm.titleText, "Logout")
+      m.assertEqual(m.vm.titleStyle.horizAlign, "center")
+      m.assertEqual(m.vm.logoutButtonStyle.text, "Logout")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("load")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("hides loading and returns true")
+    function _()
+      top = { "isForcingMenuHidden": false }
+      m.expectCalled(m.vm.getMField("top"), top)
+
+      m.vm.isLoading = true
+
+      m.assertTrue(m.vm.load())
+      m.assertFalse(m.vm.isLoading)
+      m.assertFalse(m.vm.isLoadingIndicatorActive)
+      m.assertTrue(top.isForcingMenuHidden)
+      m.assertEqual(m.vm.state, "ready")
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onLogoutButtonSelected")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("shows confirmation dialog when not loading")
+    function _()
+      m.vm.isLoading = false
+      m.expectCalled(m.vm.showLogoutConfirmationDialog())
+
+      m.vm.onLogoutButtonSelected(true)
+    end function
+
+    @it("does not logout while loading")
+    function _()
+      m.vm.isLoading = true
+      m.expectNotCalled(m.vm.logout)
+
+      m.vm.onLogoutButtonSelected(true)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("showLogoutConfirmationDialog")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("shows restart confirmation dialog")
+    function _()
+      dialog = { "id": "dialog" }
+
+      m.expectCalled(m.vm.showDialog("Log out?", "The app will restart.", ["Yes", "No"], invalid, true))
+      m.expectCalled(m.vm.getInstance("dialogMenu"), dialog)
+      m.expectCalled(m.vm.observeNodeField(dialog, "buttonSelected", m.vm.onLogoutConfirmationButtonSelected, "both"))
+
+      m.vm.showLogoutConfirmationDialog()
+
+      m.assertEqual(m.vm.dialog, dialog)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onLogoutConfirmationButtonSelected")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("logs out when yes is selected")
+    function _()
+      dialog = { "id": "dialog" }
+
+      m.expectCalled(m.vm.closeDialog(dialog))
+      m.expectCalled(m.vm.logout())
+
+      m.vm.onLogoutConfirmationButtonSelected(0, dialog)
+    end function
+
+    @it("only closes dialog when no is selected")
+    function _()
+      dialog = { "id": "dialog" }
+
+      m.expectCalled(m.vm.closeDialog(dialog))
+      m.expectNotCalled(m.vm.logout)
+
+      m.vm.onLogoutConfirmationButtonSelected(1, dialog)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("logout")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("creates logout task for quick brick login flow")
+    function _()
+      analyticsManager = {}
+      authTask = { "id": "authTask" }
+
+      m.expectCalled(m.vm.getInstance("analyticsManager"), analyticsManager)
+      m.expectOnce(analyticsManager, "trackEvent", ["Signed Out", "page_loaded", { "provider": "quick-brick-login-flow" }])
+      m.expectCalled(m.vm.createAuthTask("execLogOut", "quick-brick-login-flow", m.vm.onLogoutComplete), authTask)
+
+      m.vm.logout()
+
+      m.assertEqual(m.vm.authTask, authTask)
+      m.assertTrue(m.vm.isLoading)
+      m.assertTrue(m.vm.isLoadingIndicatorActive)
+      m.assertEqual(m.vm.state, "loading")
+    end function
+
+    @it("does not activate own loader when displayed in dynamic container")
+    function _()
+      analyticsManager = {}
+      authTask = { "id": "authTask" }
+
+      m.vm.isDisplayedInDynamicContainer = true
+      m.expectCalled(m.vm.getInstance("analyticsManager"), analyticsManager)
+      m.expectOnce(analyticsManager, "trackEvent", ["Signed Out", "page_loaded", { "provider": "quick-brick-login-flow" }])
+      m.expectCalled(m.vm.createAuthTask("execLogOut", "quick-brick-login-flow", m.vm.onLogoutComplete), authTask)
+
+      m.vm.logout()
+
+      m.assertTrue(m.vm.isLoading)
+      m.assertFalse(m.vm.isLoadingIndicatorActive)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onLogoutComplete")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("restarts app")
+    function _()
+      m.vm.isLoading = true
+      m.expectCalled(m.vm.restartApp())
+
+      m.vm.onLogoutComplete({})
+
+      m.assertFalse(m.vm.isLoading)
+      m.assertFalse(m.vm.isLoadingIndicatorActive)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("isCapturingAnyKeyPress")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("lets parent tabs handle navigation keys inside dynamic container")
+    @params("left")
+    @params("up")
+    @params("back")
+    function _(key)
+      m.vm.isDisplayedInDynamicContainer = true
+
+      m.assertFalse(m.vm.isCapturingAnyKeyPress(key, true))
+    end function
+
+    @it("captures other keys inside dynamic container")
+    @params("OK")
+    @params("right")
+    @params("down")
+    function _(key)
+      m.vm.isDisplayedInDynamicContainer = true
+
+      m.assertTrue(m.vm.isCapturingAnyKeyPress(key, true))
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onKeyPressBack")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("dismisses when not loading")
+    function _()
+      m.vm.isLoading = false
+      m.expectCalled(m.vm.dismiss("cancel"))
+
+      m.assertTrue(m.vm.onKeyPressBack())
+    end function
+
+    @it("does not handle back inside dynamic container")
+    function _()
+      m.vm.isDisplayedInDynamicContainer = true
+      m.expectNotCalled(m.vm.dismiss)
+
+      m.assertFalse(m.vm.onKeyPressBack())
+    end function
+
+    @it("does not dismiss while loading")
+    function _()
+      m.vm.isLoading = true
+      m.expectNotCalled(m.vm.dismiss)
+
+      m.assertTrue(m.vm.onKeyPressBack())
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("directional focus")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("does not handle left or up inside dynamic container")
+    function _()
+      m.vm.isDisplayedInDynamicContainer = true
+
+      m.assertFalse(m.vm.onKeyPressLeft())
+      m.assertFalse(m.vm.onKeyPressUp())
+    end function
+
+    @it("handles left and up outside dynamic container")
+    function _()
+      m.vm.isDisplayedInDynamicContainer = false
+
+      m.assertTrue(m.vm.onKeyPressLeft())
+      m.assertTrue(m.vm.onKeyPressUp())
+    end function
+
+  end class
+end namespace

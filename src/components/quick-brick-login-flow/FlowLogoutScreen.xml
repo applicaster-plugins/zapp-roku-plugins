@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='utf-8'?>
+<component
+    name='FlowLogoutScreen'
+    extends='UIBScreen'
+    vm='FlowLogoutScreenVM'>
+
+  <interface></interface>
+
+  <children>
+    <Rectangle
+        id='backgroundRectangle'
+        width='1920'
+        height='1080'
+        color='{{=zapp_viewUtils_UIBColor("background_color")}}' />
+    <mv_Poster
+        id='backgroundPoster'
+        blendColor='{{backgroundPosterColor}}'
+        style='{{=zapp_viewUtils_UIBBackgroundPoster("background")}}' />
+    <mv_Poster
+        id='logoPoster'
+        style='{{=zapp_viewUtils_UIBPoster("logo")}}' />
+
+    <mv_LayoutGroup
+        id='logoutGroup'
+        layoutDirection='vert'
+        translation='[960, 500]'
+        horizAlignment='center'
+        itemSpacings='{{itemSpacings}}'>
+      <mv_Label
+          id='titleText'
+          style='{{:titleStyle}}'
+          text='{{titleText}}'
+          width='{{=zapp_viewUtils_UIBInt("label_w")}}'
+          horizAlign='center'
+          wrap='true' />
+
+      <ZActionButton
+          id='logoutButton'
+          style='{{:logoutButtonStyle}}'
+          visible='{{isLoading:transform=mx_transform_invertBoolean}}'
+          selected='{(onLogoutButtonSelected(value))}'
+          width='{{=zapp_viewUtils_UIBInt("input_w")}}' />
+    </mv_LayoutGroup>
+
+    <LoadingIndicator
+        id='loadingIndicator'
+        width='100'
+        height='100'
+        translation='[1000,500]'
+        isActive='{{isLoadingIndicatorActive}}'
+        backgroundVisible='false'
+        text='' />
+  </children>
+</component>
