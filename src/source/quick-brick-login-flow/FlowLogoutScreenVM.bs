@@ -118,7 +118,11 @@ class FlowLogoutScreenVM extends zapp.uib.ScreenVM
     m.isLoading = false
     m.updateLoadingIndicatorActive()
     m.state = "success"
-    m.restartApp()
+    m.waitAFrame(m.appRestartTriggered, 0.5)
+  end function
+
+  private function appRestartTriggered()
+    m.restartApp({})
   end function
 
   private function updateLoadingIndicatorActive()
