@@ -17,6 +17,10 @@
         id='isForcingLogin'
         type='boolean'
         value='false' />
+    <field
+        id='isLogoutScreen'
+        type='boolean'
+        value='false' />
   </interface>
 
   <children>

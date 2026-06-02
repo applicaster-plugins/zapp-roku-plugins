@@ -1,0 +1,164 @@
+import "pkg:/source/UIBuilder/view/ScreenVM.bs"
+import "pkg:/source/lib/ViewUtils.bs"
+import "pkg:/source/zapp/Reference.bs"
+
+class FlowLogoutScreenVM extends zapp.uib.ScreenVM
+
+  public itemSpacings = [10]
+  public titleStyle = invalid
+  public logoutButtonStyle = invalid
+  public titleText = "Logout"
+  public backgroundPosterColor = "#ffffff00"
+  public isLoadingIndicatorActive = false
+
+  private providerId = "quick-brick-login-flow"
+  private authTask
+  private dialog = invalid
+
+  public function new(riversJson)
+    super(riversJson, "FlowLogoutScreenVM")
+    m.focusId = "logoutButton"
+    m.processStyles(m.riversJson.styles)
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Overridden
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public override function createContent()
+    m.log.info("createContent is overridden in this screen")
+  end function
+
+  public override function load() as boolean
+    m.getMField("top").isForcingMenuHidden = true
+    m.isLoading = false
+    m.updateLoadingIndicatorActive()
+    m.state = "ready"
+    return true
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ styles
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  function processStyles(styles)
+    m.itemSpacings = zapp.viewUtils.stringToArray(asString(m.riversJson.styles.input_login_spacing, "10"))
+    m.titleText = m.getLogoutText()
+    m.titleStyle = zapp.viewUtils.makeUIBLabelStyle(styles, "title")
+    m.titleStyle.horizAlign = "center"
+    m.titleStyle.text = m.titleText
+    m.logoutButtonStyle = zapp.viewUtils.makeUIBButtonStyle(styles, "button", "custom", m.titleText)
+    m.backgroundPosterColor = zapp.viewUtils.transposeUIBColor(styles["background_color"], "#ffffff")
+  end function
+
+  private function getLogoutText() as string
+    logoutText = asString(m.localizations.sign_out_title)
+    if logoutText = ""
+      logoutText = asString(m.localizations.logout_title_text)
+    end if
+    if logoutText = ""
+      logoutText = "Logout"
+    end if
+    return logoutText
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ callbacks
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public function onLogoutButtonSelected(value)
+    m.log.method("onLogoutButtonSelected")
+
+    if not m.isLoading
+      if asBoolean(m.riversJson.rules.logout_confirmation)
+        m.showLogoutConfirmationDialog()
+      else
+        m.logout()
+      end if
+    end if
+  end function
+
+  private function showLogoutConfirmationDialog()
+    m.showDialog(asString(m.localizations.logout_dialog_title), asString(m.localizations.logout_dialog_message), [asString(m.localizations.confirmation_alert_action_title), asString(m.localizations.logout_dialog_cancel)], invalid, true)
+    m.dialog = m.getInstance("dialogMenu")
+    m.observeNodeField(m.dialog, "buttonSelected", m.onLogoutConfirmationButtonSelected, "both")
+  end function
+
+  function onLogoutConfirmationButtonSelected(buttonSelected, dialog)
+    m.log.method("onLogoutConfirmationButtonSelected")
+    m.closeDialog(dialog)
+
+    if buttonSelected = 0
+      m.logout()
+    end if
+  end function
+
+  function logout()
+    m.log.method("logout")
+
+    defaultId = m.providerId
+    analyticsManager = m.getInstance("analyticsManager")
+    analyticsManager@.trackEvent("Signed Out", "page_loaded", { "provider": defaultId })
+
+    if m.providerId = invalid or m.providerId.trim() = ""
+      m.log.info("logging out all providers")
+      m.authTask = m.createAuthTask("execLogOutAll", invalid, m.onLogoutComplete)
+    else
+      m.log.info("logging out with specific provider", m.providerId)
+      m.authTask = m.createAuthTask("execLogOut", m.providerId, m.onLogoutComplete)
+    end if
+
+    m.isLoading = true
+    m.updateLoadingIndicatorActive()
+    m.state = "loading"
+  end function
+
+  function onLogoutComplete(result)
+    m.log.method("onLogoutComplete")
+    m.isLoading = false
+    m.updateLoadingIndicatorActive()
+    m.state = "success"
+    m.waitAFrame(m.appRestartTriggered, 0.5)
+  end function
+
+  private function appRestartTriggered()
+    m.restartApp({})
+  end function
+
+  private function updateLoadingIndicatorActive()
+    m.isLoadingIndicatorActive = m.isLoading and not m.isDisplayedInDynamicContainer
+  end function
+
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  '++ Key Handling
+  '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  public function isCapturingAnyKeyPress(key, press)
+    if m.isDisplayedInDynamicContainer and (key = "left" or key = "up" or key = "back")
+      return false
+    end if
+
+    return true
+  end function
+
+  public function onKeyPressBack() as boolean
+    if m.isDisplayedInDynamicContainer
+      return false
+    end if
+
+    if not m.isLoading
+      m.dismiss("cancel")
+    end if
+
+    return true
+  end function
+
+  public override function onKeyPressLeft() as boolean
+    return not m.isDisplayedInDynamicContainer
+  end function
+
+  public override function onKeyPressUp() as boolean
+    return not m.isDisplayedInDynamicContainer
+  end function
+
+end class
