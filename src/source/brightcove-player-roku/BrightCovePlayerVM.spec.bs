@@ -677,6 +677,114 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("onSSAIEvent")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("sends ad request for vmap-request")
+    function _()
+      analytics = m.createAnalyticsSpy()
+      m.vm.analytics = analytics
+
+      m.vm.onSSAIEvent({ event: "vmap-request", data: { url: "https://ads.example.com/vmap" } })
+
+      m.assertEqual(analytics.adRequestCount, 1)
+    end function
+
+    @it("sends ad break start for raf-podstart")
+    function _()
+      analytics = m.createAnalyticsSpy()
+      adPod = { renderSequence: "preroll", adcount: 2 }
+      m.vm.analytics = analytics
+
+      m.expectCalled(m.vm.sendNotification("adBreak", "started"))
+
+      m.vm.onSSAIEvent({ event: "raf-podstart", data: adPod })
+
+      m.assertEqual(analytics.adBreakStartCount, 1)
+      m.assertEqual(analytics.lastAdBreakStart, adPod)
+    end function
+
+    @it("sends ad start for raf-impression")
+    function _()
+      analytics = m.createAnalyticsSpy()
+      adData = { ad: { adTitle: "Ad 1" }, adIndex: 1 }
+      m.vm.analytics = analytics
+
+      m.vm.onSSAIEvent({ event: "raf-impression", data: adData })
+
+      m.assertEqual(analytics.lastTrackingEventType, "Start")
+      m.assertEqual(analytics.lastTrackingContext, adData)
+    end function
+
+    @it("sends ad complete for raf-complete")
+    function _()
+      analytics = m.createAnalyticsSpy()
+      adData = { ad: { adTitle: "Ad 1" }, adIndex: 1 }
+      m.vm.analytics = analytics
+
+      m.vm.onSSAIEvent({ event: "raf-complete", data: adData })
+
+      m.assertEqual(analytics.lastTrackingEventType, "Complete")
+      m.assertEqual(analytics.lastTrackingContext, adData)
+    end function
+
+    @it("sends ad break end for raf-podcomplete")
+    function _()
+      analytics = m.createAnalyticsSpy()
+      m.vm.analytics = analytics
+
+      m.expectCalled(m.vm.sendNotification("adBreak", "finished"))
+
+      m.vm.onSSAIEvent({ event: "raf-podcomplete", data: { renderSequence: "preroll" } })
+
+      m.assertEqual(analytics.adBreakEndCount, 1)
+    end function
+
+    @it("sends ad error for error events")
+    @params("error")
+    @params("aderror")
+    function _(eventName)
+      analytics = m.createAnalyticsSpy()
+      errorData = { errMsg: "VMAP failed" }
+      m.vm.analytics = analytics
+
+      m.vm.onSSAIEvent({ event: eventName, data: errorData })
+
+      m.assertEqual(analytics.lastTrackingEventType, "Error")
+      m.assertEqual(analytics.lastTrackingContext, errorData)
+    end function
+
+    @it("keeps legacy SSAI ad event names supported")
+    @params("start", "Start")
+    @params("adstart", "Start")
+    @params("complete", "Complete")
+    @params("adcomplete", "Complete")
+    function _(eventName, expectedTrackingType)
+      analytics = m.createAnalyticsSpy()
+      adData = { adIndex: 0 }
+      m.vm.analytics = analytics
+
+      m.vm.onSSAIEvent({ event: eventName, data: adData })
+
+      m.assertEqual(analytics.lastTrackingEventType, expectedTrackingType)
+      m.assertEqual(analytics.lastTrackingContext, adData)
+    end function
+
+    @it("closes analytics session for raf-close")
+    function _()
+      analytics = m.createAnalyticsSpy()
+      m.vm.analytics = analytics
+      m.vm.analyticsSessionEnded = false
+
+      m.vm.onSSAIEvent({ event: "raf-close", data: {} })
+
+      m.assertEqual(analytics.playerClosedCount, 1)
+      m.assertEqual(analytics.videoEndCount, 1)
+      m.assertEqual(analytics.playerSessionEndCount, 1)
+      m.assertTrue(m.vm.analyticsSessionEnded)
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("isCapturingAnyKeyPress")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -694,6 +802,43 @@ namespace zapp.tests
       m.expectCalled(m.vm.sendNotification(mc.createNotification("isVideoControlsOkayPressed", true)))
 
       m.vm.isCapturingAnyKeyPress("OK", true)
+    end function
+
+    private function createAnalyticsSpy()
+      return {
+        adRequestCount: 0
+        adBreakStartCount: 0
+        adBreakEndCount: 0
+        playerClosedCount: 0
+        videoEndCount: 0
+        playerSessionEndCount: 0
+        lastAdBreakStart: invalid
+        lastTrackingEventType: invalid
+        lastTrackingContext: invalid
+        adRequest: function()
+          m.adRequestCount = m.adRequestCount + 1
+        end function
+        adBreakStart: function(adPod)
+          m.adBreakStartCount = m.adBreakStartCount + 1
+          m.lastAdBreakStart = adPod
+        end function
+        adBreakEnd: function()
+          m.adBreakEndCount = m.adBreakEndCount + 1
+        end function
+        adTrackingEvent: function(eventType, ctx)
+          m.lastTrackingEventType = eventType
+          m.lastTrackingContext = ctx
+        end function
+        playerClosed: function()
+          m.playerClosedCount = m.playerClosedCount + 1
+        end function
+        videoEnd: function()
+          m.videoEndCount = m.videoEndCount + 1
+        end function
+        playerSessionEnd: function()
+          m.playerSessionEndCount = m.playerSessionEndCount + 1
+        end function
+      }
     end function
 
   end class

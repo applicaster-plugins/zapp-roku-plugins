@@ -4,6 +4,7 @@ import "pkg:/source/lib/ViewUtils.bs"
 import "pkg:/source/roku_modules/maestro/core/Notification.brs"
 import "pkg:/source/roku_video_player/AdBreakInfo.bs"
 import "pkg:/source/roku_video_player/RafManager.bs"
+import "pkg:/source/video/analytics/VideoAnalyticsManager.bs"
 
 class BrightCovePlayerVM extends zapp.BaseZappVM
 
@@ -30,6 +31,10 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
   private itemToPlay = invalid
   private playerItem = invalid
   private nextVideoIsInvalid = invalid
+  private analytics = invalid
+  private lastPlayedPosition = -1
+  private lastHeartbeatPosition = -1
+  private analyticsSessionEnded = true
   private viewerIdStorageKey = ""
   private isSdkV2 = false
   private baseUrl = "https://edge.api.brightcove.com/playback/v1"
@@ -52,6 +57,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
     m.rafUrl = mc.getPath(view.riversJson, "general.raf_url", "")
     m.viewerIdStorageKey = pluginViewerIdStorageKey <> "" ? pluginViewerIdStorageKey : mc.getPath(view.riversJson, "general.viewer_identifier_storage_key", "quick-brick-login-flow.account_token")
     m.isSdkV2 = m.isBrightcoveSdkV2OrNewer()
+    m.analytics = new zapp.video.VideoAnalyticsManager()
   end function
 
   override function initialize()
@@ -174,6 +180,8 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
       user: m.getAccountId()
       destination: ""
       source: ""
+      video: ""
+      dropped_frames: ""
       eventOut: {} ' read-only
     })
 
@@ -219,6 +227,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
     m.observeNodeField(bcPlayer.on, "error", m.onBrightcovePlayerStateChange)
     m.observeNodeField(bcPlayer.on, "close", m.onPlayerClose)
     m.observeNodeField(bcPlayer.on, "load", m.onPlayerLoadContent)
+    m.observeNodeField(bcPlayer, "state", m.onPlayerStateChange)
     m.observeNodeField(bcPlayer, "position", m.onPlayerCurrentTimeChange)
     m.observeNodeField(bcPlayer, "duration", m.onPlayerCurrentDurationChange)
     m.observeNodeField(bcPlayer.csai, "event", m.onCSAIEvent)
@@ -277,6 +286,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
       m.currentItem = item
       m.playMode = playMode
       m.playerItem = m.getPlayerItem(m.currentItem)
+      m.initializeAnalytics()
 
       if m.sdkIsReady
         m.sendNotification("videoPlayerState", "buffering")
@@ -297,6 +307,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
         m.currentItem = item
         m.playMode = playMode
         m.playerItem = m.getPlayerItem(m.currentItem)
+        m.initializeAnalytics()
 
         m.playBrightcoveItem(m.bcPlayer, m.playerItem)
       else
@@ -312,6 +323,8 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
       if url <> ""
         m.log.info("video url found in response, playing video")
         m.playerItem.url = url
+        m.playerItem.id = asString(data.data.id, m.playerItem.id)
+        m.playerItem.video_id = asString(data.data.id, m.playerItem.video_id)
         m.playBrightcoveItem(m.bcPlayer, m.playerItem)
       else
         m.errorResult("Error loading video")
@@ -333,9 +346,20 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
       keySystem = asString(m.playerItem.drmParams.keySystem)
       videoMetadata.sources = m.getModifiedSources(sources, keySystem)
       videoMetadata.playStart = m.currentItem.playStart
+      videoMetadata.id = asString(videoMetadata.id, m.playerItem.id)
+      videoMetadata.reference_id = asString(videoMetadata.reference_id, m.playerItem.video_id)
 
       m.checkForSSAI(videoMetadata)
+      m.log.info("Brightcove analytics ids before load", {
+        itemId: asString(m.currentItem.id)
+        playerItemId: asString(m.playerItem.id)
+        playerItemVideoId: asString(m.playerItem.video_id)
+        brightcoveId: asString(videoMetadata.id)
+        referenceId: asString(videoMetadata.reference_id)
+      })
       m.bcPlayer.callFunc("load", videoMetadata)
+      m.analytics.videoStart(m.view, m.currentItem)
+      m.analytics.playerPresented()
     end if
   end function
 
@@ -374,7 +398,15 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
       bcPlayer.control = "stop"
       bcPlayer.content = invalid
       if asString(m.currentItem.json.extensions.brightcove.video_id, invalid) = invalid
+        m.log.info("Brightcove analytics ids before loadCustom", {
+          itemId: asString(m.currentItem.id)
+          playerItemId: asString(playerItem.id)
+          playerItemVideoId: asString(playerItem.video_id)
+          url: asString(playerItem.url)
+        })
         bcPlayer.callFunc("loadCustom", playerItem)
+        m.analytics.videoStart(m.view, m.currentItem)
+        m.analytics.playerPresented()
         bcPlayer.control = "play"
       else
         getRequestVideoParams = m.getVideoNodeParams()
@@ -443,6 +475,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
 
   public function stopItem()
     m.log.method("stopItem")
+    m.finalizeAnalytics()
     m.stopBcPlayer()
     m.pendingPlayerItem = invalid
     m.currentItem = invalid
@@ -497,8 +530,34 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
 
   end function
 
+  private function onPlayerStateChange(state) as void
+    if state = "playing"
+      if m.lastPlayedPosition = -1
+        m.analytics.bufferingFinish()
+        m.analytics.videoContentStarted()
+        m.lastPlayedPosition = 0
+      else
+        m.analytics.videoResume()
+      end if
+
+      if m.lastPlayedPosition <> -1 and m.lastPlayedPosition <> m.view.position
+        m.analytics.videoSeek(m.view.position)
+      end if
+      m.lastPlayedPosition = m.view.position
+    else if state = "paused"
+      m.analytics.videoPause()
+    else if state = "buffering"
+      m.analytics.bufferingStart()
+    else if state = "finished"
+      m.analytics.videoComplete()
+    else if state = "error"
+      m.onVideoErrorAnalytic()
+    end if
+  end function
+
   private function onPlayerStart(state) as void
     m.log.info("brightcove player started", state)
+    m.analytics.playerStart()
     if m.playMode <> "default"
       if m.top.getParent() <> invalid
         m.top.getParent().getParent().visible = true
@@ -517,6 +576,11 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
   end function
 
   private function onPlayerCurrentTimeChange(currentTime)
+    currentPosition = Int(currentTime)
+    if currentPosition <> m.lastHeartbeatPosition and (currentPosition mod 15) = 0
+      m.analytics.videoHeartbeat()
+      m.lastHeartbeatPosition = currentPosition
+    end if
     m.view.position = currentTime
   end function
 
@@ -529,6 +593,8 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
   private function onPlayerClose(event)
     m.log.method("onPlayerClose", event)
     m.playerStopped = true
+    m.analytics.playerClosed()
+    m.finalizeAnalytics()
     if m.itemToPlay <> invalid
       m.playItem(m.itemToPlay, m.playMode)
     end if
@@ -540,13 +606,17 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
         if m.videoNode <> invalid
           m.videoNode.control = "pause"
           m.videoNode.getChild(0).seekMode = "accurate"
+          m.analytics.videoSeek(seekValue)
           m.videoNode.seek = seekValue + 0.5
+          m.analytics.videoSeekEnd()
           m.videoNode = m.bcPlayer.getChild(3)
         end if
       else
         m.bcPlayer.control = "pause"
         m.bcPlayer.seekMode = "accurate"
+        m.analytics.videoSeek(seekValue)
         m.bcPlayer.seek = seekValue + 0.5
+        m.analytics.videoSeekEnd()
       end if
     end if
   end function
@@ -559,14 +629,17 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
       video = m.getVideoNode()
       m.observeNodeField(video, "position", m.onPlayerCurrentTimeChange)
       m.rafStarted = true
+      m.analytics.adRequest()
     else if eventName = "raf-podstart"
       video = m.getVideoNode()
       m.unobserveNodeField(video, "position", m.onPlayerCurrentTimeChange)
       m.sendNotification("adBreak", "started")
+      m.analytics.adBreakStart(ev)
     else if eventName = "raf-podcomplete"
       video = m.getVideoNode()
       m.observeNodeField(video, "position", m.onPlayerCurrentTimeChange)
       m.sendNotification("adBreak", "finished")
+      m.analytics.adBreakEnd()
     else if eventName = "raf-position" or eventName = "raf-progress"
       video = m.getVideoNode()
       video.duration = video.pauseBufferEnd
@@ -589,6 +662,33 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
 
   function onSSAIEvent(ev)
     ? "SSAI Event: " ev
+    eventName = asString(ev.event)
+    eventData = asAA(ev.data, ev)
+
+    if eventName = "error"
+      m.analytics.adTrackingEvent("Error", eventData)
+    else if eventName = "vmap-request"
+      m.analytics.adRequest()
+    else if eventName = "raf-podstart"
+      m.sendNotification("adBreak", "started")
+      m.analytics.adBreakStart(eventData)
+    else if eventName = "raf-impression"
+      m.analytics.adTrackingEvent("Start", eventData)
+    else if eventName = "raf-complete"
+      m.analytics.adTrackingEvent("Complete", eventData)
+    else if eventName = "raf-podcomplete"
+      m.sendNotification("adBreak", "finished")
+      m.analytics.adBreakEnd()
+    else if eventName = "raf-close"
+      m.analytics.playerClosed()
+      m.finalizeAnalytics()
+    else if eventName = "start" or eventName = "adstart"
+      m.analytics.adTrackingEvent("Start", eventData)
+    else if eventName = "complete" or eventName = "adcomplete"
+      m.analytics.adTrackingEvent("Complete", eventData)
+    else if eventName = "aderror"
+      m.analytics.adTrackingEvent("Error", eventData)
+    end if
   end function
 
   function isCapturingAnyKeyPress(key, press) as boolean
@@ -640,16 +740,30 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
     end if
   end function
 
+  private function onVideoErrorAnalytic()
+    if not m.analyticsSessionEnded
+      errorMessage = asString(m.bcPlayer.on.error.message, "Playback error")
+      m.analytics.videoError(errorMessage)
+      m.finalizeAnalytics()
+    end if
+  end function
+
   private function finishResult()
     m.log.info("finishResult")
+    m.finalizeAnalytics()
     m.view.playbackResult = m.makeResult("finished", "")
     m.view.isPlaybackFinished = true
+    m.analytics.videoComplete()
     m.state = "ready"
   end function
 
   private function errorResult(message = "Error during playback")
     m.log.info("errorResult")
-    errorMessage = asString(m.bcPlayer.on.error.message, message)
+    errorMessage = message
+    if m.bcPlayer <> invalid
+      errorMessage = asString(m.bcPlayer.on.error.message, message)
+    end if
+    m.onVideoErrorAnalytic()
     m.view.playbackResult = m.makeResult("error", errorMessage)
     m.view.isPlaybackFinished = true
     m.state = "error"
@@ -660,7 +774,26 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
   end function
 
   override function destroy()
+    m.finalizeAnalytics()
     'video player is never destroyed
+  end function
+
+  private function initializeAnalytics()
+    if m.analytics = invalid
+      m.analytics = new zapp.video.VideoAnalyticsManager()
+    end if
+    m.lastPlayedPosition = -1
+    m.lastHeartbeatPosition = -1
+    m.analyticsSessionEnded = false
+    m.analytics.videoInit(m.view, m.currentItem)
+  end function
+
+  private function finalizeAnalytics()
+    if m.analytics <> invalid and not m.analyticsSessionEnded
+      m.analytics.videoEnd()
+      m.analytics.playerSessionEnd()
+      m.analyticsSessionEnded = true
+    end if
   end function
 
 
