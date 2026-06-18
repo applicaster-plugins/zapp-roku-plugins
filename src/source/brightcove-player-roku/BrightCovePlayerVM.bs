@@ -104,7 +104,6 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
         m.playItem(m.pendingPlayerItem, m.playMode)
       end if
     else if status = "error"
-      m.log.error("sdk failed to load")
       m.state = "error"
     end if
   end function
@@ -264,14 +263,12 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
   end function
 
   public function playItem(item, playMode = "default") as void
-    m.log.method("playItem", item.id, "playMode", playMode, "playerStopped", m.playerStopped)
     if m.playerStopped
       m.removeChildrenAfterIndex(m.view, 0)
       m.bcPlayer = invalid
       m.itemToPlay = invalid
 
       if m.accountId = "" or m.policyKey = ""
-        m.log.error("account id or policy key is missing")
         m.errorResult("Account id is missing")
         return
       end if
@@ -280,7 +277,6 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
         m.errorResult("Item is invalid")
         return
       end if
-      m.log.method("play brightcove Item ", item.id)
       m.top = m.getMField("top")
 
       m.currentItem = item
@@ -291,13 +287,11 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
       if m.sdkIsReady
         m.sendNotification("videoPlayerState", "buffering")
         m.startBCPlayer()
-        m.log.info("playing with player item", formatJson(m.playerItem))
       else
         m.bcPlayer = invalid
       end if
 
       if m.bcPlayer = invalid
-        m.log.warn("player is not ready yet; setting this item as pending")
         m.pendingPlayerItem = m.playerItem
       end if
     else
@@ -335,7 +329,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
   end function
 
   function onGetVideoResponse(data)
-    m.log.info("get video response", data)
+    m.log.info("get video response")
     if not asBoolean(data.aborted) and data.code >= 200 and data.code < 300
       videoMetadata = data.body
       if type(videoMetadata) = "roString"
@@ -350,13 +344,6 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
       videoMetadata.reference_id = asString(videoMetadata.reference_id, m.playerItem.video_id)
 
       m.checkForSSAI(videoMetadata)
-      m.log.info("Brightcove analytics ids before load", {
-        itemId: asString(m.currentItem.id)
-        playerItemId: asString(m.playerItem.id)
-        playerItemVideoId: asString(m.playerItem.video_id)
-        brightcoveId: asString(videoMetadata.id)
-        referenceId: asString(videoMetadata.reference_id)
-      })
       m.bcPlayer.callFunc("load", videoMetadata)
       m.analytics.videoStart(m.view, m.currentItem)
       m.analytics.playerPresented()
@@ -398,12 +385,6 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
       bcPlayer.control = "stop"
       bcPlayer.content = invalid
       if asString(m.currentItem.json.extensions.brightcove.video_id, invalid) = invalid
-        m.log.info("Brightcove analytics ids before loadCustom", {
-          itemId: asString(m.currentItem.id)
-          playerItemId: asString(playerItem.id)
-          playerItemVideoId: asString(playerItem.video_id)
-          url: asString(playerItem.url)
-        })
         bcPlayer.callFunc("loadCustom", playerItem)
         m.analytics.videoStart(m.view, m.currentItem)
         m.analytics.playerPresented()
@@ -474,7 +455,6 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
   end function
 
   public function stopItem()
-    m.log.method("stopItem")
     m.finalizeAnalytics()
     m.stopBcPlayer()
     m.pendingPlayerItem = invalid
