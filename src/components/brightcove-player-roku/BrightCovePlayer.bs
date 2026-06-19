@@ -6,11 +6,11 @@ end function
 
 function onControlChange()
   m.log.info("onControlChange", m.top.control)
-
-  if m.top.control = "play"
-    m.vm.player.callFunc(m.vm.playerFunctions.PLAY, invalid)
-  end if
-
+    if m.vm <> invalid and m.vm.bcPlayer <> invalid
+        if m.top.control = "play" or m.top.control = "pause" or m.top.control = "stop"
+            m.vm.bcPlayer.control = m.top.control
+        end if
+    end if
 end function
 
 function initialize(args)
