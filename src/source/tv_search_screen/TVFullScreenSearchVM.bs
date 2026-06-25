@@ -130,7 +130,7 @@ class TVFullScreenSearchVM extends zapp.uib.ScreenVM
   '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   public override function createContent()
-    m.includeAdditionalComponentIfNeeded()
+    m.waitAFrame(m.includeAdditionalComponentIfNeeded, 1)
   end function
 
   private function includeAdditionalComponentIfNeeded(index = 0, refresh = true) as void
