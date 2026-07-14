@@ -32,7 +32,11 @@ end function
 
 function playItem(item, playMode = "default")
   if item.playMode = "inline"
+    settingsForInlineScreenMode(true, item)
     item = setUrlForInlineMode(item)
+  else
+    m.top.clippingRect = [0, 0, 1920, 1080]
+    m.top.videoPlayerTranslation = [0, 0]
   end if
   m.vm.playItem(item, playMode)
 end function
@@ -54,6 +58,27 @@ function setInlineView(targetView, isFullScreen, isMuted)
   if m.top <> invalid
     m.top.videoPlayerHeight = targetView.height
     m.top.videoPlayerWidth = targetView.width
+  end if
+end function
+
+function settingsForInlineScreenMode(animated, item)
+  m.log.info("set settings for Inline mode", animated)
+  m.top.clippingRect = [1, 1, m.top.videoPlayerWidth - 2, m.top.videoPlayerHeight - 2]
+  scaleToFullScreenIfNeeded(m.top.videoPlayerHeight, m.top.videoPlayerWidth)
+end function
+
+function scaleToFullScreenIfNeeded(height, width)
+  heightCheck = (width / 16) * 9
+  if heightCheck > height
+    y = (width / 16) * 9
+    yOffset = (y - height) / 2
+    m.top.videoPlayerTranslation = [0, -yOffset]
+    m.top.videoPlayerHeight = y
+  else
+    x = (height / 9) * 16
+    xOffset = (x - width) / 2
+    m.top.videoPlayerTranslation = [-xOffset, 0]
+    m.top.videoPlayerWidth = x
   end if
 end function
 

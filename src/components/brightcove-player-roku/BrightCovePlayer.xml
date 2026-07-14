@@ -6,6 +6,10 @@
 
   <interface>
     <field
+        id='videoPlayerTranslation'
+        value='[0, 0]'
+        type='array' />
+    <field
         id='videoPlayerHeight'
         value='1080'
         type='integer' />
