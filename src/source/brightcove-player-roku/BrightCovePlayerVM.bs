@@ -233,6 +233,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
     m.observeNodeField(bcPlayer.ssai, "event", m.onSSAIEvent)
     m.observeNodeField(m.view, "videoNodeSeek", m.seekOnSkipOverlay)
 
+    bcPlayer.translation = m.view.videoPlayerTranslation
     m.bcPlayer = bcPlayer
     m.state = "ready"
   end function
