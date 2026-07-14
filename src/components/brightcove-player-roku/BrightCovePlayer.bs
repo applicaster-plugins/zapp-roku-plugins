@@ -34,6 +34,9 @@ function playItem(item, playMode = "default")
   if item.playMode = "inline"
     settingsForInlineScreenMode(true, item)
     item = setUrlForInlineMode(item)
+  else
+    m.top.clippingRect = [0, 0, 1920, 1080]
+    m.top.videoPlayerTranslation = [0, 0]
   end if
   m.vm.playItem(item, playMode)
 end function
