@@ -69,12 +69,12 @@ function scaleToFullScreenIfNeeded(height, width)
   if heightCheck > height
     y = (width / 16) * 9
     yOffset = (y - height) / 2
-    'm.top.translation = [0, -yOffset]
+    m.top.videoPlayerTranslation = [0, -yOffset]
     m.top.videoPlayerHeight = y
   else
     x = (height / 9) * 16
     xOffset = (x - width) / 2
-    'm.top.translation = [-xOffset, 0]
+    m.top.videoPlayerTranslation = [-xOffset, 0]
     m.top.videoPlayerWidth = x
   end if
 end function
