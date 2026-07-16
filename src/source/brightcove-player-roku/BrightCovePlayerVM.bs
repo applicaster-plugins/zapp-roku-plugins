@@ -140,6 +140,9 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
   function startBCPlayer()
     m.log.info("creating player")
     bcPlayer = m.view.createChild("bcLib:bcPlayer")
+    deviceInfo = CreateObject("roDeviceInfo")
+    appInfo = CreateObject("roAppInfo")
+    osVersion = deviceInfo.GetOSVersion()
 
     playerInitFields = {
       streamPreference: ["hls", "dash", "mp4"],
@@ -190,7 +193,16 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
       enableDiscontinuities: true
       adMeasurements: {}
       bcovToken: ""
-      macros: {}
+      macros: {
+        platform: "Roku"
+        os: osVersion.major + "." + osVersion.minor + "." + osVersion.revision
+        model: deviceInfo.GetModel()
+        mfgr: deviceInfo.GetModelDetails().vendorName
+        rdid: deviceInfo.GetRIDA()
+        is_lat: deviceInfo.IsRIDADisabled() ? "1" : "0"
+        idtype: "rida"
+        app_id: appInfo.GetTitle().Replace(" ", "_")
+      }
     })
 
     csai = bcPlayer.csai
@@ -355,6 +367,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
     firstVideoSource = videoMetadata.sources[0]
     if firstVideoSource <> invalid and asString(firstVideoSource.vmap) <> ""
       m.log.info("enabling SSAI since VMAP url is present in video metadata")
+      videoMetadata.vmapMacros = m.bcPlayer.ssai.macros
       m.bcPlayer.ssai.enabled = true
     else
       videoMetadata.adsData = asAA(m.playerItem.adsData)
