@@ -19,8 +19,8 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
   private flowType = "signup"
   private date = new zapp.Date()
 
-  @inject("authenticationData")
-  private authDataNode
+  @injectClass("zapp.Registry")
+  private registry
 
   public function new(riversJson)
     super(riversJson, "QuickBrickAuthenticationFlowScreenVM")
@@ -239,7 +239,18 @@ class QuickBrickAuthenticationFlowScreenVM extends zapp.uib.ScreenVM
   end function
 
   private function isQuickBrickAuthTokenExpired()
-    authDataExpireTime = asInteger(m.authDataNode.authenticatedProvider.expireTime)
+    authData = m.registry.read("authPlugin", m.providerId)
+    if authData = invalid or authData.state <> "valid"
+      m.log.info("stored auth data is invalid or has no expiration", authData)
+      return true
+    end if
+
+    authDataExpireTime = asInteger(authData.expireTime, -1)
+    if authDataExpireTime = -1
+      m.log.info("stored auth data is invalid or has no expiration", authData)
+      return true
+    end if
+
     expireTime = m.date.getSecondsUntil(authDataExpireTime)
     m.log.info("auth data expires in", expireTime)
     return expireTime <= 0

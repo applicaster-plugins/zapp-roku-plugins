@@ -212,6 +212,47 @@ namespace zapp.tests
     end function
 
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    @describe("isQuickBrickAuthTokenExpired")
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @it("returns false when stored auth data is valid and has not expired")
+    function _()
+      authData = {
+        state: "valid"
+        expireTime: 1234
+      }
+
+      m.expectCalled(m.vm.registry.read("authPlugin", m.vm.providerId), authData)
+      m.expectCalled(m.vm.date.getSecondsUntil(authData.expireTime), 60)
+
+      m.assertFalse(m.vm.isQuickBrickAuthTokenExpired())
+    end function
+
+    @it("returns true when stored auth data has expired")
+    function _()
+      authData = {
+        state: "valid"
+        expireTime: 1234
+      }
+
+      m.expectCalled(m.vm.registry.read("authPlugin", m.vm.providerId), authData)
+      m.expectCalled(m.vm.date.getSecondsUntil(authData.expireTime), 0)
+
+      m.assertTrue(m.vm.isQuickBrickAuthTokenExpired())
+    end function
+
+    @it("returns true when stored auth data is unavailable or invalid")
+    @params(invalid)
+    @params({ state: "error", expireTime: 1234 })
+    @params({ state: "valid" })
+    function _(authData)
+      m.expectCalled(m.vm.registry.read("authPlugin", m.vm.providerId), authData)
+      m.expectNotCalled(m.vm.date.getSecondsUntil)
+
+      m.assertTrue(m.vm.isQuickBrickAuthTokenExpired())
+    end function
+
+    '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     @describe("showLogoutScreen")
     '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
