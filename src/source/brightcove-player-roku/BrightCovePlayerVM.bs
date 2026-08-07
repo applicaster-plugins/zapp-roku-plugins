@@ -190,7 +190,7 @@ class BrightCovePlayerVM extends zapp.BaseZappVM
     ssai = bcPlayer.ssai
     ssai.setFields({
       enabled: false
-      enableDiscontinuities: true
+      enableDiscontinuities: false
       adMeasurements: {}
       bcovToken: ""
       macros: {
