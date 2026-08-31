@@ -261,7 +261,7 @@ class YouboraVideoAnalytics extends zapp.video.BaseVideoAnalyticsPlugin
     contentMetricPath = m.contentMetricPath
     contentNodeJson = asAA(contentNode.json)
     videoOptions = {}
-    isLive = mc.getPath(contentNodeJson, contentMetricPath.isLive, false)
+    isLive = mc.getBoolean(contentNodeJson, contentMetricPath.isLive, false)
     id = mc.getPath(contentNodeJson, contentMetricPath.contentId, "")
     title = mc.getPath(contentNodeJson, contentMetricPath.title, contentNode.title)
     if isLive
